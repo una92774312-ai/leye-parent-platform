@@ -21,50 +21,55 @@
       max-width: 440px;
       margin: 0 auto;
     }
-    .header-tag {
-      background-color: #e8f5e9;
-      color: #2e7d32;
-      padding: 4px 12px;
+    .user-profile {
+      background: #e8f5e9;
       border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      display: inline-block;
-      margin-bottom: 10px;
+      padding: 10px 14px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+    }
+    .user-info {
+      font-size: 0.88rem;
+      color: #1b5e20;
     }
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       text-align: left;
     }
     label {
       display: block;
       font-weight: bold;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       font-size: 0.95rem;
       color: #2c3e50;
     }
     input, select {
       width: 100%;
-      padding: 12px;
+      padding: 11px;
       border: 1.5px solid #cfd8dc;
       border-radius: 10px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       box-sizing: border-box;
     }
-    /* 放學時段選擇按鈕 (直列結構更清晰) */
     .time-options {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
     .time-btn {
-      padding: 12px 14px;
+      padding: 11px 14px;
       border: 1.5px solid #cfd8dc;
       background: #ffffff;
       border-radius: 10px;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       cursor: pointer;
-      text-align: left;
-      font-weight: 500;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -77,15 +82,66 @@
       font-weight: bold;
     }
     .time-badge {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       padding: 2px 8px;
       border-radius: 6px;
       background: #eceff1;
       color: #546e7a;
     }
-    .time-btn.active .time-badge {
-      background: #c8e6c9;
-      color: #1b5e20;
+    .dynamic-box {
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 8px;
+      display: none;
+    }
+    .overtime-box {
+      background: #ffebee;
+      border: 1px solid #ffcdd2;
+      color: #b71c1c;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 8px;
+      font-size: 0.88rem;
+      display: none;
+    }
+    .item-checkboxes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .checkbox-label {
+      font-size: 0.88rem;
+      font-weight: normal;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .checkbox-label input { width: auto; }
+    
+    /* 雙階段狀態面板 */
+    .status-panel {
+      background: #fff8e6;
+      border: 1.5px solid #ffe0b2;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .btn-arrived {
+      width: 100%;
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
     }
     .btn-submit {
       width: 100%;
@@ -97,83 +153,120 @@
       font-size: 1.1rem;
       font-weight: bold;
       cursor: pointer;
-      margin-top: 15px;
+      margin-top: 18px;
       box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
     }
-    .safety-notice {
-      background-color: #fff8e6;
-      border-left: 4px solid #ffa000;
-      padding: 10px 12px;
-      font-size: 0.85rem;
-      color: #7f5f00;
+    .reset-link {
+      display: block;
+      text-align: center;
       margin-top: 10px;
-      border-radius: 0 8px 8px 0;
-      display: none;
-    }
-    .overtime-notice {
-      background-color: #ffebee;
-      border-left: 4px solid #e53935;
-      padding: 10px 12px;
-      font-size: 0.85rem;
-      color: #c62828;
-      margin-top: 10px;
-      border-radius: 0 8px 8px 0;
-      display: none;
+      font-size: 0.82rem;
+      color: #888;
+      text-decoration: underline;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <div class="header-tag">🏫 樂業附幼專屬服務</div>
-    <h2 style="margin: 0 0 15px 0; font-size: 1.3rem; color: #1b5e20;">接送預約與狀態通報</h2>
+    <!-- 家長 LINE 身分卡 -->
+    <div class="user-profile">
+      <img id="userImg" src="https://via.placeholder.com/40" class="user-avatar">
+      <div class="user-info">
+        <span id="lineStatus">驗證 LINE 身分中...</span>
+      </div>
+    </div>
+
+    <!-- 進行中的接送狀態（倒數認定區塊） -->
+    <div id="activePickupPanel" class="status-panel" style="display: none;">
+      <div style="font-weight: bold; color: #e65100; font-size: 1rem;">🚗 接送預約處理中</div>
+      <div style="font-size: 0.88rem; color: #666; margin-top: 4px;" id="pickupTimerText">
+        已通知老師準備，預計 15 分鐘後自動完成離園認定。
+      </div>
+      <button type="button" class="btn-arrived" onclick="confirmArrived()">✅ 我已接到寶貝（完成離園）</button>
+    </div>
 
     <form id="pickupForm">
-      <!-- 幼兒資料（自動記憶） -->
+      <!-- 幼兒綁定資料 -->
       <div class="form-group">
-        <label>👶 幼兒班級與姓名</label>
+        <label>👶 綁定幼兒資料</label>
         <div style="display: flex; gap: 8px;">
           <input type="text" id="childClass" placeholder="班級（例：太陽班）" required style="flex: 1;">
           <input type="text" id="childName" placeholder="幼兒姓名" required style="flex: 1.2;">
         </div>
       </div>
 
-      <!-- 精準放學時段選單 -->
+      <!-- 1. 接送選項 -->
       <div class="form-group">
-        <label>⏰ 請選擇接送/放學狀態</label>
+        <label>⏰ 請選擇接送/放學時段</label>
         <div class="time-options">
-          <div class="time-btn" onclick="selectTime(this, '提早接送', false)">
-            <span>☀️ 提早接送</span>
-            <span class="time-badge">特殊需求</span>
+          
+          <div class="time-btn" onclick="selectMode(this, '提早接孩子')">
+            <span>☀️ (1) 提早接孩子</span><span class="time-badge">請填原因</span>
           </div>
-          <div class="time-btn active" onclick="selectTime(this, '正常放學 (已接小孩)', false)">
-            <span>✅ 正常放學 (已接小孩)</span>
-            <span class="time-badge">常規離園</span>
+          <div id="earlyBox" class="dynamic-box">
+            <div style="margin-bottom: 8px;">
+              <label style="font-size:0.85rem;">提早原因：</label>
+              <select id="earlyReason">
+                <option value="事假">事假</option>
+                <option value="病假">病假</option>
+                <option value="其他原因">其他原因</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:0.85rem;">預計幾點接孩子：</label>
+              <input type="time" id="earlyTime" value="14:30">
+            </div>
           </div>
-          <div class="time-btn" onclick="selectTime(this, '第一階段 17:00', false)">
-            <span>🎒 第一階段 17:00</span>
-            <span class="time-badge">課後留園</span>
+
+          <div class="time-btn active" onclick="selectMode(this, '正常放學')">
+            <span>✅ (2) 正常放學</span><span class="time-badge">常規離園</span>
           </div>
-          <div class="time-btn" onclick="selectTime(this, '第二階段 18:00', false)">
-            <span>🌙 第二階段 18:00</span>
-            <span class="time-badge">課後留園</span>
+
+          <div class="time-btn" onclick="selectMode(this, '第一階段17:00')">
+            <span>🎒 (3) 第一階段 17:00</span><span class="time-badge">課後留園</span>
           </div>
-          <div class="time-btn" onclick="selectTime(this, '18:00 之後 (逾時接送)', true)">
-            <span>⚠️ 18:00 之後 (逾時接送)</span>
-            <span class="time-badge" style="background:#ffcdd2; color:#b71c1c;">逾時通報</span>
+
+          <div class="time-btn" onclick="selectMode(this, '第二階段18:00')">
+            <span>🌙 (4) 第二階段 18:00</span><span class="time-badge">課後留園</span>
           </div>
+
+          <div class="time-btn" onclick="selectMode(this, '18:00之後(逾時接送)')">
+            <span>⚠️ (5) 18:00之後(逾時接送)</span><span class="time-badge" style="background:#ffcdd2; color:#b71c1c;">逾時通報</span>
+          </div>
+          <div id="overtimeInputBox" class="dynamic-box">
+            <div style="margin-bottom: 8px;">
+              <label style="font-size:0.85rem;">逾時原因：</label>
+              <input type="text" id="overtimeReason" placeholder="例：塞車 / 公司加班">
+            </div>
+            <div>
+              <label style="font-size:0.85rem;">預計抵達時間：</label>
+              <input type="time" id="overtimeTime" value="18:15">
+            </div>
+          </div>
+          <div id="overtimeWarning" class="overtime-box">
+            🚨 <b>注意事項：</b>依校方規定，18:00 之後逾時接送需加收延托費 <b>30 元／人</b>，請注意行車安全。
+          </div>
+
         </div>
       </div>
 
-      <!-- 逾時提示框 -->
-      <div id="overtimeNotice" class="overtime-notice">
-        🚨 提醒您：已超過常規課後留園時間（18:00），請儘速至校門口，並注意接送安全。
+      <!-- 2. 物品帶回提醒 Checkbox -->
+      <div class="form-group" style="margin-top: 18px;">
+        <label>🎒 今日物品帶回確認（自動提醒）</label>
+        <div class="item-checkboxes">
+          <label class="checkbox-label"><input type="checkbox" id="itemQuilt"> 🛌 棉被 / 睡袋</label>
+          <label class="checkbox-label"><input type="checkbox" id="itemToothbrush"> 🪥 牙刷 / 水杯</label>
+          <label class="checkbox-label"><input type="checkbox" id="itemClothes"> 🧥 個人換洗衣物</label>
+          <label class="checkbox-label"><input type="checkbox" id="itemMedicine"> 💊 藥袋 / 托藥盒</label>
+        </div>
       </div>
 
       <!-- 接送人員 -->
-      <div class="form-group" style="margin-top: 15px;">
-        <label>👤 接送人員</label>
-        <select id="picker" onchange="checkPicker(this.value)">
+      <div class="form-group">
+        <label>👤 今日接送人員</label>
+        <select id="picker">
           <option value="媽媽">媽媽</option>
           <option value="爸爸">爸爸</option>
           <option value="阿公/阿嬤">阿公／阿嬤</option>
@@ -181,92 +274,158 @@
         </select>
       </div>
 
-      <!-- 安全提醒提示框 -->
-      <div id="safetyNotice" class="safety-notice">
-        ⚠️ 提醒您：若非主要照顧者，請確保已提前向班導師備案，接送者請隨身攜帶身分證件以供核對。
-      </div>
-
-      <!-- 溫馨叮嚀勾選區 -->
-      <div class="form-group" style="margin-top: 15px;">
-        <label>📝 溫馨叮嚀與狀況預告 (選填)</label>
-        <select id="quickNote">
-          <option value="">無特殊狀況</option>
-          <option value="今日有托藥/請提醒拿藥袋">💊 今日有托藥 / 請提醒拿藥袋</option>
-          <option value="今日需攜帶睡袋/大件物品">🎒 今日需攜帶睡袋 / 大件物品</option>
-          <option value="孩子今日體力較差，請多留意">😴 孩子今日體力較差，請多留意</option>
-        </select>
-      </div>
-
-      <button type="submit" class="btn-submit">🚀 發送通知給老師</button>
+      <button type="submit" class="btn-submit">📢 點擊【我要來接小孩囉】（通知老師）</button>
+      <span class="reset-link" onclick="resetBinding()">重新綁定幼兒資料</span>
     </form>
   </div>
 
   <script>
-    let selectedTimeValue = "正常放學 (已接小孩)";
+    let lineUserId = "";
+    let lineDisplayName = "";
+    let currentMode = "正常放學";
+    const AUTO_CONFIRM_MINUTES = 15; // 15 分鐘後自動認定
 
-    function selectTime(element, value, isOvertime) {
+    function selectMode(element, mode) {
       document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('active'));
       element.classList.add('active');
-      selectedTimeValue = value;
+      currentMode = mode;
 
-      // 切換逾時警告顯示
-      const overtimeNotice = document.getElementById('overtimeNotice');
-      overtimeNotice.style.display = isOvertime ? 'block' : 'none';
+      document.getElementById('earlyBox').style.display = (mode === '提早接孩子') ? 'block' : 'none';
+      document.getElementById('overtimeInputBox').style.display = (mode === '18:00之後(逾時接送)') ? 'block' : 'none';
+      document.getElementById('overtimeWarning').style.display = (mode === '18:00之後(逾時接送)') ? 'block' : 'none';
     }
-
-    function checkPicker(val) {
-      const notice = document.getElementById('safetyNotice');
-      notice.style.display = (val === '其他授權人員') ? 'block' : 'none';
-    }
-
-    // 載入時自動讀取上次快取紀錄
-    window.onload = function() {
-      if (localStorage.getItem('leye_childClass')) {
-        document.getElementById('childClass').value = localStorage.getItem('leye_childClass');
-      }
-      if (localStorage.getItem('leye_childName')) {
-        document.getElementById('childName').value = localStorage.getItem('leye_childName');
-      }
-    };
 
     async function main() {
       try {
         await liff.init({ liffId: "2011537895-J5qnPyFm" });
+        if (liff.isLoggedIn()) {
+          const profile = await liff.getProfile();
+          lineUserId = profile.userId;
+          lineDisplayName = profile.displayName;
+
+          document.getElementById('userImg').src = profile.pictureUrl || "https://via.placeholder.com/40";
+          document.getElementById('lineStatus').innerHTML = `<b>${lineDisplayName}</b>（已連線）`;
+
+          loadBoundChild(lineUserId);
+          checkPickupStatus();
+        } else {
+          liff.login();
+        }
       } catch (err) {
-        console.error("LIFF 初始化失敗", err);
+        console.error("LIFF 存取失敗", err);
+        document.getElementById('lineStatus').innerText = "測試模式（未連接 LIFF）";
       }
     }
 
+    function loadBoundChild(uid) {
+      const savedData = localStorage.getItem('child_bind_' + uid);
+      if (savedData) {
+        const child = JSON.parse(savedData);
+        document.getElementById('childClass').value = child.class;
+        document.getElementById('childName').value = child.name;
+      }
+    }
+
+    // 檢查是否有正在倒數中的接送狀態
+    function checkPickupStatus() {
+      const pickupTime = localStorage.getItem('active_pickup_time');
+      if (pickupTime) {
+        const elapsedMinutes = (new Date().getTime() - parseInt(pickupTime)) / (1000 * 60);
+        if (elapsedMinutes < AUTO_CONFIRM_MINUTES) {
+          document.getElementById('activePickupPanel').style.display = 'block';
+        } else {
+          // 超過 15 分鐘，自動完成認定
+          autoCompletePickup();
+        }
+      }
+    }
+
+    // 手動按「我已接到寶貝」
+    async function confirmArrived() {
+      localStorage.removeItem('active_pickup_time');
+      document.getElementById('activePickupPanel').style.display = 'none';
+
+      const childClass = document.getElementById('childClass').value;
+      const childName = document.getElementById('childName').value;
+
+      const msg = `✅ 【樂業附幼離園確認】\n` +
+                  `👶 幼兒：${childClass} ${childName}\n` +
+                  `👤 通報家長：${lineDisplayName}\n` +
+                  `-------------------\n` +
+                  `家長已成功接回寶貝！感謝老師照顧。`;
+
+      if (liff.isInClient()) {
+        await liff.sendMessages([{ type: 'text', text: msg }]);
+        alert("🎉 已確認接到寶貝，感謝您的通報！");
+        liff.closeWindow();
+      } else {
+        alert("測試模式：已完成接回通報！");
+      }
+    }
+
+    // 15 分鐘系統自動認定
+    function autoCompletePickup() {
+      localStorage.removeItem('active_pickup_time');
+      document.getElementById('activePickupPanel').style.display = 'none';
+      alert("⏰ 系統通知：已達 15 分鐘預約時間，系統已自動幫您登記為『已接回寶貝』，祝您與寶貝回家路上平安！");
+    }
+
+    function resetBinding() {
+      if (confirm("確定要重新綁定幼兒資料嗎？")) {
+        document.getElementById('childClass').value = "";
+        document.getElementById('childName').value = "";
+        if (lineUserId) localStorage.removeItem('child_bind_' + lineUserId);
+      }
+    }
+
+    // 階段一：發送「我要來接小孩囉」
     document.getElementById('pickupForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
       const childClass = document.getElementById('childClass').value;
       const childName = document.getElementById('childName').value;
       const picker = document.getElementById('picker').value;
-      const quickNote = document.getElementById('quickNote').value;
 
-      // 儲存班級姓名至本地快取
-      localStorage.setItem('leye_childClass', childClass);
-      localStorage.setItem('leye_childName', childName);
+      if (lineUserId) {
+        localStorage.setItem('child_bind_' + lineUserId, JSON.stringify({ class: childClass, name: childName }));
+      }
 
-      const msg = `🏫 【樂業附幼接送通報】\n` +
+      // 註記開始接送的時間戳記
+      localStorage.setItem('active_pickup_time', new Date().getTime());
+
+      let items = [];
+      if (document.getElementById('itemQuilt').checked) items.push("棉被/睡袋");
+      if (document.getElementById('itemToothbrush').checked) items.push("牙刷/水杯");
+      if (document.getElementById('itemClothes').checked) items.push("個人衣物");
+      if (document.getElementById('itemMedicine').checked) items.push("藥袋");
+      const itemsStr = items.length > 0 ? items.join("、") : "無特別提醒";
+
+      let details = "";
+      if (currentMode === '提早接孩子') {
+        details = `\n📌 提早原因：${document.getElementById('earlyReason').value}\n⏰ 預計接送時間：${document.getElementById('earlyTime').value}`;
+      } else if (currentMode === '18:00之後(逾時接送)') {
+        details = `\n📌 逾時原因：${document.getElementById('overtimeReason').value || '未填'}\n⏰ 預計抵達時間：${document.getElementById('overtimeTime').value}\n⚠️ 已標註加收 30 元/人`;
+      }
+
+      const msg = `📢 【樂業附幼接送通知：我要來接小孩囉！】\n` +
                   `👶 幼兒：${childClass} ${childName}\n` +
-                  `⏰ 接送狀態：${selectedTimeValue}\n` +
-                  `👤 接送人員：${picker}\n` +
-                  (quickNote ? `💡 溫馨叮嚀：${quickNote}\n` : '') +
+                  `👤 接送家長：${lineDisplayName} (${picker})\n` +
+                  `⏰ 接送時段：${currentMode}${details}\n` +
+                  `🎒 物品帶回提醒：${itemsStr}\n` +
                   `-------------------\n` +
-                  `老師辛苦了！感謝您的照顧。`;
+                  `預計 10-15 分鐘內抵達，請老師協助孩子準備！`;
 
       if (liff.isInClient()) {
         try {
           await liff.sendMessages([{ type: 'text', text: msg }]);
-          alert("✅ 已成功通知老師！");
+          alert("📢 已發送預約接送通知！老師正在協助孩子準備中。");
           liff.closeWindow();
         } catch (err) {
-          alert("發送失敗，請確認 LIFF 權限。");
+          alert("發送失敗，請確認權限。");
         }
       } else {
-        alert("測試環境模擬發送：\n\n" + msg);
+        alert("測試模式發送內容：\n\n" + msg);
+        document.getElementById('activePickupPanel').style.display = 'block';
       }
     });
 
