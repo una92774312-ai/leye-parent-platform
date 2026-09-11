@@ -3,72 +3,272 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>樂業附幼｜我要接孩子</title>
-  <!-- 引入 LINE LIFF SDK -->
+  <title>樂業附幼｜家長接送通報系統</title>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      padding: 20px;
-      text-align: center;
-      background-color: #f8f9fa;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 16px;
+      background-color: #f4f7f6;
       color: #333;
+      margin: 0;
     }
     .card {
       background: white;
-      padding: 25px;
+      padding: 22px;
+      border-radius: 18px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      max-width: 440px;
+      margin: 0 auto;
+    }
+    .header-tag {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      padding: 4px 12px;
       border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      max-width: 400px;
-      margin: 20px auto;
-    }
-    .avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      margin-bottom: 15px;
-    }
-    .status {
+      font-size: 0.85rem;
       font-weight: bold;
-      color: #2b7a78;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+    .form-group {
+      margin-bottom: 18px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+      color: #2c3e50;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid #cfd8dc;
+      border-radius: 10px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    /* 放學時段選擇按鈕 (直列結構更清晰) */
+    .time-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .time-btn {
+      padding: 12px 14px;
+      border: 1.5px solid #cfd8dc;
+      background: #ffffff;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+    .time-btn.active {
+      border-color: #2e7d32;
+      background-color: #e8f5e9;
+      color: #1b5e20;
+      font-weight: bold;
+    }
+    .time-badge {
+      font-size: 0.8rem;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: #eceff1;
+      color: #546e7a;
+    }
+    .time-btn.active .time-badge {
+      background: #c8e6c9;
+      color: #1b5e20;
+    }
+    .btn-submit {
+      width: 100%;
+      background-color: #2e7d32;
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
+    }
+    .safety-notice {
+      background-color: #fff8e6;
+      border-left: 4px solid #ffa000;
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      color: #7f5f00;
+      margin-top: 10px;
+      border-radius: 0 8px 8px 0;
+      display: none;
+    }
+    .overtime-notice {
+      background-color: #ffebee;
+      border-left: 4px solid #e53935;
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      color: #c62828;
+      margin-top: 10px;
+      border-radius: 0 8px 8px 0;
+      display: none;
     }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>🏫 樂業附幼｜我要接孩子</h2>
-    <div id="loading">載入家長資料中，請稍候...</div>
-    
-    <div id="user-info" style="display: none;">
-      <img id="pictureUrl" class="avatar" src="" alt="大頭照">
-      <p>親愛的 <strong id="displayName"></strong> 家長，您好！</p>
-      <p class="status">✅ LINE 身份連線成功！</p>
-    </div>
+    <div class="header-tag">🏫 樂業附幼專屬服務</div>
+    <h2 style="margin: 0 0 15px 0; font-size: 1.3rem; color: #1b5e20;">接送預約與狀態通報</h2>
+
+    <form id="pickupForm">
+      <!-- 幼兒資料（自動記憶） -->
+      <div class="form-group">
+        <label>👶 幼兒班級與姓名</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="childClass" placeholder="班級（例：太陽班）" required style="flex: 1;">
+          <input type="text" id="childName" placeholder="幼兒姓名" required style="flex: 1.2;">
+        </div>
+      </div>
+
+      <!-- 精準放學時段選單 -->
+      <div class="form-group">
+        <label>⏰ 請選擇接送/放學狀態</label>
+        <div class="time-options">
+          <div class="time-btn" onclick="selectTime(this, '提早接送', false)">
+            <span>☀️ 提早接送</span>
+            <span class="time-badge">特殊需求</span>
+          </div>
+          <div class="time-btn active" onclick="selectTime(this, '正常放學 (已接小孩)', false)">
+            <span>✅ 正常放學 (已接小孩)</span>
+            <span class="time-badge">常規離園</span>
+          </div>
+          <div class="time-btn" onclick="selectTime(this, '第一階段 17:00', false)">
+            <span>🎒 第一階段 17:00</span>
+            <span class="time-badge">課後留園</span>
+          </div>
+          <div class="time-btn" onclick="selectTime(this, '第二階段 18:00', false)">
+            <span>🌙 第二階段 18:00</span>
+            <span class="time-badge">課後留園</span>
+          </div>
+          <div class="time-btn" onclick="selectTime(this, '18:00 之後 (逾時接送)', true)">
+            <span>⚠️ 18:00 之後 (逾時接送)</span>
+            <span class="time-badge" style="background:#ffcdd2; color:#b71c1c;">逾時通報</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 逾時提示框 -->
+      <div id="overtimeNotice" class="overtime-notice">
+        🚨 提醒您：已超過常規課後留園時間（18:00），請儘速至校門口，並注意接送安全。
+      </div>
+
+      <!-- 接送人員 -->
+      <div class="form-group" style="margin-top: 15px;">
+        <label>👤 接送人員</label>
+        <select id="picker" onchange="checkPicker(this.value)">
+          <option value="媽媽">媽媽</option>
+          <option value="爸爸">爸爸</option>
+          <option value="阿公/阿嬤">阿公／阿嬤</option>
+          <option value="其他授權人員">其他授權人員（含安親班/親友）</option>
+        </select>
+      </div>
+
+      <!-- 安全提醒提示框 -->
+      <div id="safetyNotice" class="safety-notice">
+        ⚠️ 提醒您：若非主要照顧者，請確保已提前向班導師備案，接送者請隨身攜帶身分證件以供核對。
+      </div>
+
+      <!-- 溫馨叮嚀勾選區 -->
+      <div class="form-group" style="margin-top: 15px;">
+        <label>📝 溫馨叮嚀與狀況預告 (選填)</label>
+        <select id="quickNote">
+          <option value="">無特殊狀況</option>
+          <option value="今日有托藥/請提醒拿藥袋">💊 今日有托藥 / 請提醒拿藥袋</option>
+          <option value="今日需攜帶睡袋/大件物品">🎒 今日需攜帶睡袋 / 大件物品</option>
+          <option value="孩子今日體力較差，請多留意">😴 孩子今日體力較差，請多留意</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-submit">🚀 發送通知給老師</button>
+    </form>
   </div>
 
   <script>
+    let selectedTimeValue = "正常放學 (已接小孩)";
+
+    function selectTime(element, value, isOvertime) {
+      document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+      selectedTimeValue = value;
+
+      // 切換逾時警告顯示
+      const overtimeNotice = document.getElementById('overtimeNotice');
+      overtimeNotice.style.display = isOvertime ? 'block' : 'none';
+    }
+
+    function checkPicker(val) {
+      const notice = document.getElementById('safetyNotice');
+      notice.style.display = (val === '其他授權人員') ? 'block' : 'none';
+    }
+
+    // 載入時自動讀取上次快取紀錄
+    window.onload = function() {
+      if (localStorage.getItem('leye_childClass')) {
+        document.getElementById('childClass').value = localStorage.getItem('leye_childClass');
+      }
+      if (localStorage.getItem('leye_childName')) {
+        document.getElementById('childName').value = localStorage.getItem('leye_childName');
+      }
+    };
+
     async function main() {
       try {
-        // 初始化 LIFF
         await liff.init({ liffId: "2011537895-J5qnPyFm" });
-        
-        if (liff.isLoggedIn()) {
-          // 取得用戶個人資料
-          const profile = await liff.getProfile();
-          document.getElementById('loading').style.display = 'none';
-          document.getElementById('user-info').style.display = 'block';
-          document.getElementById('displayName').innerText = profile.displayName;
-          document.getElementById('pictureUrl').src = profile.pictureUrl || 'https://via.placeholder.com/80';
-        } else {
-          // 若未登入，引導登入
-          liff.login();
-        }
-      } catch (error) {
-        console.error("LIFF 初始化失敗", error);
-        document.getElementById('loading').innerText = '載入失敗，請從 LINE 重新打開頁面。';
+      } catch (err) {
+        console.error("LIFF 初始化失敗", err);
       }
     }
+
+    document.getElementById('pickupForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const childClass = document.getElementById('childClass').value;
+      const childName = document.getElementById('childName').value;
+      const picker = document.getElementById('picker').value;
+      const quickNote = document.getElementById('quickNote').value;
+
+      // 儲存班級姓名至本地快取
+      localStorage.setItem('leye_childClass', childClass);
+      localStorage.setItem('leye_childName', childName);
+
+      const msg = `🏫 【樂業附幼接送通報】\n` +
+                  `👶 幼兒：${childClass} ${childName}\n` +
+                  `⏰ 接送狀態：${selectedTimeValue}\n` +
+                  `👤 接送人員：${picker}\n` +
+                  (quickNote ? `💡 溫馨叮嚀：${quickNote}\n` : '') +
+                  `-------------------\n` +
+                  `老師辛苦了！感謝您的照顧。`;
+
+      if (liff.isInClient()) {
+        try {
+          await liff.sendMessages([{ type: 'text', text: msg }]);
+          alert("✅ 已成功通知老師！");
+          liff.closeWindow();
+        } catch (err) {
+          alert("發送失敗，請確認 LIFF 權限。");
+        }
+      } else {
+        alert("測試環境模擬發送：\n\n" + msg);
+      }
+    });
 
     main();
   </script>
