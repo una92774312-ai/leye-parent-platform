@@ -112,11 +112,20 @@
       font-size: 0.88rem;
       line-height: 1.5;
     }
+    .status-panel {
+      background: #fff8e6;
+      border: 1.5px solid #ffe0b2;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
     .item-checkboxes {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
-      margin-top: 6px;
+      margin-top: 10px;
+      text-align: left;
     }
     .checkbox-label {
       font-size: 0.88rem;
@@ -127,15 +136,6 @@
       cursor: pointer;
     }
     .checkbox-label input { width: auto; }
-    
-    .status-panel {
-      background: #fff8e6;
-      border: 1.5px solid #ffe0b2;
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 16px;
-      text-align: center;
-    }
     .btn-arrived {
       width: 100%;
       background-color: #ff9800;
@@ -146,7 +146,7 @@
       font-size: 1rem;
       font-weight: bold;
       cursor: pointer;
-      margin-top: 8px;
+      margin-top: 12px;
     }
     .btn-submit {
       width: 100%;
@@ -183,17 +183,26 @@
       </div>
     </div>
 
-    <!-- 進行中的接送狀態（倒數認定區塊） -->
+    <!-- 階段二：接孩子當下的確認與物品勾選區塊 -->
     <div id="activePickupPanel" class="status-panel" style="display: none;">
-      <div style="font-weight: bold; color: #e65100; font-size: 1rem;">🚗 接送預約處理中</div>
-      <div style="font-size: 0.88rem; color: #666; margin-top: 4px;" id="pickupTimerText">
-        已通知老師準備，預計 15 分鐘後自動完成離園認定。
+      <div style="font-weight: bold; color: #e65100; font-size: 1rem;">🚗 接送處理中（老師準備中）</div>
+      <div style="font-size: 0.85rem; color: #666; margin-top: 4px;">預計 15 分鐘後自動結案離園。</div>
+      
+      <div style="margin-top: 12px; border-top: 1px dashed #ffd54f; padding-top: 10px;">
+        <div style="font-size: 0.9rem; font-weight: bold; color: #2c3e50; text-align: left;">🎒 離園物品帶回對點：</div>
+        <div class="item-checkboxes">
+          <label class="checkbox-label"><input type="checkbox" id="itemQuilt"> 🛌 棉被 / 睡袋</label>
+          <label class="checkbox-label"><input type="checkbox" id="itemToothbrush"> 🪥 牙刷 / 水杯</label>
+          <label class="checkbox-label"><input type="checkbox" id="itemClothes"> 🧥 個人換洗衣物</label>
+          <label class="checkbox-label"><input type="checkbox" id="itemMedicine"> 💊 藥袋 / 托藥盒</label>
+        </div>
       </div>
+
       <button type="button" class="btn-arrived" onclick="confirmArrived()">✅ 我已接到寶貝（完成離園）</button>
     </div>
 
+    <!-- 階段一：發送預約接送單 -->
     <form id="pickupForm">
-      <!-- 幼兒綁定資料 -->
       <div class="form-group">
         <label>👶 綁定幼兒資料</label>
         <div style="display: flex; gap: 8px;">
@@ -202,7 +211,6 @@
         </div>
       </div>
 
-      <!-- 1. 接送選項 -->
       <div class="form-group">
         <label>⏰ 請選擇接送/放學時段</label>
         <div class="time-options">
@@ -237,13 +245,11 @@
             <span>🌙 (4) 第二階段 18:00</span><span class="time-badge">課後留園</span>
           </div>
 
-          <!-- 統一逾時接送按鈕 -->
           <div class="time-btn" onclick="selectMode(this, '逾時接送')">
             <span style="color:#b71c1c; font-weight:bold;">🚨 (5) 逾時接送（遲到通報）</span>
             <span class="time-badge" style="background:#ffcdd2; color:#b71c1c;">延托加收費用</span>
           </div>
           
-          <!-- 逾時接送動態展開區塊 -->
           <div id="overtimeBox" class="dynamic-box">
             <div style="margin-bottom: 8px;">
               <label style="font-size:0.85rem;">請選擇遲到時段：</label>
@@ -262,7 +268,6 @@
               <input type="time" id="overtimeTime" value="16:20">
             </div>
 
-            <!-- 動態費用警示 -->
             <div id="overtimeFeeNotice" class="overtime-warning-box">
               ⚠️ <b>16:00 放學費用說明：</b>超過 10 分鐘（16:11起）需加收延托費 <b>50 元／人</b>。
             </div>
@@ -271,18 +276,6 @@
         </div>
       </div>
 
-      <!-- 2. 物品帶回提醒 Checkbox -->
-      <div class="form-group" style="margin-top: 18px;">
-        <label>🎒 今日物品帶回確認（自動提醒）</label>
-        <div class="item-checkboxes">
-          <label class="checkbox-label"><input type="checkbox" id="itemQuilt"> 🛌 棉被 / 睡袋</label>
-          <label class="checkbox-label"><input type="checkbox" id="itemToothbrush"> 🪥 牙刷 / 水杯</label>
-          <label class="checkbox-label"><input type="checkbox" id="itemClothes"> 🧥 個人換洗衣物</label>
-          <label class="checkbox-label"><input type="checkbox" id="itemMedicine"> 💊 藥袋 / 托藥盒</label>
-        </div>
-      </div>
-
-      <!-- 接送人員 -->
       <div class="form-group">
         <label>👤 今日接送人員</label>
         <select id="picker">
@@ -321,7 +314,6 @@
       document.getElementById('overtimeBox').style.display = (mode === '逾時接送') ? 'block' : 'none';
     }
 
-    // 更新逾時費用的警示文字與加收費用標準
     function updateOvertimeNotice() {
       const type = document.getElementById('overtimeType').value;
       const noticeBox = document.getElementById('overtimeFeeNotice');
@@ -381,6 +373,7 @@
       }
     }
 
+    // 階段二：確認離園並檢查物品
     async function confirmArrived() {
       localStorage.removeItem('active_pickup_time');
       document.getElementById('activePickupPanel').style.display = 'none';
@@ -388,18 +381,26 @@
       const childClass = document.getElementById('childClass').value;
       const childName = document.getElementById('childName').value;
 
-      const msg = `✅ 【樂業附幼離園確認】\n` +
+      let items = [];
+      if (document.getElementById('itemQuilt').checked) items.push("棉被/睡袋");
+      if (document.getElementById('itemToothbrush').checked) items.push("牙刷/水杯");
+      if (document.getElementById('itemClothes').checked) items.push("個人衣物");
+      if (document.getElementById('itemMedicine').checked) items.push("藥袋");
+      const itemsStr = items.length > 0 ? items.join("、") : "無特別清點";
+
+      const msg = `✅ 【樂業附幼離園對點確認】\n` +
                   `👶 幼兒：${childClass} ${childName}\n` +
                   `👤 通報家長：${lineDisplayName}\n` +
+                  `🎒 已帶回物品：${itemsStr}\n` +
                   `-------------------\n` +
-                  `家長已成功接回寶貝！感謝老師照顧。`;
+                  `家長已成功接回寶貝！祝回家路上平安。`;
 
       if (liff.isInClient()) {
         await liff.sendMessages([{ type: 'text', text: msg }]);
-        alert("🎉 已確認接到寶貝，感謝您的通報！");
+        alert("🎉 已確認接到寶貝並完成對點！");
         liff.closeWindow();
       } else {
-        alert("測試模式：已完成接回通報！");
+        alert("測試模式發送內容：\n\n" + msg);
       }
     }
 
@@ -417,6 +418,7 @@
       }
     }
 
+    // 階段一：發送「我要來接小孩囉」
     document.getElementById('pickupForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
@@ -429,13 +431,6 @@
       }
 
       localStorage.setItem('active_pickup_time', new Date().getTime());
-
-      let items = [];
-      if (document.getElementById('itemQuilt').checked) items.push("棉被/睡袋");
-      if (document.getElementById('itemToothbrush').checked) items.push("牙刷/水杯");
-      if (document.getElementById('itemClothes').checked) items.push("個人衣物");
-      if (document.getElementById('itemMedicine').checked) items.push("藥袋");
-      const itemsStr = items.length > 0 ? items.join("、") : "無特別提醒";
 
       let details = "";
       let modeTitle = currentMode;
@@ -460,7 +455,6 @@
                   `👶 幼兒：${childClass} ${childName}\n` +
                   `👤 接送家長：${lineDisplayName} (${picker})\n` +
                   `⏰ 接送狀態：${modeTitle}${details}\n` +
-                  `🎒 物品帶回提醒：${itemsStr}\n` +
                   `-------------------\n` +
                   `預計 10-15 分鐘內抵達，請老師協助孩子準備！`;
 
