@@ -1,478 +1,376 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>樂業附幼｜家長接送通報系統</title>
-  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      padding: 16px;
-      background-color: #f4f7f6;
-      color: #333;
-      margin: 0;
-    }
-    .card {
-      background: white;
-      padding: 22px;
-      border-radius: 18px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-      max-width: 440px;
-      margin: 0 auto;
-    }
-    .user-profile {
-      background: #e8f5e9;
-      border-radius: 12px;
-      padding: 10px 14px;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .user-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-    }
-    .user-info {
-      font-size: 0.88rem;
-      color: #1b5e20;
-    }
-    .form-group {
-      margin-bottom: 16px;
-      text-align: left;
-    }
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 6px;
-      font-size: 0.95rem;
-      color: #2c3e50;
-    }
-    input, select {
-      width: 100%;
-      padding: 11px;
-      border: 1.5px solid #cfd8dc;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      box-sizing: border-box;
-    }
-    .time-options {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .time-btn {
-      padding: 11px 14px;
-      border: 1.5px solid #cfd8dc;
-      background: #ffffff;
-      border-radius: 10px;
-      font-size: 0.92rem;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: all 0.2s ease;
-    }
-    .time-btn.active {
-      border-color: #2e7d32;
-      background-color: #e8f5e9;
-      color: #1b5e20;
-      font-weight: bold;
-    }
-    .time-btn.overtime-active {
-      border-color: #c62828;
-      background-color: #ffebee;
-      color: #b71c1c;
-      font-weight: bold;
-    }
-    .time-badge {
-      font-size: 0.78rem;
-      padding: 2px 8px;
-      border-radius: 6px;
-      background: #eceff1;
-      color: #546e7a;
-    }
-    .dynamic-box {
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
-      border-radius: 10px;
-      padding: 12px;
-      margin-top: 8px;
-      display: none;
-    }
-    .overtime-warning-box {
-      background: #fff8e6;
-      border: 1px solid #ffe0b2;
-      color: #e65100;
-      border-radius: 10px;
-      padding: 12px;
-      margin-top: 10px;
-      font-size: 0.88rem;
-      line-height: 1.5;
-    }
-    .status-panel {
-      background: #fff8e6;
-      border: 1.5px solid #ffe0b2;
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-    .item-checkboxes {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 10px;
-      text-align: left;
-    }
-    .checkbox-label {
-      font-size: 0.88rem;
-      font-weight: normal;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-    }
-    .checkbox-label input { width: auto; }
-    .btn-arrived {
-      width: 100%;
-      background-color: #ff9800;
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 12px;
-    }
-    .btn-submit {
-      width: 100%;
-      background-color: #2e7d32;
-      color: white;
-      border: none;
-      padding: 15px;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 18px;
-      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
-    }
-    .reset-link {
-      display: block;
-      text-align: center;
-      margin-top: 10px;
-      font-size: 0.82rem;
-      color: #888;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
+請直接修改目前這個專案。
 
-  <div class="card">
-    <!-- 家長 LINE 身分卡 -->
-    <div class="user-profile">
-      <img id="userImg" src="https://via.placeholder.com/40" class="user-avatar">
-      <div class="user-info">
-        <span id="lineStatus">驗證 LINE 身分中...</span>
-      </div>
-    </div>
+專案名稱：
+樂業附幼｜家長接送通報系統
 
-    <!-- 階段二：接孩子當下的確認與物品勾選區塊 -->
-    <div id="activePickupPanel" class="status-panel" style="display: none;">
-      <div style="font-weight: bold; color: #e65100; font-size: 1rem;">🚗 接送處理中（老師準備中）</div>
-      <div style="font-size: 0.85rem; color: #666; margin-top: 4px;">預計 15 分鐘後自動結案離園。</div>
-      
-      <div style="margin-top: 12px; border-top: 1px dashed #ffd54f; padding-top: 10px;">
-        <div style="font-size: 0.9rem; font-weight: bold; color: #2c3e50; text-align: left;">🎒 離園物品帶回對點：</div>
-        <div class="item-checkboxes">
-          <label class="checkbox-label"><input type="checkbox" id="itemQuilt"> 🛌 棉被 / 睡袋</label>
-          <label class="checkbox-label"><input type="checkbox" id="itemToothbrush"> 🪥 牙刷 / 水杯</label>
-          <label class="checkbox-label"><input type="checkbox" id="itemClothes"> 🧥 個人換洗衣物</label>
-          <label class="checkbox-label"><input type="checkbox" id="itemMedicine"> 💊 藥袋 / 托藥盒</label>
-        </div>
-      </div>
+目前專案已經完成「接送功能」，包含：
+- LINE LIFF 身分登入
+- LINE 顯示名稱
+- 幼兒班級／姓名綁定
+- 提早接孩子
+- 正常放學 16:00
+- 第一階段 17:00 課後留園
+- 第二階段 18:00 課後留園
+- 逾時接送／遲到通報
+- 逾時原因
+- 預計抵達時間
+- 今日物品帶回提醒
+- 今日接送人員
+- 其他接送人員「需攜帶接送卡核對身分」提醒
+- 接送通知
+- 15 分鐘接送狀態
+- 「我已接到寶貝」完成離園
 
-      <button type="button" class="btn-arrived" onclick="confirmArrived()">✅ 我已接到寶貝（完成離園）</button>
-    </div>
+⚠️ 非常重要：
 
-    <!-- 階段一：發送預約接送單 -->
-    <form id="pickupForm">
-      <div class="form-group">
-        <label>👶 綁定幼兒資料</label>
-        <div style="display: flex; gap: 8px;">
-          <input type="text" id="childClass" placeholder="班級（例：太陽班）" required style="flex: 1;">
-          <input type="text" id="childName" placeholder="幼兒姓名" required style="flex: 1.2;">
-        </div>
-      </div>
+「絕對不要破壞目前已經完成的接送功能。」
 
-      <div class="form-group">
-        <label>⏰ 請選擇接送/放學時段</label>
-        <div class="time-options">
-          
-          <div class="time-btn" onclick="selectMode(this, '提早接孩子')">
-            <span>☀️ (1) 提早接孩子</span><span class="time-badge">請填原因</span>
-          </div>
-          <div id="earlyBox" class="dynamic-box">
-            <div style="margin-bottom: 8px;">
-              <label style="font-size:0.85rem;">提早原因：</label>
-              <select id="earlyReason">
-                <option value="事假">事假</option>
-                <option value="病假">病假</option>
-                <option value="其他原因">其他原因</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size:0.85rem;">預計幾點接孩子：</label>
-              <input type="time" id="earlyTime" value="14:30">
-            </div>
-          </div>
+請不要重新設計接送流程，也不要刪除、改名或重寫目前接送功能。
 
-          <div class="time-btn active" onclick="selectMode(this, '正常放學')">
-            <span>✅ (2) 正常放學</span><span class="time-badge">16:00 常規離園</span>
-          </div>
+請以「新增功能」的方式擴充。
 
-          <div class="time-btn" onclick="selectMode(this, '第一階段17:00')">
-            <span>🎒 (3) 第一階段 17:00</span><span class="time-badge">課後留園</span>
-          </div>
+========================================
+第一個新增功能：❌ 今日請假
+========================================
 
-          <div class="time-btn" onclick="selectMode(this, '第二階段18:00')">
-            <span>🌙 (4) 第二階段 18:00</span><span class="time-badge">課後留園</span>
-          </div>
+請在目前網站新增「今日請假」功能。
 
-          <div class="time-btn" onclick="selectMode(this, '逾時接送')">
-            <span style="color:#b71c1c; font-weight:bold;">🚨 (5) 逾時接送（遲到通報）</span>
-            <span class="time-badge" style="background:#ffcdd2; color:#b71c1c;">延托加收費用</span>
-          </div>
-          
-          <div id="overtimeBox" class="dynamic-box">
-            <div style="margin-bottom: 8px;">
-              <label style="font-size:0.85rem;">請選擇遲到時段：</label>
-              <select id="overtimeType" onchange="updateOvertimeNotice()">
-                <option value="16:00 正常放學遲到">16:00 正常放學遲到</option>
-                <option value="17:00 第一階段遲到">17:00 第一階段留園遲到</option>
-                <option value="18:00 第二階段遲到">18:00 第二階段留園遲到</option>
-              </select>
-            </div>
-            <div style="margin-bottom: 8px;">
-              <label style="font-size:0.85rem;">遲到原因：</label>
-              <input type="text" id="overtimeReason" placeholder="例：塞車 / 公司加班">
-            </div>
-            <div>
-              <label style="font-size:0.85rem;">預計抵達接送時間：</label>
-              <input type="time" id="overtimeTime" value="16:20">
-            </div>
+希望家長可以在同一個網站直接完成請假通報。
 
-            <div id="overtimeFeeNotice" class="overtime-warning-box">
-              ⚠️ <b>16:00 放學費用說明：</b>超過 10 分鐘（16:11起）需加收延托費 <b>50 元／人</b>。
-            </div>
-          </div>
+請新增一個明確的「今日請假」入口。
 
-        </div>
-      </div>
+介面可以放在目前接送功能上方或下方，但不要破壞原本接送表單。
 
-      <div class="form-group">
-        <label>👤 今日接送人員</label>
-        <select id="picker">
-          <option value="媽媽">媽媽</option>
-          <option value="爸爸">爸爸</option>
-          <option value="阿公/阿嬤">阿公／阿嬤</option>
-          <option value="其他接送人員">其他接送人員（含鄰居/親友）</option>
-        </select>
-      </div>
+「今日請假」點擊後顯示請假表單：
 
-      <button type="submit" class="btn-submit">📢 點擊【我要來接小孩囉】（通知老師）</button>
-      <span class="reset-link" onclick="resetBinding()">重新綁定幼兒資料</span>
-    </form>
-  </div>
+👶 幼兒資料
+- 自動帶入目前 LINE 帳號已綁定的幼兒
+- 顯示班級
+- 顯示幼兒姓名
 
-  <script>
-    let lineUserId = "";
-    let lineDisplayName = "";
-    let currentMode = "正常放學";
-    const AUTO_CONFIRM_MINUTES = 15;
+📅 請假日期
+- 預設今天
+- 可以選擇日期
 
-    function selectMode(element, mode) {
-      document.querySelectorAll('.time-btn').forEach(btn => {
-        btn.classList.remove('active');
-        btn.classList.remove('overtime-active');
-      });
+📝 請假原因
+選項：
+1. 病假
+2. 事假
+3. 家庭因素
+4. 其他
 
-      currentMode = mode;
-      if (mode === '逾時接送') {
-        element.classList.add('overtime-active');
-      } else {
-        element.classList.add('active');
-      }
+如果選擇「其他」，顯示補充說明欄位。
 
-      document.getElementById('earlyBox').style.display = (mode === '提早接孩子') ? 'block' : 'none';
-      document.getElementById('overtimeBox').style.display = (mode === '逾時接送') ? 'block' : 'none';
-    }
+請新增：
+「備註／補充說明」
 
-    function updateOvertimeNotice() {
-      const type = document.getElementById('overtimeType').value;
-      const noticeBox = document.getElementById('overtimeFeeNotice');
-      
-      if (type === '16:00 正常放學遲到') {
-        noticeBox.innerHTML = "⚠️ <b>16:00 放學費用說明：</b>超過 10 分鐘（16:11起）需加收延托費 <b>50 元／人</b>。";
-        document.getElementById('overtimeTime').value = "16:20";
-      } else if (type === '17:00 第一階段遲到') {
-        noticeBox.innerHTML = "⚠️ <b>17:00 留園費用說明：</b>超過 5 分鐘（17:06起）需加收延托費 <b>35 元／人</b>。";
-        document.getElementById('overtimeTime').value = "17:15";
-      } else if (type === '18:00 第二階段遲到') {
-        noticeBox.innerHTML = "🚨 <b>18:00 留園費用說明：</b>超過 18:00 離園，依規定需加收延托費 <b>30 元／人</b>。";
-        document.getElementById('overtimeTime').value = "18:15";
-      }
-    }
+最後按鈕：
 
-    async function main() {
-      try {
-        await liff.init({ liffId: "2011537895-J5qnPyFm" });
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          lineUserId = profile.userId;
-          lineDisplayName = profile.displayName;
+「❌ 今日請假」
 
-          document.getElementById('userImg').src = profile.pictureUrl || "https://via.placeholder.com/40";
-          document.getElementById('lineStatus').innerHTML = `<b>${lineDisplayName}</b>（已連線）`;
+送出前顯示確認視窗：
 
-          loadBoundChild(lineUserId);
-          checkPickupStatus();
-        } else {
-          liff.login();
-        }
-      } catch (err) {
-        console.error("LIFF 存取失敗", err);
-        document.getElementById('lineStatus').innerText = "測試模式（未連接 LIFF）";
-      }
-    }
+「確認要為 ○○班 ○○○ 申請請假嗎？」
 
-    function loadBoundChild(uid) {
-      const savedData = localStorage.getItem('child_bind_' + uid);
-      if (savedData) {
-        const child = JSON.parse(savedData);
-        document.getElementById('childClass').value = child.class;
-        document.getElementById('childName').value = child.name;
-      }
-    }
+確認後才送出。
 
-    function checkPickupStatus() {
-      const pickupTime = localStorage.getItem('active_pickup_time');
-      if (pickupTime) {
-        const elapsedMinutes = (new Date().getTime() - parseInt(pickupTime)) / (1000 * 60);
-        if (elapsedMinutes < AUTO_CONFIRM_MINUTES) {
-          document.getElementById('activePickupPanel').style.display = 'block';
-        } else {
-          autoCompletePickup();
-        }
-      }
-    }
+送出的通知內容請設計成：
 
-    // 階段二：確認離園並檢查物品
-    async function confirmArrived() {
-      localStorage.removeItem('active_pickup_time');
-      document.getElementById('activePickupPanel').style.display = 'none';
+❌ 【樂業附幼請假通知】
+👶 幼兒：○○班 ○○○
+📅 請假日期：2026/09/11
+📝 請假原因：病假
+📌 備註：無
+👤 通報家長：LINE 顯示名稱
 
-      const childClass = document.getElementById('childClass').value;
-      const childName = document.getElementById('childName').value;
+-------------------
+本通知由家長接送通報系統發送
 
-      let items = [];
-      if (document.getElementById('itemQuilt').checked) items.push("棉被/睡袋");
-      if (document.getElementById('itemToothbrush').checked) items.push("牙刷/水杯");
-      if (document.getElementById('itemClothes').checked) items.push("個人衣物");
-      if (document.getElementById('itemMedicine').checked) items.push("藥袋");
-      const itemsStr = items.length > 0 ? items.join("、") : "無特別清點";
+如果有備註，就顯示備註內容。
 
-      const msg = `✅ 【樂業附幼離園對點確認】\n` +
-                  `👶 幼兒：${childClass} ${childName}\n` +
-                  `👤 通報家長：${lineDisplayName}\n` +
-                  `🎒 已帶回物品：${itemsStr}\n` +
-                  `-------------------\n` +
-                  `家長已成功接回寶貝！祝回家路上平安。`;
+========================================
+第二個新增功能：🔐 LINE 身分驗證
+========================================
 
-      if (liff.isInClient()) {
-        await liff.sendMessages([{ type: 'text', text: msg }]);
-        alert("🎉 已確認接到寶貝並完成對點！");
-        liff.closeWindow();
-      } else {
-        alert("測試模式發送內容：\n\n" + msg);
-      }
-    }
+目前專案已經使用 LINE LIFF：
 
-    function autoCompletePickup() {
-      localStorage.removeItem('active_pickup_time');
-      document.getElementById('activePickupPanel').style.display = 'none';
-      alert("⏰ 系統通知：已達 15 分鐘預約時間，系統已自動幫您登記為『已接回寶貝』，祝您與寶貝回家路上平安！");
-    }
+LIFF ID：
+2011537895-J5qnPyFm
 
-    function resetBinding() {
-      if (confirm("確定要重新綁定幼兒資料嗎？")) {
-        document.getElementById('childClass').value = "";
-        document.getElementById('childName').value = "";
-        if (lineUserId) localStorage.removeItem('child_bind_' + lineUserId);
-      }
-    }
+請保留目前的 LIFF 初始化方式。
 
-    // 階段一：發送「我要來接小孩囉」
-    document.getElementById('pickupForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
+不要重新建立新的 LIFF。
 
-      const childClass = document.getElementById('childClass').value;
-      const childName = document.getElementById('childName').value;
-      const picker = document.getElementById('picker').value;
+目前流程：
 
-      if (lineUserId) {
-        localStorage.setItem('child_bind_' + lineUserId, JSON.stringify({ class: childClass, name: childName }));
-      }
+await liff.init({ liffId: "2011537895-J5qnPyFm" });
 
-      localStorage.setItem('active_pickup_time', new Date().getTime());
+如果使用者尚未登入 LINE：
+→ 使用 liff.login()
 
-      let details = "";
-      let modeTitle = currentMode;
+登入成功：
+→ 使用 liff.getProfile()
 
-      if (currentMode === '提早接孩子') {
-        details = `\n📌 提早原因：${document.getElementById('earlyReason').value}\n⏰ 預計接送時間：${document.getElementById('earlyTime').value}`;
-      } else if (currentMode === '逾時接送') {
-        const type = document.getElementById('overtimeType').value;
-        const reason = document.getElementById('overtimeReason').value || '未填寫';
-        const time = document.getElementById('overtimeTime').value;
-        
-        let feeTip = "";
-        if (type === '16:00 正常放學遲到') feeTip = "超時 10 分加收 50 元/人";
-        else if (type === '17:00 第一階段遲到') feeTip = "超時 5 分加收 35 元/人";
-        else if (type === '18:00 第二階段遲到') feeTip = "18:00 後加收 30 元/人";
+取得：
+- userId
+- displayName
+- pictureUrl
 
-        modeTitle = `🚨 逾時接送通報 (${type})`;
-        details = `\n📌 遲到原因：${reason}\n⏰ 預計抵達時間：${time}\n💰 費用規定：${feeTip}`;
-      }
+請繼續保留目前畫面上的：
 
-      const msg = `📢 【樂業附幼接送通知：我要來接小孩囉！】\n` +
-                  `👶 幼兒：${childClass} ${childName}\n` +
-                  `👤 接送家長：${lineDisplayName} (${picker})\n` +
-                  `⏰ 接送狀態：${modeTitle}${details}\n` +
-                  `-------------------\n` +
-                  `預計 10-15 分鐘內抵達，請老師協助孩子準備！`;
+「驗證 LINE 身分中...」
 
-      if (liff.isInClient()) {
-        try {
-          await liff.sendMessages([{ type: 'text', text: msg }]);
-          alert("📢 已發送預約接送通知！老師正在協助孩子準備中。");
-          liff.closeWindow();
-        } catch (err) {
-          alert("發送失敗，請確認權限。");
-        }
-      } else {
-        alert("測試模式發送內容：\n\n" + msg);
-        document.getElementById('activePickupPanel').style.display = 'block';
-      }
-    });
+登入成功後顯示：
 
-    main();
-  </script>
-</body>
-</html>
+「○○○（已連線）」
+
+========================================
+第三個新增功能：👶 幼兒綁定
+========================================
+
+目前已經有：
+
+班級
+幼兒姓名
+
+以及：
+
+「重新綁定幼兒資料」
+
+請保留目前功能。
+
+但是請讓「今日請假」直接使用目前已經綁定的幼兒資料。
+
+不要要求家長重新輸入一次。
+
+例如：
+
+LINE 登入
+↓
+取得 LINE userId
+↓
+讀取目前綁定幼兒
+↓
+今日請假自動帶入幼兒資料
+
+如果目前沒有綁定幼兒：
+
+請顯示：
+
+「⚠️ 尚未綁定幼兒資料」
+
+並提供：
+
+「前往綁定幼兒」
+
+不要讓家長在沒有綁定幼兒的情況下直接送出請假。
+
+========================================
+第四個重要要求：LINE userId
+========================================
+
+請以 LINE userId 作為家長身分識別。
+
+不要使用 LINE displayName 當作唯一身分。
+
+目前已有：
+
+let lineUserId = "";
+
+請保留。
+
+幼兒綁定資料目前使用：
+
+localStorage.setItem(
+  'child_bind_' + lineUserId,
+  JSON.stringify({
+    class: childClass,
+    name: childName
+  })
+);
+
+請保留目前的資料結構。
+
+新增的「今日請假」功能也使用：
+
+child_bind_ + lineUserId
+
+讀取目前綁定幼兒。
+
+========================================
+第五個重要要求：不能破壞接送功能
+========================================
+
+請特別檢查以下功能在修改後都必須正常：
+
+1. LINE LIFF 登入
+2. LINE 身分顯示
+3. 幼兒綁定
+4. 重新綁定幼兒
+5. 提早接孩子
+6. 正常放學
+7. 17:00 課後留園
+8. 18:00 課後留園
+9. 逾時接送
+10. 逾時費用提示
+11. 物品帶回提醒
+12. 接送人員選擇
+13. 其他接送人員接送卡提醒
+14. 接送通知
+15. 15 分鐘接送狀態
+16. 「我已接到寶貝」
+
+請不要刪除任何上述功能。
+
+========================================
+第六個重要要求：介面
+========================================
+
+目前網站是手機優先設計。
+
+請維持目前：
+
+- 白色卡片
+- 圓角
+- 綠色主要按鈕
+- 淺灰背景
+- 手機版操作方式
+
+新增「今日請假」時，請讓它視覺上與目前網站一致。
+
+可以增加一個新的區塊：
+
+❌ 今日請假
+
+例如：
+
+┌────────────────────┐
+│ ❌ 今日請假          │
+│ 若孩子今天無法到園， │
+│ 請由此完成請假通報。 │
+│                    │
+│ [ 今日請假 ]        │
+└────────────────────┘
+
+點擊後才展開請假表單。
+
+========================================
+第七個重要要求：請假日期
+========================================
+
+日期預設今天。
+
+但允許家長選擇其他日期。
+
+日期格式顯示：
+
+YYYY/MM/DD
+
+例如：
+
+2026/09/11
+
+========================================
+第八個重要要求：資料結構
+========================================
+
+目前只是前端測試階段。
+
+請先不要自行加入 Firebase、Firestore 或其他後端服務。
+
+不要破壞目前 localStorage 架構。
+
+可以先使用 localStorage 儲存請假資料，例如：
+
+leave_record_${lineUserId}_${date}
+
+資料格式：
+
+{
+  userId: lineUserId,
+  displayName: lineDisplayName,
+  childClass: childClass,
+  childName: childName,
+  leaveDate: leaveDate,
+  reason: leaveReason,
+  note: leaveNote,
+  createdAt: new Date().toISOString()
+}
+
+========================================
+第九個重要要求：測試模式
+========================================
+
+目前如果不是 LINE App 內：
+
+顯示：
+
+「測試模式發送內容：」
+
+請保留這個功能。
+
+在測試模式中，今日請假按下送出後：
+
+alert 顯示完整請假通知內容。
+
+不要要求一定要在 LINE 裡才能測試。
+
+========================================
+第十個重要要求：程式碼
+========================================
+
+請直接修改目前的 HTML。
+
+不要只提供修改建議。
+
+請輸出修改後的完整 index.html。
+
+完整保留原本所有 HTML、CSS、JavaScript。
+
+新增「今日請假」功能。
+
+新增 LINE 身分驗證／幼兒綁定與今日請假之間的整合。
+
+不要刪除原本功能。
+
+不要改變目前 LIFF ID：
+
+2011537895-J5qnPyFm
+
+不要改變目前 GitHub Pages 的網址。
+
+目前網站部署於：
+
+https://una92774312-ai.github.io/leye-parent-platform/
+
+請確保修改後仍然可以直接部署到 GitHub Pages。
+
+========================================
+最後請自行檢查
+========================================
+
+修改完成後，請逐項確認：
+
+□ LINE LIFF 可以初始化
+□ LINE 登入正常
+□ LINE displayName 正常
+□ LINE userId 正常
+□ 幼兒綁定正常
+□ 重新綁定正常
+□ 今日請假可以開啟
+□ 今日請假自動取得已綁定幼兒
+□ 日期可以選擇
+□ 請假原因可以選擇
+□ 其他原因可以填寫
+□ 備註可以填寫
+□ 送出前會再次確認
+□ 請假通知內容正確
+□ 測試模式可以看到通知
+□ 原本所有接送功能完全保留
+□ 其他接送人員接送卡提醒完全保留
+
+最重要：
+
+「這是一個現有專案的功能擴充，不是重新製作網站。」
+
+請優先保護現有接送功能，再新增今日請假。
