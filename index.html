@@ -17,19 +17,24 @@
 :root{
   --green:#2e7d32;
   --green-light:#e8f5e9;
+
   --orange:#ef6c00;
   --orange-light:#fff3e0;
+
   --blue:#1976d2;
   --blue-light:#e3f2fd;
+
   --purple:#7b1fa2;
   --purple-light:#f3e5f5;
+
   --red:#d32f2f;
   --red-light:#ffebee;
+
   --yellow:#f9a825;
   --yellow-light:#fffde7;
+
   --text:#263238;
   --muted:#78909c;
-  --line:#dfe7e9;
   --bg:#f4f7f6;
 }
 
@@ -42,6 +47,7 @@ body{
   padding:14px 14px calc(24px + env(safe-area-inset-bottom));
   background:var(--bg);
   color:var(--text);
+
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -127,7 +133,7 @@ body{
   font-size:.88rem;
   color:var(--muted);
   margin-bottom:16px;
-  line-height:1.5;
+  line-height:1.55;
 }
 
 .group{
@@ -159,15 +165,6 @@ textarea:focus{
   border-color:#81c784;
 }
 
-.row{
-  display:flex;
-  gap:8px;
-}
-
-.row>*{
-  flex:1;
-}
-
 .btn{
   width:100%;
   border:0;
@@ -180,22 +177,22 @@ textarea:focus{
 
 .btnPrimary{
   background:var(--green);
-  color:white;
+  color:#fff;
 }
 
 .btnOrange{
   background:var(--orange);
-  color:white;
+  color:#fff;
 }
 
 .btnBlue{
   background:var(--blue);
-  color:white;
+  color:#fff;
 }
 
 .btnPurple{
   background:var(--purple);
-  color:white;
+  color:#fff;
 }
 
 .childList{
@@ -263,7 +260,7 @@ textarea:focus{
 .choice.delay.active{
   border-color:var(--yellow);
   background:var(--yellow-light);
-  color:#8d6e00;
+  color:#7a6000;
 }
 
 .box{
@@ -279,7 +276,7 @@ textarea:focus{
   padding:11px 12px;
   border-radius:11px;
   font-size:.88rem;
-  line-height:1.5;
+  line-height:1.55;
   margin-bottom:14px;
 }
 
@@ -298,8 +295,61 @@ textarea:focus{
   color:#7a6000;
 }
 
+.noticeRed{
+  background:var(--red-light);
+  color:#b71c1c;
+}
+
 .pickerNotice{
   display:none;
+  margin-top:8px;
+}
+
+.lateRuleBox{
+  margin-top:10px;
+  padding:12px;
+  border-radius:12px;
+  background:#fff;
+  border:1px solid #e0e6e8;
+  font-size:.9rem;
+  line-height:1.6;
+}
+
+.ruleTitle{
+  font-weight:800;
+  margin-bottom:5px;
+}
+
+.ruleLine{
+  margin:3px 0;
+}
+
+details.rules{
+  margin-top:18px;
+  border:1px solid #dfe7e9;
+  border-radius:13px;
+  background:#fafcfc;
+  overflow:hidden;
+}
+
+details.rules summary{
+  padding:13px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.rulesBody{
+  padding:0 13px 13px;
+  font-size:.86rem;
+  color:#546e7a;
+  line-height:1.65;
+}
+
+.ruleCard{
+  background:#fff;
+  border:1px solid #e4eaec;
+  border-radius:10px;
+  padding:10px;
   margin-top:8px;
 }
 
@@ -451,6 +501,11 @@ textarea:focus{
 
 <div class="card">
 
+
+<!-- ======================== -->
+<!-- 頁首 -->
+<!-- ======================== -->
+
 <div class="header">
 
 <div class="brand">
@@ -476,7 +531,10 @@ textarea:focus{
 驗證 LINE 身分中...
 </div>
 
-<div id="boundSummary" class="helper">
+<div
+  id="boundSummary"
+  class="helper"
+>
 尚未載入幼兒資料
 </div>
 
@@ -495,19 +553,23 @@ textarea:focus{
 </div>
 
 
-<!-- ========================= -->
+<!-- ======================== -->
 <!-- 我要接孩子 -->
-<!-- ========================= -->
+<!-- ======================== -->
 
-<div id="pickupPage" class="page">
+<div
+  id="pickupPage"
+  class="page"
+>
 
 <div class="pageTitle">
 🚗 我要接孩子
 </div>
 
 <div class="pageDesc">
-請選擇孩子今天原訂的接送方式。若只是可能晚到，請選「我會晚到」，不要改成托育。
+請選擇孩子今天原訂接回時間。若預計無法準時接回，請使用「我會晚到」提前通知。
 </div>
+
 
 <div class="group">
 
@@ -569,7 +631,12 @@ textarea:focus{
 </div>
 
 
-<div id="earlyBox" class="box">
+<!-- 提早 -->
+
+<div
+  id="earlyBox"
+  class="box"
+>
 
 <label class="title">
 提早原因
@@ -598,17 +665,25 @@ textarea:focus{
 </div>
 
 
-<div id="delayBox" class="box">
+<!-- 晚到 -->
+
+<div
+  id="delayBox"
+  class="box"
+>
 
 <div class="notice noticeYellow">
-🟠「我會晚到」只是通知老師家長無法準時抵達，不等於申請延長托育或臨時托育。
+🟠「我會晚到」是晚到通報，不等於申請延長托育或臨時托育。
 </div>
 
 <label class="title">
-原訂接送時間
+原訂接回時間
 </label>
 
-<select id="delayOriginalTime">
+<select
+  id="delayOriginalTime"
+  onchange="refreshLateNotice()"
+>
 
 <option value="16:00">
 16:00 正常放學
@@ -624,17 +699,32 @@ textarea:focus{
 
 </select>
 
+
+<div
+  id="lateRuleInfo"
+  class="lateRuleBox"
+></div>
+
+
+<div
+  id="deadlineWarning"
+  class="notice noticeRed"
+  style="display:none;margin-top:10px"
+></div>
+
+
 <label
   class="title"
-  style="margin-top:10px"
+  style="margin-top:12px"
 >
 晚到原因
 </label>
 
 <input
   id="delayReason"
-  placeholder="例：塞車、臨時加班"
+  placeholder="例：塞車、臨時加班、家庭突發狀況"
 >
+
 
 <label
   class="title"
@@ -647,6 +737,7 @@ textarea:focus{
   id="delayArrivalTime"
   type="time"
   value="16:20"
+  onchange="refreshLateNotice()"
 >
 
 </div>
@@ -681,6 +772,7 @@ textarea:focus{
 
 </div>
 
+
 <button
   class="btn btnPrimary"
   type="button"
@@ -689,12 +781,55 @@ textarea:focus{
 📢 確認通知老師
 </button>
 
+
+<!-- 接送規則 -->
+
+<details class="rules">
+
+<summary>
+📋 接送與逾時規則
+</summary>
+
+<div class="rulesBody">
+
+<div class="ruleCard">
+<b>✅ 16:00 正常放學</b><br>
+若預計晚到，請於 15:30 前通知。<br>
+16:10 過後完成交接，依園方規定收取 50 元逾時費。
+</div>
+
+<div class="ruleCard">
+<b>🎒 第一梯 17:00</b><br>
+若預計晚到，請於 16:30 前通知課後老師。<br>
+17:05 過後完成交接，依園方規定收取 35 元逾時費。
+</div>
+
+<div class="ruleCard">
+<b>🌙 第二梯 18:00</b><br>
+若預計晚到，請於 17:30 前通知課後老師。<br>
+18:05 過後完成交接，依園方規定收取 30 元逾時費。
+</div>
+
+<div class="ruleCard">
+<b>⚠️ 無故延遲</b><br>
+若幼兒實際發生逾時接送，且家長未於原訂接回時間前 30 分鐘完成通報，列為一次無故延遲接回紀錄。<br><br>
+無故延遲接回累計達三次，將依園方規定處理延長照顧服務資格。
+</div>
+
+<div class="helper">
+正式逾時與費用以老師端記錄的「實際完成交接時間」為準。
+</div>
+
+</div>
+
+</details>
+
 </div>
 
 
-<!-- ========================= -->
+<!-- ======================== -->
 <!-- 今日請假 -->
-<!-- ========================= -->
+<!-- ======================== -->
 
 <div
   id="leavePage"
@@ -779,9 +914,9 @@ textarea:focus{
 </div>
 
 
-<!-- ========================= -->
+<!-- ======================== -->
 <!-- 延長托育 -->
-<!-- ========================= -->
+<!-- ======================== -->
 
 <div
   id="extendedPage"
@@ -798,6 +933,10 @@ textarea:focus{
 
 <div class="notice noticeOrange">
 ⚠️ 如果孩子原本 16:00 就要放學，請不要使用延長托育，應改用「臨時托育」。
+</div>
+
+<div class="notice noticeBlue">
+📌 17:00 接回異動，請於 16:30 前通知課後老師。
 </div>
 
 <div class="group">
@@ -863,9 +1002,9 @@ textarea:focus{
 </div>
 
 
-<!-- ========================= -->
+<!-- ======================== -->
 <!-- 臨時托育 -->
-<!-- ========================= -->
+<!-- ======================== -->
 
 <div
   id="temporaryPage"
@@ -955,7 +1094,9 @@ textarea:focus{
 </div>
 
 
-<!-- 底部 -->
+<!-- ======================== -->
+<!-- 底部選單 -->
+<!-- ======================== -->
 
 <div class="quickTabs">
 
@@ -999,6 +1140,7 @@ textarea:focus{
 
 </div>
 
+
 <div
   id="statusBox"
   class="statusBox"
@@ -1007,9 +1149,9 @@ textarea:focus{
 </div>
 
 
-<!-- ========================= -->
+<!-- ======================== -->
 <!-- 管理孩子 -->
-<!-- ========================= -->
+<!-- ======================== -->
 
 <div
   id="childModal"
@@ -1174,6 +1316,32 @@ const CLASS_MAP = {
 };
 
 
+const LATE_RULES = {
+
+  "16:00":{
+    name:"16:00 正常放學",
+    noticeDeadline:"15:30",
+    lateAfter:"16:10",
+    fee:50
+  },
+
+  "17:00":{
+    name:"17:00 第一梯",
+    noticeDeadline:"16:30",
+    lateAfter:"17:05",
+    fee:35
+  },
+
+  "18:00":{
+    name:"18:00 第二梯",
+    noticeDeadline:"17:30",
+    lateAfter:"18:05",
+    fee:30
+  }
+
+};
+
+
 let lineUserId = "";
 
 let lineDisplayName = "";
@@ -1212,6 +1380,40 @@ function today(){
     String(
       d.getDate()
     ).padStart(2,"0")
+  );
+
+}
+
+
+function nowTimeText(){
+
+  const d =
+    new Date();
+
+  return (
+    String(
+      d.getHours()
+    ).padStart(2,"0")
+    +
+    ":"
+    +
+    String(
+      d.getMinutes()
+    ).padStart(2,"0")
+  );
+
+}
+
+
+function timeToMinutes(time){
+
+  const parts =
+    time.split(":");
+
+  return (
+    Number(parts[0]) * 60
+    +
+    Number(parts[1])
   );
 
 }
@@ -1865,6 +2067,121 @@ function setPickupMode(
     :
     "none";
 
+  if(
+    mode === "我會晚到"
+  ){
+
+    refreshLateNotice();
+
+  }
+
+}
+
+
+function refreshLateNotice(){
+
+  const original =
+    $("delayOriginalTime").value;
+
+  const arrival =
+    $("delayArrivalTime").value;
+
+  const rule =
+    LATE_RULES[original];
+
+  if(
+    !rule
+  ){
+
+    return;
+
+  }
+
+
+  let html =
+    `
+      <div class="ruleTitle">
+        ${rule.name}
+      </div>
+
+      <div class="ruleLine">
+        📢 晚到通知期限：${rule.noticeDeadline}
+      </div>
+
+      <div class="ruleLine">
+        ⏰ 逾時起算：${rule.lateAfter} 過後
+      </div>
+
+      <div class="ruleLine">
+        💰 逾時費用：${rule.fee} 元
+      </div>
+    `;
+
+
+  if(
+    arrival
+    &&
+    timeToMinutes(arrival)
+    >
+    timeToMinutes(rule.lateAfter)
+  ){
+
+    html +=
+      `
+        <div
+          style="
+            margin-top:8px;
+            color:#c62828;
+            font-weight:800;
+          "
+        >
+          ⚠️ 您填寫的預計抵達時間已超過逾時門檻，可能產生 ${rule.fee} 元逾時費。
+        </div>
+      `;
+
+  }
+
+
+  $("lateRuleInfo").innerHTML =
+    html;
+
+
+  const now =
+    nowTimeText();
+
+  const afterDeadline =
+    timeToMinutes(now)
+    >
+    timeToMinutes(
+      rule.noticeDeadline
+    );
+
+
+  if(
+    afterDeadline
+  ){
+
+    $("deadlineWarning").style.display =
+      "block";
+
+    $("deadlineWarning").innerHTML =
+      `
+        ⚠️ 現在時間為 ${now}，已超過 ${rule.noticeDeadline} 的提前通知期限。<br><br>
+
+        本次通報仍可送出，老師仍需要知道您會晚到。若最後實際接回時間也超過逾時門檻，正式系統將依園方規定判斷是否列入無故延遲紀錄。
+      `;
+
+  }
+  else{
+
+    $("deadlineWarning").style.display =
+      "none";
+
+    $("deadlineWarning").innerHTML =
+      "";
+
+  }
+
 }
 
 
@@ -1993,6 +2310,12 @@ async function submitPickup(){
     title =
       "🟠【樂業附幼晚到通報】";
 
+    const original =
+      $("delayOriginalTime").value;
+
+    const rule =
+      LATE_RULES[original];
+
     const reason =
       $("delayReason")
         .value
@@ -2000,18 +2323,68 @@ async function submitPickup(){
       ||
       "未填寫";
 
+    const arrival =
+      $("delayArrivalTime").value;
+
+    const submitTime =
+      nowTimeText();
+
+    const afterDeadline =
+      timeToMinutes(submitTime)
+      >
+      timeToMinutes(
+        rule.noticeDeadline
+      );
+
+    const estimatedLate =
+      arrival
+      &&
+      timeToMinutes(arrival)
+      >
+      timeToMinutes(
+        rule.lateAfter
+      );
+
     detail =
-      "\n⏰ 原訂接送："
+      "\n⏰ 原訂接回："
       +
-      $("delayOriginalTime").value
+      original
+      +
+      "\n📢 提前通知期限："
+      +
+      rule.noticeDeadline
+      +
+      "\n🕒 本次通報時間："
+      +
+      submitTime
       +
       "\n📌 晚到原因："
       +
       reason
       +
-      "\n⏰ 預計抵達："
+      "\n🚗 預計抵達："
       +
-      $("delayArrivalTime").value;
+      arrival
+      +
+      "\n⚠️ 是否超過通知期限："
+      +
+      (
+        afterDeadline
+        ?
+        "是"
+        :
+        "否"
+      )
+      +
+      "\n💰 預計抵達是否超過逾時門檻："
+      +
+      (
+        estimatedLate
+        ?
+        `是，可能產生${rule.fee}元逾時費`
+        :
+        "否"
+      );
 
   }
 
@@ -2059,7 +2432,7 @@ ${currentPickupMode}`
     ){
 
       showStatus(
-        "🟠 晚到通報已送出。此通報不等同延長托育或臨時托育。"
+        "🟠 晚到通報已送出。實際是否逾時及相關費用，正式版將以老師端完成交接時間為準。"
       );
 
     }
@@ -2197,12 +2570,47 @@ async function submitExtended(){
 
   }
 
+  const submitTime =
+    nowTimeText();
+
+  const lateNotice =
+    timeToMinutes(submitTime)
+    >
+    timeToMinutes("16:30");
+
+
+  if(
+    lateNotice
+  ){
+
+    const ok =
+      confirm(
+        `目前時間 ${submitTime}，已超過 16:30 通知期限。
+
+仍要送出延長托育需求嗎？
+
+老師仍需要收到這筆通知，但正式版會標示為逾時異動。`
+      );
+
+    if(
+      !ok
+    ){
+
+      return;
+
+    }
+
+  }
+
+
   const msg =
 `⏰【樂業附幼延長托育申請】
 👶 幼兒：${childrenText(list)}
 📅 日期：${date.replaceAll("-","/")}
 ⏰ 原訂：第一梯17:00
 ➡️ 申請延長：至18:00
+🕒 通報時間：${submitTime}
+⚠️ 是否超過16:30通知期限：${lateNotice ? "是" : "否"}
 📌 備註：${$("extendedNote").value.trim() || "無"}
 👤 通報家長：${lineDisplayName || "家長"}`;
 
@@ -2225,6 +2633,10 @@ async function submitExtended(){
     await sendLine(msg);
 
     showStatus(
+      lateNotice
+      ?
+      "⚠️ 延長托育需求已送出，但本次已超過16:30通知期限。"
+      :
       "✅ 延長托育申請已送出：原第一梯17:00，申請延長至18:00。"
     );
 
@@ -2417,6 +2829,8 @@ async function main(){
     resolvePageFromUrl(),
     false
   );
+
+  refreshLateNotice();
 
 
   try{
