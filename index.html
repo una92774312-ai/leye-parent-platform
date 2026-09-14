@@ -487,7 +487,7 @@ textarea:focus{
       <div class="group">
 
         <label class="title">
-          👶 這次要接哪位孩子？
+          👶 寶貝的班級姓名是：
         </label>
 
         <div id="pickupChildren" class="childList"></div>
@@ -647,7 +647,7 @@ textarea:focus{
 
           <option>阿公／阿嬤</option>
 
-          <option>其他授權人員</option>
+          <option>其他接送人員</option>
 
         </select>
 
@@ -656,7 +656,7 @@ textarea:focus{
           id="pickerNotice"
           class="notice"
         >
-          🪪 非父母／阿公阿嬤接送時，請授權人員攜帶接送卡，仍須由校方現場核對身分。
+          🪪 由較少出現的家人接送時，請接送人員攜帶接送卡，須由校方現場核對身分。
         </div>
 
       </div>
@@ -693,7 +693,7 @@ textarea:focus{
       <div class="group">
 
         <label class="title">
-          👶 哪些孩子要請假？
+          👶 寶貝的班級姓名是：
         </label>
 
         <div
@@ -881,7 +881,7 @@ textarea:focus{
       <div class="group">
 
         <label class="title">
-          👶 哪些孩子需要臨時托育？
+          👶 寶貝的班級姓名是：
         </label>
 
         <div
@@ -1764,7 +1764,7 @@ function setPickupMode(
 function pickerChange(){
 
   $("pickerNotice").style.display =
-    $("picker").value === "其他授權人員"
+    $("picker").value === "其他接送人員"
     ?
     "block"
     :
@@ -1913,7 +1913,7 @@ async function submitPickup(){
     $("picker").value
     +
     (
-      $("picker").value === "其他授權人員"
+      $("picker").value === "其他接送人員"
       ?
       "（需攜帶接送卡核對）"
       :
