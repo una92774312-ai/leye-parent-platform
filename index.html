@@ -2,18 +2,31 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+>
+
 <title>樂業附幼｜家長服務平台</title>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
+
 :root{
   --green:#2e7d32;
-  --green2:#e8f5e9;
+  --green-light:#e8f5e9;
   --orange:#ef6c00;
+  --orange-light:#fff3e0;
   --blue:#1976d2;
+  --blue-light:#e3f2fd;
   --purple:#7b1fa2;
+  --purple-light:#f3e5f5;
+  --red:#d32f2f;
+  --red-light:#ffebee;
+  --yellow:#f9a825;
+  --yellow-light:#fffde7;
   --text:#263238;
   --muted:#78909c;
   --line:#dfe7e9;
@@ -29,7 +42,13 @@ body{
   padding:14px 14px calc(24px + env(safe-area-inset-bottom));
   background:var(--bg);
   color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Roboto,sans-serif;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Noto Sans TC",
+    Roboto,
+    sans-serif;
 }
 
 .app{
@@ -236,9 +255,15 @@ textarea:focus{
 
 .choice.active{
   border-color:var(--green);
-  background:var(--green2);
+  background:var(--green-light);
   color:#1b5e20;
   font-weight:800;
+}
+
+.choice.delay.active{
+  border-color:var(--yellow);
+  background:var(--yellow-light);
+  color:#8d6e00;
 }
 
 .box{
@@ -251,14 +276,31 @@ textarea:focus{
 }
 
 .notice{
-  display:none;
-  padding:10px 12px;
-  border-radius:10px;
-  background:#fff8e1;
-  color:#8d6e00;
-  margin-top:8px;
+  padding:11px 12px;
+  border-radius:11px;
   font-size:.88rem;
   line-height:1.5;
+  margin-bottom:14px;
+}
+
+.noticeBlue{
+  background:var(--blue-light);
+  color:#0d47a1;
+}
+
+.noticeOrange{
+  background:var(--orange-light);
+  color:#e65100;
+}
+
+.noticeYellow{
+  background:var(--yellow-light);
+  color:#7a6000;
+}
+
+.pickerNotice{
+  display:none;
+  margin-top:8px;
 }
 
 .modalBackdrop{
@@ -381,14 +423,25 @@ textarea:focus{
 }
 
 .quickTab.active{
-  background:var(--green2);
+  background:var(--green-light);
   color:#1b5e20;
   font-weight:800;
+}
+
+.fixedTime{
+  padding:14px;
+  border-radius:12px;
+  background:var(--blue-light);
+  color:#0d47a1;
+  font-weight:800;
+  text-align:center;
+  font-size:1.05rem;
 }
 
 .hidden{
   display:none!important;
 }
+
 </style>
 </head>
 
@@ -396,576 +449,567 @@ textarea:focus{
 
 <div class="app">
 
-  <div class="card">
+<div class="card">
 
-    <div class="header">
+<div class="header">
 
-      <div class="brand">
-        樂業附幼｜家長服務平台
-      </div>
+<div class="brand">
+樂業附幼｜家長服務平台
+</div>
 
-      <div class="sub">
-        從 LINE 圖文選單進入後，直接完成通報
-      </div>
+<div class="sub">
+從 LINE 圖文選單進入後，直接完成通報
+</div>
 
-      <div class="user">
+<div class="user">
 
-        <img
-          id="userImg"
-          class="avatar"
-          alt="LINE 頭像"
-          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' rx='40' fill='%23eceff1'/%3E%3Ccircle cx='40' cy='30' r='14' fill='%23b0bec5'/%3E%3Cpath d='M17 67c3-15 13-23 23-23s20 8 23 23' fill='%23b0bec5'/%3E%3C/svg%3E"
-        >
+<img
+  id="userImg"
+  class="avatar"
+  alt="LINE 頭像"
+  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' rx='40' fill='%23eceff1'/%3E%3Ccircle cx='40' cy='30' r='14' fill='%23b0bec5'/%3E%3Cpath d='M17 67c3-15 13-23 23-23s20 8 23 23' fill='%23b0bec5'/%3E%3C/svg%3E"
+>
 
-        <div class="userText">
+<div class="userText">
 
-          <div id="lineStatus">
-            驗證 LINE 身分中...
-          </div>
+<div id="lineStatus">
+驗證 LINE 身分中...
+</div>
 
-          <div id="boundSummary" class="helper">
-            尚未載入幼兒資料
-          </div>
+<div id="boundSummary" class="helper">
+尚未載入幼兒資料
+</div>
 
-        </div>
+</div>
 
-        <button
-          class="manageLink"
-          type="button"
-          onclick="openChildManager()"
-        >
-          管理孩子
-        </button>
+<button
+  class="manageLink"
+  type="button"
+  onclick="openChildManager()"
+>
+管理孩子
+</button>
 
-      </div>
-
-    </div>
-
-
-    <div id="pickupPage" class="page">
-
-      <div class="pageTitle">
-        🚗 我要接孩子
-      </div>
-
-      <div class="pageDesc">
-        可一次勾選同一家庭的多位幼兒；若接送方式不同，請分次送出。
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          👶 這次要接哪位孩子？
-        </label>
-
-        <div
-          id="pickupChildren"
-          class="childList"
-        ></div>
-
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          ⏰ 接送／放學時段
-        </label>
-
-        <div class="choices">
-
-          <div
-            class="choice"
-            onclick="setPickupMode(this,'提早接孩子')"
-          >
-            ☀️ 提早接孩子
-          </div>
-
-          <div
-            class="choice active"
-            onclick="setPickupMode(this,'正常放學')"
-          >
-            ✅ 正常放學（16:00）
-          </div>
-
-          <div
-            class="choice"
-            onclick="setPickupMode(this,'第一階段17:00')"
-          >
-            🎒 第一階段 17:00
-          </div>
-
-          <div
-            class="choice"
-            onclick="setPickupMode(this,'第二階段18:00')"
-          >
-            🌙 第二階段 18:00
-          </div>
-
-          <div
-            class="choice"
-            onclick="setPickupMode(this,'逾時接送')"
-          >
-            🚨 逾時接送（遲到通報）
-          </div>
-
-        </div>
-
-
-        <div id="earlyBox" class="box">
-
-          <label class="title">
-            提早原因
-          </label>
-
-          <select id="earlyReason">
-
-            <option>事假</option>
-            <option>病假</option>
-            <option>家庭因素</option>
-            <option>其他原因</option>
-
-          </select>
-
-
-          <label
-            class="title"
-            style="margin-top:10px"
-          >
-            預計接送時間
-          </label>
-
-          <input
-            id="earlyTime"
-            type="time"
-            value="14:30"
-          >
-
-        </div>
-
-
-        <div id="overtimeBox" class="box">
-
-          <label class="title">
-            遲到時段
-          </label>
-
-          <select id="overtimeType">
-
-            <option>
-              16:00 正常放學遲到
-            </option>
-
-            <option>
-              17:00 第一階段遲到
-            </option>
-
-            <option>
-              18:00 第二階段遲到
-            </option>
-
-          </select>
-
-
-          <label
-            class="title"
-            style="margin-top:10px"
-          >
-            遲到原因
-          </label>
-
-          <input
-            id="overtimeReason"
-            placeholder="例：塞車、公司加班"
-          >
-
-
-          <label
-            class="title"
-            style="margin-top:10px"
-          >
-            預計抵達時間
-          </label>
-
-          <input
-            id="overtimeTime"
-            type="time"
-            value="16:20"
-          >
-
-        </div>
-
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          👤 今日接送人員
-        </label>
-
-        <select
-          id="picker"
-          onchange="pickerChange()"
-        >
-
-          <option>媽媽</option>
-          <option>爸爸</option>
-          <option>阿公／阿嬤</option>
-          <option>其他授權人員</option>
-
-        </select>
-
-
-        <div
-          id="pickerNotice"
-          class="notice"
-        >
-          🪪 非父母／阿公阿嬤接送時，請授權人員攜帶接送卡，仍須由校方現場核對身分。
-        </div>
-
-      </div>
-
-
-      <button
-        class="btn btnPrimary"
-        type="button"
-        onclick="submitPickup()"
-      >
-        📢 確認通知老師
-      </button>
-
-    </div>
-
-
-
-    <div
-      id="leavePage"
-      class="page hidden"
-    >
-
-      <div class="pageTitle">
-        ❌ 今日請假
-      </div>
-
-      <div class="pageDesc">
-        同一天、同一請假原因可一次勾選多位幼兒送出。
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          👶 哪些孩子要請假？
-        </label>
-
-        <div
-          id="leaveChildren"
-          class="childList"
-        ></div>
-
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          📅 請假日期
-        </label>
-
-        <input
-          id="leaveDate"
-          type="date"
-        >
-
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          📝 請假原因
-        </label>
-
-        <select id="leaveReason">
-
-          <option>病假</option>
-          <option>事假</option>
-          <option>家庭因素</option>
-          <option>其他</option>
-
-        </select>
-
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          📌 備註（選填）
-        </label>
-
-        <textarea
-          id="leaveNote"
-          rows="3"
-          placeholder="例：預計下週一回園"
-        ></textarea>
-
-      </div>
-
-
-      <button
-        class="btn btnOrange"
-        type="button"
-        onclick="submitLeave()"
-      >
-        ❌ 確認送出請假
-      </button>
-
-    </div>
-
-
-
-    <div
-      id="extendedPage"
-      class="page hidden"
-    >
-
-      <div class="pageTitle">
-        ⏰ 延長照顧
-      </div>
-
-      <div class="pageDesc">
-        可一次替多位孩子申請相同日期與時段。
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          👶 哪些孩子需要延長照顧？
-        </label>
-
-        <div
-          id="extendedChildren"
-          class="childList"
-        ></div>
-
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          📅 日期
-        </label>
-
-        <input
-          id="extendedDate"
-          type="date"
-        >
-
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          ⏰ 延長時段
-        </label>
-
-        <select id="extendedTime">
-
-          <option>
-            16:00～17:00
-          </option>
-
-          <option>
-            17:00～18:00
-          </option>
-
-          <option>
-            16:00～18:00
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          📌 備註（選填）
-        </label>
-
-        <textarea
-          id="extendedNote"
-          rows="3"
-          placeholder="其他需要老師留意的事項"
-        ></textarea>
-
-      </div>
-
-
-      <button
-        class="btn btnBlue"
-        type="button"
-        onclick="submitExtended()"
-      >
-        ⏰ 確認送出申請
-      </button>
-
-    </div>
-
-
-
-    <div
-      id="temporaryPage"
-      class="page hidden"
-    >
-
-      <div class="pageTitle">
-        🧸 臨時托育
-      </div>
-
-      <div class="pageDesc">
-        先送出需求，實際是否成立仍以園方確認為準。
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          👶 哪些孩子需要臨時托育？
-        </label>
-
-        <div
-          id="temporaryChildren"
-          class="childList"
-        ></div>
-
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          📅 日期
-        </label>
-
-        <input
-          id="temporaryDate"
-          type="date"
-        >
-
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          ⏰ 需求時段
-        </label>
-
-        <div class="row">
-
-          <input
-            id="temporaryStart"
-            type="time"
-            value="16:00"
-          >
-
-          <input
-            id="temporaryEnd"
-            type="time"
-            value="18:00"
-          >
-
-        </div>
-
-      </div>
-
-
-      <div class="group">
-
-        <label class="title">
-          📝 申請原因
-        </label>
-
-        <textarea
-          id="temporaryReason"
-          rows="3"
-          placeholder="例：臨時加班、家庭突發狀況"
-        ></textarea>
-
-      </div>
-
-
-      <button
-        class="btn btnPurple"
-        type="button"
-        onclick="submitTemporary()"
-      >
-        🧸 送出臨托需求
-      </button>
-
-    </div>
-
-
-
-    <div class="quickTabs">
-
-      <button
-        id="tabPickup"
-        class="quickTab"
-        onclick="showPage('pickup')"
-      >
-        🚗<br>
-        接孩子
-      </button>
-
-      <button
-        id="tabLeave"
-        class="quickTab"
-        onclick="showPage('leave')"
-      >
-        ❌<br>
-        請假
-      </button>
-
-      <button
-        id="tabExtended"
-        class="quickTab"
-        onclick="showPage('extended')"
-      >
-        ⏰<br>
-        延長
-      </button>
-
-      <button
-        id="tabTemporary"
-        class="quickTab"
-        onclick="showPage('temporary')"
-      >
-        🧸<br>
-        臨托
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <div
-    id="statusBox"
-    class="statusBox"
-  ></div>
+</div>
 
 </div>
 
 
+<!-- ========================= -->
+<!-- 我要接孩子 -->
+<!-- ========================= -->
+
+<div id="pickupPage" class="page">
+
+<div class="pageTitle">
+🚗 我要接孩子
+</div>
+
+<div class="pageDesc">
+請選擇孩子今天原訂的接送方式。若只是可能晚到，請選「我會晚到」，不要改成托育。
+</div>
+
+<div class="group">
+
+<label class="title">
+👶 這次要處理哪位孩子？
+</label>
+
+<div
+  id="pickupChildren"
+  class="childList"
+></div>
+
+</div>
+
+
+<div class="group">
+
+<label class="title">
+⏰ 接送方式
+</label>
+
+<div class="choices">
+
+<div
+  class="choice"
+  onclick="setPickupMode(this,'提早接孩子')"
+>
+☀️ 提早接孩子
+</div>
+
+<div
+  class="choice active"
+  onclick="setPickupMode(this,'正常放學16:00')"
+>
+✅ 正常放學 16:00
+</div>
+
+<div
+  class="choice"
+  onclick="setPickupMode(this,'第一梯17:00')"
+>
+🎒 第一梯 17:00
+</div>
+
+<div
+  class="choice"
+  onclick="setPickupMode(this,'第二梯18:00')"
+>
+🌙 第二梯 18:00
+</div>
+
+<div
+  class="choice delay"
+  onclick="setPickupMode(this,'我會晚到')"
+>
+🟠 我會晚到
+</div>
+
+</div>
+
+
+<div id="earlyBox" class="box">
+
+<label class="title">
+提早原因
+</label>
+
+<select id="earlyReason">
+<option>事假</option>
+<option>病假</option>
+<option>家庭因素</option>
+<option>其他原因</option>
+</select>
+
+<label
+  class="title"
+  style="margin-top:10px"
+>
+預計接送時間
+</label>
+
+<input
+  id="earlyTime"
+  type="time"
+  value="14:30"
+>
+
+</div>
+
+
+<div id="delayBox" class="box">
+
+<div class="notice noticeYellow">
+🟠「我會晚到」只是通知老師家長無法準時抵達，不等於申請延長托育或臨時托育。
+</div>
+
+<label class="title">
+原訂接送時間
+</label>
+
+<select id="delayOriginalTime">
+
+<option value="16:00">
+16:00 正常放學
+</option>
+
+<option value="17:00">
+17:00 第一梯
+</option>
+
+<option value="18:00">
+18:00 第二梯／已核准延長或臨時托育
+</option>
+
+</select>
+
+<label
+  class="title"
+  style="margin-top:10px"
+>
+晚到原因
+</label>
+
+<input
+  id="delayReason"
+  placeholder="例：塞車、臨時加班"
+>
+
+<label
+  class="title"
+  style="margin-top:10px"
+>
+預計抵達時間
+</label>
+
+<input
+  id="delayArrivalTime"
+  type="time"
+  value="16:20"
+>
+
+</div>
+
+</div>
+
+
+<div class="group">
+
+<label class="title">
+👤 今日接送人員
+</label>
+
+<select
+  id="picker"
+  onchange="pickerChange()"
+>
+
+<option>媽媽</option>
+<option>爸爸</option>
+<option>阿公／阿嬤</option>
+<option>其他授權人員</option>
+
+</select>
+
+<div
+  id="pickerNotice"
+  class="notice noticeOrange pickerNotice"
+>
+🪪 非父母／阿公阿嬤接送時，請授權人員攜帶接送卡，並依園方現場流程核對身分。
+</div>
+
+</div>
+
+<button
+  class="btn btnPrimary"
+  type="button"
+  onclick="submitPickup()"
+>
+📢 確認通知老師
+</button>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- 今日請假 -->
+<!-- ========================= -->
+
+<div
+  id="leavePage"
+  class="page hidden"
+>
+
+<div class="pageTitle">
+❌ 今日請假
+</div>
+
+<div class="pageDesc">
+孩子整天不到園時使用。正式版將同步通知班級老師及當日延長照顧相關人員。
+</div>
+
+<div class="notice noticeBlue">
+若孩子原本有第一梯、第二梯、延長托育或臨時托育，正式系統將同步標示「今日請假」。
+</div>
+
+<div class="group">
+
+<label class="title">
+👶 哪些孩子要請假？
+</label>
+
+<div
+  id="leaveChildren"
+  class="childList"
+></div>
+
+</div>
+
+<div class="group">
+
+<label class="title">
+📅 請假日期
+</label>
+
+<input
+  id="leaveDate"
+  type="date"
+>
+
+</div>
+
+<div class="group">
+
+<label class="title">
+📝 請假原因
+</label>
+
+<select id="leaveReason">
+<option>病假</option>
+<option>事假</option>
+<option>家庭因素</option>
+<option>其他</option>
+</select>
+
+</div>
+
+<div class="group">
+
+<label class="title">
+📌 備註（選填）
+</label>
+
+<textarea
+  id="leaveNote"
+  rows="3"
+  placeholder="例：預計明日返園"
+></textarea>
+
+</div>
+
+<button
+  class="btn btnOrange"
+  type="button"
+  onclick="submitLeave()"
+>
+❌ 確認送出請假
+</button>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- 延長托育 -->
+<!-- ========================= -->
+
+<div
+  id="extendedPage"
+  class="page hidden"
+>
+
+<div class="pageTitle">
+⏰ 延長托育
+</div>
+
+<div class="pageDesc">
+僅適用原本已參加第一梯至 17:00 的幼兒，臨時延長到 18:00。
+</div>
+
+<div class="notice noticeOrange">
+⚠️ 如果孩子原本 16:00 就要放學，請不要使用延長托育，應改用「臨時托育」。
+</div>
+
+<div class="group">
+
+<label class="title">
+👶 哪些孩子要延長到 18:00？
+</label>
+
+<div
+  id="extendedChildren"
+  class="childList"
+></div>
+
+</div>
+
+<div class="group">
+
+<label class="title">
+📅 日期
+</label>
+
+<input
+  id="extendedDate"
+  type="date"
+>
+
+</div>
+
+<div class="group">
+
+<label class="title">
+⏰ 延長托育時間
+</label>
+
+<div class="fixedTime">
+17:00 → 18:00
+</div>
+
+</div>
+
+<div class="group">
+
+<label class="title">
+📌 備註（選填）
+</label>
+
+<textarea
+  id="extendedNote"
+  rows="3"
+  placeholder="其他需要老師留意的事項"
+></textarea>
+
+</div>
+
+<button
+  class="btn btnBlue"
+  type="button"
+  onclick="submitExtended()"
+>
+⏰ 申請延長至 18:00
+</button>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- 臨時托育 -->
+<!-- ========================= -->
+
+<div
+  id="temporaryPage"
+  class="page hidden"
+>
+
+<div class="pageTitle">
+🧸 臨時托育
+</div>
+
+<div class="pageDesc">
+孩子原本沒有固定第一梯／第二梯，家長當日臨時有托育需求時使用。
+</div>
+
+<div class="notice noticeBlue">
+送出後屬於「需求申請」，是否成立仍須由園方確認。
+</div>
+
+<div class="group">
+
+<label class="title">
+👶 哪些孩子需要臨時托育？
+</label>
+
+<div
+  id="temporaryChildren"
+  class="childList"
+></div>
+
+</div>
+
+<div class="group">
+
+<label class="title">
+📅 日期
+</label>
+
+<input
+  id="temporaryDate"
+  type="date"
+>
+
+</div>
+
+<div class="group">
+
+<label class="title">
+⏰ 臨時托育時段
+</label>
+
+<select id="temporaryTime">
+
+<option value="16:00～17:00">
+16:00～17:00
+</option>
+
+<option value="16:00～18:00">
+16:00～18:00
+</option>
+
+</select>
+
+</div>
+
+<div class="group">
+
+<label class="title">
+📝 申請原因
+</label>
+
+<textarea
+  id="temporaryReason"
+  rows="3"
+  placeholder="例：臨時加班、家庭突發狀況"
+></textarea>
+
+</div>
+
+<button
+  class="btn btnPurple"
+  type="button"
+  onclick="submitTemporary()"
+>
+🧸 送出臨時托育需求
+</button>
+
+</div>
+
+
+<!-- 底部 -->
+
+<div class="quickTabs">
+
+<button
+  id="tabPickup"
+  class="quickTab"
+  onclick="showPage('pickup')"
+>
+🚗<br>
+接孩子
+</button>
+
+<button
+  id="tabLeave"
+  class="quickTab"
+  onclick="showPage('leave')"
+>
+❌<br>
+請假
+</button>
+
+<button
+  id="tabExtended"
+  class="quickTab"
+  onclick="showPage('extended')"
+>
+⏰<br>
+延長
+</button>
+
+<button
+  id="tabTemporary"
+  class="quickTab"
+  onclick="showPage('temporary')"
+>
+🧸<br>
+臨托
+</button>
+
+</div>
+
+</div>
+
+<div
+  id="statusBox"
+  class="statusBox"
+></div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- 管理孩子 -->
+<!-- ========================= -->
 
 <div
   id="childModal"
@@ -973,124 +1017,116 @@ textarea:focus{
   onclick="backdropClose(event)"
 >
 
-  <div class="modal">
+<div class="modal">
 
-    <div class="modalTop">
+<div class="modalTop">
 
-      <div class="modalTitle">
-        👶 管理我的孩子
-      </div>
+<div class="modalTitle">
+👶 管理我的孩子
+</div>
 
-      <button
-        class="closeBtn"
-        type="button"
-        onclick="closeChildManager()"
-      >
-        ×
-      </button>
+<button
+  class="closeBtn"
+  type="button"
+  onclick="closeChildManager()"
+>
+×
+</button>
 
-    </div>
+</div>
 
+<div id="boundChildren"></div>
 
-    <div id="boundChildren"></div>
+<div class="addBox">
 
+<div style="font-weight:800;margin-bottom:9px">
+＋ 新增幼兒
+</div>
 
-    <div class="addBox">
+<div class="group">
 
-      <div
-        style="font-weight:800;margin-bottom:9px"
-      >
-        ＋ 新增幼兒
-      </div>
+<label class="title">
+班級
+</label>
 
+<select id="newChildClass">
 
-      <div class="group">
+<option value="">
+請選擇班級
+</option>
 
-        <label class="title">
-          班級
-        </label>
+<option value="C01|櫻桃班">
+櫻桃班
+</option>
 
-        <select id="newChildClass">
+<option value="C02|蘋果班">
+蘋果班
+</option>
 
-          <option value="">
-            請選擇班級
-          </option>
+<option value="C03|蝴蝶班">
+蝴蝶班
+</option>
 
-          <option value="C01|櫻桃班">
-            櫻桃班
-          </option>
+<option value="C04|白兔班">
+白兔班
+</option>
 
-          <option value="C02|蘋果班">
-            蘋果班
-          </option>
+<option value="C05|蜜蜂班">
+蜜蜂班
+</option>
 
-          <option value="C03|蝴蝶班">
-            蝴蝶班
-          </option>
+<option value="C06|袋鼠班">
+袋鼠班
+</option>
 
-          <option value="C04|白兔班">
-            白兔班
-          </option>
+<option value="C07|綿羊班">
+綿羊班
+</option>
 
-          <option value="C05|蜜蜂班">
-            蜜蜂班
-          </option>
+<option value="C08|企鵝班">
+企鵝班
+</option>
 
-          <option value="C06|袋鼠班">
-            袋鼠班
-          </option>
+</select>
 
-          <option value="C07|綿羊班">
-            綿羊班
-          </option>
+</div>
 
-          <option value="C08|企鵝班">
-            企鵝班
-          </option>
+<div class="group">
 
-        </select>
+<label class="title">
+幼兒姓名
+</label>
 
-      </div>
+<input
+  id="newChildName"
+  placeholder="請輸入幼兒姓名"
+>
 
+</div>
 
-      <div class="group">
+<button
+  class="btn btnPrimary"
+  type="button"
+  onclick="addChild()"
+>
+新增幼兒
+</button>
 
-        <label class="title">
-          幼兒姓名
-        </label>
+<div class="helper">
+可綁定多位幼兒。此版本為測試版，資料暫存在使用者裝置中；正式上線後應改由後端資料庫驗證家長與幼兒的綁定關係。
+</div>
 
-        <input
-          id="newChildName"
-          placeholder="請輸入幼兒姓名"
-        >
+</div>
 
-      </div>
-
-
-      <button
-        class="btn btnPrimary"
-        type="button"
-        onclick="addChild()"
-      >
-        新增幼兒
-      </button>
-
-
-      <div class="helper">
-        可綁定 1 位、3 位或更多幼兒。此版本仍屬測試版，幼兒資料暫存在使用者裝置中；正式上線後應改由後端資料庫驗證與綁定。
-      </div>
-
-    </div>
-
-  </div>
+</div>
 
 </div>
 
 
-
 <script>
 
-const LIFF_ID = "2011537895-QkIp9Lh8";
+const LIFF_ID =
+  "2011537895-QkIp9Lh8";
 
 
 const CLASS_MAP = {
@@ -1139,15 +1175,22 @@ const CLASS_MAP = {
 
 
 let lineUserId = "";
+
 let lineDisplayName = "";
-let currentPage = "pickup";
-let currentPickupMode = "正常放學";
-let children = [];
+
+let currentPage =
+  "pickup";
+
+let currentPickupMode =
+  "正常放學16:00";
+
+let children =
+  [];
 
 
-const $ = id =>
+const $ =
+  id =>
   document.getElementById(id);
-
 
 
 function today(){
@@ -1162,23 +1205,16 @@ function today(){
     +
     String(
       d.getMonth()+1
-    ).padStart(
-      2,
-      "0"
-    )
+    ).padStart(2,"0")
     +
     "-"
     +
     String(
       d.getDate()
-    ).padStart(
-      2,
-      "0"
-    )
+    ).padStart(2,"0")
   );
 
 }
-
 
 
 function storageKey(){
@@ -1196,7 +1232,6 @@ function storageKey(){
 }
 
 
-
 function legacyKey(){
 
   return (
@@ -1212,7 +1247,6 @@ function legacyKey(){
 }
 
 
-
 function saveChildren(){
 
   localStorage.setItem(
@@ -1220,23 +1254,19 @@ function saveChildren(){
     JSON.stringify(children)
   );
 
-
   renderChildrenEverywhere();
 
 }
-
 
 
 function loadChildren(){
 
   children = [];
 
-
   const multi =
     localStorage.getItem(
       storageKey()
     );
-
 
   if(multi){
 
@@ -1244,7 +1274,6 @@ function loadChildren(){
 
       const parsed =
         JSON.parse(multi);
-
 
       if(
         Array.isArray(parsed)
@@ -1259,7 +1288,7 @@ function loadChildren(){
     catch(e){
 
       console.error(
-        "多幼兒資料解析失敗",
+        "幼兒資料解析失敗",
         e
       );
 
@@ -1279,14 +1308,12 @@ function loadChildren(){
         legacyKey()
       );
 
-
     if(old){
 
       try{
 
         const c =
           JSON.parse(old);
-
 
         if(
           c
@@ -1302,26 +1329,28 @@ function loadChildren(){
                 info.name === c.class
               );
 
-
           children = [
 
             {
               id:cryptoId(),
+
               classId:
                 matched
                 ?
                 matched[0]
                 :
                 "",
+
               className:
                 c.class
                 ||
                 "",
-              name:c.name
+
+              name:
+                c.name
             }
 
           ];
-
 
           localStorage.setItem(
             storageKey(),
@@ -1344,9 +1373,7 @@ function loadChildren(){
 
   }
 
-
   renderChildrenEverywhere();
-
 
   if(
     children.length === 0
@@ -1362,7 +1389,6 @@ function loadChildren(){
 }
 
 
-
 function cryptoId(){
 
   if(
@@ -1371,12 +1397,9 @@ function cryptoId(){
     crypto.randomUUID
   ){
 
-    return (
-      crypto.randomUUID()
-    );
+    return crypto.randomUUID();
 
   }
-
 
   return (
     "c_"
@@ -1391,7 +1414,6 @@ function cryptoId(){
   );
 
 }
-
 
 
 function renderChildrenEverywhere(){
@@ -1414,10 +1436,8 @@ function renderChildrenEverywhere(){
     :
     "尚未綁定幼兒";
 
-
   $("boundSummary").textContent =
     text;
-
 
   renderManagerList();
 
@@ -1444,12 +1464,10 @@ function renderChildrenEverywhere(){
 }
 
 
-
 function renderManagerList(){
 
   const box =
     $("boundChildren");
-
 
   if(
     !children.length
@@ -1466,7 +1484,6 @@ function renderManagerList(){
 
   }
 
-
   box.innerHTML =
     children
       .map(
@@ -1481,7 +1498,7 @@ function renderManagerList(){
               </div>
 
               <div class="boundClass">
-                ${escapeHtml(c.className || "未填班級")}
+                ${escapeHtml(c.className)}
               </div>
 
             </div>
@@ -1502,7 +1519,6 @@ function renderManagerList(){
 }
 
 
-
 function renderPickerList(
   targetId,
   prefix
@@ -1510,7 +1526,6 @@ function renderPickerList(
 
   const box =
     $(targetId);
-
 
   if(
     !children.length
@@ -1526,7 +1541,6 @@ function renderPickerList(
     return;
 
   }
-
 
   box.innerHTML =
     children
@@ -1549,7 +1563,7 @@ function renderPickerList(
               </div>
 
               <div class="childClass">
-                ${escapeHtml(c.className || "未填班級")}
+                ${escapeHtml(c.className)}
               </div>
 
             </div>
@@ -1560,7 +1574,6 @@ function renderPickerList(
       .join("");
 
 }
-
 
 
 function selectedChildren(prefix){
@@ -1576,7 +1589,6 @@ function selectedChildren(prefix){
       x.value
     );
 
-
   return children.filter(
     c =>
     ids.includes(c.id)
@@ -1585,18 +1597,16 @@ function selectedChildren(prefix){
 }
 
 
-
 function childrenText(list){
 
   return list
     .map(
       c =>
-      `${c.className} ${c.name}`.trim()
+      `${c.className} ${c.name}`
     )
     .join("、");
 
 }
-
 
 
 function addChild(){
@@ -1604,17 +1614,15 @@ function addChild(){
   const rawClass =
     $("newChildClass").value;
 
-
-  const n =
+  const name =
     $("newChildName")
       .value
       .trim();
 
-
   if(
     !rawClass
     ||
-    !n
+    !name
   ){
 
     alert(
@@ -1625,22 +1633,19 @@ function addChild(){
 
   }
 
-
   const [
     classId,
     className
   ] =
     rawClass.split("|");
 
-
   const duplicated =
     children.some(
       x =>
       x.classId === classId
       &&
-      x.name === n
+      x.name === name
     );
-
 
   if(
     duplicated
@@ -1654,29 +1659,24 @@ function addChild(){
 
   }
 
-
   children.push(
     {
       id:cryptoId(),
       classId:classId,
       className:className,
-      name:n
+      name:name
     }
   );
-
 
   $("newChildClass").value =
     "";
 
-
   $("newChildName").value =
     "";
-
 
   saveChildren();
 
 }
-
 
 
 function removeChild(id){
@@ -1687,7 +1687,6 @@ function removeChild(id){
       c.id === id
     );
 
-
   if(
     !child
   ){
@@ -1695,7 +1694,6 @@ function removeChild(id){
     return;
 
   }
-
 
   if(
     !confirm(
@@ -1707,18 +1705,15 @@ function removeChild(id){
 
   }
 
-
   children =
     children.filter(
       c =>
       c.id !== id
     );
 
-
   saveChildren();
 
 }
-
 
 
 function openChildManager(){
@@ -1729,14 +1724,12 @@ function openChildManager(){
 }
 
 
-
 function closeChildManager(){
 
   $("childModal").style.display =
     "none";
 
 }
-
 
 
 function backdropClose(e){
@@ -1752,19 +1745,18 @@ function backdropClose(e){
 }
 
 
-
 function showPage(
   page,
   updateUrl=true
 ){
 
-  const valid = [
+  const valid =
+  [
     "pickup",
     "leave",
     "extended",
     "temporary"
   ];
-
 
   if(
     !valid.includes(page)
@@ -1775,10 +1767,8 @@ function showPage(
 
   }
 
-
   currentPage =
     page;
-
 
   valid.forEach(
     p => {
@@ -1789,7 +1779,6 @@ function showPage(
           "hidden",
           p !== page
         );
-
 
       $(
         "tab"
@@ -1807,7 +1796,6 @@ function showPage(
     }
   );
 
-
   if(
     updateUrl
   ){
@@ -1817,12 +1805,10 @@ function showPage(
         window.location.href
       );
 
-
     u.searchParams.set(
       "page",
       page
     );
-
 
     history.replaceState(
       null,
@@ -1832,7 +1818,6 @@ function showPage(
 
   }
 
-
   window.scrollTo(
     {
       top:0,
@@ -1841,7 +1826,6 @@ function showPage(
   );
 
 }
-
 
 
 function setPickupMode(
@@ -1860,15 +1844,12 @@ function setPickupMode(
       )
     );
 
-
   el.classList.add(
     "active"
   );
 
-
   currentPickupMode =
     mode;
-
 
   $("earlyBox").style.display =
     mode === "提早接孩子"
@@ -1877,16 +1858,14 @@ function setPickupMode(
     :
     "none";
 
-
-  $("overtimeBox").style.display =
-    mode === "逾時接送"
+  $("delayBox").style.display =
+    mode === "我會晚到"
     ?
     "block"
     :
     "none";
 
 }
-
 
 
 function pickerChange(){
@@ -1899,7 +1878,6 @@ function pickerChange(){
     "none";
 
 }
-
 
 
 async function sendLine(text){
@@ -1919,11 +1897,9 @@ async function sendLine(text){
       ]
     );
 
-
     return true;
 
   }
-
 
   alert(
     "目前不是在 LINE App 內開啟。\n\n以下為測試內容：\n\n"
@@ -1931,11 +1907,9 @@ async function sendLine(text){
     text
   );
 
-
   return false;
 
 }
-
 
 
 function requireChildren(prefix){
@@ -1948,18 +1922,14 @@ function requireChildren(prefix){
       "請先綁定幼兒資料。"
     );
 
-
     openChildManager();
-
 
     return null;
 
   }
 
-
   const list =
     selectedChildren(prefix);
-
 
   if(
     !list.length
@@ -1969,16 +1939,13 @@ function requireChildren(prefix){
       "請至少勾選一位幼兒。"
     );
 
-
     return null;
 
   }
 
-
   return list;
 
 }
-
 
 
 async function submitPickup(){
@@ -1988,7 +1955,6 @@ async function submitPickup(){
       "pickup"
     );
 
-
   if(
     !list
   ){
@@ -1997,9 +1963,11 @@ async function submitPickup(){
 
   }
 
-
   let detail =
     "";
+
+  let title =
+    "📢【樂業附幼接送通知】";
 
 
   if(
@@ -2007,7 +1975,7 @@ async function submitPickup(){
   ){
 
     detail =
-      "\n📌 原因："
+      "\n📌 提早原因："
       +
       $("earlyReason").value
       +
@@ -2019,57 +1987,60 @@ async function submitPickup(){
 
 
   if(
-    currentPickupMode === "逾時接送"
+    currentPickupMode === "我會晚到"
   ){
 
+    title =
+      "🟠【樂業附幼晚到通報】";
+
+    const reason =
+      $("delayReason")
+        .value
+        .trim()
+      ||
+      "未填寫";
+
     detail =
-      "\n📌 遲到時段："
+      "\n⏰ 原訂接送："
       +
-      $("overtimeType").value
+      $("delayOriginalTime").value
       +
-      "\n📌 遲到原因："
+      "\n📌 晚到原因："
       +
-      (
-        $("overtimeReason")
-          .value
-          .trim()
-        ||
-        "未填寫"
-      )
+      reason
       +
       "\n⏰ 預計抵達："
       +
-      $("overtimeTime").value;
+      $("delayArrivalTime").value;
 
   }
 
 
-  const p =
+  const picker =
     $("picker").value
     +
     (
       $("picker").value === "其他授權人員"
       ?
-      "（需攜帶接送卡核對）"
+      "（需現場核對接送身分）"
       :
       ""
     );
 
 
   const msg =
-`📢【樂業附幼接送通知】
+`${title}
 👶 幼兒：${childrenText(list)}
-👤 接送人員：${lineDisplayName || "家長"}（${p}）
-⏰ 接送狀態：${currentPickupMode}${detail}
-
-請老師協助孩子準備！`;
+👤 接送人員：${lineDisplayName || "家長"}（${picker}）
+📍 接送狀態：${currentPickupMode}${detail}`;
 
 
   if(
     !confirm(
-      `確認送出以下接送通報？
+      `確認送出？
 
 ${childrenText(list)}
+
 ${currentPickupMode}`
     )
   ){
@@ -2083,16 +2054,27 @@ ${currentPickupMode}`
 
     await sendLine(msg);
 
+    if(
+      currentPickupMode === "我會晚到"
+    ){
 
-    showStatus(
-      "✅ 接送通報已送出。現場仍需完成接送身分核對。"
-    );
+      showStatus(
+        "🟠 晚到通報已送出。此通報不等同延長托育或臨時托育。"
+      );
+
+    }
+    else{
+
+      showStatus(
+        "✅ 接送通報已送出。現場仍須依園方流程完成接送身分核對。"
+      );
+
+    }
 
   }
   catch(e){
 
     console.error(e);
-
 
     alert(
       "發送失敗，請確認 LIFF 權限。"
@@ -2103,14 +2085,12 @@ ${currentPickupMode}`
 }
 
 
-
 async function submitLeave(){
 
   const list =
     requireChildren(
       "leave"
     );
-
 
   if(
     !list
@@ -2120,10 +2100,8 @@ async function submitLeave(){
 
   }
 
-
   const date =
     $("leaveDate").value;
-
 
   if(
     !date
@@ -2137,10 +2115,8 @@ async function submitLeave(){
 
   }
 
-
   const reason =
     $("leaveReason").value;
-
 
   const note =
     $("leaveNote")
@@ -2148,7 +2124,6 @@ async function submitLeave(){
       .trim()
     ||
     "無";
-
 
   const msg =
 `❌【樂業附幼請假通知】
@@ -2174,16 +2149,14 @@ async function submitLeave(){
 
     await sendLine(msg);
 
-
     showStatus(
-      "✅ 請假通報已送出。"
+      "✅ 請假通報已送出。正式版將同步更新相關第一梯、第二梯及托育名單。"
     );
 
   }
   catch(e){
 
     console.error(e);
-
 
     alert(
       "發送失敗，請確認 LIFF 權限。"
@@ -2194,14 +2167,12 @@ async function submitLeave(){
 }
 
 
-
 async function submitExtended(){
 
   const list =
     requireChildren(
       "extended"
     );
-
 
   if(
     !list
@@ -2211,10 +2182,8 @@ async function submitExtended(){
 
   }
 
-
   const date =
     $("extendedDate").value;
-
 
   if(
     !date
@@ -2228,19 +2197,21 @@ async function submitExtended(){
 
   }
 
-
   const msg =
-`⏰【樂業附幼延長照顧申請】
+`⏰【樂業附幼延長托育申請】
 👶 幼兒：${childrenText(list)}
 📅 日期：${date.replaceAll("-","/")}
-⏰ 時段：${$("extendedTime").value}
+⏰ 原訂：第一梯17:00
+➡️ 申請延長：至18:00
 📌 備註：${$("extendedNote").value.trim() || "無"}
 👤 通報家長：${lineDisplayName || "家長"}`;
 
 
   if(
     !confirm(
-      `確認送出 ${childrenText(list)} 的延長照顧申請嗎？`
+      `確認申請 ${childrenText(list)} 延長至18:00嗎？
+
+僅適用原本已參加第一梯17:00的幼兒。`
     )
   ){
 
@@ -2253,16 +2224,14 @@ async function submitExtended(){
 
     await sendLine(msg);
 
-
     showStatus(
-      "✅ 延長照顧申請已送出。實際安排仍以園方確認為準。"
+      "✅ 延長托育申請已送出：原第一梯17:00，申請延長至18:00。"
     );
 
   }
   catch(e){
 
     console.error(e);
-
 
     alert(
       "發送失敗，請確認 LIFF 權限。"
@@ -2273,14 +2242,12 @@ async function submitExtended(){
 }
 
 
-
 async function submitTemporary(){
 
   const list =
     requireChildren(
       "temporary"
     );
-
 
   if(
     !list
@@ -2290,24 +2257,16 @@ async function submitTemporary(){
 
   }
 
-
   const date =
     $("temporaryDate").value;
 
-
-  const start =
-    $("temporaryStart").value;
-
-
-  const end =
-    $("temporaryEnd").value;
-
+  const time =
+    $("temporaryTime").value;
 
   const reason =
     $("temporaryReason")
       .value
       .trim();
-
 
   if(
     !date
@@ -2320,22 +2279,6 @@ async function submitTemporary(){
     return;
 
   }
-
-
-  if(
-    !start
-    ||
-    !end
-  ){
-
-    alert(
-      "請填寫需求時段。"
-    );
-
-    return;
-
-  }
-
 
   if(
     !reason
@@ -2349,21 +2292,22 @@ async function submitTemporary(){
 
   }
 
-
   const msg =
 `🧸【樂業附幼臨時托育需求】
 👶 幼兒：${childrenText(list)}
 📅 日期：${date.replaceAll("-","/")}
-⏰ 時段：${start}～${end}
+⏰ 臨時托育：${time}
 📝 原因：${reason}
 👤 通報家長：${lineDisplayName || "家長"}
 
-※ 此為需求通報，是否成立仍以園方確認為準。`;
+※ 此為臨時需求申請，是否成立仍以園方確認為準。`;
 
 
   if(
     !confirm(
-      `確認送出 ${childrenText(list)} 的臨時托育需求嗎？`
+      `確認送出 ${childrenText(list)} 的臨時托育需求？
+
+時段：${time}`
     )
   ){
 
@@ -2376,7 +2320,6 @@ async function submitTemporary(){
 
     await sendLine(msg);
 
-
     showStatus(
       "✅ 臨時托育需求已送出，請等候園方確認。"
     );
@@ -2385,7 +2328,6 @@ async function submitTemporary(){
   catch(e){
 
     console.error(e);
-
 
     alert(
       "發送失敗，請確認 LIFF 權限。"
@@ -2396,16 +2338,13 @@ async function submitTemporary(){
 }
 
 
-
 function showStatus(text){
 
   $("statusBox").textContent =
     text;
 
-
   $("statusBox").style.display =
     "block";
-
 
   $("statusBox")
     .scrollIntoView(
@@ -2416,7 +2355,6 @@ function showStatus(text){
     );
 
 }
-
 
 
 function escapeHtml(s){
@@ -2448,14 +2386,12 @@ function escapeHtml(s){
 }
 
 
-
 function resolvePageFromUrl(){
 
   const params =
     new URLSearchParams(
       window.location.search
     );
-
 
   return (
     params.get("page")
@@ -2466,20 +2402,16 @@ function resolvePageFromUrl(){
 }
 
 
-
 async function main(){
 
   $("leaveDate").value =
     today();
 
-
   $("extendedDate").value =
     today();
 
-
   $("temporaryDate").value =
     today();
-
 
   showPage(
     resolvePageFromUrl(),
@@ -2492,13 +2424,11 @@ async function main(){
     $("lineStatus").textContent =
       "正在連接 LINE...";
 
-
     await liff.init(
       {
         liffId:LIFF_ID
       }
     );
-
 
     if(
       !liff.isLoggedIn()
@@ -2507,26 +2437,20 @@ async function main(){
       $("lineStatus").textContent =
         "正在前往 LINE 登入...";
 
-
       liff.login();
-
 
       return;
 
     }
 
-
     const p =
       await liff.getProfile();
-
 
     lineUserId =
       p.userId || "";
 
-
     lineDisplayName =
       p.displayName || "家長";
-
 
     if(
       p.pictureUrl
@@ -2537,10 +2461,8 @@ async function main(){
 
     }
 
-
     $("lineStatus").innerHTML =
       `<b>${escapeHtml(lineDisplayName)}</b>（LINE 已連線）`;
-
 
     loadChildren();
 
@@ -2552,17 +2474,14 @@ async function main(){
       e
     );
 
-
     $("lineStatus").innerHTML =
       `⚠️ LINE 連線失敗<br><small>${escapeHtml(e.message || String(e))}</small>`;
-
 
     loadChildren();
 
   }
 
 }
-
 
 
 main();
