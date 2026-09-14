@@ -2,133 +2,2427 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>樂業附幼｜家長接送通報系統</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>樂業附幼｜家長服務平台</title>
+
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
 <style>
-*{box-sizing:border-box}body{margin:0;padding:16px;background:#f4f7f6;color:#333;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}.card{max-width:440px;margin:auto;background:#fff;padding:22px;border-radius:18px;box-shadow:0 8px 20px rgba(0,0,0,.06)}.user{display:flex;align-items:center;gap:10px;background:#e8f5e9;padding:10px 14px;border-radius:12px;margin-bottom:16px}.avatar{width:36px;height:36px;border-radius:50%}.group{margin-bottom:16px}label{display:block;font-weight:bold;margin-bottom:6px}input,select,textarea{width:100%;padding:11px;border:1.5px solid #cfd8dc;border-radius:10px;font-size:16px;font-family:inherit}.row{display:flex;gap:8px}.row>*{flex:1}.choices{display:flex;flex-direction:column;gap:8px}.choice{padding:12px 14px;border:1.5px solid #cfd8dc;border-radius:10px;background:#fff;cursor:pointer}.choice.active{border-color:#2e7d32;background:#e8f5e9;color:#1b5e20;font-weight:bold}.box{display:none;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:10px;padding:12px;margin-top:8px}.notice{display:none;padding:10px;border-radius:10px;background:#e1f5fe;color:#0277bd;margin-top:8px;font-size:.9rem}.leave{background:#fff3e0;border:1.5px solid #ffe0b2;border-radius:14px;padding:14px;margin-bottom:20px}.btn{width:100%;border:0;border-radius:12px;padding:14px;margin-top:10px;color:#fff;font-size:16px;font-weight:bold;cursor:pointer}.green{background:#2e7d32}.orange{background:#d84315}.status{display:none;background:#fff8e6;border:1.5px solid #ffe0b2;border-radius:12px;padding:14px;margin-bottom:16px}.items{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.items label{font-weight:normal;font-size:.9rem}.items input{width:auto}.small{text-align:center;color:#888;font-size:.82rem;margin-top:10px;cursor:pointer}
+:root{
+  --green:#2e7d32;
+  --green2:#e8f5e9;
+  --orange:#ef6c00;
+  --orange2:#fff3e0;
+  --blue:#1976d2;
+  --blue2:#e3f2fd;
+  --purple:#7b1fa2;
+  --purple2:#f3e5f5;
+  --red:#d84315;
+  --text:#263238;
+  --muted:#78909c;
+  --line:#dfe7e9;
+  --bg:#f4f7f6;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  padding:14px 14px calc(24px + env(safe-area-inset-bottom));
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Roboto,sans-serif;
+}
+
+.app{
+  max-width:480px;
+  margin:auto;
+}
+
+.card{
+  background:#fff;
+  border-radius:20px;
+  box-shadow:0 8px 24px rgba(0,0,0,.06);
+  overflow:hidden;
+}
+
+.header{
+  padding:18px 18px 14px;
+  background:linear-gradient(135deg,#f1f8e9,#e8f5e9);
+}
+
+.brand{
+  font-size:1.25rem;
+  font-weight:800;
+  color:#1b5e20;
+}
+
+.sub{
+  font-size:.88rem;
+  color:#607d8b;
+  margin-top:3px;
+}
+
+.user{
+  margin-top:12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:rgba(255,255,255,.85);
+  border-radius:14px;
+  padding:10px 12px;
+}
+
+.avatar{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  object-fit:cover;
+  background:#eceff1;
+}
+
+.userText{
+  flex:1;
+  font-size:.9rem;
+}
+
+.manageLink{
+  border:0;
+  background:transparent;
+  color:var(--green);
+  font-weight:700;
+  padding:6px;
+  cursor:pointer;
+  font-size:.88rem;
+}
+
+.page{
+  padding:18px;
+}
+
+.pageTitle{
+  font-size:1.25rem;
+  font-weight:800;
+  margin-bottom:4px;
+}
+
+.pageDesc{
+  font-size:.88rem;
+  color:var(--muted);
+  margin-bottom:16px;
+  line-height:1.5;
+}
+
+.group{
+  margin-bottom:16px;
+}
+
+label.title{
+  display:block;
+  font-weight:800;
+  margin-bottom:7px;
+}
+
+input,
+select,
+textarea{
+  width:100%;
+  padding:12px 12px;
+  border:1.5px solid #cfd8dc;
+  border-radius:12px;
+  font-size:16px;
+  font-family:inherit;
+  outline:none;
+  background:#fff;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+  border-color:#81c784;
+}
+
+.row{
+  display:flex;
+  gap:8px;
+}
+
+.row>*{
+  flex:1;
+}
+
+.btn{
+  width:100%;
+  border:0;
+  border-radius:13px;
+  padding:14px;
+  font-size:16px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.btnPrimary{
+  background:var(--green);
+  color:white;
+}
+
+.btnOrange{
+  background:var(--orange);
+  color:white;
+}
+
+.btnBlue{
+  background:var(--blue);
+  color:white;
+}
+
+.btnPurple{
+  background:var(--purple);
+  color:white;
+}
+
+.btnGhost{
+  background:#fff;
+  border:1.5px solid var(--line);
+  color:#455a64;
+}
+
+.btnDanger{
+  background:#fff;
+  border:1.5px solid #ffcdd2;
+  color:#c62828;
+}
+
+.btn + .btn{
+  margin-top:9px;
+}
+
+.childList{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.childPick{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border:1.5px solid #d7e2e4;
+  border-radius:13px;
+  padding:12px;
+  background:#fff;
+  cursor:pointer;
+}
+
+.childPick input{
+  width:auto;
+  transform:scale(1.15);
+}
+
+.childName{
+  font-weight:800;
+}
+
+.childClass{
+  font-size:.82rem;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+.empty{
+  padding:14px;
+  border:1.5px dashed #b0bec5;
+  border-radius:13px;
+  color:#607d8b;
+  background:#fafcfc;
+  font-size:.9rem;
+}
+
+.choices{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.choice{
+  padding:12px 14px;
+  border:1.5px solid #cfd8dc;
+  border-radius:12px;
+  background:#fff;
+  cursor:pointer;
+}
+
+.choice.active{
+  border-color:var(--green);
+  background:var(--green2);
+  color:#1b5e20;
+  font-weight:800;
+}
+
+.box{
+  display:none;
+  background:#fafcfc;
+  border:1px solid #e0e6e8;
+  border-radius:12px;
+  padding:12px;
+  margin-top:9px;
+}
+
+.notice{
+  display:none;
+  padding:10px 12px;
+  border-radius:10px;
+  background:#fff8e1;
+  color:#8d6e00;
+  margin-top:8px;
+  font-size:.88rem;
+  line-height:1.5;
+}
+
+.summary{
+  padding:12px;
+  border-radius:12px;
+  background:#f7faf9;
+  border:1px solid #e3ece8;
+  font-size:.9rem;
+  line-height:1.6;
+  margin-bottom:14px;
+}
+
+.modalBackdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(38,50,56,.38);
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  z-index:50;
+}
+
+.modal{
+  width:100%;
+  max-width:480px;
+  max-height:86vh;
+  overflow:auto;
+  background:#fff;
+  border-radius:22px 22px 0 0;
+  padding:18px;
+}
+
+.modalTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:12px;
+}
+
+.modalTitle{
+  font-size:1.15rem;
+  font-weight:800;
+}
+
+.closeBtn{
+  border:0;
+  background:#eceff1;
+  border-radius:50%;
+  width:34px;
+  height:34px;
+  font-size:18px;
+  cursor:pointer;
+}
+
+.boundItem{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:11px 0;
+  border-bottom:1px solid #eef2f3;
+}
+
+.boundInfo{
+  flex:1;
+}
+
+.boundName{
+  font-weight:800;
+}
+
+.boundClass{
+  font-size:.82rem;
+  color:var(--muted);
+}
+
+.miniBtn{
+  border:0;
+  border-radius:9px;
+  padding:7px 9px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.removeBtn{
+  background:#ffebee;
+  color:#c62828;
+}
+
+.addBox{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid #eef2f3;
+}
+
+.helper{
+  font-size:.8rem;
+  color:var(--muted);
+  line-height:1.45;
+  margin-top:6px;
+}
+
+.statusBox{
+  display:none;
+  margin:0 18px 18px;
+  padding:13px;
+  border-radius:12px;
+  background:#fff8e1;
+  border:1px solid #ffe0b2;
+  font-size:.9rem;
+  line-height:1.5;
+}
+
+.quickTabs{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+  padding:10px 12px;
+  border-top:1px solid #eef2f3;
+  background:#fff;
+}
+
+.quickTab{
+  border:0;
+  background:#f5f7f7;
+  border-radius:10px;
+  padding:8px 4px;
+  font-size:.72rem;
+  cursor:pointer;
+  color:#546e7a;
+}
+
+.quickTab.active{
+  background:var(--green2);
+  color:#1b5e20;
+  font-weight:800;
+}
+
+.hidden{
+  display:none!important;
+}
 </style>
 </head>
+
 <body>
-<div class="card">
-  <div class="user">
-    <img id="userImg" class="avatar" src="https://via.placeholder.com/40" alt="LINE 頭像">
-    <div id="lineStatus">驗證 LINE 身分中...</div>
+
+<div class="app">
+
+  <div class="card">
+
+    <div class="header">
+
+      <div class="brand">
+        樂業附幼｜家長服務平台
+      </div>
+
+      <div class="sub">
+        從 LINE 圖文選單進入後，直接完成通報
+      </div>
+
+      <div class="user">
+
+        <img
+          id="userImg"
+          class="avatar"
+          alt="LINE 頭像"
+          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' rx='40' fill='%23eceff1'/%3E%3Ccircle cx='40' cy='30' r='14' fill='%23b0bec5'/%3E%3Cpath d='M17 67c3-15 13-23 23-23s20 8 23 23' fill='%23b0bec5'/%3E%3C/svg%3E"
+        >
+
+        <div class="userText">
+
+          <div id="lineStatus">
+            驗證 LINE 身分中...
+          </div>
+
+          <div id="boundSummary" class="helper">
+            尚未載入幼兒資料
+          </div>
+
+        </div>
+
+        <button
+          class="manageLink"
+          type="button"
+          onclick="openChildManager()"
+        >
+          管理孩子
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- 我要接孩子 -->
+
+    <div id="pickupPage" class="page">
+
+      <div class="pageTitle">
+        🚗 我要接孩子
+      </div>
+
+      <div class="pageDesc">
+        可一次勾選同一家庭的多位幼兒；若接送方式不同，請分次送出。
+      </div>
+
+      <div class="group">
+
+        <label class="title">
+          👶 這次要接哪位孩子？
+        </label>
+
+        <div id="pickupChildren" class="childList"></div>
+
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          ⏰ 接送／放學時段
+        </label>
+
+        <div class="choices">
+
+          <div
+            class="choice"
+            onclick="setPickupMode(this,'提早接孩子')"
+          >
+            ☀️ 提早接孩子
+          </div>
+
+          <div
+            class="choice active"
+            onclick="setPickupMode(this,'正常放學')"
+          >
+            ✅ 正常放學（16:00）
+          </div>
+
+          <div
+            class="choice"
+            onclick="setPickupMode(this,'第一階段17:00')"
+          >
+            🎒 第一階段 17:00
+          </div>
+
+          <div
+            class="choice"
+            onclick="setPickupMode(this,'第二階段18:00')"
+          >
+            🌙 第二階段 18:00
+          </div>
+
+          <div
+            class="choice"
+            onclick="setPickupMode(this,'逾時接送')"
+          >
+            🚨 逾時接送（遲到通報）
+          </div>
+
+        </div>
+
+
+        <div id="earlyBox" class="box">
+
+          <label class="title">
+            提早原因
+          </label>
+
+          <select id="earlyReason">
+
+            <option>事假</option>
+
+            <option>病假</option>
+
+            <option>家庭因素</option>
+
+            <option>其他原因</option>
+
+          </select>
+
+
+          <label
+            class="title"
+            style="margin-top:10px"
+          >
+            預計接送時間
+          </label>
+
+          <input
+            id="earlyTime"
+            type="time"
+            value="14:30"
+          >
+
+        </div>
+
+
+        <div id="overtimeBox" class="box">
+
+          <label class="title">
+            遲到時段
+          </label>
+
+          <select id="overtimeType">
+
+            <option>
+              16:00 正常放學遲到
+            </option>
+
+            <option>
+              17:00 第一階段遲到
+            </option>
+
+            <option>
+              18:00 第二階段遲到
+            </option>
+
+          </select>
+
+
+          <label
+            class="title"
+            style="margin-top:10px"
+          >
+            遲到原因
+          </label>
+
+          <input
+            id="overtimeReason"
+            placeholder="例：塞車、公司加班"
+          >
+
+
+          <label
+            class="title"
+            style="margin-top:10px"
+          >
+            預計抵達時間
+          </label>
+
+          <input
+            id="overtimeTime"
+            type="time"
+            value="16:20"
+          >
+
+        </div>
+
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          👤 今日接送人員
+        </label>
+
+        <select
+          id="picker"
+          onchange="pickerChange()"
+        >
+
+          <option>媽媽</option>
+
+          <option>爸爸</option>
+
+          <option>阿公／阿嬤</option>
+
+          <option>其他授權人員</option>
+
+        </select>
+
+
+        <div
+          id="pickerNotice"
+          class="notice"
+        >
+          🪪 非父母／阿公阿嬤接送時，請授權人員攜帶接送卡，仍須由校方現場核對身分。
+        </div>
+
+      </div>
+
+
+      <button
+        class="btn btnPrimary"
+        type="button"
+        onclick="submitPickup()"
+      >
+        📢 確認通知老師
+      </button>
+
+    </div>
+
+
+
+    <!-- 今日請假 -->
+
+    <div
+      id="leavePage"
+      class="page hidden"
+    >
+
+      <div class="pageTitle">
+        ❌ 今日請假
+      </div>
+
+      <div class="pageDesc">
+        同一天、同一請假原因可一次勾選多位幼兒送出。
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          👶 哪些孩子要請假？
+        </label>
+
+        <div
+          id="leaveChildren"
+          class="childList"
+        ></div>
+
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          📅 請假日期
+        </label>
+
+        <input
+          id="leaveDate"
+          type="date"
+        >
+
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          📝 請假原因
+        </label>
+
+        <select id="leaveReason">
+
+          <option>病假</option>
+
+          <option>事假</option>
+
+          <option>家庭因素</option>
+
+          <option>其他</option>
+
+        </select>
+
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          📌 備註（選填）
+        </label>
+
+        <textarea
+          id="leaveNote"
+          rows="3"
+          placeholder="例：預計下週一回園"
+        ></textarea>
+
+      </div>
+
+
+      <button
+        class="btn btnOrange"
+        type="button"
+        onclick="submitLeave()"
+      >
+        ❌ 確認送出請假
+      </button>
+
+    </div>
+
+
+
+    <!-- 延長照顧 -->
+
+    <div
+      id="extendedPage"
+      class="page hidden"
+    >
+
+      <div class="pageTitle">
+        ⏰ 延長照顧
+      </div>
+
+      <div class="pageDesc">
+        可一次替多位孩子申請相同日期與時段。
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          👶 哪些孩子需要延長照顧？
+        </label>
+
+        <div
+          id="extendedChildren"
+          class="childList"
+        ></div>
+
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          📅 日期
+        </label>
+
+        <input
+          id="extendedDate"
+          type="date"
+        >
+
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          ⏰ 延長時段
+        </label>
+
+        <select id="extendedTime">
+
+          <option>
+            16:00～17:00
+          </option>
+
+          <option>
+            17:00～18:00
+          </option>
+
+          <option>
+            16:00～18:00
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          📌 備註（選填）
+        </label>
+
+        <textarea
+          id="extendedNote"
+          rows="3"
+          placeholder="其他需要老師留意的事項"
+        ></textarea>
+
+      </div>
+
+
+      <button
+        class="btn btnBlue"
+        type="button"
+        onclick="submitExtended()"
+      >
+        ⏰ 確認送出申請
+      </button>
+
+    </div>
+
+
+
+    <!-- 臨時托育 -->
+
+    <div
+      id="temporaryPage"
+      class="page hidden"
+    >
+
+      <div class="pageTitle">
+        🧸 臨時托育
+      </div>
+
+      <div class="pageDesc">
+        先送出需求，實際是否成立仍以園方確認為準。
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          👶 哪些孩子需要臨時托育？
+        </label>
+
+        <div
+          id="temporaryChildren"
+          class="childList"
+        ></div>
+
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          📅 日期
+        </label>
+
+        <input
+          id="temporaryDate"
+          type="date"
+        >
+
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          ⏰ 需求時段
+        </label>
+
+        <div class="row">
+
+          <input
+            id="temporaryStart"
+            type="time"
+            value="16:00"
+          >
+
+          <input
+            id="temporaryEnd"
+            type="time"
+            value="18:00"
+          >
+
+        </div>
+
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          📝 申請原因
+        </label>
+
+        <textarea
+          id="temporaryReason"
+          rows="3"
+          placeholder="例：臨時加班、家庭突發狀況"
+        ></textarea>
+
+      </div>
+
+
+      <button
+        class="btn btnPurple"
+        type="button"
+        onclick="submitTemporary()"
+      >
+        🧸 送出臨托需求
+      </button>
+
+    </div>
+
+
+
+    <!-- 下方快速切換 -->
+
+    <div class="quickTabs">
+
+      <button
+        id="tabPickup"
+        class="quickTab"
+        onclick="showPage('pickup')"
+      >
+        🚗<br>
+        接孩子
+      </button>
+
+      <button
+        id="tabLeave"
+        class="quickTab"
+        onclick="showPage('leave')"
+      >
+        ❌<br>
+        請假
+      </button>
+
+      <button
+        id="tabExtended"
+        class="quickTab"
+        onclick="showPage('extended')"
+      >
+        ⏰<br>
+        延長
+      </button>
+
+      <button
+        id="tabTemporary"
+        class="quickTab"
+        onclick="showPage('temporary')"
+      >
+        🧸<br>
+        臨托
+      </button>
+
+    </div>
+
   </div>
 
-  <div class="leave">
-    <b>❌ 今日請假通報</b>
-    <div style="font-size:.88rem;margin:5px 0 10px">若孩子今天無法到園，請由此完成請假通報。</div>
-    <button class="btn orange" type="button" onclick="toggleLeave()">❌ 今日請假</button>
-    <div id="leaveForm" style="display:none;margin-top:14px">
-      <div class="group"><label>👶 請假幼兒</label><div id="leaveChild" style="padding:11px;border:1px solid #e0e0e0;border-radius:10px">讀取綁定資料中...</div></div>
-      <div class="group"><label>📅 請假日期</label><input id="leaveDate" type="date" required></div>
-      <div class="group"><label>📝 請假原因</label><select id="leaveReason"><option>病假</option><option>事假</option><option>家庭因素</option><option>其他</option></select></div>
-      <div class="group"><label>📌 備註（選填）</label><textarea id="leaveNote" rows="2" placeholder="例：預計下週一回園"></textarea></div>
-      <button class="btn orange" type="button" onclick="submitLeave()">❌ 送出請假申請</button>
-    </div>
-  </div>
 
-  <div id="status" class="status">
-    <b>🚗 接送處理中（老師準備中）</b>
-    <div style="font-size:.88rem;margin-top:5px">請依現場流程完成交接。</div>
-    <div class="items">
-      <label><input type="checkbox" id="quilt"> 🛌 棉被/睡袋</label>
-      <label><input type="checkbox" id="cup"> 🪥 牙刷/水杯</label>
-      <label><input type="checkbox" id="clothes"> 🧥 換洗衣物</label>
-      <label><input type="checkbox" id="medicine"> 💊 藥袋</label>
-    </div>
-    <button class="btn" style="background:#ff9800" onclick="confirmArrived()">✅ 我已接到寶貝（完成離園）</button>
-  </div>
+  <div
+    id="statusBox"
+    class="statusBox"
+  ></div>
 
-  <form id="pickupForm">
-    <div class="group">
-      <label>👶 綁定幼兒資料</label>
-      <div class="row"><input id="childClass" placeholder="班級（例：太陽班）" required><input id="childName" placeholder="幼兒姓名" required></div>
-    </div>
-
-    <div class="group">
-      <label>⏰ 請選擇接送/放學時段</label>
-      <div class="choices">
-        <div class="choice" onclick="mode(this,'提早接孩子')">☀️ 提早接孩子</div>
-        <div class="choice active" onclick="mode(this,'正常放學')">✅ 正常放學（16:00）</div>
-        <div class="choice" onclick="mode(this,'第一階段17:00')">🎒 第一階段 17:00</div>
-        <div class="choice" onclick="mode(this,'第二階段18:00')">🌙 第二階段 18:00</div>
-        <div class="choice" onclick="mode(this,'逾時接送')">🚨 逾時接送（遲到通報）</div>
-      </div>
-      <div id="earlyBox" class="box">
-        <label>提早原因</label><select id="earlyReason"><option>事假</option><option>病假</option><option>其他原因</option></select>
-        <label style="margin-top:8px">預計接送時間</label><input id="earlyTime" type="time" value="14:30">
-      </div>
-      <div id="overtimeBox" class="box">
-        <label>遲到時段</label><select id="overtimeType"><option>16:00 正常放學遲到</option><option>17:00 第一階段遲到</option><option>18:00 第二階段遲到</option></select>
-        <label style="margin-top:8px">遲到原因</label><input id="overtimeReason" placeholder="例：塞車 / 公司加班">
-        <label style="margin-top:8px">預計抵達時間</label><input id="overtimeTime" type="time" value="16:20">
-      </div>
-    </div>
-
-    <div class="group">
-      <label>👤 今日接送人員</label>
-      <select id="picker" onchange="pickerChange()"><option>媽媽</option><option>爸爸</option><option>阿公／阿嬤</option><option>其他授權人員</option></select>
-      <div id="pickerNotice" class="notice">🪪 非父母/阿公阿嬤接送時，請授權人員攜帶接送卡供校方核對。</div>
-    </div>
-    <button class="btn green" type="submit">📢 我要來接小孩囉（通知老師）</button>
-    <div class="small" onclick="resetBinding()">重新綁定幼兒資料</div>
-  </form>
 </div>
 
-<script>
-const LIFF_ID="2011537895-QkIp9Lh8";
-let lineUserId="",lineDisplayName="",currentMode="正常放學";
 
-function saveChild(){
-  const c=document.getElementById("childClass").value.trim(),n=document.getElementById("childName").value.trim();
-  if(lineUserId&&c&&n)localStorage.setItem("child_bind_"+lineUserId,JSON.stringify({class:c,name:n}));
-  document.getElementById("leaveChild").textContent=c&&n?"👶 "+c+" "+n:"⚠️ 尚未綁定幼兒資料";
+
+<!-- 管理孩子視窗 -->
+
+<div
+  id="childModal"
+  class="modalBackdrop"
+  onclick="backdropClose(event)"
+>
+
+  <div class="modal">
+
+    <div class="modalTop">
+
+      <div class="modalTitle">
+        👶 管理我的孩子
+      </div>
+
+      <button
+        class="closeBtn"
+        type="button"
+        onclick="closeChildManager()"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div id="boundChildren"></div>
+
+
+    <div class="addBox">
+
+      <div
+        style="font-weight:800;margin-bottom:9px"
+      >
+        ＋ 新增幼兒
+      </div>
+
+
+      <div class="row">
+
+        <input
+          id="newChildClass"
+          placeholder="班級，例如：太陽班"
+        >
+
+        <input
+          id="newChildName"
+          placeholder="幼兒姓名"
+        >
+
+      </div>
+
+
+      <button
+        class="btn btnPrimary"
+        type="button"
+        onclick="addChild()"
+        style="margin-top:9px"
+      >
+        新增幼兒
+      </button>
+
+
+      <div class="helper">
+        可綁定 1 位、3 位或更多幼兒，不限制固定胎數。正式上線後建議改由學校資料庫驗證，不只依賴瀏覽器儲存。
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<script>
+
+const LIFF_ID = "2011537895-QkIp9Lh8";
+
+let lineUserId = "";
+let lineDisplayName = "";
+let currentPage = "pickup";
+let currentPickupMode = "正常放學";
+let children = [];
+
+const $ = id =>
+  document.getElementById(id);
+
+
+
+function today(){
+
+  const d = new Date();
+
+  return (
+    d.getFullYear()
+    + "-"
+    + String(d.getMonth()+1).padStart(2,"0")
+    + "-"
+    + String(d.getDate()).padStart(2,"0")
+  );
+
 }
-function loadChild(){
-  if(lineUserId){const s=localStorage.getItem("child_bind_"+lineUserId);if(s){const c=JSON.parse(s);childClass.value=c.class||"";childName.value=c.name||"";}}
-  saveChild();
+
+
+
+function storageKey(){
+
+  return "children_bind_" + (lineUserId || "guest");
+
 }
-function mode(el,m){document.querySelectorAll(".choice").forEach(x=>x.classList.remove("active"));el.classList.add("active");currentMode=m;earlyBox.style.display=m==="提早接孩子"?"block":"none";overtimeBox.style.display=m==="逾時接送"?"block":"none"}
-function pickerChange(){pickerNotice.style.display=picker.value==="其他授權人員"?"block":"none"}
-function toggleLeave(){leaveForm.style.display=leaveForm.style.display==="block"?"none":"block";saveChild()}
-function resetBinding(){if(confirm("確定要重新綁定幼兒資料嗎？")){childClass.value="";childName.value="";if(lineUserId)localStorage.removeItem("child_bind_"+lineUserId);saveChild()}}
-function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+
+
+
+function legacyKey(){
+
+  return "child_bind_" + (lineUserId || "guest");
+
+}
+
+
+
+function saveChildren(){
+
+  localStorage.setItem(
+    storageKey(),
+    JSON.stringify(children)
+  );
+
+  renderChildrenEverywhere();
+
+}
+
+
+
+function loadChildren(){
+
+  children = [];
+
+  const multi =
+    localStorage.getItem(storageKey());
+
+
+  if(multi){
+
+    try{
+
+      const parsed =
+        JSON.parse(multi);
+
+      if(Array.isArray(parsed)){
+
+        children = parsed;
+
+      }
+
+    }
+    catch(e){
+
+      console.error(
+        "多幼兒資料解析失敗",
+        e
+      );
+
+    }
+
+  }
+
+
+  if(
+    children.length === 0
+    &&
+    lineUserId
+  ){
+
+    const old =
+      localStorage.getItem(
+        legacyKey()
+      );
+
+
+    if(old){
+
+      try{
+
+        const c =
+          JSON.parse(old);
+
+
+        if(
+          c
+          &&
+          c.name
+        ){
+
+          children = [
+
+            {
+              id:cryptoId(),
+              class:c.class || "",
+              name:c.name
+            }
+
+          ];
+
+
+          localStorage.setItem(
+            storageKey(),
+            JSON.stringify(children)
+          );
+
+        }
+
+      }
+      catch(e){
+
+        console.error(
+          "舊資料移轉失敗",
+          e
+        );
+
+      }
+
+    }
+
+  }
+
+
+  renderChildrenEverywhere();
+
+
+  if(children.length === 0){
+
+    setTimeout(
+      openChildManager,
+      250
+    );
+
+  }
+
+}
+
+
+
+function cryptoId(){
+
+  if(
+    window.crypto
+    &&
+    crypto.randomUUID
+  ){
+
+    return crypto.randomUUID();
+
+  }
+
+
+  return (
+    "c_"
+    +
+    Date.now()
+    +
+    "_"
+    +
+    Math.random()
+      .toString(36)
+      .slice(2,8)
+  );
+
+}
+
+
+
+function renderChildrenEverywhere(){
+
+  const text =
+    children.length
+    ?
+    "已綁定 "
+    +
+    children.length
+    +
+    " 位幼兒："
+    +
+    children
+      .map(
+        c =>
+        `${c.class} ${c.name}`
+      )
+      .join("、")
+    :
+    "尚未綁定幼兒";
+
+
+  $("boundSummary").textContent =
+    text;
+
+
+  renderManagerList();
+
+  renderPickerList(
+    "pickupChildren",
+    "pickup"
+  );
+
+  renderPickerList(
+    "leaveChildren",
+    "leave"
+  );
+
+  renderPickerList(
+    "extendedChildren",
+    "extended"
+  );
+
+  renderPickerList(
+    "temporaryChildren",
+    "temporary"
+  );
+
+}
+
+
+
+function renderManagerList(){
+
+  const box =
+    $("boundChildren");
+
+
+  if(!children.length){
+
+    box.innerHTML =
+    `
+      <div class="empty">
+        目前尚未綁定幼兒，請在下方新增。
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    children
+      .map(
+        c =>
+        `
+          <div class="boundItem">
+
+            <div class="boundInfo">
+
+              <div class="boundName">
+                ${escapeHtml(c.name)}
+              </div>
+
+              <div class="boundClass">
+                ${escapeHtml(c.class || "未填班級")}
+              </div>
+
+            </div>
+
+            <button
+              class="miniBtn removeBtn"
+              type="button"
+              onclick="removeChild('${c.id}')"
+            >
+              刪除
+            </button>
+
+          </div>
+        `
+      )
+      .join("");
+
+}
+
+
+
+function renderPickerList(
+  targetId,
+  prefix
+){
+
+  const box =
+    $(targetId);
+
+
+  if(!children.length){
+
+    box.innerHTML =
+    `
+      <div class="empty">
+        尚未綁定幼兒。請點上方「管理孩子」先新增。
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    children
+      .map(
+        (c,i) =>
+        `
+          <label class="childPick">
+
+            <input
+              type="checkbox"
+              name="${prefix}Child"
+              value="${c.id}"
+              ${children.length===1 ? "checked" : ""}
+            >
+
+            <div>
+
+              <div class="childName">
+                ${escapeHtml(c.name)}
+              </div>
+
+              <div class="childClass">
+                ${escapeHtml(c.class || "未填班級")}
+              </div>
+
+            </div>
+
+          </label>
+        `
+      )
+      .join("");
+
+}
+
+
+
+function selectedChildren(prefix){
+
+  const ids =
+    [
+      ...document.querySelectorAll(
+        `input[name="${prefix}Child"]:checked`
+      )
+    ]
+    .map(
+      x => x.value
+    );
+
+
+  return children.filter(
+    c =>
+    ids.includes(c.id)
+  );
+
+}
+
+
+
+function childrenText(list){
+
+  return list
+    .map(
+      c =>
+      `${c.class} ${c.name}`.trim()
+    )
+    .join("、");
+
+}
+
+
+
+function addChild(){
+
+  const c =
+    $("newChildClass")
+      .value
+      .trim();
+
+
+  const n =
+    $("newChildName")
+      .value
+      .trim();
+
+
+  if(
+    !c
+    ||
+    !n
+  ){
+
+    alert(
+      "請輸入班級與幼兒姓名。"
+    );
+
+    return;
+
+  }
+
+
+  const duplicated =
+    children.some(
+      x =>
+      x.class === c
+      &&
+      x.name === n
+    );
+
+
+  if(duplicated){
+
+    alert(
+      "這位幼兒已經綁定過了。"
+    );
+
+    return;
+
+  }
+
+
+  children.push(
+    {
+      id:cryptoId(),
+      class:c,
+      name:n
+    }
+  );
+
+
+  $("newChildClass").value = "";
+
+  $("newChildName").value = "";
+
+
+  saveChildren();
+
+}
+
+
+
+function removeChild(id){
+
+  const child =
+    children.find(
+      c =>
+      c.id === id
+    );
+
+
+  if(!child){
+
+    return;
+
+  }
+
+
+  if(
+    !confirm(
+      `確定要移除「${child.class} ${child.name}」嗎？`
+    )
+  ){
+
+    return;
+
+  }
+
+
+  children =
+    children.filter(
+      c =>
+      c.id !== id
+    );
+
+
+  saveChildren();
+
+}
+
+
+
+function openChildManager(){
+
+  $("childModal").style.display =
+    "flex";
+
+}
+
+
+
+function closeChildManager(){
+
+  $("childModal").style.display =
+    "none";
+
+}
+
+
+
+function backdropClose(e){
+
+  if(
+    e.target === $("childModal")
+  ){
+
+    closeChildManager();
+
+  }
+
+}
+
+
+
+function showPage(
+  page,
+  updateUrl=true
+){
+
+  const valid = [
+    "pickup",
+    "leave",
+    "extended",
+    "temporary"
+  ];
+
+
+  if(
+    !valid.includes(page)
+  ){
+
+    page =
+      "pickup";
+
+  }
+
+
+  currentPage =
+    page;
+
+
+  valid.forEach(
+    p => {
+
+      $(p+"Page")
+        .classList
+        .toggle(
+          "hidden",
+          p !== page
+        );
+
+
+      $(
+        "tab"
+        +
+        p[0].toUpperCase()
+        +
+        p.slice(1)
+      )
+      .classList
+      .toggle(
+        "active",
+        p === page
+      );
+
+    }
+  );
+
+
+  if(updateUrl){
+
+    const u =
+      new URL(
+        window.location.href
+      );
+
+
+    u.searchParams.set(
+      "page",
+      page
+    );
+
+
+    history.replaceState(
+      null,
+      "",
+      u.toString()
+    );
+
+  }
+
+
+  window.scrollTo(
+    {
+      top:0,
+      behavior:"smooth"
+    }
+  );
+
+}
+
+
+
+function setPickupMode(
+  el,
+  mode
+){
+
+  document
+    .querySelectorAll(
+      "#pickupPage .choice"
+    )
+    .forEach(
+      x =>
+      x.classList.remove(
+        "active"
+      )
+    );
+
+
+  el.classList.add(
+    "active"
+  );
+
+
+  currentPickupMode =
+    mode;
+
+
+  $("earlyBox").style.display =
+    mode === "提早接孩子"
+    ?
+    "block"
+    :
+    "none";
+
+
+  $("overtimeBox").style.display =
+    mode === "逾時接送"
+    ?
+    "block"
+    :
+    "none";
+
+}
+
+
+
+function pickerChange(){
+
+  $("pickerNotice").style.display =
+    $("picker").value === "其他授權人員"
+    ?
+    "block"
+    :
+    "none";
+
+}
+
+
+
 async function sendLine(text){
-  if(typeof liff!=="undefined"&&liff.isInClient()){await liff.sendMessages([{type:"text",text}]);return true}
-  alert("測試模式：\n\n"+text);return false
+
+  if(
+    typeof liff !== "undefined"
+    &&
+    liff.isInClient()
+  ){
+
+    await liff.sendMessages(
+      [
+        {
+          type:"text",
+          text:text
+        }
+      ]
+    );
+
+
+    return true;
+
+  }
+
+
+  alert(
+    "目前不是在 LINE App 內開啟。\n\n以下為測試內容：\n\n"
+    +
+    text
+  );
+
+
+  return false;
+
 }
-async function submitLeave(){
-  saveChild();const c=childClass.value.trim(),n=childName.value.trim();if(!c||!n){alert("請先綁定幼兒資料！");return}
-  const date=leaveDate.value,reason=leaveReason.value,note=leaveNote.value.trim()||"無";
-  if(!date){alert("請選擇請假日期");return}
-  if(!confirm("確認要為 "+c+" "+n+" 申請請假嗎？"))return;
-  const msg="❌【樂業附幼請假通知】\n👶 幼兒："+c+" "+n+"\n📅 請假日期："+date.replaceAll("-","/")+"\n📝 請假原因："+reason+"\n📌 備註："+note+"\n👤 通報家長："+(lineDisplayName||"家長");
-  try{await sendLine(msg);alert("✅ 已成功送出請假通知！");if(liff.isInClient())liff.closeWindow()}catch(e){alert("發送失敗，請確認 LIFF 權限。")}
+
+
+
+function requireChildren(prefix){
+
+  if(!children.length){
+
+    alert(
+      "請先綁定幼兒資料。"
+    );
+
+
+    openChildManager();
+
+
+    return null;
+
+  }
+
+
+  const list =
+    selectedChildren(prefix);
+
+
+  if(!list.length){
+
+    alert(
+      "請至少勾選一位幼兒。"
+    );
+
+
+    return null;
+
+  }
+
+
+  return list;
+
 }
-pickupForm.addEventListener("submit",async e=>{
-  e.preventDefault();saveChild();const c=childClass.value.trim(),n=childName.value.trim();if(!c||!n)return;
-  let detail="";if(currentMode==="提早接孩子")detail="\n📌 原因："+earlyReason.value+"\n⏰ 預計接送："+earlyTime.value;
-  if(currentMode==="逾時接送")detail="\n📌 遲到原因："+(overtimeReason.value||"未填寫")+"\n⏰ 預計抵達："+overtimeTime.value;
-  const p=picker.value+(picker.value==="其他授權人員"?"（需攜帶接送卡核對）":"");
-  const msg="📢【樂業附幼接送通知】\n👶 幼兒："+c+" "+n+"\n👤 接送人員："+(lineDisplayName||"家長")+"（"+p+"）\n⏰ 接送狀態："+currentMode+detail+"\n\n請老師協助孩子準備！";
-  try{await sendLine(msg);alert("📢 已發送接送通知！老師正在協助孩子準備。");status.style.display="block"}catch(e){alert("發送失敗，請確認 LIFF 權限。")}
-});
-async function confirmArrived(){
-  const c=childClass.value,n=childName.value;let a=[];if(quilt.checked)a.push("棉被/睡袋");if(cup.checked)a.push("牙刷/水杯");if(clothes.checked)a.push("換洗衣物");if(medicine.checked)a.push("藥袋");
-  const msg="✅【樂業附幼離園對點確認】\n👶 幼兒："+c+" "+n+"\n👤 通報家長："+lineDisplayName+"\n🎒 已帶回物品："+(a.join("、")||"無特別清點");
-  try{await sendLine(msg);alert("🎉 已確認接到寶貝！");if(liff.isInClient())liff.closeWindow()}catch(e){alert("發送失敗")}
-}
-async function main(){
-  leaveDate.value=today();
+
+
+
+async function submitPickup(){
+
+  const list =
+    requireChildren(
+      "pickup"
+    );
+
+
+  if(!list){
+
+    return;
+
+  }
+
+
+  let detail = "";
+
+
+  if(
+    currentPickupMode === "提早接孩子"
+  ){
+
+    detail =
+      "\n📌 原因："
+      +
+      $("earlyReason").value
+      +
+      "\n⏰ 預計接送："
+      +
+      $("earlyTime").value;
+
+  }
+
+
+  if(
+    currentPickupMode === "逾時接送"
+  ){
+
+    detail =
+      "\n📌 遲到時段："
+      +
+      $("overtimeType").value
+      +
+      "\n📌 遲到原因："
+      +
+      (
+        $("overtimeReason")
+          .value
+          .trim()
+        ||
+        "未填寫"
+      )
+      +
+      "\n⏰ 預計抵達："
+      +
+      $("overtimeTime").value;
+
+  }
+
+
+  const p =
+    $("picker").value
+    +
+    (
+      $("picker").value === "其他授權人員"
+      ?
+      "（需攜帶接送卡核對）"
+      :
+      ""
+    );
+
+
+  const msg =
+`📢【樂業附幼接送通知】
+👶 幼兒：${childrenText(list)}
+👤 接送人員：${lineDisplayName || "家長"}（${p}）
+⏰ 接送狀態：${currentPickupMode}${detail}
+
+請老師協助孩子準備！`;
+
+
+  if(
+    !confirm(
+      `確認送出以下接送通報？
+
+${childrenText(list)}
+${currentPickupMode}`
+    )
+  ){
+
+    return;
+
+  }
+
+
   try{
-    await liff.init({liffId:LIFF_ID});
-    if(liff.isLoggedIn()){const p=await liff.getProfile();lineUserId=p.userId;lineDisplayName=p.displayName;userImg.src=p.pictureUrl||userImg.src;lineStatus.innerHTML="<b>"+lineDisplayName+"</b>（已連線）";loadChild()}
-    else liff.login();
-  }catch(e){lineStatus.textContent="測試模式（尚未連接 LIFF）";loadChild()}
+
+    await sendLine(msg);
+
+
+    showStatus(
+      "✅ 接送通報已送出。若為多位幼兒，老師會依名單處理；現場仍需完成接送身分核對。"
+    );
+
+  }
+  catch(e){
+
+    console.error(e);
+
+
+    alert(
+      "發送失敗，請確認 LIFF 權限。"
+    );
+
+  }
+
 }
+
+
+
+async function submitLeave(){
+
+  const list =
+    requireChildren(
+      "leave"
+    );
+
+
+  if(!list){
+
+    return;
+
+  }
+
+
+  const date =
+    $("leaveDate").value;
+
+
+  if(!date){
+
+    alert(
+      "請選擇請假日期。"
+    );
+
+    return;
+
+  }
+
+
+  const reason =
+    $("leaveReason").value;
+
+
+  const note =
+    $("leaveNote")
+      .value
+      .trim()
+    ||
+    "無";
+
+
+  const msg =
+`❌【樂業附幼請假通知】
+👶 幼兒：${childrenText(list)}
+📅 請假日期：${date.replaceAll("-","/")}
+📝 請假原因：${reason}
+📌 備註：${note}
+👤 通報家長：${lineDisplayName || "家長"}`;
+
+
+  if(
+    !confirm(
+      `確認為 ${childrenText(list)} 送出請假嗎？`
+    )
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+    await sendLine(msg);
+
+
+    showStatus(
+      "✅ 請假通報已送出。"
+    );
+
+  }
+  catch(e){
+
+    console.error(e);
+
+
+    alert(
+      "發送失敗，請確認 LIFF 權限。"
+    );
+
+  }
+
+}
+
+
+
+async function submitExtended(){
+
+  const list =
+    requireChildren(
+      "extended"
+    );
+
+
+  if(!list){
+
+    return;
+
+  }
+
+
+  const date =
+    $("extendedDate").value;
+
+
+  if(!date){
+
+    alert(
+      "請選擇日期。"
+    );
+
+    return;
+
+  }
+
+
+  const msg =
+`⏰【樂業附幼延長照顧申請】
+👶 幼兒：${childrenText(list)}
+📅 日期：${date.replaceAll("-","/")}
+⏰ 時段：${$("extendedTime").value}
+📌 備註：${$("extendedNote").value.trim() || "無"}
+👤 通報家長：${lineDisplayName || "家長"}`;
+
+
+  if(
+    !confirm(
+      `確認送出 ${childrenText(list)} 的延長照顧申請嗎？`
+    )
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+    await sendLine(msg);
+
+
+    showStatus(
+      "✅ 延長照顧申請已送出。實際安排仍以園方確認為準。"
+    );
+
+  }
+  catch(e){
+
+    console.error(e);
+
+
+    alert(
+      "發送失敗，請確認 LIFF 權限。"
+    );
+
+  }
+
+}
+
+
+
+async function submitTemporary(){
+
+  const list =
+    requireChildren(
+      "temporary"
+    );
+
+
+  if(!list){
+
+    return;
+
+  }
+
+
+  const date =
+    $("temporaryDate").value;
+
+
+  const start =
+    $("temporaryStart").value;
+
+
+  const end =
+    $("temporaryEnd").value;
+
+
+  const reason =
+    $("temporaryReason")
+      .value
+      .trim();
+
+
+  if(!date){
+
+    alert(
+      "請選擇日期。"
+    );
+
+    return;
+
+  }
+
+
+  if(
+    !start
+    ||
+    !end
+  ){
+
+    alert(
+      "請填寫需求時段。"
+    );
+
+    return;
+
+  }
+
+
+  if(!reason){
+
+    alert(
+      "請填寫申請原因。"
+    );
+
+    return;
+
+  }
+
+
+  const msg =
+`🧸【樂業附幼臨時托育需求】
+👶 幼兒：${childrenText(list)}
+📅 日期：${date.replaceAll("-","/")}
+⏰ 時段：${start}～${end}
+📝 原因：${reason}
+👤 通報家長：${lineDisplayName || "家長"}
+
+※ 此為需求通報，是否成立仍以園方確認為準。`;
+
+
+  if(
+    !confirm(
+      `確認送出 ${childrenText(list)} 的臨時托育需求嗎？`
+    )
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+    await sendLine(msg);
+
+
+    showStatus(
+      "✅ 臨時托育需求已送出，請等候園方確認。"
+    );
+
+  }
+  catch(e){
+
+    console.error(e);
+
+
+    alert(
+      "發送失敗，請確認 LIFF 權限。"
+    );
+
+  }
+
+}
+
+
+
+function showStatus(text){
+
+  $("statusBox").textContent =
+    text;
+
+
+  $("statusBox").style.display =
+    "block";
+
+
+  $("statusBox")
+    .scrollIntoView(
+      {
+        behavior:"smooth",
+        block:"center"
+      }
+    );
+
+}
+
+
+
+function escapeHtml(s){
+
+  return String(
+    s ?? ""
+  )
+  .replaceAll(
+    "&",
+    "&amp;"
+  )
+  .replaceAll(
+    "<",
+    "&lt;"
+  )
+  .replaceAll(
+    ">",
+    "&gt;"
+  )
+  .replaceAll(
+    '"',
+    "&quot;"
+  )
+  .replaceAll(
+    "'",
+    "&#039;"
+  );
+
+}
+
+
+
+function resolvePageFromUrl(){
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  return (
+    params.get("page")
+    ||
+    "pickup"
+  );
+
+}
+
+
+
+async function main(){
+
+  $("leaveDate").value =
+    today();
+
+
+  $("extendedDate").value =
+    today();
+
+
+  $("temporaryDate").value =
+    today();
+
+
+  const requestedPage =
+    resolvePageFromUrl();
+
+
+  showPage(
+    requestedPage,
+    false
+  );
+
+
+  try{
+
+    $("lineStatus").textContent =
+      "正在連接 LINE...";
+
+
+    await liff.init(
+      {
+        liffId:LIFF_ID
+      }
+    );
+
+
+    if(
+      !liff.isLoggedIn()
+    ){
+
+      $("lineStatus").textContent =
+        "正在前往 LINE 登入...";
+
+
+      liff.login();
+
+
+      return;
+
+    }
+
+
+    const p =
+      await liff.getProfile();
+
+
+    lineUserId =
+      p.userId || "";
+
+
+    lineDisplayName =
+      p.displayName || "家長";
+
+
+    if(
+      p.pictureUrl
+    ){
+
+      $("userImg").src =
+        p.pictureUrl;
+
+    }
+
+
+    $("lineStatus").innerHTML =
+      `<b>${escapeHtml(lineDisplayName)}</b>（LINE 已連線）`;
+
+
+    loadChildren();
+
+  }
+  catch(e){
+
+    console.error(
+      "LIFF 初始化失敗：",
+      e
+    );
+
+
+    $("lineStatus").innerHTML =
+      `⚠️ LINE 連線失敗<br><small>${escapeHtml(e.message || String(e))}</small>`;
+
+
+    loadChildren();
+
+  }
+
+}
+
+
+
 main();
+
 </script>
+
 </body>
 </html>
