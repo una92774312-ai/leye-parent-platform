@@ -12,12 +12,8 @@
   --green:#2e7d32;
   --green2:#e8f5e9;
   --orange:#ef6c00;
-  --orange2:#fff3e0;
   --blue:#1976d2;
-  --blue2:#e3f2fd;
   --purple:#7b1fa2;
-  --purple2:#f3e5f5;
-  --red:#d84315;
   --text:#263238;
   --muted:#78909c;
   --line:#dfe7e9;
@@ -129,7 +125,7 @@ input,
 select,
 textarea{
   width:100%;
-  padding:12px 12px;
+  padding:12px;
   border:1.5px solid #cfd8dc;
   border-radius:12px;
   font-size:16px;
@@ -181,22 +177,6 @@ textarea:focus{
 .btnPurple{
   background:var(--purple);
   color:white;
-}
-
-.btnGhost{
-  background:#fff;
-  border:1.5px solid var(--line);
-  color:#455a64;
-}
-
-.btnDanger{
-  background:#fff;
-  border:1.5px solid #ffcdd2;
-  color:#c62828;
-}
-
-.btn + .btn{
-  margin-top:9px;
 }
 
 .childList{
@@ -279,16 +259,6 @@ textarea:focus{
   margin-top:8px;
   font-size:.88rem;
   line-height:1.5;
-}
-
-.summary{
-  padding:12px;
-  border-radius:12px;
-  background:#f7faf9;
-  border:1px solid #e3ece8;
-  font-size:.9rem;
-  line-height:1.6;
-  margin-bottom:14px;
 }
 
 .modalBackdrop{
@@ -472,8 +442,6 @@ textarea:focus{
     </div>
 
 
-    <!-- 我要接孩子 -->
-
     <div id="pickupPage" class="page">
 
       <div class="pageTitle">
@@ -484,13 +452,17 @@ textarea:focus{
         可一次勾選同一家庭的多位幼兒；若接送方式不同，請分次送出。
       </div>
 
+
       <div class="group">
 
         <label class="title">
-          👶 寶貝的班級姓名是：
+          👶 這次要接哪位孩子？
         </label>
 
-        <div id="pickupChildren" class="childList"></div>
+        <div
+          id="pickupChildren"
+          class="childList"
+        ></div>
 
       </div>
 
@@ -550,11 +522,8 @@ textarea:focus{
           <select id="earlyReason">
 
             <option>事假</option>
-
             <option>病假</option>
-
             <option>家庭因素</option>
-
             <option>其他原因</option>
 
           </select>
@@ -642,12 +611,9 @@ textarea:focus{
         >
 
           <option>媽媽</option>
-
           <option>爸爸</option>
-
           <option>阿公／阿嬤</option>
-
-          <option>其他接送人員</option>
+          <option>其他授權人員</option>
 
         </select>
 
@@ -656,7 +622,7 @@ textarea:focus{
           id="pickerNotice"
           class="notice"
         >
-          🪪 由較少出現的家人接送時，請接送人員攜帶接送卡，須由校方現場核對身分。
+          🪪 非父母／阿公阿嬤接送時，請授權人員攜帶接送卡，仍須由校方現場核對身分。
         </div>
 
       </div>
@@ -673,8 +639,6 @@ textarea:focus{
     </div>
 
 
-
-    <!-- 今日請假 -->
 
     <div
       id="leavePage"
@@ -693,7 +657,7 @@ textarea:focus{
       <div class="group">
 
         <label class="title">
-          👶 寶貝的班級姓名是：
+          👶 哪些孩子要請假？
         </label>
 
         <div
@@ -727,11 +691,8 @@ textarea:focus{
         <select id="leaveReason">
 
           <option>病假</option>
-
           <option>事假</option>
-
           <option>家庭因素</option>
-
           <option>其他</option>
 
         </select>
@@ -766,8 +727,6 @@ textarea:focus{
 
 
 
-    <!-- 延長照顧 -->
-
     <div
       id="extendedPage"
       class="page hidden"
@@ -785,7 +744,7 @@ textarea:focus{
       <div class="group">
 
         <label class="title">
-          👶 寶貝的班級姓名是：
+          👶 哪些孩子需要延長照顧？
         </label>
 
         <div
@@ -862,8 +821,6 @@ textarea:focus{
 
 
 
-    <!-- 臨時托育 -->
-
     <div
       id="temporaryPage"
       class="page hidden"
@@ -881,7 +838,7 @@ textarea:focus{
       <div class="group">
 
         <label class="title">
-          👶 寶貝的班級姓名是：
+          👶 哪些孩子需要臨時托育？
         </label>
 
         <div
@@ -958,8 +915,6 @@ textarea:focus{
 
 
 
-    <!-- 下方快速切換 -->
-
     <div class="quickTabs">
 
       <button
@@ -1012,8 +967,6 @@ textarea:focus{
 
 
 
-<!-- 管理孩子視窗 -->
-
 <div
   id="childModal"
   class="modalBackdrop"
@@ -1051,16 +1004,64 @@ textarea:focus{
       </div>
 
 
-      <div class="row">
+      <div class="group">
 
-        <input
-          id="newChildClass"
-          placeholder="班級，例如：太陽班"
-        >
+        <label class="title">
+          班級
+        </label>
+
+        <select id="newChildClass">
+
+          <option value="">
+            請選擇班級
+          </option>
+
+          <option value="C01|櫻桃班">
+            櫻桃班
+          </option>
+
+          <option value="C02|蘋果班">
+            蘋果班
+          </option>
+
+          <option value="C03|蝴蝶班">
+            蝴蝶班
+          </option>
+
+          <option value="C04|白兔班">
+            白兔班
+          </option>
+
+          <option value="C05|蜜蜂班">
+            蜜蜂班
+          </option>
+
+          <option value="C06|袋鼠班">
+            袋鼠班
+          </option>
+
+          <option value="C07|綿羊班">
+            綿羊班
+          </option>
+
+          <option value="C08|企鵝班">
+            企鵝班
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="group">
+
+        <label class="title">
+          幼兒姓名
+        </label>
 
         <input
           id="newChildName"
-          placeholder="幼兒姓名"
+          placeholder="請輸入幼兒姓名"
         >
 
       </div>
@@ -1070,14 +1071,13 @@ textarea:focus{
         class="btn btnPrimary"
         type="button"
         onclick="addChild()"
-        style="margin-top:9px"
       >
         新增幼兒
       </button>
 
 
       <div class="helper">
-        可綁定 1 位、3 位或更多幼兒，不限制固定胎數。正式上線後建議改由學校資料庫驗證，不只依賴瀏覽器儲存。
+        可綁定 1 位、3 位或更多幼兒。此版本仍屬測試版，幼兒資料暫存在使用者裝置中；正式上線後應改由後端資料庫驗證與綁定。
       </div>
 
     </div>
@@ -1092,11 +1092,58 @@ textarea:focus{
 
 const LIFF_ID = "2011537895-QkIp9Lh8";
 
+
+const CLASS_MAP = {
+
+  C01:{
+    name:"櫻桃班",
+    type:"2歲專班"
+  },
+
+  C02:{
+    name:"蘋果班",
+    type:"2歲專班"
+  },
+
+  C03:{
+    name:"蝴蝶班",
+    type:"全大"
+  },
+
+  C04:{
+    name:"白兔班",
+    type:"中大"
+  },
+
+  C05:{
+    name:"蜜蜂班",
+    type:"中大"
+  },
+
+  C06:{
+    name:"袋鼠班",
+    type:"中小"
+  },
+
+  C07:{
+    name:"綿羊班",
+    type:"中小"
+  },
+
+  C08:{
+    name:"企鵝班",
+    type:""
+  }
+
+};
+
+
 let lineUserId = "";
 let lineDisplayName = "";
 let currentPage = "pickup";
 let currentPickupMode = "正常放學";
 let children = [];
+
 
 const $ = id =>
   document.getElementById(id);
@@ -1105,14 +1152,29 @@ const $ = id =>
 
 function today(){
 
-  const d = new Date();
+  const d =
+    new Date();
 
   return (
     d.getFullYear()
-    + "-"
-    + String(d.getMonth()+1).padStart(2,"0")
-    + "-"
-    + String(d.getDate()).padStart(2,"0")
+    +
+    "-"
+    +
+    String(
+      d.getMonth()+1
+    ).padStart(
+      2,
+      "0"
+    )
+    +
+    "-"
+    +
+    String(
+      d.getDate()
+    ).padStart(
+      2,
+      "0"
+    )
   );
 
 }
@@ -1121,7 +1183,15 @@ function today(){
 
 function storageKey(){
 
-  return "children_bind_" + (lineUserId || "guest");
+  return (
+    "children_bind_"
+    +
+    (
+      lineUserId
+      ||
+      "guest"
+    )
+  );
 
 }
 
@@ -1129,7 +1199,15 @@ function storageKey(){
 
 function legacyKey(){
 
-  return "child_bind_" + (lineUserId || "guest");
+  return (
+    "child_bind_"
+    +
+    (
+      lineUserId
+      ||
+      "guest"
+    )
+  );
 
 }
 
@@ -1142,6 +1220,7 @@ function saveChildren(){
     JSON.stringify(children)
   );
 
+
   renderChildrenEverywhere();
 
 }
@@ -1152,8 +1231,11 @@ function loadChildren(){
 
   children = [];
 
+
   const multi =
-    localStorage.getItem(storageKey());
+    localStorage.getItem(
+      storageKey()
+    );
 
 
   if(multi){
@@ -1163,9 +1245,13 @@ function loadChildren(){
       const parsed =
         JSON.parse(multi);
 
-      if(Array.isArray(parsed)){
 
-        children = parsed;
+      if(
+        Array.isArray(parsed)
+      ){
+
+        children =
+          parsed;
 
       }
 
@@ -1208,11 +1294,29 @@ function loadChildren(){
           c.name
         ){
 
+          const matched =
+            Object
+              .entries(CLASS_MAP)
+              .find(
+                ([code,info]) =>
+                info.name === c.class
+              );
+
+
           children = [
 
             {
               id:cryptoId(),
-              class:c.class || "",
+              classId:
+                matched
+                ?
+                matched[0]
+                :
+                "",
+              className:
+                c.class
+                ||
+                "",
               name:c.name
             }
 
@@ -1244,7 +1348,9 @@ function loadChildren(){
   renderChildrenEverywhere();
 
 
-  if(children.length === 0){
+  if(
+    children.length === 0
+  ){
 
     setTimeout(
       openChildManager,
@@ -1265,7 +1371,9 @@ function cryptoId(){
     crypto.randomUUID
   ){
 
-    return crypto.randomUUID();
+    return (
+      crypto.randomUUID()
+    );
 
   }
 
@@ -1300,7 +1408,7 @@ function renderChildrenEverywhere(){
     children
       .map(
         c =>
-        `${c.class} ${c.name}`
+        `${c.className} ${c.name}`
       )
       .join("、")
     :
@@ -1343,7 +1451,9 @@ function renderManagerList(){
     $("boundChildren");
 
 
-  if(!children.length){
+  if(
+    !children.length
+  ){
 
     box.innerHTML =
     `
@@ -1371,7 +1481,7 @@ function renderManagerList(){
               </div>
 
               <div class="boundClass">
-                ${escapeHtml(c.class || "未填班級")}
+                ${escapeHtml(c.className || "未填班級")}
               </div>
 
             </div>
@@ -1402,7 +1512,9 @@ function renderPickerList(
     $(targetId);
 
 
-  if(!children.length){
+  if(
+    !children.length
+  ){
 
     box.innerHTML =
     `
@@ -1419,7 +1531,7 @@ function renderPickerList(
   box.innerHTML =
     children
       .map(
-        (c,i) =>
+        c =>
         `
           <label class="childPick">
 
@@ -1437,7 +1549,7 @@ function renderPickerList(
               </div>
 
               <div class="childClass">
-                ${escapeHtml(c.class || "未填班級")}
+                ${escapeHtml(c.className || "未填班級")}
               </div>
 
             </div>
@@ -1460,7 +1572,8 @@ function selectedChildren(prefix){
       )
     ]
     .map(
-      x => x.value
+      x =>
+      x.value
     );
 
 
@@ -1478,7 +1591,7 @@ function childrenText(list){
   return list
     .map(
       c =>
-      `${c.class} ${c.name}`.trim()
+      `${c.className} ${c.name}`.trim()
     )
     .join("、");
 
@@ -1488,10 +1601,8 @@ function childrenText(list){
 
 function addChild(){
 
-  const c =
-    $("newChildClass")
-      .value
-      .trim();
+  const rawClass =
+    $("newChildClass").value;
 
 
   const n =
@@ -1501,13 +1612,13 @@ function addChild(){
 
 
   if(
-    !c
+    !rawClass
     ||
     !n
   ){
 
     alert(
-      "請輸入班級與幼兒姓名。"
+      "請選擇班級並輸入幼兒姓名。"
     );
 
     return;
@@ -1515,16 +1626,25 @@ function addChild(){
   }
 
 
+  const [
+    classId,
+    className
+  ] =
+    rawClass.split("|");
+
+
   const duplicated =
     children.some(
       x =>
-      x.class === c
+      x.classId === classId
       &&
       x.name === n
     );
 
 
-  if(duplicated){
+  if(
+    duplicated
+  ){
 
     alert(
       "這位幼兒已經綁定過了。"
@@ -1538,15 +1658,19 @@ function addChild(){
   children.push(
     {
       id:cryptoId(),
-      class:c,
+      classId:classId,
+      className:className,
       name:n
     }
   );
 
 
-  $("newChildClass").value = "";
+  $("newChildClass").value =
+    "";
 
-  $("newChildName").value = "";
+
+  $("newChildName").value =
+    "";
 
 
   saveChildren();
@@ -1564,7 +1688,9 @@ function removeChild(id){
     );
 
 
-  if(!child){
+  if(
+    !child
+  ){
 
     return;
 
@@ -1573,7 +1699,7 @@ function removeChild(id){
 
   if(
     !confirm(
-      `確定要移除「${child.class} ${child.name}」嗎？`
+      `確定要移除「${child.className} ${child.name}」嗎？`
     )
   ){
 
@@ -1682,7 +1808,9 @@ function showPage(
   );
 
 
-  if(updateUrl){
+  if(
+    updateUrl
+  ){
 
     const u =
       new URL(
@@ -1764,7 +1892,7 @@ function setPickupMode(
 function pickerChange(){
 
   $("pickerNotice").style.display =
-    $("picker").value === "其他接送人員"
+    $("picker").value === "其他授權人員"
     ?
     "block"
     :
@@ -1812,7 +1940,9 @@ async function sendLine(text){
 
 function requireChildren(prefix){
 
-  if(!children.length){
+  if(
+    !children.length
+  ){
 
     alert(
       "請先綁定幼兒資料。"
@@ -1831,7 +1961,9 @@ function requireChildren(prefix){
     selectedChildren(prefix);
 
 
-  if(!list.length){
+  if(
+    !list.length
+  ){
 
     alert(
       "請至少勾選一位幼兒。"
@@ -1857,14 +1989,17 @@ async function submitPickup(){
     );
 
 
-  if(!list){
+  if(
+    !list
+  ){
 
     return;
 
   }
 
 
-  let detail = "";
+  let detail =
+    "";
 
 
   if(
@@ -1913,7 +2048,7 @@ async function submitPickup(){
     $("picker").value
     +
     (
-      $("picker").value === "其他接送人員"
+      $("picker").value === "其他授權人員"
       ?
       "（需攜帶接送卡核對）"
       :
@@ -1950,7 +2085,7 @@ ${currentPickupMode}`
 
 
     showStatus(
-      "✅ 接送通報已送出。若為多位幼兒，老師會依名單處理；現場仍需完成接送身分核對。"
+      "✅ 接送通報已送出。現場仍需完成接送身分核對。"
     );
 
   }
@@ -1977,7 +2112,9 @@ async function submitLeave(){
     );
 
 
-  if(!list){
+  if(
+    !list
+  ){
 
     return;
 
@@ -1988,7 +2125,9 @@ async function submitLeave(){
     $("leaveDate").value;
 
 
-  if(!date){
+  if(
+    !date
+  ){
 
     alert(
       "請選擇請假日期。"
@@ -2064,7 +2203,9 @@ async function submitExtended(){
     );
 
 
-  if(!list){
+  if(
+    !list
+  ){
 
     return;
 
@@ -2075,7 +2216,9 @@ async function submitExtended(){
     $("extendedDate").value;
 
 
-  if(!date){
+  if(
+    !date
+  ){
 
     alert(
       "請選擇日期。"
@@ -2139,7 +2282,9 @@ async function submitTemporary(){
     );
 
 
-  if(!list){
+  if(
+    !list
+  ){
 
     return;
 
@@ -2164,7 +2309,9 @@ async function submitTemporary(){
       .trim();
 
 
-  if(!date){
+  if(
+    !date
+  ){
 
     alert(
       "請選擇日期。"
@@ -2190,7 +2337,9 @@ async function submitTemporary(){
   }
 
 
-  if(!reason){
+  if(
+    !reason
+  ){
 
     alert(
       "請填寫申請原因。"
@@ -2332,12 +2481,8 @@ async function main(){
     today();
 
 
-  const requestedPage =
-    resolvePageFromUrl();
-
-
   showPage(
-    requestedPage,
+    resolvePageFromUrl(),
     false
   );
 
