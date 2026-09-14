@@ -502,9 +502,7 @@ details.rules summary{
 <div class="card">
 
 
-<!-- ======================== -->
 <!-- 頁首 -->
-<!-- ======================== -->
 
 <div class="header">
 
@@ -567,7 +565,7 @@ details.rules summary{
 </div>
 
 <div class="pageDesc">
-請選擇孩子今天原訂接回時間。若預計無法準時接回，請使用「我會晚到」提前通知。
+請選擇孩子今天原訂接回時間。若預計無法準時接回，請使用「我會晚到」通知老師。
 </div>
 
 
@@ -631,7 +629,7 @@ details.rules summary{
 </div>
 
 
-<!-- 提早 -->
+<!-- 提早接孩子 -->
 
 <div
   id="earlyBox"
@@ -643,10 +641,12 @@ details.rules summary{
 </label>
 
 <select id="earlyReason">
+
 <option>事假</option>
 <option>病假</option>
 <option>家庭因素</option>
 <option>其他原因</option>
+
 </select>
 
 <label
@@ -665,7 +665,7 @@ details.rules summary{
 </div>
 
 
-<!-- 晚到 -->
+<!-- 我會晚到 -->
 
 <div
   id="delayBox"
@@ -787,37 +787,62 @@ details.rules summary{
 <details class="rules">
 
 <summary>
-📋 接送與逾時規則
+📋 接送與延遲規則
 </summary>
 
 <div class="rulesBody">
 
+
 <div class="ruleCard">
+
 <b>✅ 16:00 正常放學</b><br>
-若預計晚到，請於 15:30 前通知。<br>
-16:10 過後完成交接，依園方規定收取 50 元逾時費。
+
+16:05 若仍未完成交接，正式系統將自動提醒家長。<br>
+
+16:10 過後完成交接，列為「延遲接回」，依園方規定收取 50 元。<br><br>
+
+<b>16:00 的延遲接回不屬於延長照顧逾時接送，也不列入無故延遲三次累計。</b>
+
 </div>
 
+
 <div class="ruleCard">
+
 <b>🎒 第一梯 17:00</b><br>
-若預計晚到，請於 16:30 前通知課後老師。<br>
-17:05 過後完成交接，依園方規定收取 35 元逾時費。
+
+若預計無法準時接回，最晚請於 16:30 前通知課後老師。<br>
+
+17:05 過後完成交接，列為「逾時接送」，依園方規定收取 35 元。
+
 </div>
 
+
 <div class="ruleCard">
+
 <b>🌙 第二梯 18:00</b><br>
-若預計晚到，請於 17:30 前通知課後老師。<br>
-18:05 過後完成交接，依園方規定收取 30 元逾時費。
+
+若預計無法準時接回，最晚請於 17:30 前通知課後老師。<br>
+
+18:05 過後完成交接，列為「逾時接送」，依園方規定收取 30 元。
+
 </div>
 
+
 <div class="ruleCard">
-<b>⚠️ 無故延遲</b><br>
-若幼兒實際發生逾時接送，且家長未於原訂接回時間前 30 分鐘完成通報，列為一次無故延遲接回紀錄。<br><br>
+
+<b>⚠️ 無故延遲接回</b><br>
+
+僅適用第一梯及第二梯延長照顧。<br><br>
+
+若實際發生逾時接送，且家長未於原訂接回時間前 30 分鐘完成通知，即列為一次「無故延遲接回」。<br><br>
+
 無故延遲接回累計達三次，將依園方規定處理延長照顧服務資格。
+
 </div>
+
 
 <div class="helper">
-正式逾時與費用以老師端記錄的「實際完成交接時間」為準。
+正式是否延遲、是否逾時及相關費用，以老師端記錄的「實際完成交接時間」為準。
 </div>
 
 </div>
@@ -881,10 +906,12 @@ details.rules summary{
 </label>
 
 <select id="leaveReason">
+
 <option>病假</option>
 <option>事假</option>
 <option>家庭因素</option>
 <option>其他</option>
+
 </select>
 
 </div>
@@ -936,7 +963,7 @@ details.rules summary{
 </div>
 
 <div class="notice noticeBlue">
-📌 17:00 接回異動，請於 16:30 前通知課後老師。
+📌 第一梯原訂 17:00 接回，如需異動請最晚於 16:30 前通知課後老師。
 </div>
 
 <div class="group">
@@ -1316,27 +1343,46 @@ const CLASS_MAP = {
 };
 
 
+/*
+  16:00：
+  屬於「延遲接回」
+  不屬於延長照顧逾時接送
+  不計入無故延遲三次
+
+  17:00、18:00：
+  才屬於延長照顧逾時接送
+*/
+
 const LATE_RULES = {
 
   "16:00":{
     name:"16:00 正常放學",
-    noticeDeadline:"15:30",
+    statusName:"延遲接回",
+    reminderAt:"16:05",
+    noticeDeadline:null,
     lateAfter:"16:10",
-    fee:50
+    fee:50,
+    countsAsAftercareLate:false
   },
 
   "17:00":{
     name:"17:00 第一梯",
+    statusName:"逾時接送",
+    reminderAt:null,
     noticeDeadline:"16:30",
     lateAfter:"17:05",
-    fee:35
+    fee:35,
+    countsAsAftercareLate:true
   },
 
   "18:00":{
     name:"18:00 第二梯",
+    statusName:"逾時接送",
+    reminderAt:null,
     noticeDeadline:"17:30",
     lateAfter:"18:05",
-    fee:30
+    fee:30,
+    countsAsAftercareLate:true
   }
 
 };
@@ -1406,6 +1452,12 @@ function nowTimeText(){
 
 
 function timeToMinutes(time){
+
+  if(
+    !time
+  ){
+    return 0;
+  }
 
   const parts =
     time.split(":");
@@ -2103,19 +2155,57 @@ function refreshLateNotice(){
       <div class="ruleTitle">
         ${rule.name}
       </div>
+    `;
 
+
+  if(
+    original === "16:00"
+  ){
+
+    html +=
+    `
       <div class="ruleLine">
-        📢 晚到通知期限：${rule.noticeDeadline}
+        🔔 16:05 尚未完成交接：正式系統將自動提醒家長
       </div>
 
       <div class="ruleLine">
-        ⏰ 逾時起算：${rule.lateAfter} 過後
+        ⏰ 16:10 過後：列為「延遲接回」
+      </div>
+
+      <div class="ruleLine">
+        💰 延遲接回費用：50 元
+      </div>
+
+      <div
+        style="
+          margin-top:8px;
+          color:#1565c0;
+          font-weight:700;
+        "
+      >
+        16:00 正常放學不屬於延長照顧逾時接送，也不計入無故延遲三次。
+      </div>
+    `;
+
+  }
+  else{
+
+    html +=
+    `
+      <div class="ruleLine">
+        📢 最晚通知時間：${rule.noticeDeadline}
+      </div>
+
+      <div class="ruleLine">
+        ⏰ ${rule.lateAfter} 過後：列為「逾時接送」
       </div>
 
       <div class="ruleLine">
         💰 逾時費用：${rule.fee} 元
       </div>
     `;
+
+  }
 
 
   if(
@@ -2135,7 +2225,10 @@ function refreshLateNotice(){
             font-weight:800;
           "
         >
-          ⚠️ 您填寫的預計抵達時間已超過逾時門檻，可能產生 ${rule.fee} 元逾時費。
+          ⚠️ 您填寫的預計抵達時間已超過
+          ${rule.lateAfter}，
+          可能產生 ${rule.fee} 元
+          ${rule.statusName}費用。
         </div>
       `;
 
@@ -2144,6 +2237,27 @@ function refreshLateNotice(){
 
   $("lateRuleInfo").innerHTML =
     html;
+
+
+  /*
+    只有17:00、18:00
+    才有「提前30分鐘通知」
+    與無故延遲判斷
+  */
+
+  if(
+    !rule.noticeDeadline
+  ){
+
+    $("deadlineWarning").style.display =
+      "none";
+
+    $("deadlineWarning").innerHTML =
+      "";
+
+    return;
+
+  }
 
 
   const now =
@@ -2168,7 +2282,9 @@ function refreshLateNotice(){
       `
         ⚠️ 現在時間為 ${now}，已超過 ${rule.noticeDeadline} 的提前通知期限。<br><br>
 
-        本次通報仍可送出，老師仍需要知道您會晚到。若最後實際接回時間也超過逾時門檻，正式系統將依園方規定判斷是否列入無故延遲紀錄。
+        本次通報仍可送出，老師仍需要知道您會晚到。<br><br>
+
+        若最後實際交接時間也超過 ${rule.lateAfter}，正式系統將列為「逾時接送」，並依規定判斷為一次無故延遲接回。
       `;
 
   }
@@ -2280,6 +2396,7 @@ async function submitPickup(){
 
   }
 
+
   let detail =
     "";
 
@@ -2329,13 +2446,6 @@ async function submitPickup(){
     const submitTime =
       nowTimeText();
 
-    const afterDeadline =
-      timeToMinutes(submitTime)
-      >
-      timeToMinutes(
-        rule.noticeDeadline
-      );
-
     const estimatedLate =
       arrival
       &&
@@ -2345,46 +2455,100 @@ async function submitPickup(){
         rule.lateAfter
       );
 
-    detail =
-      "\n⏰ 原訂接回："
-      +
-      original
-      +
-      "\n📢 提前通知期限："
-      +
-      rule.noticeDeadline
-      +
-      "\n🕒 本次通報時間："
-      +
-      submitTime
-      +
-      "\n📌 晚到原因："
-      +
-      reason
-      +
-      "\n🚗 預計抵達："
-      +
-      arrival
-      +
-      "\n⚠️ 是否超過通知期限："
-      +
-      (
-        afterDeadline
-        ?
-        "是"
-        :
-        "否"
-      )
-      +
-      "\n💰 預計抵達是否超過逾時門檻："
-      +
-      (
-        estimatedLate
-        ?
-        `是，可能產生${rule.fee}元逾時費`
-        :
-        "否"
-      );
+
+    if(
+      original === "16:00"
+    ){
+
+      detail =
+        "\n⏰ 原訂接回：16:00"
+        +
+        "\n🕒 本次通報時間："
+        +
+        submitTime
+        +
+        "\n📌 晚到原因："
+        +
+        reason
+        +
+        "\n🚗 預計抵達："
+        +
+        arrival
+        +
+        "\n📍 狀態："
+        +
+        (
+          estimatedLate
+          ?
+          "可能超過16:10，屬延遲接回"
+          :
+          "目前預計未超過延遲接回門檻"
+        )
+        +
+        "\n💰 延遲接回費："
+        +
+        (
+          estimatedLate
+          ?
+          "可能50元"
+          :
+          "目前預計0元"
+        )
+        +
+        "\nℹ️ 16:00延遲接回不列入延長照顧無故逾時累計";
+
+    }
+    else{
+
+      const afterDeadline =
+        timeToMinutes(submitTime)
+        >
+        timeToMinutes(
+          rule.noticeDeadline
+        );
+
+      detail =
+        "\n⏰ 原訂接回："
+        +
+        original
+        +
+        "\n📢 提前通知期限："
+        +
+        rule.noticeDeadline
+        +
+        "\n🕒 本次通報時間："
+        +
+        submitTime
+        +
+        "\n📌 晚到原因："
+        +
+        reason
+        +
+        "\n🚗 預計抵達："
+        +
+        arrival
+        +
+        "\n⚠️ 是否超過提前通知期限："
+        +
+        (
+          afterDeadline
+          ?
+          "是"
+          :
+          "否"
+        )
+        +
+        "\n💰 預計是否超過逾時門檻："
+        +
+        (
+          estimatedLate
+          ?
+          `是，可能產生${rule.fee}元逾時費`
+          :
+          "否"
+        );
+
+    }
 
   }
 
@@ -2432,7 +2596,7 @@ ${currentPickupMode}`
     ){
 
       showStatus(
-        "🟠 晚到通報已送出。實際是否逾時及相關費用，正式版將以老師端完成交接時間為準。"
+        "🟠 晚到通報已送出。正式是否延遲、是否逾時及相關費用，將以老師端實際完成交接時間為準。"
       );
 
     }
@@ -2573,14 +2737,14 @@ async function submitExtended(){
   const submitTime =
     nowTimeText();
 
-  const lateNotice =
+  const afterDeadline =
     timeToMinutes(submitTime)
     >
     timeToMinutes("16:30");
 
 
   if(
-    lateNotice
+    afterDeadline
   ){
 
     const ok =
@@ -2589,7 +2753,7 @@ async function submitExtended(){
 
 仍要送出延長托育需求嗎？
 
-老師仍需要收到這筆通知，但正式版會標示為逾時異動。`
+老師仍需要收到這筆通知，但正式版會標示為超過通知期限。`
       );
 
     if(
@@ -2610,7 +2774,7 @@ async function submitExtended(){
 ⏰ 原訂：第一梯17:00
 ➡️ 申請延長：至18:00
 🕒 通報時間：${submitTime}
-⚠️ 是否超過16:30通知期限：${lateNotice ? "是" : "否"}
+⚠️ 是否超過16:30通知期限：${afterDeadline ? "是" : "否"}
 📌 備註：${$("extendedNote").value.trim() || "無"}
 👤 通報家長：${lineDisplayName || "家長"}`;
 
@@ -2633,7 +2797,7 @@ async function submitExtended(){
     await sendLine(msg);
 
     showStatus(
-      lateNotice
+      afterDeadline
       ?
       "⚠️ 延長托育需求已送出，但本次已超過16:30通知期限。"
       :
