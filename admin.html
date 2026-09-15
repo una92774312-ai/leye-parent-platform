@@ -1,0 +1,2142 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+>
+
+<title>樂業附幼｜老師行政後台</title>
+
+<style>
+
+:root{
+  --green:#2e7d32;
+  --green-light:#e8f5e9;
+
+  --blue:#1976d2;
+  --blue-light:#e3f2fd;
+
+  --orange:#ef6c00;
+  --orange-light:#fff3e0;
+
+  --red:#d32f2f;
+  --red-light:#ffebee;
+
+  --purple:#7b1fa2;
+  --purple-light:#f3e5f5;
+
+  --gray:#607d8b;
+  --gray-light:#f5f7f7;
+
+  --text:#263238;
+  --muted:#78909c;
+  --line:#e2e8ea;
+  --bg:#f4f7f6;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Noto Sans TC",
+    Roboto,
+    sans-serif;
+}
+
+.app{
+  max-width:720px;
+  margin:auto;
+  padding:
+    12px
+    12px
+    calc(30px + env(safe-area-inset-bottom));
+}
+
+.header{
+  background:#fff;
+  border-radius:18px;
+  padding:16px;
+  box-shadow:0 6px 20px rgba(0,0,0,.05);
+}
+
+.brand{
+  font-size:1.25rem;
+  font-weight:900;
+  color:#1b5e20;
+}
+
+.subtitle{
+  margin-top:4px;
+  font-size:.85rem;
+  color:var(--muted);
+}
+
+.roleBox{
+  margin-top:14px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.roleBox select{
+  flex:1;
+}
+
+select,
+input,
+textarea{
+  width:100%;
+  padding:11px 12px;
+  border:1.5px solid #cfd8dc;
+  border-radius:11px;
+  font-size:16px;
+  background:#fff;
+  font-family:inherit;
+}
+
+.notice{
+  margin-top:12px;
+  padding:10px 12px;
+  border-radius:11px;
+  background:#fff8e1;
+  color:#795548;
+  font-size:.84rem;
+  line-height:1.5;
+}
+
+.summaryGrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:9px;
+  margin-top:14px;
+}
+
+.summaryCard{
+  background:#fff;
+  border-radius:15px;
+  padding:14px;
+  box-shadow:0 4px 14px rgba(0,0,0,.04);
+}
+
+.summaryNumber{
+  font-size:1.65rem;
+  font-weight:900;
+}
+
+.summaryLabel{
+  font-size:.82rem;
+  color:var(--muted);
+  margin-top:3px;
+}
+
+.redText{
+  color:var(--red);
+}
+
+.orangeText{
+  color:var(--orange);
+}
+
+.purpleText{
+  color:var(--purple);
+}
+
+.greenText{
+  color:var(--green);
+}
+
+.tabs{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+  margin-top:14px;
+  background:#fff;
+  padding:8px;
+  border-radius:14px;
+}
+
+.tab{
+  border:0;
+  border-radius:10px;
+  padding:9px 4px;
+  background:var(--gray-light);
+  color:#546e7a;
+  font-size:.76rem;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.tab.active{
+  background:var(--green-light);
+  color:#1b5e20;
+}
+
+.section{
+  margin-top:14px;
+}
+
+.sectionTitle{
+  font-size:1.05rem;
+  font-weight:900;
+  margin-bottom:9px;
+}
+
+.sectionDesc{
+  color:var(--muted);
+  font-size:.82rem;
+  margin-bottom:10px;
+  line-height:1.45;
+}
+
+.card{
+  background:#fff;
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:10px;
+  box-shadow:0 4px 14px rgba(0,0,0,.04);
+  border-left:5px solid #cfd8dc;
+}
+
+.card.red{
+  border-left-color:var(--red);
+}
+
+.card.orange{
+  border-left-color:var(--orange);
+}
+
+.card.purple{
+  border-left-color:var(--purple);
+}
+
+.card.green{
+  border-left-color:var(--green);
+}
+
+.card.blue{
+  border-left-color:var(--blue);
+}
+
+.cardTop{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+
+.childMain{
+  flex:1;
+}
+
+.childName{
+  font-size:1.05rem;
+  font-weight:900;
+}
+
+.meta{
+  margin-top:4px;
+  color:#607d8b;
+  font-size:.84rem;
+  line-height:1.55;
+}
+
+.badge{
+  display:inline-block;
+  border-radius:999px;
+  padding:5px 8px;
+  font-size:.74rem;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.badgeRed{
+  background:var(--red-light);
+  color:#b71c1c;
+}
+
+.badgeOrange{
+  background:var(--orange-light);
+  color:#e65100;
+}
+
+.badgePurple{
+  background:var(--purple-light);
+  color:#6a1b9a;
+}
+
+.badgeGreen{
+  background:var(--green-light);
+  color:#1b5e20;
+}
+
+.badgeBlue{
+  background:var(--blue-light);
+  color:#0d47a1;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+
+.btn{
+  border:0;
+  border-radius:10px;
+  padding:10px 12px;
+  font-size:.88rem;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.btnGreen{
+  background:var(--green);
+  color:#fff;
+}
+
+.btnBlue{
+  background:var(--blue);
+  color:#fff;
+}
+
+.btnPurple{
+  background:var(--purple);
+  color:#fff;
+}
+
+.btnOrange{
+  background:var(--orange);
+  color:#fff;
+}
+
+.btnLight{
+  background:#eceff1;
+  color:#455a64;
+}
+
+.btnRedLight{
+  background:var(--red-light);
+  color:#b71c1c;
+}
+
+.hidden{
+  display:none!important;
+}
+
+.empty{
+  background:#fff;
+  border:1.5px dashed #b0bec5;
+  border-radius:14px;
+  padding:18px;
+  text-align:center;
+  color:var(--muted);
+}
+
+.filterBar{
+  background:#fff;
+  border-radius:14px;
+  padding:10px;
+  margin-bottom:10px;
+}
+
+.aftercareRow{
+  display:grid;
+  grid-template-columns:1.1fr 1fr 1fr;
+  gap:8px;
+  padding:10px 0;
+  border-bottom:1px solid #edf1f2;
+  align-items:center;
+}
+
+.aftercareRow:last-child{
+  border-bottom:0;
+}
+
+.aftercareHead{
+  font-size:.78rem;
+  color:var(--muted);
+  font-weight:800;
+}
+
+.aftercareValue{
+  font-size:.88rem;
+}
+
+.assignmentSelect{
+  margin-top:10px;
+}
+
+.warning{
+  margin-top:10px;
+  padding:9px 10px;
+  background:var(--red-light);
+  color:#b71c1c;
+  border-radius:10px;
+  font-size:.82rem;
+  line-height:1.5;
+}
+
+.success{
+  margin-top:10px;
+  padding:9px 10px;
+  background:var(--green-light);
+  color:#1b5e20;
+  border-radius:10px;
+  font-size:.82rem;
+  line-height:1.5;
+}
+
+.modalBackdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(38,50,56,.45);
+  display:none;
+  justify-content:center;
+  align-items:flex-end;
+  z-index:100;
+}
+
+.modal{
+  width:100%;
+  max-width:720px;
+  background:#fff;
+  border-radius:20px 20px 0 0;
+  padding:18px;
+}
+
+.modalTitle{
+  font-size:1.1rem;
+  font-weight:900;
+}
+
+.modalText{
+  margin-top:9px;
+  line-height:1.6;
+  color:#546e7a;
+}
+
+.modalActions{
+  display:flex;
+  gap:8px;
+  margin-top:16px;
+}
+
+.modalActions button{
+  flex:1;
+}
+
+@media (min-width:600px){
+
+  .summaryGrid{
+    grid-template-columns:repeat(4,1fr);
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<div class="header">
+
+<div class="brand">
+樂業附幼｜老師行政後台
+</div>
+
+<div class="subtitle">
+正常流程由系統自動處理，老師主要看異常與需要處理的幼兒。
+</div>
+
+
+<!-- 測試用角色切換 -->
+
+<div class="roleBox">
+
+<select
+  id="roleSelect"
+  onchange="changeRole()"
+>
+
+<option value="admin">
+行政｜全園
+</option>
+
+<option value="class">
+上午班老師｜袋鼠班
+</option>
+
+<option value="aftercare">
+課後老師｜蜜蜂班
+</option>
+
+</select>
+
+</div>
+
+
+<div class="notice">
+⚠️ 這是後台畫面測試版，目前使用假資料。正式版會改成 LINE 登入＋後端權限驗證，不會讓未授權的人看到幼兒資料。
+</div>
+
+</div>
+
+
+<!-- 今日統計 -->
+
+<div class="summaryGrid">
+
+<div class="summaryCard">
+<div
+  id="summaryPending"
+  class="summaryNumber orangeText"
+>
+0
+</div>
+<div class="summaryLabel">
+待處理
+</div>
+</div>
+
+<div class="summaryCard">
+<div
+  id="summaryAftercare"
+  class="summaryNumber purpleText"
+>
+0
+</div>
+<div class="summaryLabel">
+課後照顧中
+</div>
+</div>
+
+<div class="summaryCard">
+<div
+  id="summaryException"
+  class="summaryNumber redText"
+>
+0
+</div>
+<div class="summaryLabel">
+異常
+</div>
+</div>
+
+<div class="summaryCard">
+<div
+  id="summaryCompleted"
+  class="summaryNumber greenText"
+>
+0
+</div>
+<div class="summaryLabel">
+已離園
+</div>
+</div>
+
+</div>
+
+
+<!-- 分頁 -->
+
+<div class="tabs">
+
+<button
+  id="tabToday"
+  class="tab active"
+  onclick="showTab('today')"
+>
+今日總覽
+</button>
+
+<button
+  id="tabFlow"
+  class="tab"
+  onclick="showTab('flow')"
+>
+16:00分流
+</button>
+
+<button
+  id="tabAssign"
+  class="tab"
+  onclick="showTab('assign')"
+>
+待分班
+</button>
+
+<button
+  id="tabLate"
+  class="tab"
+  onclick="showTab('late')"
+>
+晚到逾時
+</button>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- 今日總覽 -->
+<!-- ========================= -->
+
+<div
+  id="todaySection"
+  class="section"
+>
+
+<div class="sectionTitle">
+🔔 現在需要處理
+</div>
+
+<div class="sectionDesc">
+正常孩子不需要老師一直操作。這裡只顯示需要注意的狀況。
+</div>
+
+<div id="attentionList"></div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- 16:00課後分流 -->
+<!-- ========================= -->
+
+<div
+  id="flowSection"
+  class="section hidden"
+>
+
+<div class="sectionTitle">
+🏫 16:00 課後分流表
+</div>
+
+<div class="sectionDesc">
+16:00 前已完成接送的幼兒不會進入課後班；未離園且已有課後安排者，系統自動進入指定課後班，不需要老師逐一按交接。
+</div>
+
+<div class="filterBar">
+
+<select
+  id="flowClassFilter"
+  onchange="renderFlow()"
+>
+
+<option value="all">
+全部課後班
+</option>
+
+<option value="蝴蝶班">
+蝴蝶班｜混齡｜18:00
+</option>
+
+<option value="白兔班">
+白兔班｜混齡｜17:00
+</option>
+
+<option value="蜜蜂班">
+蜜蜂班｜混齡｜18:00
+</option>
+
+<option value="陽光書屋班">
+陽光書屋班｜混齡｜17:00
+</option>
+
+<option value="櫻桃班">
+櫻桃班｜幼幼
+</option>
+
+<option value="蘋果班">
+蘋果班｜幼幼
+</option>
+
+</select>
+
+</div>
+
+<div id="flowList"></div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- 待分班 -->
+<!-- ========================= -->
+
+<div
+  id="assignSection"
+  class="section hidden"
+>
+
+<div class="sectionTitle">
+🟣 臨時／延長托育待分班
+</div>
+
+<div class="sectionDesc">
+家長送出需求後，由園方依當日人數手動指定課後班。班級確定後，正式系統會通知家長。
+</div>
+
+<div id="assignList"></div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- 晚到 / 逾時 -->
+<!-- ========================= -->
+
+<div
+  id="lateSection"
+  class="section hidden"
+>
+
+<div class="sectionTitle">
+⏰ 晚到與逾時
+</div>
+
+<div class="sectionDesc">
+老師不用自己計算費用或無故延遲次數。正式版會依通報時間與完成接送時間自動判斷。
+</div>
+
+<div id="lateList"></div>
+
+</div>
+
+</div>
+
+
+<!-- 二次確認 -->
+
+<div
+  id="confirmModal"
+  class="modalBackdrop"
+>
+
+<div class="modal">
+
+<div
+  id="confirmTitle"
+  class="modalTitle"
+>
+確認完成接送
+</div>
+
+<div
+  id="confirmText"
+  class="modalText"
+></div>
+
+<div class="modalActions">
+
+<button
+  class="btn btnLight"
+  onclick="closeConfirm()"
+>
+取消
+</button>
+
+<button
+  class="btn btnGreen"
+  onclick="confirmPickup()"
+>
+確認完成
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+/*
+  ==================================================
+  測試資料
+  正式版之後會改成從資料庫讀取
+  ==================================================
+*/
+
+
+const childrenData = [
+
+  {
+    id:"S001",
+    name:"王○○",
+    morningClass:"袋鼠班",
+    aftercareClass:"蜜蜂班",
+    pickupTime:"18:00",
+    careType:"固定第二梯",
+    status:"aftercare",
+    needsAttention:false
+  },
+
+  {
+    id:"S002",
+    name:"李○○",
+    morningClass:"白兔班",
+    aftercareClass:"陽光書屋班",
+    pickupTime:"17:00",
+    careType:"固定第一梯",
+    status:"aftercare",
+    needsAttention:false
+  },
+
+  {
+    id:"S003",
+    name:"陳○○",
+    morningClass:"綿羊班",
+    aftercareClass:"",
+    pickupTime:"16:00",
+    careType:"無課後安排",
+    status:"waiting",
+    needsAttention:true,
+    attentionType:"16:00未接回"
+  },
+
+  {
+    id:"S004",
+    name:"林○○",
+    morningClass:"蝴蝶班",
+    aftercareClass:"",
+    pickupTime:"18:00",
+    careType:"臨時托育",
+    status:"need_assignment",
+    requestedPeriod:"16:00～18:00",
+    needsAttention:true,
+    attentionType:"待分班"
+  },
+
+  {
+    id:"S005",
+    name:"張○○",
+    morningClass:"蜜蜂班",
+    aftercareClass:"",
+    pickupTime:"18:00",
+    careType:"延長托育",
+    status:"need_assignment",
+    requestedPeriod:"17:00～18:00",
+    needsAttention:true,
+    attentionType:"待分班"
+  },
+
+  {
+    id:"S006",
+    name:"黃○○",
+    morningClass:"白兔班",
+    aftercareClass:"白兔班",
+    pickupTime:"17:00",
+    careType:"固定第一梯",
+    status:"late_notice",
+    noticeTime:"16:42",
+    noticeDeadline:"16:30",
+    expectedArrival:"17:15",
+    lateAfter:"17:05",
+    fee:35,
+    needsAttention:true,
+    attentionType:"晚到"
+  },
+
+  {
+    id:"S007",
+    name:"吳○○",
+    morningClass:"櫻桃班",
+    aftercareClass:"櫻桃班",
+    pickupTime:"17:00",
+    careType:"幼幼課後",
+    status:"aftercare",
+    needsAttention:false
+  },
+
+  {
+    id:"S008",
+    name:"周○○",
+    morningClass:"蘋果班",
+    aftercareClass:"",
+    pickupTime:"16:00",
+    careType:"正常放學",
+    status:"completed",
+    completedTime:"15:58",
+    needsAttention:false
+  },
+
+  {
+    id:"S009",
+    name:"鄭○○",
+    morningClass:"袋鼠班",
+    aftercareClass:"蜜蜂班",
+    pickupTime:"18:00",
+    careType:"固定第二梯",
+    status:"completed",
+    completedTime:"17:52",
+    needsAttention:false
+  }
+
+];
+
+
+/*
+  課後班級
+*/
+
+const AFTERCARE_CLASSES = [
+
+  {
+    id:"AC01",
+    name:"蝴蝶班",
+    group:"混齡",
+    endTime:"18:00"
+  },
+
+  {
+    id:"AC02",
+    name:"白兔班",
+    group:"混齡",
+    endTime:"17:00"
+  },
+
+  {
+    id:"AC03",
+    name:"蜜蜂班",
+    group:"混齡",
+    endTime:"18:00"
+  },
+
+  {
+    id:"AC04",
+    name:"陽光書屋班",
+    group:"混齡",
+    endTime:"17:00"
+  },
+
+  {
+    id:"AC05",
+    name:"櫻桃班",
+    group:"幼幼",
+    endTime:""
+  },
+
+  {
+    id:"AC06",
+    name:"蘋果班",
+    group:"幼幼",
+    endTime:""
+  }
+
+];
+
+
+let currentRole =
+  "admin";
+
+let currentConfirmId =
+  null;
+
+
+const $ =
+  id =>
+  document.getElementById(id);
+
+
+/*
+  ==================================================
+  分頁
+  ==================================================
+*/
+
+function showTab(tab){
+
+  const tabs =
+  [
+    "today",
+    "flow",
+    "assign",
+    "late"
+  ];
+
+
+  tabs.forEach(
+    name => {
+
+      $(name+"Section")
+        .classList
+        .toggle(
+          "hidden",
+          name !== tab
+        );
+
+
+      $(
+        "tab"
+        +
+        name[0].toUpperCase()
+        +
+        name.slice(1)
+      )
+      .classList
+      .toggle(
+        "active",
+        name === tab
+      );
+
+    }
+  );
+
+}
+
+
+/*
+  ==================================================
+  角色測試
+  ==================================================
+*/
+
+function changeRole(){
+
+  currentRole =
+    $("roleSelect").value;
+
+
+  renderAll();
+
+}
+
+
+/*
+  ==================================================
+  權限篩選
+  ==================================================
+*/
+
+function visibleChildren(){
+
+  if(
+    currentRole === "admin"
+  ){
+
+    return childrenData;
+
+  }
+
+
+  if(
+    currentRole === "class"
+  ){
+
+    /*
+      測試：
+      上午班老師只看袋鼠班
+    */
+
+    return childrenData.filter(
+      c =>
+      c.morningClass === "袋鼠班"
+    );
+
+  }
+
+
+  if(
+    currentRole === "aftercare"
+  ){
+
+    /*
+      測試：
+      課後老師只看蜜蜂班
+    */
+
+    return childrenData.filter(
+      c =>
+      c.aftercareClass === "蜜蜂班"
+    );
+
+  }
+
+
+  return [];
+
+}
+
+
+/*
+  ==================================================
+  今日統計
+  ==================================================
+*/
+
+function renderSummary(){
+
+  const list =
+    visibleChildren();
+
+
+  const pending =
+    list.filter(
+      c =>
+      c.status === "waiting"
+      ||
+      c.status === "late_notice"
+      ||
+      c.status === "need_assignment"
+    ).length;
+
+
+  const aftercare =
+    list.filter(
+      c =>
+      c.status === "aftercare"
+    ).length;
+
+
+  const exception =
+    list.filter(
+      c =>
+      c.needsAttention
+    ).length;
+
+
+  const completed =
+    list.filter(
+      c =>
+      c.status === "completed"
+    ).length;
+
+
+  $("summaryPending").textContent =
+    pending;
+
+
+  $("summaryAftercare").textContent =
+    aftercare;
+
+
+  $("summaryException").textContent =
+    exception;
+
+
+  $("summaryCompleted").textContent =
+    completed;
+
+}
+
+
+/*
+  ==================================================
+  今日需要處理
+  ==================================================
+*/
+
+function renderAttention(){
+
+  const list =
+    visibleChildren()
+      .filter(
+        c =>
+        c.needsAttention
+      );
+
+
+  const box =
+    $("attentionList");
+
+
+  if(
+    !list.length
+  ){
+
+    box.innerHTML =
+    `
+      <div class="empty">
+        🎉 目前沒有需要特別處理的狀況。
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    list
+      .map(
+        c =>
+        attentionCard(c)
+      )
+      .join("");
+
+}
+
+
+function attentionCard(c){
+
+  if(
+    c.status === "waiting"
+  ){
+
+    return `
+      <div class="card red">
+
+        <div class="cardTop">
+
+          <div class="childMain">
+
+            <div class="childName">
+              ${c.morningClass}｜${c.name}
+            </div>
+
+            <div class="meta">
+              原訂接回：${c.pickupTime}<br>
+              課後安排：無<br>
+              狀態：尚未完成接送
+            </div>
+
+          </div>
+
+          <span class="badge badgeRed">
+            需要處理
+          </span>
+
+        </div>
+
+        <div class="warning">
+          此幼兒目前沒有課後安排，若仍未接回，不會自動分流到課後班。
+        </div>
+
+        <div class="actions">
+
+          <button
+            class="btn btnGreen"
+            onclick="openPickupConfirm('${c.id}')"
+          >
+            完成接送
+          </button>
+
+          <button
+            class="btn btnOrange"
+            onclick="alert('正式版可由系統或行政聯絡家長')"
+          >
+            聯絡家長
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+  }
+
+
+  if(
+    c.status === "need_assignment"
+  ){
+
+    return `
+      <div class="card purple">
+
+        <div class="cardTop">
+
+          <div class="childMain">
+
+            <div class="childName">
+              ${c.morningClass}｜${c.name}
+            </div>
+
+            <div class="meta">
+              ${c.careType}<br>
+              時段：${c.requestedPeriod}<br>
+              課後班：尚未分配
+            </div>
+
+          </div>
+
+          <span class="badge badgePurple">
+            待分班
+          </span>
+
+        </div>
+
+        <div class="actions">
+
+          <button
+            class="btn btnPurple"
+            onclick="showTab('assign')"
+          >
+            指定課後班
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+  }
+
+
+  if(
+    c.status === "late_notice"
+  ){
+
+    const missedDeadline =
+      timeToMinutes(c.noticeTime)
+      >
+      timeToMinutes(c.noticeDeadline);
+
+
+    return `
+      <div class="card orange">
+
+        <div class="cardTop">
+
+          <div class="childMain">
+
+            <div class="childName">
+              ${c.morningClass}｜${c.name}
+            </div>
+
+            <div class="meta">
+              原訂：${c.pickupTime}<br>
+              家長通報：${c.noticeTime}<br>
+              預計抵達：${c.expectedArrival}
+            </div>
+
+          </div>
+
+          <span class="badge badgeOrange">
+            晚到
+          </span>
+
+        </div>
+
+        ${
+          missedDeadline
+          ?
+          `
+            <div class="warning">
+              已超過提前30分鐘通知期限。若實際接送時間超過 ${c.lateAfter}，正式版將自動列入一次無故延遲。
+            </div>
+          `
+          :
+          ""
+        }
+
+        <div class="actions">
+
+          <button
+            class="btn btnGreen"
+            onclick="openPickupConfirm('${c.id}')"
+          >
+            完成接送
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+  }
+
+
+  return "";
+
+}
+
+
+/*
+  ==================================================
+  16:00課後分流
+  ==================================================
+*/
+
+function renderFlow(){
+
+  const roleList =
+    visibleChildren();
+
+
+  const filter =
+    $("flowClassFilter").value;
+
+
+  /*
+    只有仍在課後照顧中的孩子
+    才放進分流表
+  */
+
+  let list =
+    roleList.filter(
+      c =>
+      c.status === "aftercare"
+    );
+
+
+  if(
+    filter !== "all"
+  ){
+
+    list =
+      list.filter(
+        c =>
+        c.aftercareClass === filter
+      );
+
+  }
+
+
+  const box =
+    $("flowList");
+
+
+  if(
+    !list.length
+  ){
+
+    box.innerHTML =
+    `
+      <div class="empty">
+        目前沒有符合條件的課後幼兒。
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    `
+      <div class="card">
+
+        <div class="aftercareRow aftercareHead">
+
+          <div>
+            幼兒
+          </div>
+
+          <div>
+            上午班
+          </div>
+
+          <div>
+            課後班
+          </div>
+
+        </div>
+
+        ${
+          list
+            .map(
+              c =>
+              `
+                <div class="aftercareRow">
+
+                  <div class="aftercareValue">
+                    <b>${c.name}</b><br>
+                    ${c.pickupTime}接回
+                  </div>
+
+                  <div class="aftercareValue">
+                    ${c.morningClass}
+                  </div>
+
+                  <div class="aftercareValue">
+                    <b>${c.aftercareClass}</b><br>
+                    <span class="badge badgeGreen">
+                      課後照顧中
+                    </span>
+                  </div>
+
+                </div>
+              `
+            )
+            .join("")
+        }
+
+      </div>
+    `;
+
+}
+
+
+/*
+  ==================================================
+  待分班
+  ==================================================
+*/
+
+function renderAssignments(){
+
+  const box =
+    $("assignList");
+
+
+  /*
+    分班原則上只有行政處理
+  */
+
+  if(
+    currentRole !== "admin"
+  ){
+
+    box.innerHTML =
+    `
+      <div class="empty">
+        此功能由行政端負責。<br>
+        老師不需要進行課後分班。
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  const list =
+    childrenData.filter(
+      c =>
+      c.status === "need_assignment"
+    );
+
+
+  if(
+    !list.length
+  ){
+
+    box.innerHTML =
+    `
+      <div class="empty">
+        ✅ 目前沒有待分班的幼兒。
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    list
+      .map(
+        c => {
+
+          const choices =
+            getAvailableClasses(c);
+
+
+          return `
+            <div class="card purple">
+
+              <div class="cardTop">
+
+                <div class="childMain">
+
+                  <div class="childName">
+                    ${c.morningClass}｜${c.name}
+                  </div>
+
+                  <div class="meta">
+                    類型：${c.careType}<br>
+                    需求時段：${c.requestedPeriod}
+                  </div>
+
+                </div>
+
+                <span class="badge badgePurple">
+                  待分班
+                </span>
+
+              </div>
+
+              <div class="assignmentSelect">
+
+                <select
+                  id="assign_${c.id}"
+                >
+
+                  <option value="">
+                    請選擇課後班
+                  </option>
+
+                  ${
+                    choices
+                      .map(
+                        x =>
+                        `
+                          <option value="${x.name}">
+                            ${x.name}｜${x.group}${x.endTime ? "｜至"+x.endTime : ""}
+                          </option>
+                        `
+                      )
+                      .join("")
+                  }
+
+                </select>
+
+              </div>
+
+              <div class="actions">
+
+                <button
+                  class="btn btnPurple"
+                  onclick="assignAftercare('${c.id}')"
+                >
+                  確認分班並通知家長
+                </button>
+
+              </div>
+
+            </div>
+          `;
+
+        }
+      )
+      .join("");
+
+}
+
+
+/*
+  依需求時段過濾可分配班級
+
+  混齡18:00需求：
+  原則上只顯示18:00混齡班
+
+  17:00需求：
+  可顯示17:00混齡班
+
+  幼幼正式版之後可再依年齡自動限制
+*/
+
+function getAvailableClasses(child){
+
+  if(
+    child.requestedPeriod === "16:00～18:00"
+    ||
+    child.requestedPeriod === "17:00～18:00"
+  ){
+
+    return AFTERCARE_CLASSES.filter(
+      c =>
+      c.endTime === "18:00"
+      ||
+      c.group === "幼幼"
+    );
+
+  }
+
+
+  if(
+    child.requestedPeriod === "16:00～17:00"
+  ){
+
+    return AFTERCARE_CLASSES.filter(
+      c =>
+      c.endTime === "17:00"
+      ||
+      c.group === "幼幼"
+    );
+
+  }
+
+
+  return AFTERCARE_CLASSES;
+
+}
+
+
+/*
+  ==================================================
+  手動指定課後班
+  ==================================================
+*/
+
+function assignAftercare(id){
+
+  const child =
+    childrenData.find(
+      c =>
+      c.id === id
+    );
+
+
+  if(
+    !child
+  ){
+
+    return;
+
+  }
+
+
+  const select =
+    $("assign_"+id);
+
+
+  const aftercareClass =
+    select.value;
+
+
+  if(
+    !aftercareClass
+  ){
+
+    alert(
+      "請先選擇課後班。"
+    );
+
+    return;
+
+  }
+
+
+  const ok =
+    confirm(
+      `確認分班？
+
+${child.morningClass} ${child.name}
+
+今日課後班：
+${aftercareClass}
+
+正式版確認後會自動通知家長。`
+    );
+
+
+  if(
+    !ok
+  ){
+
+    return;
+
+  }
+
+
+  child.aftercareClass =
+    aftercareClass;
+
+  child.status =
+    "aftercare";
+
+  child.needsAttention =
+    false;
+
+
+  alert(
+    `✅ 已完成分班
+
+${child.name}
+→ ${aftercareClass}
+
+【測試版】
+正式版此時會自動透過 LINE 通知家長。`
+  );
+
+
+  renderAll();
+
+}
+
+
+/*
+  ==================================================
+  晚到 / 逾時
+  ==================================================
+*/
+
+function renderLate(){
+
+  const list =
+    visibleChildren()
+      .filter(
+        c =>
+        c.status === "late_notice"
+      );
+
+
+  const box =
+    $("lateList");
+
+
+  if(
+    !list.length
+  ){
+
+    box.innerHTML =
+    `
+      <div class="empty">
+        目前沒有晚到或逾時案件。
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    list
+      .map(
+        c => {
+
+          const missedDeadline =
+            timeToMinutes(c.noticeTime)
+            >
+            timeToMinutes(c.noticeDeadline);
+
+
+          return `
+            <div class="card orange">
+
+              <div class="cardTop">
+
+                <div class="childMain">
+
+                  <div class="childName">
+                    ${c.morningClass}｜${c.name}
+                  </div>
+
+                  <div class="meta">
+                    原訂接回：${c.pickupTime}<br>
+                    最晚通知：${c.noticeDeadline}<br>
+                    家長通報：${c.noticeTime}<br>
+                    預計抵達：${c.expectedArrival}<br>
+                    逾時門檻：${c.lateAfter}
+                  </div>
+
+                </div>
+
+                <span class="badge badgeOrange">
+                  晚到通報
+                </span>
+
+              </div>
+
+              ${
+                missedDeadline
+                ?
+                `
+                  <div class="warning">
+                    未於提前30分鐘期限內通知。若最後實際接送超過 ${c.lateAfter}，正式系統將自動列為一次無故延遲。
+                  </div>
+                `
+                :
+                `
+                  <div class="success">
+                    已於通知期限前完成晚到通報，不列為無故延遲。
+                  </div>
+                `
+              }
+
+              <div class="actions">
+
+                <button
+                  class="btn btnGreen"
+                  onclick="openPickupConfirm('${c.id}')"
+                >
+                  完成接送
+                </button>
+
+              </div>
+
+            </div>
+          `;
+
+        }
+      )
+      .join("");
+
+}
+
+
+/*
+  ==================================================
+  完成接送
+  ==================================================
+*/
+
+function openPickupConfirm(id){
+
+  const child =
+    childrenData.find(
+      c =>
+      c.id === id
+    );
+
+
+  if(
+    !child
+  ){
+
+    return;
+
+  }
+
+
+  currentConfirmId =
+    id;
+
+
+  $("confirmTitle").textContent =
+    "確認完成接送";
+
+
+  $("confirmText").innerHTML =
+    `
+      請再次確認：<br><br>
+
+      <b>${child.morningClass}｜${child.name}</b><br>
+
+      原訂接回：
+      <b>${child.pickupTime}</b><br><br>
+
+      按下確認後，正式系統會自動記錄當下交接時間。
+    `;
+
+
+  $("confirmModal").style.display =
+    "flex";
+
+}
+
+
+function closeConfirm(){
+
+  $("confirmModal").style.display =
+    "none";
+
+  currentConfirmId =
+    null;
+
+}
+
+
+function confirmPickup(){
+
+  const child =
+    childrenData.find(
+      c =>
+      c.id === currentConfirmId
+    );
+
+
+  if(
+    !child
+  ){
+
+    closeConfirm();
+
+    return;
+
+  }
+
+
+  const actualTime =
+    nowTime();
+
+
+  child.status =
+    "completed";
+
+  child.completedTime =
+    actualTime;
+
+  child.needsAttention =
+    false;
+
+
+  closeConfirm();
+
+
+  let result =
+    `✅ 已完成接送
+
+${child.morningClass} ${child.name}
+實際交接：${actualTime}`;
+
+
+  /*
+    測試版示範規則
+  */
+
+  if(
+    child.pickupTime === "16:00"
+    &&
+    timeToMinutes(actualTime)
+    >
+    timeToMinutes("16:10")
+  ){
+
+    result +=
+      `
+
+狀態：延遲接回
+費用：50元
+繳費方式：請準備剛好的現金
+
+※ 不列入無故延遲三次。`;
+
+  }
+
+
+  if(
+    child.pickupTime === "17:00"
+    &&
+    timeToMinutes(actualTime)
+    >
+    timeToMinutes("17:05")
+  ){
+
+    const unexcused =
+      child.noticeTime
+      ?
+      timeToMinutes(child.noticeTime)
+      >
+      timeToMinutes("16:30")
+      :
+      true;
+
+
+    result +=
+      `
+
+狀態：逾時接送
+費用：35元
+繳費方式：請準備剛好的現金
+無故延遲：${unexcused ? "是" : "否"}`;
+
+  }
+
+
+  if(
+    child.pickupTime === "18:00"
+    &&
+    timeToMinutes(actualTime)
+    >
+    timeToMinutes("18:05")
+  ){
+
+    const unexcused =
+      child.noticeTime
+      ?
+      timeToMinutes(child.noticeTime)
+      >
+      timeToMinutes("17:30")
+      :
+      true;
+
+
+    result +=
+      `
+
+狀態：逾時接送
+費用：30元
+繳費方式：請準備剛好的現金
+無故延遲：${unexcused ? "是" : "否"}`;
+
+  }
+
+
+  alert(result);
+
+
+  renderAll();
+
+}
+
+
+/*
+  ==================================================
+  時間工具
+  ==================================================
+*/
+
+function nowTime(){
+
+  const d =
+    new Date();
+
+
+  return (
+    String(
+      d.getHours()
+    ).padStart(2,"0")
+    +
+    ":"
+    +
+    String(
+      d.getMinutes()
+    ).padStart(2,"0")
+  );
+
+}
+
+
+function timeToMinutes(time){
+
+  if(
+    !time
+  ){
+
+    return 0;
+
+  }
+
+
+  const [
+    h,
+    m
+  ] =
+    time
+      .split(":")
+      .map(Number);
+
+
+  return (
+    h*60 + m
+  );
+
+}
+
+
+/*
+  ==================================================
+  全部重畫
+  ==================================================
+*/
+
+function renderAll(){
+
+  renderSummary();
+
+  renderAttention();
+
+  renderFlow();
+
+  renderAssignments();
+
+  renderLate();
+
+}
+
+
+renderAll();
+
+</script>
+
+</body>
+</html>
