@@ -353,6 +353,15 @@ details.rules summary{
   margin-top:8px;
 }
 
+.assignmentBox{
+  padding:12px;
+  border-radius:12px;
+  background:#f3e5f5;
+  color:#6a1b9a;
+  font-weight:700;
+  line-height:1.55;
+}
+
 .modalBackdrop{
   position:fixed;
   inset:0;
@@ -501,10 +510,7 @@ details.rules summary{
 
 <div class="card">
 
-
-<!-- ========================= -->
 <!-- 頁首 -->
-<!-- ========================= -->
 
 <div class="header">
 
@@ -531,10 +537,7 @@ details.rules summary{
 驗證 LINE 身分中...
 </div>
 
-<div
-  id="boundSummary"
-  class="helper"
->
+<div id="boundSummary" class="helper">
 尚未載入幼兒資料
 </div>
 
@@ -557,10 +560,7 @@ details.rules summary{
 <!-- 我要接孩子 -->
 <!-- ========================= -->
 
-<div
-  id="pickupPage"
-  class="page"
->
+<div id="pickupPage" class="page">
 
 <div class="pageTitle">
 🚗 我要接孩子
@@ -569,7 +569,6 @@ details.rules summary{
 <div class="pageDesc">
 請選擇孩子今天原訂接回時間。若預計無法準時接回，請使用「我會晚到」通知老師。
 </div>
-
 
 <div class="group">
 
@@ -583,7 +582,6 @@ details.rules summary{
 ></div>
 
 </div>
-
 
 <div class="group">
 
@@ -631,24 +629,17 @@ details.rules summary{
 </div>
 
 
-<!-- 提早接孩子 -->
-
-<div
-  id="earlyBox"
-  class="box"
->
+<div id="earlyBox" class="box">
 
 <label class="title">
 提早原因
 </label>
 
 <select id="earlyReason">
-
 <option>事假</option>
 <option>病假</option>
 <option>家庭因素</option>
 <option>其他原因</option>
-
 </select>
 
 <label
@@ -667,12 +658,7 @@ details.rules summary{
 </div>
 
 
-<!-- 我會晚到 -->
-
-<div
-  id="delayBox"
-  class="box"
->
+<div id="delayBox" class="box">
 
 <div class="notice noticeYellow">
 🟠「我會晚到」是晚到通報，不等於申請延長托育或臨時托育。
@@ -701,19 +687,16 @@ details.rules summary{
 
 </select>
 
-
 <div
   id="lateRuleInfo"
   class="lateRuleBox"
 ></div>
-
 
 <div
   id="deadlineWarning"
   class="notice noticeRed"
   style="display:none;margin-top:10px"
 ></div>
-
 
 <label
   class="title"
@@ -726,7 +709,6 @@ details.rules summary{
   id="delayReason"
   placeholder="例：塞車、臨時加班、家庭突發狀況"
 >
-
 
 <label
   class="title"
@@ -774,7 +756,6 @@ details.rules summary{
 
 </div>
 
-
 <button
   class="btn btnPrimary"
   type="button"
@@ -784,8 +765,6 @@ details.rules summary{
 </button>
 
 
-<!-- 接送規則 -->
-
 <details class="rules">
 
 <summary>
@@ -793,7 +772,6 @@ details.rules summary{
 </summary>
 
 <div class="rulesBody">
-
 
 <div class="ruleCard">
 
@@ -832,6 +810,17 @@ details.rules summary{
 
 <div class="ruleCard">
 
+<b>💵 延遲／逾時費用</b><br>
+
+如產生延遲或逾時費用，接回幼兒時請一併繳交。<br><br>
+
+<b>繳費方式：請準備剛好的現金。</b>
+
+</div>
+
+
+<div class="ruleCard">
+
 <b>⚠️ 無故延遲接回</b><br>
 
 僅適用第一梯及第二梯延長照顧。<br><br>
@@ -841,7 +830,6 @@ details.rules summary{
 無故延遲接回累計達三次，將依園方規定處理延長照顧服務資格。
 
 </div>
-
 
 <div class="helper">
 正式是否延遲、是否逾時及相關費用，以老師端記錄的「實際完成交接時間」為準。
@@ -868,7 +856,7 @@ details.rules summary{
 </div>
 
 <div class="pageDesc">
-孩子整天不到園時使用。正式版將同步通知班級老師及當日延長照顧相關人員。
+孩子整天不到園時使用。正式版將同步通知班級老師及當日課後照顧相關人員。
 </div>
 
 <div class="notice noticeBlue">
@@ -897,7 +885,12 @@ details.rules summary{
 <input
   id="leaveDate"
   type="date"
+  onchange="validateSchoolDate(this)"
 >
+
+<div class="helper">
+星期六、星期日、國定假日及園方休園日不可選擇。
+</div>
 
 </div>
 
@@ -990,7 +983,12 @@ details.rules summary{
 <input
   id="extendedDate"
   type="date"
+  onchange="validateSchoolDate(this)"
 >
+
+<div class="helper">
+星期六、星期日、國定假日及園方休園日不可選擇。
+</div>
 
 </div>
 
@@ -1002,6 +1000,19 @@ details.rules summary{
 
 <div class="fixedTime">
 17:00 → 18:00
+</div>
+
+</div>
+
+<div class="group">
+
+<label class="title">
+🏫 課後班級
+</label>
+
+<div class="assignmentBox">
+送出後由園方依當日課後班級及幼生人數安排。<br>
+若需要換班，確認後將另行通知家長。
 </div>
 
 </div>
@@ -1045,11 +1056,11 @@ details.rules summary{
 </div>
 
 <div class="pageDesc">
-孩子原本沒有固定第一梯／第二梯，家長當日臨時有托育需求時使用。
+孩子原本沒有固定課後照顧，家長當日臨時有托育需求時使用。
 </div>
 
 <div class="notice noticeBlue">
-送出後屬於「需求申請」，是否成立仍須由園方確認。
+送出後屬於「需求申請」。園方會依當日幼生人數安排課後班級，班級確認後再通知家長。
 </div>
 
 <div class="group">
@@ -1074,7 +1085,12 @@ details.rules summary{
 <input
   id="temporaryDate"
   type="date"
+  onchange="validateSchoolDate(this)"
 >
+
+<div class="helper">
+星期六、星期日、國定假日及園方休園日不可選擇。
+</div>
 
 </div>
 
@@ -1095,6 +1111,19 @@ details.rules summary{
 </option>
 
 </select>
+
+</div>
+
+<div class="group">
+
+<label class="title">
+🏫 今日課後班級
+</label>
+
+<div class="assignmentBox">
+目前：待園方分配<br>
+班級確認後，正式系統將通知您孩子今日所在的課後班級。
+</div>
 
 </div>
 
@@ -1123,9 +1152,7 @@ details.rules summary{
 </div>
 
 
-<!-- ========================= -->
 <!-- 底部選單 -->
-<!-- ========================= -->
 
 <div class="quickTabs">
 
@@ -1168,7 +1195,6 @@ details.rules summary{
 </div>
 
 </div>
-
 
 <div
   id="statusBox"
@@ -1217,7 +1243,7 @@ details.rules summary{
 <div class="group">
 
 <label class="title">
-班級
+上午班級
 </label>
 
 <select id="newChildClass">
@@ -1346,23 +1372,54 @@ const CLASS_MAP = {
 
 
 /*
+  課後班級
+  這些不是上午原班級。
+  正式版由老師／行政後台分配。
+*/
+
+const AFTERCARE_CLASSES = {
+
+  AC01:{
+    name:"蝴蝶班",
+    group:"混齡",
+    endTime:"18:00"
+  },
+
+  AC02:{
+    name:"白兔班",
+    group:"混齡",
+    endTime:"17:00"
+  },
+
+  AC03:{
+    name:"蜜蜂班",
+    group:"混齡",
+    endTime:"18:00"
+  },
+
+  AC04:{
+    name:"陽光書屋班",
+    group:"混齡",
+    endTime:"17:00"
+  },
+
+  AC05:{
+    name:"櫻桃班",
+    group:"幼幼",
+    endTime:""
+  },
+
+  AC06:{
+    name:"蘋果班",
+    group:"幼幼",
+    endTime:""
+  }
+
+};
+
+
+/*
   接送規則
-
-  16:00：
-  16:01 尚未完成交接 → 未來正式系統提醒家長
-  16:10 過後 → 延遲接回，50元
-  不屬於延長照顧逾時接送
-  不計入無故延遲三次
-
-  17:00：
-  16:30前須通知
-  17:05過後 → 逾時接送，35元
-  未於16:30前通知＋真的逾時 → 無故延遲+1
-
-  18:00：
-  17:30前須通知
-  18:05過後 → 逾時接送，30元
-  未於17:30前通知＋真的逾時 → 無故延遲+1
 */
 
 const LATE_RULES = {
@@ -1400,6 +1457,120 @@ const LATE_RULES = {
 };
 
 
+/*
+  ==================================================
+  台灣放假日
+  ==================================================
+
+  星期六、星期日本身會另外自動判斷，
+  所以下面主要列「平日仍屬放假」的日期。
+
+  2026、2027 依行政院人事行政總處辦公日曆整理。
+*/
+
+const NATIONAL_HOLIDAYS = [
+
+  /*
+    2026
+  */
+
+  "2026-01-01",
+
+  // 春節連假中的平日
+  "2026-02-16",
+  "2026-02-17",
+  "2026-02-18",
+  "2026-02-19",
+  "2026-02-20",
+
+  // 228補假
+  "2026-02-27",
+
+  // 兒童節、清明節連假平日
+  "2026-04-03",
+  "2026-04-06",
+
+  // 勞動節
+  "2026-05-01",
+
+  // 端午節
+  "2026-06-19",
+
+  // 中秋節、教師節
+  "2026-09-25",
+  "2026-09-28",
+
+  // 國慶補假
+  "2026-10-09",
+
+  // 光復紀念日補假
+  "2026-10-26",
+
+  // 行憲紀念日
+  "2026-12-25",
+
+
+  /*
+    2027
+  */
+
+  "2027-01-01",
+
+  // 春節連假中的平日
+  "2027-02-04",
+  "2027-02-05",
+  "2027-02-08",
+  "2027-02-09",
+  "2027-02-10",
+
+  // 228補假
+  "2027-03-01",
+
+  // 兒童節、清明節連假平日
+  "2027-04-05",
+  "2027-04-06",
+
+  // 勞動節補假
+  "2027-04-30",
+
+  // 國慶補假
+  "2027-10-11",
+
+  // 光復紀念日
+  "2027-10-25",
+
+  // 行憲紀念日補假
+  "2027-12-24",
+
+  // 2028元旦補假
+  "2027-12-31"
+
+];
+
+
+/*
+  ==================================================
+  園方自行設定休園日期
+  ==================================================
+
+  之後若有：
+  - 園方休園
+  - 特殊校務日
+  - 寒暑假不上課日
+  - 補休
+  - 其他不提供服務日期
+
+  可以直接加入：
+
+  "2026-10-30",
+  "2027-01-20"
+*/
+
+const SCHOOL_CLOSED_DATES = [
+
+];
+
+
 let lineUserId = "";
 
 let lineDisplayName = "";
@@ -1424,21 +1595,7 @@ function today(){
   const d =
     new Date();
 
-  return (
-    d.getFullYear()
-    +
-    "-"
-    +
-    String(
-      d.getMonth()+1
-    ).padStart(2,"0")
-    +
-    "-"
-    +
-    String(
-      d.getDate()
-    ).padStart(2,"0")
-  );
+  return dateToYMD(d);
 
 }
 
@@ -1468,7 +1625,9 @@ function timeToMinutes(time){
   if(
     !time
   ){
+
     return 0;
+
   }
 
   const parts =
@@ -1479,6 +1638,278 @@ function timeToMinutes(time){
     +
     Number(parts[1])
   );
+
+}
+
+
+function dateToYMD(date){
+
+  return (
+    date.getFullYear()
+    +
+    "-"
+    +
+    String(
+      date.getMonth()+1
+    ).padStart(2,"0")
+    +
+    "-"
+    +
+    String(
+      date.getDate()
+    ).padStart(2,"0")
+  );
+
+}
+
+
+function ymdToLocalDate(ymd){
+
+  const [
+    year,
+    month,
+    day
+  ] =
+    ymd
+      .split("-")
+      .map(Number);
+
+  return new Date(
+    year,
+    month-1,
+    day,
+    12,
+    0,
+    0
+  );
+
+}
+
+
+function isSchoolClosedDate(ymd){
+
+  if(
+    !ymd
+  ){
+
+    return true;
+
+  }
+
+  const date =
+    ymdToLocalDate(ymd);
+
+  const weekday =
+    date.getDay();
+
+
+  /*
+    星期日 = 0
+    星期六 = 6
+  */
+
+  if(
+    weekday === 0
+    ||
+    weekday === 6
+  ){
+
+    return true;
+
+  }
+
+
+  if(
+    NATIONAL_HOLIDAYS.includes(ymd)
+  ){
+
+    return true;
+
+  }
+
+
+  if(
+    SCHOOL_CLOSED_DATES.includes(ymd)
+  ){
+
+    return true;
+
+  }
+
+
+  return false;
+
+}
+
+
+function getClosedReason(ymd){
+
+  const date =
+    ymdToLocalDate(ymd);
+
+  const weekday =
+    date.getDay();
+
+
+  if(
+    weekday === 6
+  ){
+
+    return "星期六";
+
+  }
+
+
+  if(
+    weekday === 0
+  ){
+
+    return "星期日";
+
+  }
+
+
+  if(
+    NATIONAL_HOLIDAYS.includes(ymd)
+  ){
+
+    return "國定或連續假日";
+
+  }
+
+
+  if(
+    SCHOOL_CLOSED_DATES.includes(ymd)
+  ){
+
+    return "園方休園日";
+
+  }
+
+
+  return "休園日";
+
+}
+
+
+function getNextSchoolDay(ymd){
+
+  let date =
+    ymdToLocalDate(ymd);
+
+
+  for(
+    let i=0;
+    i<90;
+    i++
+  ){
+
+    const candidate =
+      dateToYMD(date);
+
+
+    if(
+      !isSchoolClosedDate(candidate)
+    ){
+
+      return candidate;
+
+    }
+
+
+    date.setDate(
+      date.getDate()+1
+    );
+
+  }
+
+
+  return "";
+
+}
+
+
+function defaultSchoolDate(){
+
+  const current =
+    today();
+
+
+  if(
+    isSchoolClosedDate(current)
+  ){
+
+    return getNextSchoolDay(current);
+
+  }
+
+
+  return current;
+
+}
+
+
+function validateSchoolDate(input){
+
+  const selected =
+    input.value;
+
+
+  if(
+    !selected
+  ){
+
+    return false;
+
+  }
+
+
+  if(
+    !isSchoolClosedDate(selected)
+  ){
+
+    return true;
+
+  }
+
+
+  const reason =
+    getClosedReason(selected);
+
+  const next =
+    getNextSchoolDay(selected);
+
+
+  if(
+    next
+  ){
+
+    input.value =
+      next;
+
+
+    alert(
+      `您選擇的 ${selected} 為${reason}，當日無法申請。
+
+系統已自動跳到下一個可申請日期：
+${next}`
+    );
+
+  }
+  else{
+
+    input.value =
+      "";
+
+
+    alert(
+      "您選擇的日期為休園日，請重新選擇。"
+    );
+
+  }
+
+
+  return false;
 
 }
 
@@ -1534,12 +1965,16 @@ function loadChildren(){
       storageKey()
     );
 
-  if(multi){
+
+  if(
+    multi
+  ){
 
     try{
 
       const parsed =
         JSON.parse(multi);
+
 
       if(
         Array.isArray(parsed)
@@ -1574,12 +2009,16 @@ function loadChildren(){
         legacyKey()
       );
 
-    if(old){
+
+    if(
+      old
+    ){
 
       try{
 
         const c =
           JSON.parse(old);
+
 
         if(
           c
@@ -1594,6 +2033,7 @@ function loadChildren(){
                 ([code,info]) =>
                 info.name === c.class
               );
+
 
           children = [
 
@@ -1618,6 +2058,7 @@ function loadChildren(){
 
           ];
 
+
           localStorage.setItem(
             storageKey(),
             JSON.stringify(children)
@@ -1639,7 +2080,9 @@ function loadChildren(){
 
   }
 
+
   renderChildrenEverywhere();
+
 
   if(
     children.length === 0
@@ -1666,6 +2109,7 @@ function cryptoId(){
     return crypto.randomUUID();
 
   }
+
 
   return (
     "c_"
@@ -1702,25 +2146,31 @@ function renderChildrenEverywhere(){
     :
     "尚未綁定幼兒";
 
+
   $("boundSummary").textContent =
     text;
 
+
   renderManagerList();
+
 
   renderPickerList(
     "pickupChildren",
     "pickup"
   );
 
+
   renderPickerList(
     "leaveChildren",
     "leave"
   );
 
+
   renderPickerList(
     "extendedChildren",
     "extended"
   );
+
 
   renderPickerList(
     "temporaryChildren",
@@ -1735,6 +2185,7 @@ function renderManagerList(){
   const box =
     $("boundChildren");
 
+
   if(
     !children.length
   ){
@@ -1746,9 +2197,11 @@ function renderManagerList(){
       </div>
     `;
 
+
     return;
 
   }
+
 
   box.innerHTML =
     children
@@ -1764,7 +2217,7 @@ function renderManagerList(){
               </div>
 
               <div class="boundClass">
-                ${escapeHtml(c.className)}
+                上午班級：${escapeHtml(c.className)}
               </div>
 
             </div>
@@ -1793,6 +2246,7 @@ function renderPickerList(
   const box =
     $(targetId);
 
+
   if(
     !children.length
   ){
@@ -1804,9 +2258,11 @@ function renderPickerList(
       </div>
     `;
 
+
     return;
 
   }
+
 
   box.innerHTML =
     children
@@ -1829,7 +2285,7 @@ function renderPickerList(
               </div>
 
               <div class="childClass">
-                ${escapeHtml(c.className)}
+                上午班級：${escapeHtml(c.className)}
               </div>
 
             </div>
@@ -1854,6 +2310,7 @@ function selectedChildren(prefix){
       x =>
       x.value
     );
+
 
   return children.filter(
     c =>
@@ -1885,6 +2342,7 @@ function addChild(){
       .value
       .trim();
 
+
   if(
     !rawClass
     ||
@@ -1895,15 +2353,18 @@ function addChild(){
       "請選擇班級並輸入幼兒姓名。"
     );
 
+
     return;
 
   }
+
 
   const [
     classId,
     className
   ] =
     rawClass.split("|");
+
 
   const duplicated =
     children.some(
@@ -1913,6 +2374,7 @@ function addChild(){
       x.name === name
     );
 
+
   if(
     duplicated
   ){
@@ -1921,9 +2383,11 @@ function addChild(){
       "這位幼兒已經綁定過了。"
     );
 
+
     return;
 
   }
+
 
   children.push(
     {
@@ -1934,11 +2398,14 @@ function addChild(){
     }
   );
 
+
   $("newChildClass").value =
     "";
 
+
   $("newChildName").value =
     "";
+
 
   saveChildren();
 
@@ -1953,6 +2420,7 @@ function removeChild(id){
       c.id === id
     );
 
+
   if(
     !child
   ){
@@ -1960,6 +2428,7 @@ function removeChild(id){
     return;
 
   }
+
 
   if(
     !confirm(
@@ -1971,11 +2440,13 @@ function removeChild(id){
 
   }
 
+
   children =
     children.filter(
       c =>
       c.id !== id
     );
+
 
   saveChildren();
 
@@ -2024,6 +2495,7 @@ function showPage(
     "temporary"
   ];
 
+
   if(
     !valid.includes(page)
   ){
@@ -2033,8 +2505,10 @@ function showPage(
 
   }
 
+
   currentPage =
     page;
+
 
   valid.forEach(
     p => {
@@ -2045,6 +2519,7 @@ function showPage(
           "hidden",
           p !== page
         );
+
 
       $(
         "tab"
@@ -2062,6 +2537,7 @@ function showPage(
     }
   );
 
+
   if(
     updateUrl
   ){
@@ -2071,10 +2547,12 @@ function showPage(
         window.location.href
       );
 
+
     u.searchParams.set(
       "page",
       page
     );
+
 
     history.replaceState(
       null,
@@ -2083,6 +2561,7 @@ function showPage(
     );
 
   }
+
 
   window.scrollTo(
     {
@@ -2110,12 +2589,15 @@ function setPickupMode(
       )
     );
 
+
   el.classList.add(
     "active"
   );
 
+
   currentPickupMode =
     mode;
+
 
   $("earlyBox").style.display =
     mode === "提早接孩子"
@@ -2124,12 +2606,14 @@ function setPickupMode(
     :
     "none";
 
+
   $("delayBox").style.display =
     mode === "我會晚到"
     ?
     "block"
     :
     "none";
+
 
   if(
     mode === "我會晚到"
@@ -2152,6 +2636,7 @@ function refreshLateNotice(){
 
   const rule =
     LATE_RULES[original];
+
 
   if(
     !rule
@@ -2188,6 +2673,10 @@ function refreshLateNotice(){
         💰 延遲接回費用：50 元
       </div>
 
+      <div class="ruleLine">
+        💵 繳費方式：請準備剛好的現金
+      </div>
+
       <div
         style="
           margin-top:8px;
@@ -2215,6 +2704,10 @@ function refreshLateNotice(){
       <div class="ruleLine">
         💰 逾時費用：${rule.fee} 元
       </div>
+
+      <div class="ruleLine">
+        💵 繳費方式：請準備剛好的現金
+      </div>
     `;
 
   }
@@ -2240,7 +2733,8 @@ function refreshLateNotice(){
           ⚠️ 您填寫的預計抵達時間已超過
           ${rule.lateAfter}，
           可能產生 ${rule.fee} 元
-          ${rule.statusName}費用。
+          ${rule.statusName}費用。<br>
+          請準備剛好的現金。
         </div>
       `;
 
@@ -2250,12 +2744,6 @@ function refreshLateNotice(){
   $("lateRuleInfo").innerHTML =
     html;
 
-
-  /*
-    只有17:00、18:00
-    才有提前30分鐘通知期限
-    與無故延遲判斷
-  */
 
   if(
     !rule.noticeDeadline
@@ -2275,6 +2763,7 @@ function refreshLateNotice(){
   const now =
     nowTimeText();
 
+
   const afterDeadline =
     timeToMinutes(now)
     >
@@ -2289,6 +2778,7 @@ function refreshLateNotice(){
 
     $("deadlineWarning").style.display =
       "block";
+
 
     $("deadlineWarning").innerHTML =
       `
@@ -2342,15 +2832,18 @@ async function sendLine(text){
       ]
     );
 
+
     return true;
 
   }
+
 
   alert(
     "目前不是在 LINE App 內開啟。\n\n以下為測試內容：\n\n"
     +
     text
   );
+
 
   return false;
 
@@ -2367,14 +2860,18 @@ function requireChildren(prefix){
       "請先綁定幼兒資料。"
     );
 
+
     openChildManager();
+
 
     return null;
 
   }
 
+
   const list =
     selectedChildren(prefix);
+
 
   if(
     !list.length
@@ -2384,9 +2881,11 @@ function requireChildren(prefix){
       "請至少勾選一位幼兒。"
     );
 
+
     return null;
 
   }
+
 
   return list;
 
@@ -2400,6 +2899,7 @@ async function submitPickup(){
       "pickup"
     );
 
+
   if(
     !list
   ){
@@ -2411,6 +2911,7 @@ async function submitPickup(){
 
   let detail =
     "";
+
 
   let title =
     "📢【樂業附幼接送通知】";
@@ -2438,6 +2939,7 @@ async function submitPickup(){
 
     title =
       "🟠【樂業附幼晚到通報】";
+
 
     const original =
       $("delayOriginalTime").value;
@@ -2507,6 +3009,14 @@ async function submitPickup(){
           "目前預計0元"
         )
         +
+        (
+          estimatedLate
+          ?
+          "\n💵 繳費方式：請準備剛好的現金"
+          :
+          ""
+        )
+        +
         "\nℹ️ 16:00延遲接回不列入延長照顧無故逾時累計";
 
     }
@@ -2518,6 +3028,7 @@ async function submitPickup(){
         timeToMinutes(
           rule.noticeDeadline
         );
+
 
       detail =
         "\n⏰ 原訂接回："
@@ -2558,6 +3069,14 @@ async function submitPickup(){
           `是，可能產生${rule.fee}元逾時費`
           :
           "否"
+        )
+        +
+        (
+          estimatedLate
+          ?
+          "\n💵 繳費方式：請準備剛好的現金"
+          :
+          ""
         );
 
     }
@@ -2603,6 +3122,7 @@ ${currentPickupMode}`
 
     await sendLine(msg);
 
+
     if(
       currentPickupMode === "我會晚到"
     ){
@@ -2625,6 +3145,7 @@ ${currentPickupMode}`
 
     console.error(e);
 
+
     alert(
       "發送失敗，請確認 LIFF 權限。"
     );
@@ -2641,6 +3162,7 @@ async function submitLeave(){
       "leave"
     );
 
+
   if(
     !list
   ){
@@ -2649,8 +3171,10 @@ async function submitLeave(){
 
   }
 
+
   const date =
     $("leaveDate").value;
+
 
   if(
     !date
@@ -2660,12 +3184,28 @@ async function submitLeave(){
       "請選擇請假日期。"
     );
 
+
     return;
 
   }
 
+
+  if(
+    isSchoolClosedDate(date)
+  ){
+
+    validateSchoolDate(
+      $("leaveDate")
+    );
+
+    return;
+
+  }
+
+
   const reason =
     $("leaveReason").value;
+
 
   const note =
     $("leaveNote")
@@ -2673,6 +3213,7 @@ async function submitLeave(){
       .trim()
     ||
     "無";
+
 
   const msg =
 `❌【樂業附幼請假通知】
@@ -2698,14 +3239,16 @@ async function submitLeave(){
 
     await sendLine(msg);
 
+
     showStatus(
-      "✅ 請假通報已送出。正式版將同步更新相關第一梯、第二梯及托育名單。"
+      "✅ 請假通報已送出。正式版將同步更新相關第一梯、第二梯及課後托育名單。"
     );
 
   }
   catch(e){
 
     console.error(e);
+
 
     alert(
       "發送失敗，請確認 LIFF 權限。"
@@ -2723,6 +3266,7 @@ async function submitExtended(){
       "extended"
     );
 
+
   if(
     !list
   ){
@@ -2731,8 +3275,10 @@ async function submitExtended(){
 
   }
 
+
   const date =
     $("extendedDate").value;
+
 
   if(
     !date
@@ -2742,14 +3288,32 @@ async function submitExtended(){
       "請選擇日期。"
     );
 
+
     return;
 
   }
 
+
+  if(
+    isSchoolClosedDate(date)
+  ){
+
+    validateSchoolDate(
+      $("extendedDate")
+    );
+
+    return;
+
+  }
+
+
   const submitTime =
     nowTimeText();
 
+
   const afterDeadline =
+    date === today()
+    &&
     timeToMinutes(submitTime)
     >
     timeToMinutes("16:30");
@@ -2768,6 +3332,7 @@ async function submitExtended(){
 老師仍需要收到這筆通知，但正式版會標示為超過通知期限。`
       );
 
+
     if(
       !ok
     ){
@@ -2785,8 +3350,9 @@ async function submitExtended(){
 📅 日期：${date.replaceAll("-","/")}
 ⏰ 原訂：第一梯17:00
 ➡️ 申請延長：至18:00
+🏫 課後班級：待園方確認${afterDeadline ? `
 🕒 通報時間：${submitTime}
-⚠️ 是否超過16:30通知期限：${afterDeadline ? "是" : "否"}
+⚠️ 已超過16:30通知期限` : ""}
 📌 備註：${$("extendedNote").value.trim() || "無"}
 👤 通報家長：${lineDisplayName || "家長"}`;
 
@@ -2808,18 +3374,20 @@ async function submitExtended(){
 
     await sendLine(msg);
 
+
     showStatus(
       afterDeadline
       ?
-      "⚠️ 延長托育需求已送出，但本次已超過16:30通知期限。"
+      "⚠️ 延長托育需求已送出，但本次已超過16:30通知期限。若需要換班，園方確認課後班級後將另行通知。"
       :
-      "✅ 延長托育申請已送出：原第一梯17:00，申請延長至18:00。"
+      "✅ 延長托育申請已送出。若需要換班，園方確認課後班級後將另行通知。"
     );
 
   }
   catch(e){
 
     console.error(e);
+
 
     alert(
       "發送失敗，請確認 LIFF 權限。"
@@ -2837,6 +3405,7 @@ async function submitTemporary(){
       "temporary"
     );
 
+
   if(
     !list
   ){
@@ -2844,6 +3413,7 @@ async function submitTemporary(){
     return;
 
   }
+
 
   const date =
     $("temporaryDate").value;
@@ -2856,6 +3426,7 @@ async function submitTemporary(){
       .value
       .trim();
 
+
   if(
     !date
   ){
@@ -2864,9 +3435,24 @@ async function submitTemporary(){
       "請選擇日期。"
     );
 
+
     return;
 
   }
+
+
+  if(
+    isSchoolClosedDate(date)
+  ){
+
+    validateSchoolDate(
+      $("temporaryDate")
+    );
+
+    return;
+
+  }
+
 
   if(
     !reason
@@ -2876,26 +3462,31 @@ async function submitTemporary(){
       "請填寫申請原因。"
     );
 
+
     return;
 
   }
+
 
   const msg =
 `🧸【樂業附幼臨時托育需求】
 👶 幼兒：${childrenText(list)}
 📅 日期：${date.replaceAll("-","/")}
 ⏰ 臨時托育：${time}
+🏫 課後班級：待園方分配
 📝 原因：${reason}
 👤 通報家長：${lineDisplayName || "家長"}
 
-※ 此為臨時需求申請，是否成立仍以園方確認為準。`;
+※ 此為臨時需求申請，是否成立及課後班級仍以園方確認為準。`;
 
 
   if(
     !confirm(
       `確認送出 ${childrenText(list)} 的臨時托育需求？
 
-時段：${time}`
+時段：${time}
+
+課後班級將由園方於送出後安排。`
     )
   ){
 
@@ -2908,14 +3499,16 @@ async function submitTemporary(){
 
     await sendLine(msg);
 
+
     showStatus(
-      "✅ 臨時托育需求已送出，請等候園方確認。"
+      "✅ 臨時托育需求已送出。目前課後班級為「待園方分配」，正式版將在班級確認後透過 LINE 通知您。"
     );
 
   }
   catch(e){
 
     console.error(e);
+
 
     alert(
       "發送失敗，請確認 LIFF 權限。"
@@ -2931,8 +3524,10 @@ function showStatus(text){
   $("statusBox").textContent =
     text;
 
+
   $("statusBox").style.display =
     "block";
+
 
   $("statusBox")
     .scrollIntoView(
@@ -2981,6 +3576,7 @@ function resolvePageFromUrl(){
       window.location.search
     );
 
+
   return (
     params.get("page")
     ||
@@ -2992,19 +3588,43 @@ function resolvePageFromUrl(){
 
 async function main(){
 
+  const initialSchoolDate =
+    defaultSchoolDate();
+
+
   $("leaveDate").value =
-    today();
+    initialSchoolDate;
+
 
   $("extendedDate").value =
-    today();
+    initialSchoolDate;
+
 
   $("temporaryDate").value =
+    initialSchoolDate;
+
+
+  /*
+    不允許選過去日期
+  */
+
+  $("leaveDate").min =
     today();
+
+
+  $("extendedDate").min =
+    today();
+
+
+  $("temporaryDate").min =
+    today();
+
 
   showPage(
     resolvePageFromUrl(),
     false
   );
+
 
   refreshLateNotice();
 
@@ -3014,11 +3634,13 @@ async function main(){
     $("lineStatus").textContent =
       "正在連接 LINE...";
 
+
     await liff.init(
       {
         liffId:LIFF_ID
       }
     );
+
 
     if(
       !liff.isLoggedIn()
@@ -3027,20 +3649,26 @@ async function main(){
       $("lineStatus").textContent =
         "正在前往 LINE 登入...";
 
+
       liff.login();
+
 
       return;
 
     }
 
+
     const p =
       await liff.getProfile();
+
 
     lineUserId =
       p.userId || "";
 
+
     lineDisplayName =
       p.displayName || "家長";
+
 
     if(
       p.pictureUrl
@@ -3051,8 +3679,10 @@ async function main(){
 
     }
 
+
     $("lineStatus").innerHTML =
       `<b>${escapeHtml(lineDisplayName)}</b>（LINE 已連線）`;
+
 
     loadChildren();
 
@@ -3064,8 +3694,10 @@ async function main(){
       e
     );
 
+
     $("lineStatus").innerHTML =
       `⚠️ LINE 連線失敗<br><small>${escapeHtml(e.message || String(e))}</small>`;
+
 
     loadChildren();
 
