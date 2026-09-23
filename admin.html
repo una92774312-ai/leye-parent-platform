@@ -10,9 +10,10 @@
   content="width=device-width, initial-scale=1.0, viewport-fit=cover"
 >
 
-<title>
-樂業附幼｜老師行政後台
-</title>
+<title>樂業附幼｜行政管理平台</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 
 <style>
 
@@ -28,22 +29,21 @@
   --orange:#ef6c00;
   --orange-light:#fff3e0;
 
-  --red:#d32f2f;
-  --red-light:#ffebee;
-
   --purple:#7b1fa2;
   --purple-light:#f3e5f5;
 
+  --red:#d32f2f;
+  --red-light:#ffebee;
+
   --yellow:#f9a825;
-  --yellow-light:#fffde7;
+  --yellow-light:#fff8e1;
 
   --gray:#607d8b;
-  --gray-light:#f5f7f7;
 
   --text:#263238;
   --muted:#78909c;
-  --line:#e2e8ea;
-  --bg:#f4f7f6;
+  --line:#dfe7e9;
+  --bg:#f3f6f5;
 
 }
 
@@ -76,40 +76,50 @@ body{
 
 .app{
 
-  max-width:760px;
-
+  max-width:1200px;
   margin:auto;
 
   padding:
-    12px
-    12px
-    calc(30px + env(safe-area-inset-bottom));
+    18px;
 
 }
 
-
-/* =========================
-   頁首
-   ========================= */
 
 .header{
 
   background:#fff;
 
-  border-radius:18px;
+  border-radius:20px;
 
-  padding:16px;
+  padding:
+    20px;
 
   box-shadow:
-    0 6px 20px
-    rgba(0,0,0,.05);
+    0 8px 24px
+    rgba(0,0,0,.06);
+
+  margin-bottom:16px;
+
+}
+
+
+.headerTop{
+
+  display:flex;
+
+  align-items:flex-start;
+
+  justify-content:
+    space-between;
+
+  gap:14px;
 
 }
 
 
 .brand{
 
-  font-size:1.3rem;
+  font-size:1.35rem;
 
   font-weight:900;
 
@@ -121,71 +131,88 @@ body{
 
 .subtitle{
 
-  margin-top:4px;
-
-  font-size:.86rem;
+  margin-top:5px;
 
   color:
     var(--muted);
 
-  line-height:1.5;
-
-}
-
-
-.testNotice{
-
-  margin-top:12px;
-
-  padding:
-    10px
-    12px;
-
-  border-radius:11px;
-
-  background:
-    #fff8e1;
-
-  color:
-    #795548;
-
-  font-size:.84rem;
+  font-size:.9rem;
 
   line-height:1.55;
 
 }
 
 
-.roleBox{
+.loginState{
 
   margin-top:14px;
+
+  padding:12px;
+
+  background:
+    var(--green-light);
+
+  border-radius:12px;
+
+  color:
+    var(--green-dark);
+
+  font-size:.9rem;
+
+  line-height:1.6;
 
 }
 
 
-.roleBox label{
+.testBox{
 
-  display:block;
+  margin-top:14px;
+
+  padding:14px;
+
+  background:
+    var(--yellow-light);
+
+  border:
+    1px solid
+    #ffe0b2;
+
+  border-radius:13px;
+
+}
+
+
+.testTitle{
+
+  font-weight:900;
+
+  color:#8d6e00;
+
+  margin-bottom:8px;
+
+}
+
+
+.helper{
 
   font-size:.8rem;
 
   color:
     var(--muted);
 
-  margin-bottom:5px;
+  line-height:1.55;
+
+  margin-top:6px;
 
 }
 
 
-select,
 input,
-textarea{
+select{
 
   width:100%;
 
-  padding:
-    11px
-    12px;
+  padding:12px;
 
   border:
     1.5px solid
@@ -195,111 +222,114 @@ textarea{
 
   font-size:16px;
 
+  font-family:inherit;
+
+  outline:none;
+
   background:#fff;
+
+}
+
+
+input:focus,
+select:focus{
+
+  border-color:#81c784;
+
+}
+
+
+.loginGrid{
+
+  display:grid;
+
+  grid-template-columns:
+    1fr
+    1fr
+    auto;
+
+  gap:8px;
+
+  margin-top:10px;
+
+}
+
+
+button{
 
   font-family:inherit;
 
 }
 
 
-/* =========================
-   固定課托統計
-   ========================= */
+.btn{
 
-.baseStats{
+  border:0;
 
-  margin-top:14px;
+  border-radius:11px;
 
-  background:#fff;
-
-  border-radius:16px;
-
-  padding:14px;
-
-  box-shadow:
-    0 4px 14px
-    rgba(0,0,0,.04);
-
-}
-
-
-.baseTitle{
+  padding:
+    12px
+    16px;
 
   font-weight:900;
 
-  margin-bottom:10px;
+  cursor:pointer;
+
+  font-size:.9rem;
 
 }
 
 
-.baseGrid{
+.btn:disabled{
 
-  display:grid;
+  opacity:.55;
 
-  grid-template-columns:
-    repeat(3,1fr);
-
-  gap:8px;
+  cursor:not-allowed;
 
 }
 
 
-.baseItem{
+.btnGreen{
 
   background:
-    #fafcfc;
+    var(--green);
 
-  border:
-    1px solid
-    var(--line);
-
-  border-radius:12px;
-
-  padding:11px;
-
-  text-align:center;
+  color:#fff;
 
 }
 
 
-.baseNumber{
+.btnGray{
 
-  font-size:1.4rem;
+  background:
+    var(--gray);
 
-  font-weight:900;
-
-  color:
-    var(--green-dark);
+  color:#fff;
 
 }
 
 
-.baseLabel{
+.btnBlue{
 
-  margin-top:3px;
+  background:
+    var(--blue);
 
-  font-size:.76rem;
-
-  color:
-    var(--muted);
+  color:#fff;
 
 }
 
-
-/* =========================
-   今日狀態
-   ========================= */
 
 .summaryGrid{
 
   display:grid;
 
   grid-template-columns:
-    repeat(2,1fr);
+    repeat(4,1fr);
 
-  gap:9px;
+  gap:10px;
 
-  margin-top:14px;
+  margin-bottom:16px;
 
 }
 
@@ -308,81 +338,134 @@ textarea{
 
   background:#fff;
 
-  border-radius:15px;
+  border-radius:16px;
 
-  padding:14px;
+  padding:16px;
 
   box-shadow:
-    0 4px 14px
-    rgba(0,0,0,.04);
-
-}
-
-
-.summaryNumber{
-
-  font-size:1.65rem;
-
-  font-weight:900;
+    0 6px 18px
+    rgba(0,0,0,.05);
 
 }
 
 
 .summaryLabel{
 
-  font-size:.82rem;
-
   color:
     var(--muted);
 
-  margin-top:3px;
+  font-size:.82rem;
+
+  font-weight:700;
 
 }
 
 
-.redText{
-  color:var(--red);
-}
+.summaryNumber{
 
-.orangeText{
-  color:var(--orange);
-}
+  margin-top:5px;
 
-.purpleText{
-  color:var(--purple);
-}
+  font-size:1.7rem;
 
-.greenText{
-  color:var(--green);
-}
+  font-weight:900;
 
-.blueText{
-  color:var(--blue);
 }
 
 
-/* =========================
-   分頁
-   ========================= */
+.summaryNumber.red{
 
-.tabs{
+  color:
+    var(--red);
 
-  display:grid;
+}
 
-  grid-template-columns:
-    repeat(5,1fr);
 
-  gap:5px;
+.summaryNumber.blue{
 
-  margin-top:14px;
+  color:
+    var(--blue);
+
+}
+
+
+.summaryNumber.purple{
+
+  color:
+    var(--purple);
+
+}
+
+
+.summaryNumber.green{
+
+  color:
+    var(--green);
+
+}
+
+
+.panel{
 
   background:#fff;
 
-  padding:8px;
+  border-radius:20px;
 
-  border-radius:14px;
+  padding:18px;
 
-  overflow-x:auto;
+  box-shadow:
+    0 8px 24px
+    rgba(0,0,0,.05);
+
+}
+
+
+.panelTop{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:
+    space-between;
+
+  gap:10px;
+
+  margin-bottom:14px;
+
+}
+
+
+.panelTitle{
+
+  font-size:1.1rem;
+
+  font-weight:900;
+
+}
+
+
+.toolbar{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:8px;
+
+  flex-wrap:wrap;
+
+}
+
+
+.tabs{
+
+  display:flex;
+
+  gap:7px;
+
+  flex-wrap:wrap;
+
+  margin-bottom:16px;
 
 }
 
@@ -391,19 +474,15 @@ textarea{
 
   border:0;
 
-  border-radius:10px;
+  background:#f1f4f4;
+
+  color:#546e7a;
 
   padding:
     9px
-    4px;
+    12px;
 
-  background:
-    var(--gray-light);
-
-  color:
-    #546e7a;
-
-  font-size:.72rem;
+  border-radius:999px;
 
   font-weight:800;
 
@@ -423,129 +502,63 @@ textarea{
 }
 
 
-/* =========================
-   區塊
-   ========================= */
+.requestList{
 
-.section{
+  display:flex;
 
-  margin-top:14px;
+  flex-direction:column;
 
-}
-
-
-.sectionTitle{
-
-  font-size:1.05rem;
-
-  font-weight:900;
-
-  margin-bottom:6px;
+  gap:10px;
 
 }
 
 
-.sectionDesc{
+.requestCard{
 
-  color:
-    var(--muted);
+  border:
+    1px solid
+    var(--line);
 
-  font-size:.82rem;
-
-  margin-bottom:10px;
-
-  line-height:1.5;
-
-}
-
-
-/* =========================
-   卡片
-   ========================= */
-
-.card{
-
-  background:#fff;
-
-  border-radius:16px;
+  border-radius:14px;
 
   padding:14px;
 
-  margin-bottom:10px;
-
-  box-shadow:
-    0 4px 14px
-    rgba(0,0,0,.04);
-
-  border-left:
-    5px solid
-    #cfd8dc;
+  background:#fff;
 
 }
 
 
-.card.red{
-  border-left-color:var(--red);
-}
-
-.card.orange{
-  border-left-color:var(--orange);
-}
-
-.card.purple{
-  border-left-color:var(--purple);
-}
-
-.card.green{
-  border-left-color:var(--green);
-}
-
-.card.blue{
-  border-left-color:var(--blue);
-}
-
-
-.cardTop{
+.requestTop{
 
   display:flex;
+
+  align-items:flex-start;
 
   justify-content:
     space-between;
 
   gap:10px;
 
-  align-items:
-    flex-start;
-
 }
 
 
-.childMain{
+.requestChild{
 
-  flex:1;
-
-}
-
-
-.childName{
-
-  font-size:1.05rem;
+  font-size:1rem;
 
   font-weight:900;
 
 }
 
 
-.meta{
+.requestClass{
 
-  margin-top:4px;
+  margin-top:3px;
 
   color:
-    #607d8b;
+    var(--muted);
 
-  font-size:.84rem;
-
-  line-height:1.6;
+  font-size:.82rem;
 
 }
 
@@ -554,13 +567,13 @@ textarea{
 
   display:inline-block;
 
-  border-radius:999px;
-
   padding:
     5px
-    8px;
+    9px;
 
-  font-size:.72rem;
+  border-radius:999px;
+
+  font-size:.76rem;
 
   font-weight:900;
 
@@ -569,204 +582,17 @@ textarea{
 }
 
 
-.badgeRed{
-
-  background:
-    var(--red-light);
-
-  color:#b71c1c;
-
-}
-
-
-.badgeOrange{
-
-  background:
-    var(--orange-light);
-
-  color:#e65100;
-
-}
-
-
-.badgePurple{
-
-  background:
-    var(--purple-light);
-
-  color:#6a1b9a;
-
-}
-
-
-.badgeGreen{
-
-  background:
-    var(--green-light);
-
-  color:
-    var(--green-dark);
-
-}
-
-
-.badgeBlue{
-
-  background:
-    var(--blue-light);
-
-  color:#0d47a1;
-
-}
-
-
-.badgeGray{
-
-  background:#eceff1;
-
-  color:#455a64;
-
-}
-
-
-/* =========================
-   按鈕
-   ========================= */
-
-.actions{
-
-  display:flex;
-
-  gap:8px;
-
-  margin-top:12px;
-
-  flex-wrap:wrap;
-
-}
-
-
-.btn{
-
-  border:0;
-
-  border-radius:10px;
-
-  padding:
-    10px
-    12px;
-
-  font-size:.88rem;
-
-  font-weight:900;
-
-  cursor:pointer;
-
-}
-
-
-.btnGreen{
-
-  background:
-    var(--green);
-
-  color:#fff;
-
-}
-
-
-.btnBlue{
-
-  background:
-    var(--blue);
-
-  color:#fff;
-
-}
-
-
-.btnPurple{
-
-  background:
-    var(--purple);
-
-  color:#fff;
-
-}
-
-
-.btnOrange{
-
-  background:
-    var(--orange);
-
-  color:#fff;
-
-}
-
-
-.btnRed{
-
-  background:
-    var(--red);
-
-  color:#fff;
-
-}
-
-
-.btnLight{
-
-  background:#eceff1;
-
-  color:#455a64;
-
-}
-
-
-.btnYellow{
+.badgePending{
 
   background:
     var(--yellow-light);
 
-  color:#7a6000;
+  color:#8d6e00;
 
 }
 
 
-/* =========================
-   提示
-   ========================= */
-
-.warning{
-
-  margin-top:10px;
-
-  padding:
-    9px
-    10px;
-
-  background:
-    var(--red-light);
-
-  color:#b71c1c;
-
-  border-radius:10px;
-
-  font-size:.82rem;
-
-  line-height:1.5;
-
-}
-
-
-.success{
-
-  margin-top:10px;
-
-  padding:
-    9px
-    10px;
+.badgeApproved{
 
   background:
     var(--green-light);
@@ -774,179 +600,112 @@ textarea{
   color:
     var(--green-dark);
 
-  border-radius:10px;
+}
 
-  font-size:.82rem;
 
-  line-height:1.5;
+.badgeRejected{
+
+  background:
+    var(--red-light);
+
+  color:
+    var(--red);
+
+}
+
+
+.badgeWaitlist{
+
+  background:
+    var(--orange-light);
+
+  color:
+    var(--orange);
+
+}
+
+
+.badgeOther{
+
+  background:#eceff1;
+
+  color:#546e7a;
+
+}
+
+
+.requestBody{
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(2,minmax(0,1fr));
+
+  gap:
+    8px
+    16px;
+
+  margin-top:12px;
 
 }
 
 
 .info{
 
-  margin-top:10px;
+  font-size:.86rem;
 
-  padding:
-    9px
-    10px;
-
-  background:
-    var(--blue-light);
-
-  color:#0d47a1;
-
-  border-radius:10px;
-
-  font-size:.82rem;
-
-  line-height:1.5;
+  line-height:1.55;
 
 }
 
 
-/* =========================
-   名額
-   ========================= */
-
-.capacityGrid{
-
-  display:grid;
-
-  grid-template-columns:
-    repeat(2,1fr);
-
-  gap:9px;
-
-  margin-bottom:12px;
-
-}
-
-
-.capacityCard{
-
-  background:#fff;
-
-  border-radius:14px;
-
-  padding:13px;
-
-  box-shadow:
-    0 4px 14px
-    rgba(0,0,0,.04);
-
-}
-
-
-.capacityTitle{
-
-  font-weight:900;
-
-}
-
-
-.capacityCount{
-
-  margin-top:5px;
-
-  font-size:1.35rem;
-
-  font-weight:900;
-
-  color:
-    var(--purple);
-
-}
-
-
-.capacitySub{
-
-  margin-top:3px;
-
-  font-size:.78rem;
+.infoLabel{
 
   color:
     var(--muted);
 
+  font-size:.77rem;
+
+  margin-bottom:2px;
+
 }
 
 
-/* =========================
-   分流表
-   ========================= */
+.infoValue{
 
-.filterBar{
+  font-weight:700;
 
-  background:#fff;
+  word-break:
+    break-word;
 
-  border-radius:14px;
+}
+
+
+.reasonBox{
+
+  margin-top:11px;
 
   padding:10px;
 
-  margin-bottom:10px;
+  border-radius:10px;
 
-}
+  background:#f7f9f9;
 
-
-.flowRow{
-
-  display:grid;
-
-  grid-template-columns:
-    1.05fr
-    .9fr
-    1fr;
-
-  gap:8px;
-
-  padding:
-    10px
-    0;
-
-  border-bottom:
-    1px solid
-    #edf1f2;
-
-  align-items:center;
-
-}
-
-
-.flowRow:last-child{
-
-  border-bottom:0;
-
-}
-
-
-.flowHead{
-
-  font-size:.76rem;
-
-  color:
-    var(--muted);
-
-  font-weight:900;
-
-}
-
-
-.flowValue{
+  line-height:1.55;
 
   font-size:.86rem;
 
-  line-height:1.45;
-
 }
 
 
-/* =========================
-   空狀態
-   ========================= */
-
 .empty{
 
-  background:#fff;
+  padding:28px;
+
+  text-align:center;
+
+  color:
+    var(--muted);
 
   border:
     1.5px dashed
@@ -954,99 +713,42 @@ textarea{
 
   border-radius:14px;
 
-  padding:18px;
+  background:#fafcfc;
+
+  line-height:1.7;
+
+}
+
+
+.loading{
+
+  padding:24px;
 
   text-align:center;
 
   color:
     var(--muted);
 
-  line-height:1.6;
-
 }
 
 
-/* =========================
-   Modal
-   ========================= */
+.errorBox{
 
-.modalBackdrop{
+  padding:14px;
 
-  position:fixed;
-
-  inset:0;
+  border-radius:12px;
 
   background:
-    rgba(38,50,56,.45);
+    var(--red-light);
+
+  color:
+    #b71c1c;
+
+  margin-bottom:14px;
+
+  line-height:1.6;
 
   display:none;
-
-  justify-content:center;
-
-  align-items:flex-end;
-
-  z-index:100;
-
-}
-
-
-.modal{
-
-  width:100%;
-
-  max-width:760px;
-
-  background:#fff;
-
-  border-radius:
-    20px
-    20px
-    0
-    0;
-
-  padding:18px;
-
-  max-height:88vh;
-
-  overflow:auto;
-
-}
-
-
-.modalTitle{
-
-  font-size:1.1rem;
-
-  font-weight:900;
-
-}
-
-
-.modalText{
-
-  margin-top:9px;
-
-  line-height:1.65;
-
-  color:#546e7a;
-
-}
-
-
-.modalActions{
-
-  display:flex;
-
-  gap:8px;
-
-  margin-top:16px;
-
-}
-
-
-.modalActions button{
-
-  flex:1;
 
 }
 
@@ -1058,16 +760,49 @@ textarea{
 }
 
 
-/* =========================
-   桌機
-   ========================= */
+@media(
+  max-width:760px
+){
 
-@media (min-width:600px){
+  .app{
+    padding:12px;
+  }
+
+
+  .headerTop{
+    flex-direction:column;
+  }
+
 
   .summaryGrid{
 
     grid-template-columns:
-      repeat(4,1fr);
+      repeat(2,1fr);
+
+  }
+
+
+  .loginGrid{
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .requestBody{
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .panelTop{
+
+    align-items:flex-start;
+
+    flex-direction:column;
 
   }
 
@@ -1080,7 +815,6 @@ textarea{
 
 <body>
 
-
 <div class="app">
 
 
@@ -1090,646 +824,269 @@ textarea{
 
 <div class="header">
 
+  <div class="headerTop">
 
-<div class="brand">
+    <div>
 
-樂業附幼｜老師行政後台
+      <div class="brand">
+        樂業附幼｜行政管理平台
+      </div>
 
-</div>
+      <div class="subtitle">
+        Supabase 第一版｜讀取家長真實申請資料
+      </div>
 
-
-<div class="subtitle">
-
-正常流程由系統自動處理，老師主要處理「需要注意的人」。
-
-</div>
-
-
-<div class="testNotice">
-
-⚠️ 目前仍是測試版，使用假資料。正式版之後會改成老師從 LINE 進入，由系統自動辨識老師身分，不會讓老師自己切換角色。
-
-</div>
+    </div>
 
 
-<div class="roleBox">
+    <button
+      class="btn btnBlue"
+      type="button"
+      onclick="refreshRequests()"
+    >
+      ↻ 重新整理
+    </button>
 
-<label>
-
-測試角色
-
-</label>
+  </div>
 
 
-<select
-  id="roleSelect"
-  onchange="changeRole()"
->
+  <div
+    id="loginState"
+    class="loginState"
+  >
+    Supabase：檢查登入狀態中...
+  </div>
 
-<option value="admin">
 
-行政｜全園
+  <!-- ====================================== -->
+  <!-- 測試登入 -->
+  <!-- 正式老師 LINE 身分完成後移除 -->
+  <!-- ====================================== -->
 
-</option>
+  <div
+    id="testLoginBox"
+    class="testBox"
+  >
 
-<option value="class">
+    <div class="testTitle">
+      🧪 行政測試登入
+    </div>
 
-上午班老師｜袋鼠班
+    <div class="helper">
+      正式上線後會改為老師從 LINE 進入並自動驗證身分，不會要求老師使用這組測試帳號。
+    </div>
 
-</option>
 
-<option value="aftercare">
+    <div class="loginGrid">
 
-課後老師｜蜜蜂班
+      <input
+        id="email"
+        type="email"
+        value="admin-test-0923@example.com"
+        placeholder="Email"
+      >
 
-</option>
+      <input
+        id="password"
+        type="password"
+        placeholder="測試密碼"
+      >
 
-</select>
+      <button
+        id="loginBtn"
+        class="btn btnGreen"
+        type="button"
+        onclick="login()"
+      >
+        登入
+      </button>
 
-</div>
+    </div>
 
+
+    <button
+      class="btn btnGray"
+      type="button"
+      style="
+        margin-top:8px;
+        width:100%;
+      "
+      onclick="logout()"
+    >
+      登出測試帳號
+    </button>
+
+  </div>
 
 </div>
 
 
 
 <!-- ====================================== -->
-<!-- 固定課托基準 -->
-<!-- ====================================== -->
-
-<div class="baseStats">
-
-
-<div class="baseTitle">
-
-📊 本學期固定課托基準
-
-</div>
-
-
-<div class="baseGrid">
-
-
-<div class="baseItem">
-
-<div class="baseNumber">
-
-103
-
-</div>
-
-<div class="baseLabel">
-
-固定課托總人數
-
-</div>
-
-</div>
-
-
-<div class="baseItem">
-
-<div class="baseNumber">
-
-47
-
-</div>
-
-<div class="baseLabel">
-
-第一梯 17:00
-
-</div>
-
-</div>
-
-
-<div class="baseItem">
-
-<div class="baseNumber">
-
-56
-
-</div>
-
-<div class="baseLabel">
-
-第二梯 18:00
-
-</div>
-
-</div>
-
-
-</div>
-
-
-</div>
-
-
-
-<!-- ====================================== -->
-<!-- 今日即時統計 -->
+<!-- 統計 -->
 <!-- ====================================== -->
 
 <div class="summaryGrid">
 
+  <div class="summaryCard">
 
-<div class="summaryCard">
+    <div class="summaryLabel">
+      待處理申請
+    </div>
 
-<div
-  id="summaryPending"
-  class="summaryNumber orangeText"
->
+    <div
+      id="pendingCount"
+      class="summaryNumber red"
+    >
+      0
+    </div>
 
-0
-
-</div>
-
-<div class="summaryLabel">
-
-待處理
-
-</div>
-
-</div>
+  </div>
 
 
-<div class="summaryCard">
+  <div class="summaryCard">
 
-<div
-  id="summaryAftercare"
-  class="summaryNumber purpleText"
->
+    <div class="summaryLabel">
+      今日請假
+    </div>
 
-0
+    <div
+      id="leaveCount"
+      class="summaryNumber blue"
+    >
+      0
+    </div>
 
-</div>
-
-<div class="summaryLabel">
-
-課後照顧中
-
-</div>
-
-</div>
+  </div>
 
 
-<div class="summaryCard">
+  <div class="summaryCard">
 
-<div
-  id="summaryException"
-  class="summaryNumber redText"
->
+    <div class="summaryLabel">
+      今日臨托
+    </div>
 
-0
+    <div
+      id="temporaryCount"
+      class="summaryNumber purple"
+    >
+      0
+    </div>
 
-</div>
-
-<div class="summaryLabel">
-
-異常
-
-</div>
-
-</div>
+  </div>
 
 
-<div class="summaryCard">
+  <div class="summaryCard">
 
-<div
-  id="summaryCompleted"
-  class="summaryNumber greenText"
->
+    <div class="summaryLabel">
+      全部申請
+    </div>
 
-0
+    <div
+      id="allCount"
+      class="summaryNumber green"
+    >
+      0
+    </div>
 
-</div>
-
-<div class="summaryLabel">
-
-已離園
-
-</div>
-
-</div>
-
+  </div>
 
 </div>
 
 
 
 <!-- ====================================== -->
-<!-- 分頁 -->
+<!-- 申請列表 -->
 <!-- ====================================== -->
 
-<div class="tabs">
-
-
-<button
-  id="tabToday"
-  class="tab active"
-  onclick="showTab('today')"
->
-
-🔔<br>
-待處理
-
-</button>
-
-
-<button
-  id="tabFlow"
-  class="tab"
-  onclick="showTab('flow')"
->
-
-🏫<br>
-課後班
-
-</button>
-
-
-<button
-  id="tabAssign"
-  class="tab"
-  onclick="showTab('assign')"
->
-
-🟣<br>
-臨托審核
-
-</button>
-
-
-<button
-  id="tabLate"
-  class="tab"
-  onclick="showTab('late')"
->
-
-⏰<br>
-晚到逾時
-
-</button>
-
-
-<button
-  id="tabCompleted"
-  class="tab"
-  onclick="showTab('completed')"
->
-
-✅<br>
-已離園
-
-</button>
-
-
-</div>
-
-
-
-<!-- ====================================== -->
-<!-- 今日待處理 -->
-<!-- ====================================== -->
-
-<div
-  id="todaySection"
-  class="section"
->
-
-
-<div class="sectionTitle">
-
-🔔 現在需要處理
-
-</div>
-
-
-<div class="sectionDesc">
-
-正常流程不用老師逐一操作。這裡只顯示目前真正需要注意的幼兒。
-
-</div>
-
-
-<div id="attentionList"></div>
-
-
-</div>
-
-
-
-<!-- ====================================== -->
-<!-- 課後班 -->
-<!-- ====================================== -->
-
-<div
-  id="flowSection"
-  class="section hidden"
->
-
-
-<div class="sectionTitle">
-
-🏫 今日課後班
-
-</div>
-
-
-<div class="sectionDesc">
-
-16:00 未完成接送且已有核准課後安排的幼兒，系統自動進入指定課後班，不需要老師逐一按「交接」。
-
-</div>
-
-
-<div class="filterBar">
-
-
-<select
-  id="flowClassFilter"
-  onchange="renderFlow()"
->
-
-<option value="all">
-
-全部課後班
-
-</option>
-
-
-<option value="蝴蝶班">
-
-蝴蝶班｜混齡｜18:00
-
-</option>
-
-
-<option value="白兔班">
-
-白兔班｜混齡｜17:00
-
-</option>
-
-
-<option value="蜜蜂班">
-
-蜜蜂班｜混齡｜18:00
-
-</option>
-
-
-<option value="陽光書屋班">
-
-陽光書屋班｜混齡｜17:00
-
-</option>
-
-
-<option value="櫻桃班">
-
-櫻桃班｜幼幼
-
-</option>
-
-
-<option value="蘋果班">
-
-蘋果班｜幼幼
-
-</option>
-
-
-</select>
-
-
-</div>
-
-
-<div id="flowList"></div>
-
-
-</div>
-
-
-
-<!-- ====================================== -->
-<!-- 臨托審核 -->
-<!-- ====================================== -->
-
-<div
-  id="assignSection"
-  class="section hidden"
->
-
-
-<div class="sectionTitle">
-
-🟣 臨時托育審核
-
-</div>
-
-
-<div class="sectionDesc">
-
-臨托送出後不代表核准。行政老師依名額與班級安排，選擇核准、候補或無法安排。
-
-</div>
-
-
-
-<div class="capacityGrid">
-
-
-<div class="capacityCard">
-
-<div class="capacityTitle">
-
-混齡臨托
-
-</div>
-
-<div
-  id="mixedCapacity"
-  class="capacityCount"
->
-
-0 / 8
-
-</div>
-
-<div
-  id="mixedCapacitySub"
-  class="capacitySub"
->
-
-已核准
-
-</div>
-
-</div>
-
-
-<div class="capacityCard">
-
-<div class="capacityTitle">
-
-幼幼臨托
-
-</div>
-
-<div
-  id="toddlerCapacity"
-  class="capacityCount"
->
-
-0 / 6
-
-</div>
-
-<div
-  id="toddlerCapacitySub"
-  class="capacitySub"
->
-
-已核准
-
-</div>
-
-</div>
-
-
-</div>
-
-
-<div id="assignList"></div>
-
-
-</div>
-
-
-
-<!-- ====================================== -->
-<!-- 晚到逾時 -->
-<!-- ====================================== -->
-
-<div
-  id="lateSection"
-  class="section hidden"
->
-
-
-<div class="sectionTitle">
-
-⏰ 晚到與逾時
-
-</div>
-
-
-<div class="sectionDesc">
-
-老師不用自己計算費用或判斷無故延遲。正式系統會依家長通報時間與實際完成接送時間自動判斷。
-
-</div>
-
-
-<div id="lateList"></div>
-
-
-</div>
-
-
-
-<!-- ====================================== -->
-<!-- 已離園 -->
-<!-- ====================================== -->
-
-<div
-  id="completedSection"
-  class="section hidden"
->
-
-
-<div class="sectionTitle">
-
-✅ 今日已完成接送
-
-</div>
-
-
-<div class="sectionDesc">
-
-完成接送後，幼兒會移到這裡，避免老師重複操作。
-
-</div>
-
-
-<div id="completedList"></div>
-
-
-</div>
-
-
-</div>
-
-
-
-<!-- ====================================== -->
-<!-- 完成接送確認 -->
-<!-- ====================================== -->
-
-<div
-  id="confirmModal"
-  class="modalBackdrop"
->
-
-
-<div class="modal">
-
-
-<div
-  id="confirmTitle"
-  class="modalTitle"
->
-
-確認完成接送
-
-</div>
-
-
-<div
-  id="confirmText"
-  class="modalText"
-></div>
-
-
-<div class="modalActions">
-
-
-<button
-  class="btn btnLight"
-  onclick="closeConfirm()"
->
-
-取消
-
-</button>
-
-
-<button
-  class="btn btnGreen"
-  onclick="confirmPickup()"
->
-
-確認完成
-
-</button>
-
-
-</div>
-
+<div class="panel">
+
+  <div class="panelTop">
+
+    <div>
+
+      <div class="panelTitle">
+        📋 家長申請紀錄
+      </div>
+
+      <div
+        id="lastUpdated"
+        class="helper"
+      >
+        尚未載入
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div
+    id="errorBox"
+    class="errorBox"
+  ></div>
+
+
+  <div class="tabs">
+
+    <button
+      id="tabAll"
+      class="tab active"
+      type="button"
+      onclick="setFilter('all')"
+    >
+      全部
+    </button>
+
+    <button
+      id="tabPending"
+      class="tab"
+      type="button"
+      onclick="setFilter('pending')"
+    >
+      待處理
+    </button>
+
+    <button
+      id="tabLeave"
+      class="tab"
+      type="button"
+      onclick="setFilter('leave')"
+    >
+      請假
+    </button>
+
+    <button
+      id="tabTemporary"
+      class="tab"
+      type="button"
+      onclick="setFilter('temporary')"
+    >
+      臨時托育
+    </button>
+
+    <button
+      id="tabExtended"
+      class="tab"
+      type="button"
+      onclick="setFilter('extended')"
+    >
+      延長托育
+    </button>
+
+  </div>
+
+
+  <div
+    id="requestList"
+    class="requestList"
+  >
+
+    <div class="empty">
+      尚未登入行政帳號。
+    </div>
+
+  </div>
 
 </div>
 
@@ -1740,315 +1097,80 @@ textarea{
 
 <script>
 
-
 /*
-  ==================================================
-  固定設定
-  ==================================================
+==================================================
+Supabase
+==================================================
 */
 
+const SUPABASE_URL =
+  "https://cqtvrpiapssjjctwqivn.supabase.co";
 
-const TEMP_CAPACITY = {
 
-  mixed:8,
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_PTpcF08CriR4_kH9KamB1w_akgHzTYw";
 
-  toddler:6
+
+const supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+
+
+/*
+==================================================
+上午班級
+==================================================
+*/
+
+const CLASS_MAP = {
+
+  C01:"櫻桃班",
+
+  C02:"蘋果班",
+
+  C03:"蝴蝶班",
+
+  C04:"白兔班",
+
+  C05:"蜜蜂班",
+
+  C06:"袋鼠班",
+
+  C07:"綿羊班",
+
+  C08:"企鵝班"
 
 };
 
 
-const AFTERCARE_CLASSES = [
-
-
-  {
-    id:"AC01",
-    name:"蝴蝶班",
-    group:"混齡",
-    endTime:"18:00"
-  },
-
-
-  {
-    id:"AC02",
-    name:"白兔班",
-    group:"混齡",
-    endTime:"17:00"
-  },
-
-
-  {
-    id:"AC03",
-    name:"蜜蜂班",
-    group:"混齡",
-    endTime:"18:00"
-  },
-
-
-  {
-    id:"AC04",
-    name:"陽光書屋班",
-    group:"混齡",
-    endTime:"17:00"
-  },
-
-
-  {
-    id:"AC05",
-    name:"櫻桃班",
-    group:"幼幼",
-    endTime:""
-  },
-
-
-  {
-    id:"AC06",
-    name:"蘋果班",
-    group:"幼幼",
-    endTime:""
-  }
-
-
-];
-
-
 
 /*
-  ==================================================
-  測試資料
-
-  正式版未來會從資料庫讀取。
-  ==================================================
+==================================================
+狀態
+==================================================
 */
 
-
-const childrenData = [
-
-
-  /*
-    正常固定課托
-  */
-
-
-  {
-    id:"S001",
-    name:"王○○",
-    morningClass:"袋鼠班",
-    careGroup:"mixed",
-    aftercareClass:"蜜蜂班",
-    pickupTime:"18:00",
-    careType:"固定第二梯",
-    status:"aftercare",
-    approved:true,
-    needsAttention:false
-  },
-
-
-  {
-    id:"S002",
-    name:"李○○",
-    morningClass:"白兔班",
-    careGroup:"mixed",
-    aftercareClass:"陽光書屋班",
-    pickupTime:"17:00",
-    careType:"固定第一梯",
-    status:"aftercare",
-    approved:true,
-    needsAttention:false
-  },
-
-
-  {
-    id:"S003",
-    name:"吳○○",
-    morningClass:"櫻桃班",
-    careGroup:"toddler",
-    aftercareClass:"櫻桃班",
-    pickupTime:"17:00",
-    careType:"幼幼課後",
-    status:"aftercare",
-    approved:true,
-    needsAttention:false
-  },
-
-
-  /*
-    16:00 未接回、但沒有課後安排
-    這種不能自動進課後班
-  */
-
-
-  {
-    id:"S004",
-    name:"陳○○",
-    morningClass:"綿羊班",
-    careGroup:"mixed",
-    aftercareClass:"",
-    pickupTime:"16:00",
-    careType:"正常放學",
-    status:"waiting",
-    approved:false,
-    needsAttention:true,
-    attentionType:"16:00未接回"
-  },
-
-
-  /*
-    臨時托育待確認
-  */
-
-
-  {
-    id:"S005",
-    name:"林○○",
-    morningClass:"袋鼠班",
-    careGroup:"mixed",
-    aftercareClass:"",
-    pickupTime:"18:00",
-    careType:"臨時托育",
-    requestedPeriod:"16:00～18:00",
-    temporaryStatus:"pending",
-    status:"need_assignment",
-    approved:false,
-    needsAttention:true,
-    attentionType:"臨托待確認"
-  },
-
-
-  {
-    id:"S006",
-    name:"張○○",
-    morningClass:"蘋果班",
-    careGroup:"toddler",
-    aftercareClass:"",
-    pickupTime:"17:00",
-    careType:"臨時托育",
-    requestedPeriod:"16:00～17:00",
-    temporaryStatus:"pending",
-    status:"need_assignment",
-    approved:false,
-    needsAttention:true,
-    attentionType:"臨托待確認"
-  },
-
-
-  /*
-    已核准臨托
-  */
-
-
-  {
-    id:"S007",
-    name:"周○○",
-    morningClass:"白兔班",
-    careGroup:"mixed",
-    aftercareClass:"蜜蜂班",
-    pickupTime:"18:00",
-    careType:"臨時托育",
-    requestedPeriod:"16:00～18:00",
-    temporaryStatus:"approved",
-    status:"aftercare",
-    approved:true,
-    needsAttention:false
-  },
-
-
-  /*
-    延長托育
-  */
-
-
-  {
-    id:"S008",
-    name:"黃○○",
-    morningClass:"蜜蜂班",
-    careGroup:"mixed",
-    aftercareClass:"蜜蜂班",
-    pickupTime:"18:00",
-    careType:"延長托育",
-    requestedPeriod:"17:00～18:00",
-    status:"aftercare",
-    approved:true,
-    needsAttention:false
-  },
-
-
-  /*
-    晚到
-  */
-
-
-  {
-    id:"S009",
-    name:"劉○○",
-    morningClass:"白兔班",
-    careGroup:"mixed",
-    aftercareClass:"白兔班",
-    pickupTime:"17:00",
-    careType:"固定第一梯",
-    status:"late_notice",
-    approved:true,
-    noticeTime:"16:42",
-    noticeDeadline:"16:30",
-    expectedArrival:"17:15",
-    lateAfter:"17:05",
-    fee:35,
-    needsAttention:true,
-    attentionType:"晚到"
-  },
-
-
-  /*
-    已離園
-  */
-
-
-  {
-    id:"S010",
-    name:"鄭○○",
-    morningClass:"袋鼠班",
-    careGroup:"mixed",
-    aftercareClass:"",
-    pickupTime:"16:00",
-    careType:"正常放學",
-    status:"completed",
-    completedTime:"15:58",
-    approved:false,
-    needsAttention:false
-  },
-
-
-  {
-    id:"S011",
-    name:"蔡○○",
-    morningClass:"袋鼠班",
-    careGroup:"mixed",
-    aftercareClass:"蜜蜂班",
-    pickupTime:"18:00",
-    careType:"固定第二梯",
-    status:"completed",
-    completedTime:"17:52",
-    approved:true,
-    needsAttention:false
-  }
-
-
-];
-
-
-
-/*
-  ==================================================
-  全域狀態
-  ==================================================
-*/
-
-
-let currentRole =
-  "admin";
-
-
-let currentConfirmId =
+let currentUser =
   null;
+
+
+let currentStaff =
+  null;
+
+
+let requests =
+  [];
+
+
+let childrenMap =
+  {};
+
+
+let currentFilter =
+  "all";
 
 
 const $ =
@@ -2058,286 +1180,813 @@ const $ =
 
 
 /*
-  ==================================================
-  分頁
-  ==================================================
+==================================================
+登入
+==================================================
 */
 
+async function login(){
 
-function showTab(tab){
-
-
-  const tabs = [
-
-    "today",
-    "flow",
-    "assign",
-    "late",
-    "completed"
-
-  ];
+  const email =
+    $("email")
+      .value
+      .trim();
 
 
-  tabs.forEach(
+  const password =
+    $("password")
+      .value;
 
-    name => {
+
+  if(
+    !email
+    ||
+    !password
+  ){
+
+    alert(
+      "請輸入行政測試帳號與密碼。"
+    );
 
 
-      $(name+"Section")
-        .classList
-        .toggle(
+    return;
 
-          "hidden",
+  }
 
-          name !== tab
 
+  $("loginBtn").disabled =
+    true;
+
+
+  $("loginState").textContent =
+    "Supabase：登入中...";
+
+
+  hideError();
+
+
+  /*
+  先清除舊 session
+  */
+
+  await supabaseClient.auth.signOut();
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth.signInWithPassword(
+      {
+        email,
+        password
+      }
+    );
+
+
+  if(
+    error
+  ){
+
+    $("loginBtn").disabled =
+      false;
+
+
+    $("loginState").textContent =
+      "Supabase：登入失敗";
+
+
+    showError(
+      "登入失敗：" +
+      error.message
+    );
+
+
+    return;
+
+  }
+
+
+  currentUser =
+    data.user;
+
+
+  await validateAdmin();
+
+
+  $("loginBtn").disabled =
+    false;
+
+}
+
+
+
+/*
+==================================================
+登出
+==================================================
+*/
+
+async function logout(){
+
+  await supabaseClient.auth.signOut();
+
+
+  currentUser =
+    null;
+
+
+  currentStaff =
+    null;
+
+
+  requests =
+    [];
+
+
+  childrenMap =
+    {};
+
+
+  $("password").value =
+    "";
+
+
+  $("loginState").textContent =
+    "Supabase：已登出";
+
+
+  resetCounts();
+
+
+  $("requestList").innerHTML =
+
+    `
+      <div class="empty">
+        已登出行政測試帳號。
+      </div>
+    `;
+
+}
+
+
+
+/*
+==================================================
+驗證行政身分
+==================================================
+*/
+
+async function validateAdmin(){
+
+  if(
+    !currentUser
+  ){
+
+    showError(
+      "目前沒有登入中的 Supabase 使用者。"
+    );
+
+
+    return false;
+
+  }
+
+
+  $("loginState").textContent =
+    "Supabase：正在驗證行政身分...";
+
+
+  /*
+  先讀自己的 user_identities
+  */
+
+  const {
+    data:identity,
+    error:identityError
+  } =
+    await supabaseClient
+      .from(
+        "user_identities"
+      )
+      .select(
+        "staff_id,guardian_id"
+      )
+      .eq(
+        "auth_user_id",
+        currentUser.id
+      )
+      .maybeSingle();
+
+
+  if(
+    identityError
+  ){
+
+    showError(
+      "讀取身分對應失敗：" +
+      identityError.message
+    );
+
+
+    return false;
+
+  }
+
+
+  if(
+    !identity
+    ||
+    !identity.staff_id
+  ){
+
+    $("loginState").textContent =
+      "此帳號不是老師／行政帳號";
+
+
+    showError(
+      "此 Supabase 帳號沒有綁定 staff 身分。"
+    );
+
+
+    return false;
+
+  }
+
+
+  /*
+  讀 staff
+  */
+
+  const {
+    data:staff,
+    error:staffError
+  } =
+    await supabaseClient
+      .from(
+        "staff"
+      )
+      .select(
+        "id,display_name,role,active"
+      )
+      .eq(
+        "id",
+        identity.staff_id
+      )
+      .maybeSingle();
+
+
+  if(
+    staffError
+  ){
+
+    showError(
+      "讀取 staff 資料失敗：" +
+      staffError.message
+    );
+
+
+    return false;
+
+  }
+
+
+  if(
+    !staff
+  ){
+
+    showError(
+      "找不到對應的 staff 資料。"
+    );
+
+
+    return false;
+
+  }
+
+
+  if(
+    staff.active !== true
+  ){
+
+    showError(
+      "此老師帳號目前已停用。"
+    );
+
+
+    return false;
+
+  }
+
+
+  if(
+    staff.role !== "admin"
+  ){
+
+    $("loginState").textContent =
+      "此帳號不是行政權限";
+
+
+    showError(
+      "目前第一版 admin.html 僅開放 admin 行政角色。"
+    );
+
+
+    return false;
+
+  }
+
+
+  currentStaff =
+    staff;
+
+
+  $("loginState").innerHTML =
+
+    "✅ Supabase 已登入<br>"
+    +
+    "帳號："
+    +
+    escapeHtml(
+      currentUser.email
+      ||
+      ""
+    )
+    +
+    "<br>"
+    +
+    "身分："
+    +
+    escapeHtml(
+      staff.display_name
+    )
+    +
+    "｜"
+    +
+    escapeHtml(
+      staff.role
+    );
+
+
+  hideError();
+
+
+  await refreshRequests();
+
+
+  return true;
+
+}
+
+
+
+/*
+==================================================
+重新整理
+==================================================
+*/
+
+async function refreshRequests(){
+
+  if(
+    !currentUser
+    ||
+    !currentStaff
+  ){
+
+    $("requestList").innerHTML =
+
+      `
+        <div class="empty">
+          請先登入行政測試帳號。
+        </div>
+      `;
+
+
+    return;
+
+  }
+
+
+  $("requestList").innerHTML =
+
+    `
+      <div class="loading">
+        正在從 Supabase 讀取家長申請...
+      </div>
+    `;
+
+
+  hideError();
+
+
+  /*
+  requests RLS：
+  admin 應可讀全部
+  */
+
+  const {
+    data:requestData,
+    error:requestError
+  } =
+    await supabaseClient
+      .from(
+        "requests"
+      )
+      .select(
+        `
+          id,
+          request_date,
+          child_id,
+          guardian_id,
+          request_type,
+          status,
+          requested_start_time,
+          requested_end_time,
+          reason,
+          care_group,
+          created_at
+        `
+      )
+      .order(
+        "created_at",
+        {
+          ascending:false
+        }
+      );
+
+
+  if(
+    requestError
+  ){
+
+    showError(
+      "讀取 requests 失敗：" +
+      requestError.message
+    );
+
+
+    $("requestList").innerHTML =
+
+      `
+        <div class="empty">
+          requests 資料讀取失敗。
+        </div>
+      `;
+
+
+    return;
+
+  }
+
+
+  requests =
+    requestData
+    ||
+    [];
+
+
+  /*
+  收集 child_id
+  */
+
+  const childIds =
+
+    [
+      ...new Set(
+
+        requests
+          .map(
+            r =>
+            r.child_id
+          )
+          .filter(Boolean)
+
+      )
+    ];
+
+
+  childrenMap =
+    {};
+
+
+  if(
+    childIds.length
+  ){
+
+    const {
+      data:childData,
+      error:childError
+    } =
+      await supabaseClient
+        .from(
+          "children"
+        )
+        .select(
+          `
+            id,
+            school_code,
+            name,
+            morning_class_id,
+            care_group
+          `
+        )
+        .in(
+          "id",
+          childIds
         );
 
 
-      $(
+    if(
+      childError
+    ){
 
-        "tab"
+      showError(
+        "申請已讀取，但幼兒資料讀取失敗：" +
+        childError.message
+      );
 
-        +
+    }
+    else{
 
-        name[0].toUpperCase()
-
-        +
-
-        name.slice(1)
-
+      (
+        childData
+        ||
+        []
       )
-      .classList
-      .toggle(
+      .forEach(
 
-        "active",
+        child => {
 
-        name === tab
+          childrenMap[
+            child.id
+          ] =
+            child;
+
+        }
 
       );
 
     }
 
-  );
-
-}
-
-
-
-/*
-  ==================================================
-  測試角色切換
-  ==================================================
-*/
-
-
-function changeRole(){
-
-
-  currentRole =
-    $("roleSelect").value;
-
-
-  renderAll();
-
-}
-
-
-
-/*
-  ==================================================
-  老師權限篩選
-  ==================================================
-*/
-
-
-function visibleChildren(){
-
-
-  /*
-    行政：
-    看全園
-  */
-
-
-  if(
-    currentRole === "admin"
-  ){
-
-    return childrenData;
-
   }
 
 
-
-  /*
-    上午班老師測試：
-    只看袋鼠班
-  */
+  updateCounts();
 
 
-  if(
-    currentRole === "class"
-  ){
+  renderRequests();
 
-    return childrenData.filter(
 
-      child =>
-      child.morningClass === "袋鼠班"
-
+  $("lastUpdated").textContent =
+    "最後更新：" +
+    formatDateTime(
+      new Date()
     );
 
-  }
-
-
-
-  /*
-    課後老師測試：
-    只看蜜蜂班
-  */
-
-
-  if(
-    currentRole === "aftercare"
-  ){
-
-    return childrenData.filter(
-
-      child =>
-      child.aftercareClass === "蜜蜂班"
-
-    );
-
-  }
-
-
-  return [];
-
 }
 
 
 
 /*
-  ==================================================
-  今日統計
-  ==================================================
+==================================================
+統計
+==================================================
 */
 
+function updateCounts(){
 
-function renderSummary(){
-
-
-  const list =
-    visibleChildren();
+  const today =
+    localDateString(
+      new Date()
+    );
 
 
   const pending =
 
-    list.filter(
+    requests.filter(
+      r =>
+      r.status === "pending"
+    ).length;
 
-      child =>
 
-      child.status === "waiting"
+  const leave =
 
-      ||
+    requests.filter(
 
-      child.status === "late_notice"
-
-      ||
-
-      child.status === "need_assignment"
+      r =>
+      r.request_type === "leave"
+      &&
+      r.request_date === today
 
     ).length;
 
 
-  const aftercare =
+  const temporary =
 
-    list.filter(
+    requests.filter(
 
-      child =>
-      child.status === "aftercare"
-
-    ).length;
-
-
-  const exception =
-
-    list.filter(
-
-      child =>
-      child.needsAttention
+      r =>
+      r.request_type === "temporary"
+      &&
+      r.request_date === today
 
     ).length;
 
 
-  const completed =
-
-    list.filter(
-
-      child =>
-      child.status === "completed"
-
-    ).length;
-
-
-  $("summaryPending").textContent =
+  $("pendingCount").textContent =
     pending;
 
 
-  $("summaryAftercare").textContent =
-    aftercare;
+  $("leaveCount").textContent =
+    leave;
 
 
-  $("summaryException").textContent =
-    exception;
+  $("temporaryCount").textContent =
+    temporary;
 
 
-  $("summaryCompleted").textContent =
-    completed;
+  $("allCount").textContent =
+    requests.length;
+
+}
+
+
+function resetCounts(){
+
+  $("pendingCount").textContent =
+    "0";
+
+
+  $("leaveCount").textContent =
+    "0";
+
+
+  $("temporaryCount").textContent =
+    "0";
+
+
+  $("allCount").textContent =
+    "0";
+
+
+  $("lastUpdated").textContent =
+    "尚未載入";
 
 }
 
 
 
 /*
-  ==================================================
-  今日待處理
-  ==================================================
+==================================================
+篩選
+==================================================
 */
 
+function setFilter(filter){
 
-function renderAttention(){
+  currentFilter =
+    filter;
 
 
-  const list =
+  [
+    "All",
+    "Pending",
+    "Leave",
+    "Temporary",
+    "Extended"
+  ]
+  .forEach(
 
-    visibleChildren()
-      .filter(
+    name => {
 
-        child =>
-        child.needsAttention
+      const btn =
+        $(
+          "tab"
+          +
+          name
+        );
 
+
+      if(
+        btn
+      ){
+
+        btn.classList.remove(
+          "active"
+        );
+
+      }
+
+    }
+
+  );
+
+
+  const selected =
+    $(
+      "tab"
+      +
+      filter[0].toUpperCase()
+      +
+      filter.slice(1)
+    );
+
+
+  if(
+    selected
+  ){
+
+    selected.classList.add(
+      "active"
+    );
+
+  }
+
+
+  renderRequests();
+
+}
+
+
+
+/*
+==================================================
+顯示 requests
+==================================================
+*/
+
+function renderRequests(){
+
+  let list =
+    [
+      ...requests
+    ];
+
+
+  if(
+    currentFilter === "pending"
+  ){
+
+    list =
+      list.filter(
+        r =>
+        r.status === "pending"
       );
 
+  }
 
-  const box =
-    $("attentionList");
+
+  if(
+    currentFilter === "leave"
+  ){
+
+    list =
+      list.filter(
+        r =>
+        r.request_type === "leave"
+      );
+
+  }
+
+
+  if(
+    currentFilter === "temporary"
+  ){
+
+    list =
+      list.filter(
+        r =>
+        r.request_type === "temporary"
+      );
+
+  }
+
+
+  if(
+    currentFilter === "extended"
+  ){
+
+    list =
+      list.filter(
+        r =>
+        r.request_type === "extended"
+      );
+
+  }
 
 
   if(
     !list.length
   ){
 
+    $("requestList").innerHTML =
 
-    box.innerHTML =
-
-    `
-      <div class="empty">
-
-        🎉 目前沒有需要特別處理的狀況。
-
-      </div>
-    `;
+      `
+        <div class="empty">
+          目前沒有符合條件的申請。
+        </div>
+      `;
 
 
     return;
@@ -2345,16 +1994,11 @@ function renderAttention(){
   }
 
 
-  box.innerHTML =
+  $("requestList").innerHTML =
 
     list
       .map(
-
-        child =>
-        attentionCard(
-          child
-        )
-
+        requestCardHtml
       )
       .join("");
 
@@ -2362,2010 +2006,508 @@ function renderAttention(){
 
 
 
-function attentionCard(child){
-
-
-
-  /*
-    16:00沒有課後安排又沒接走
-  */
-
-
-  if(
-    child.status === "waiting"
-  ){
-
-
-    return `
-
-      <div class="card red">
-
-
-        <div class="cardTop">
-
-
-          <div class="childMain">
-
-
-            <div class="childName">
-
-              ${child.morningClass}｜${child.name}
-
-            </div>
-
-
-            <div class="meta">
-
-              原訂接回：${child.pickupTime}
-
-              <br>
-
-              課後安排：無
-
-              <br>
-
-              狀態：尚未完成接送
-
-            </div>
-
-
-          </div>
-
-
-          <span class="badge badgeRed">
-
-            需要處理
-
-          </span>
-
-
-        </div>
-
-
-        <div class="warning">
-
-          此幼兒目前沒有核准的課後安排，因此不會自動進入課後班。
-
-        </div>
-
-
-        <div class="actions">
-
-
-          <button
-            class="btn btnGreen"
-            onclick="openPickupConfirm('${child.id}')"
-          >
-
-            完成接送
-
-          </button>
-
-
-          <button
-            class="btn btnOrange"
-            onclick="contactParent('${child.id}')"
-          >
-
-            聯絡家長
-
-          </button>
-
-
-        </div>
-
-
-      </div>
-
-    `;
-
-  }
-
-
-
-  /*
-    臨托待確認
-  */
-
-
-  if(
-    child.status === "need_assignment"
-  ){
-
-
-    return `
-
-      <div class="card purple">
-
-
-        <div class="cardTop">
-
-
-          <div class="childMain">
-
-
-            <div class="childName">
-
-              ${child.morningClass}｜${child.name}
-
-            </div>
-
-
-            <div class="meta">
-
-              類型：${child.careType}
-
-              <br>
-
-              時段：${child.requestedPeriod}
-
-              <br>
-
-              臨托類別：
-              ${child.careGroup === "toddler" ? "幼幼" : "混齡"}
-
-              <br>
-
-              狀態：待園方確認
-
-            </div>
-
-
-          </div>
-
-
-          <span class="badge badgePurple">
-
-            待審核
-
-          </span>
-
-
-        </div>
-
-
-        <div class="actions">
-
-
-          <button
-            class="btn btnPurple"
-            onclick="showTab('assign')"
-          >
-
-            前往審核
-
-          </button>
-
-
-        </div>
-
-
-      </div>
-
-    `;
-
-  }
-
-
-
-  /*
-    晚到
-  */
-
-
-  if(
-    child.status === "late_notice"
-  ){
-
-
-    const missedDeadline =
-
-      timeToMinutes(
-        child.noticeTime
-      )
-
-      >
-
-      timeToMinutes(
-        child.noticeDeadline
-      );
-
-
-    return `
-
-      <div class="card orange">
-
-
-        <div class="cardTop">
-
-
-          <div class="childMain">
-
-
-            <div class="childName">
-
-              ${child.morningClass}｜${child.name}
-
-            </div>
-
-
-            <div class="meta">
-
-              原訂：${child.pickupTime}
-
-              <br>
-
-              家長通報：${child.noticeTime}
-
-              <br>
-
-              預計抵達：${child.expectedArrival}
-
-            </div>
-
-
-          </div>
-
-
-          <span class="badge badgeOrange">
-
-            晚到
-
-          </span>
-
-
-        </div>
-
-
-        ${
-          missedDeadline
-
-          ?
-
-          `
-            <div class="warning">
-
-              已超過提前30分鐘通知期限。
-
-              若實際完成接送也超過 ${child.lateAfter}，
-
-              正式系統會自動列入一次無故延遲。
-
-            </div>
-          `
-
-          :
-
-          `
-            <div class="success">
-
-              已在通知期限前完成晚到通報。
-
-            </div>
-          `
-        }
-
-
-        <div class="actions">
-
-
-          <button
-            class="btn btnGreen"
-            onclick="openPickupConfirm('${child.id}')"
-          >
-
-            完成接送
-
-          </button>
-
-
-        </div>
-
-
-      </div>
-
-    `;
-
-  }
-
-
-  return "";
-
-}
-
-
-
 /*
-  ==================================================
-  課後班
-  ==================================================
+==================================================
+單筆卡片
+==================================================
 */
 
+function requestCardHtml(r){
 
-function renderFlow(){
-
-
-  const roleList =
-    visibleChildren();
-
-
-  const filter =
-    $("flowClassFilter").value;
+  const child =
+    childrenMap[
+      r.child_id
+    ]
+    ||
+    null;
 
 
-  /*
-    只有「已核准＋目前仍在課後照顧」
-    才會出現在課後班。
-  */
+  const childName =
+    child
+    ?
+    child.name
+    :
+    "未知幼兒";
 
 
-  let list =
+  const classId =
+    child
+    ?
+    child.morning_class_id
+    :
+    "";
 
-    roleList.filter(
 
-      child =>
+  const className =
+    CLASS_MAP[
+      classId
+    ]
+    ||
+    classId
+    ||
+    "未設定班級";
 
-      child.status === "aftercare"
 
-      &&
+  const schoolCode =
+    child
+    ?
+    child.school_code
+    :
+    "";
 
-      child.approved === true
 
-      &&
-
-      child.aftercareClass
-
+  const requestType =
+    requestTypeText(
+      r.request_type
     );
 
 
+  const status =
+    statusText(
+      r.status
+    );
+
+
+  const badgeClass =
+    statusClass(
+      r.status
+    );
+
+
+  let timeText =
+    "-";
+
+
   if(
-    filter !== "all"
+    r.requested_start_time
+    ||
+    r.requested_end_time
   ){
 
+    timeText =
 
-    list =
+      (
+        r.requested_start_time
+        ||
+        ""
+      )
 
-      list.filter(
+      +
 
-        child =>
-        child.aftercareClass === filter
+      (
+        r.requested_end_time
+        ?
 
+        " → "
+        +
+        r.requested_end_time
+
+        :
+
+        ""
       );
 
   }
 
 
-  const box =
-    $("flowList");
+  return `
 
+    <div class="requestCard">
 
-  if(
-    !list.length
-  ){
+      <div class="requestTop">
 
+        <div>
 
-    box.innerHTML =
-
-    `
-      <div class="empty">
-
-        目前沒有符合條件的課後幼兒。
-
-      </div>
-    `;
-
-
-    return;
-
-  }
-
-
-  box.innerHTML =
-
-    `
-      <div class="card">
-
-
-        <div class="flowRow flowHead">
-
-
-          <div>
-
-            幼兒
-
+          <div class="requestChild">
+            ${escapeHtml(childName)}
           </div>
 
-
-          <div>
-
-            上午班
-
+          <div class="requestClass">
+            ${escapeHtml(className)}
+            ${
+              schoolCode
+              ?
+              "｜" +
+              escapeHtml(schoolCode)
+              :
+              ""
+            }
           </div>
-
-
-          <div>
-
-            今日課後班
-
-          </div>
-
 
         </div>
 
 
-        ${
-          list
-            .map(
-
-              child =>
-
-              `
-                <div class="flowRow">
-
-
-                  <div class="flowValue">
-
-                    <b>
-                      ${child.name}
-                    </b>
-
-                    <br>
-
-                    ${child.pickupTime}接回
-
-                  </div>
-
-
-                  <div class="flowValue">
-
-                    ${child.morningClass}
-
-                  </div>
-
-
-                  <div class="flowValue">
-
-                    <b>
-
-                      ${child.aftercareClass}
-
-                    </b>
-
-                    <br>
-
-                    <span class="badge badgeGreen">
-
-                      課後照顧中
-
-                    </span>
-
-                    <br><br>
-
-                    <button
-                      class="btn btnGreen"
-                      onclick="openPickupConfirm('${child.id}')"
-                    >
-
-                      完成接送
-
-                    </button>
-
-                  </div>
-
-
-                </div>
-              `
-
-            )
-            .join("")
-        }
-
+        <span
+          class="badge ${badgeClass}"
+        >
+          ${escapeHtml(status)}
+        </span>
 
       </div>
-    `;
 
-}
 
+      <div class="requestBody">
 
 
-/*
-  ==================================================
-  臨托名額
-  ==================================================
-*/
+        <div class="info">
 
+          <div class="infoLabel">
+            申請類型
+          </div>
 
-function renderCapacity(){
+          <div class="infoValue">
+            ${escapeHtml(requestType)}
+          </div>
 
+        </div>
 
-  const approvedMixed =
 
-    childrenData.filter(
+        <div class="info">
 
-      child =>
+          <div class="infoLabel">
+            日期
+          </div>
 
-      child.careType === "臨時托育"
+          <div class="infoValue">
+            ${escapeHtml(r.request_date || "-")}
+          </div>
 
-      &&
+        </div>
 
-      child.careGroup === "mixed"
 
-      &&
+        <div class="info">
 
-      child.temporaryStatus === "approved"
+          <div class="infoLabel">
+            申請時段
+          </div>
 
-    ).length;
+          <div class="infoValue">
+            ${escapeHtml(timeText)}
+          </div>
 
+        </div>
 
-  const approvedToddler =
 
-    childrenData.filter(
+        <div class="info">
 
-      child =>
+          <div class="infoLabel">
+            托育類別
+          </div>
 
-      child.careType === "臨時托育"
+          <div class="infoValue">
+            ${escapeHtml(careGroupText(r.care_group))}
+          </div>
 
-      &&
+        </div>
 
-      child.careGroup === "toddler"
 
-      &&
+        <div class="info">
 
-      child.temporaryStatus === "approved"
+          <div class="infoLabel">
+            建立時間
+          </div>
 
-    ).length;
+          <div class="infoValue">
+            ${escapeHtml(formatDateTime(r.created_at))}
+          </div>
 
+        </div>
 
-  const pendingMixed =
 
-    childrenData.filter(
+        <div class="info">
 
-      child =>
+          <div class="infoLabel">
+            Request ID
+          </div>
 
-      child.careType === "臨時托育"
+          <div
+            class="infoValue"
+            style="
+              font-size:.72rem;
+              font-weight:500;
+            "
+          >
+            ${escapeHtml(r.id)}
+          </div>
 
-      &&
+        </div>
 
-      child.careGroup === "mixed"
+      </div>
 
-      &&
 
-      child.temporaryStatus === "pending"
+      <div class="reasonBox">
 
-    ).length;
-
-
-  const pendingToddler =
-
-    childrenData.filter(
-
-      child =>
-
-      child.careType === "臨時托育"
-
-      &&
-
-      child.careGroup === "toddler"
-
-      &&
-
-      child.temporaryStatus === "pending"
-
-    ).length;
-
-
-  $("mixedCapacity").textContent =
-
-    `${approvedMixed} / ${TEMP_CAPACITY.mixed}`;
-
-
-  $("mixedCapacitySub").textContent =
-
-    `已核准｜待確認 ${pendingMixed}`;
-
-
-  $("toddlerCapacity").textContent =
-
-    `${approvedToddler} / ${TEMP_CAPACITY.toddler}`;
-
-
-  $("toddlerCapacitySub").textContent =
-
-    `已核准｜待確認 ${pendingToddler}`;
-
-}
-
-
-
-/*
-  ==================================================
-  臨托審核
-  ==================================================
-*/
-
-
-function renderAssignments(){
-
-
-  const box =
-    $("assignList");
-
-
-  if(
-    currentRole !== "admin"
-  ){
-
-
-    box.innerHTML =
-
-    `
-      <div class="empty">
-
-        此功能由行政端負責。
+        <b>📝 原因／備註</b>
 
         <br>
 
-        一般老師不需要處理臨托審核。
-
-      </div>
-    `;
-
-
-    return;
-
-  }
-
-
-  const list =
-
-    childrenData.filter(
-
-      child =>
-
-      child.careType === "臨時托育"
-
-      &&
-
-      child.temporaryStatus === "pending"
-
-    );
-
-
-  if(
-    !list.length
-  ){
-
-
-    box.innerHTML =
-
-    `
-      <div class="empty">
-
-        ✅ 目前沒有待確認的臨時托育申請。
-
-      </div>
-    `;
-
-
-    return;
-
-  }
-
-
-  box.innerHTML =
-
-    list
-      .map(
-
-        child => {
-
-
-          const available =
-            getAvailableClasses(
-              child
-            );
-
-
-          const capacity =
-
-            child.careGroup === "toddler"
-
-            ?
-
-            TEMP_CAPACITY.toddler
-
-            :
-
-            TEMP_CAPACITY.mixed;
-
-
-          const approvedCount =
-
-            childrenData.filter(
-
-              x =>
-
-              x.careType === "臨時托育"
-
-              &&
-
-              x.careGroup === child.careGroup
-
-              &&
-
-              x.temporaryStatus === "approved"
-
-            ).length;
-
-
-          const full =
-            approvedCount >= capacity;
-
-
-          return `
-
-            <div class="card purple">
-
-
-              <div class="cardTop">
-
-
-                <div class="childMain">
-
-
-                  <div class="childName">
-
-                    ${child.morningClass}｜${child.name}
-
-                  </div>
-
-
-                  <div class="meta">
-
-                    類型：${child.careGroup === "toddler" ? "幼幼" : "混齡"}
-
-                    <br>
-
-                    需求時段：${child.requestedPeriod}
-
-                    <br>
-
-                    目前名額：
-                    ${approvedCount} / ${capacity}
-
-                  </div>
-
-
-                </div>
-
-
-                <span class="badge badgePurple">
-
-                  待確認
-
-                </span>
-
-
-              </div>
-
-
-              ${
-                full
-
-                ?
-
-                `
-                  <div class="warning">
-
-                    ⚠️ 目前此類別臨托名額已滿。
-
-                    系統不建議再核准，可改列候補或無法安排。
-
-                  </div>
-                `
-
-                :
-
-                `
-                  <div class="success">
-
-                    目前尚有名額可供行政確認。
-
-                  </div>
-                `
-              }
-
-
-              <div
-                style="
-                  margin-top:10px;
-                "
-              >
-
-
-                <select
-                  id="assign_${child.id}"
-                >
-
-
-                  <option value="">
-
-                    核准時請選擇課後班
-
-                  </option>
-
-
-                  ${
-                    available
-                      .map(
-
-                        room =>
-
-                        `
-                          <option value="${room.name}">
-
-                            ${room.name}
-                            ｜${room.group}
-                            ${room.endTime ? "｜至"+room.endTime : ""}
-
-                          </option>
-                        `
-
-                      )
-                      .join("")
-                  }
-
-
-                </select>
-
-
-              </div>
-
-
-              <div class="actions">
-
-
-                <button
-                  class="btn btnPurple"
-                  onclick="approveTemporary('${child.id}')"
-                  ${full ? "disabled" : ""}
-                >
-
-                  ✅ 核准並分班
-
-                </button>
-
-
-                <button
-                  class="btn btnYellow"
-                  onclick="waitlistTemporary('${child.id}')"
-                >
-
-                  🟡 候補
-
-                </button>
-
-
-                <button
-                  class="btn btnRed"
-                  onclick="rejectTemporary('${child.id}')"
-                >
-
-                  ❌ 無法安排
-
-                </button>
-
-
-              </div>
-
-
-            </div>
-
-          `;
-
+        ${
+          escapeHtml(
+            r.reason
+            ||
+            "未填寫"
+          )
         }
 
-      )
-      .join("");
-
-}
-
-
-
-/*
-  ==================================================
-  可分配課後班
-  ==================================================
-*/
-
-
-function getAvailableClasses(child){
-
-
-  /*
-    幼幼
-  */
-
-
-  if(
-    child.careGroup === "toddler"
-  ){
-
-
-    return AFTERCARE_CLASSES.filter(
-
-      room =>
-      room.group === "幼幼"
-
-    );
-
-  }
-
-
-
-  /*
-    混齡 18:00
-  */
-
-
-  if(
-    child.requestedPeriod === "16:00～18:00"
-  ){
-
-
-    return AFTERCARE_CLASSES.filter(
-
-      room =>
-
-      room.group === "混齡"
-
-      &&
-
-      room.endTime === "18:00"
-
-    );
-
-  }
-
-
-
-  /*
-    混齡 17:00
-  */
-
-
-  if(
-    child.requestedPeriod === "16:00～17:00"
-  ){
-
-
-    return AFTERCARE_CLASSES.filter(
-
-      room =>
-
-      room.group === "混齡"
-
-      &&
-
-      (
-        room.endTime === "17:00"
-        ||
-        room.endTime === "18:00"
-      )
-
-    );
-
-  }
-
-
-  return AFTERCARE_CLASSES;
-
-}
-
-
-
-/*
-  ==================================================
-  核准臨托
-  ==================================================
-*/
-
-
-function approveTemporary(id){
-
-
-  const child =
-    childrenData.find(
-
-      x =>
-      x.id === id
-
-    );
-
-
-  if(
-    !child
-  ){
-
-    return;
-
-  }
-
-
-  const capacity =
-
-    child.careGroup === "toddler"
-
-    ?
-
-    TEMP_CAPACITY.toddler
-
-    :
-
-    TEMP_CAPACITY.mixed;
-
-
-  const approvedCount =
-
-    childrenData.filter(
-
-      x =>
-
-      x.careType === "臨時托育"
-
-      &&
-
-      x.careGroup === child.careGroup
-
-      &&
-
-      x.temporaryStatus === "approved"
-
-    ).length;
-
-
-  if(
-    approvedCount >= capacity
-  ){
-
-
-    alert(
-
-      "目前此類別臨托名額已滿，不能再核准。"
-
-    );
-
-
-    return;
-
-  }
-
-
-  const select =
-    $("assign_"+id);
-
-
-  const room =
-    select.value;
-
-
-  if(
-    !room
-  ){
-
-
-    alert(
-
-      "請先選擇課後班。"
-
-    );
-
-
-    return;
-
-  }
-
-
-  const ok =
-    confirm(
-
-`確認核准臨時托育？
-
-${child.morningClass} ${child.name}
-
-時段：
-${child.requestedPeriod}
-
-課後班：
-${room}
-
-正式版確認後會自動通知家長。`
-
-    );
-
-
-  if(
-    !ok
-  ){
-
-    return;
-
-  }
-
-
-  child.aftercareClass =
-    room;
-
-
-  child.temporaryStatus =
-    "approved";
-
-
-  child.status =
-    "aftercare";
-
-
-  child.approved =
-    true;
-
-
-  child.needsAttention =
-    false;
-
-
-  if(
-    child.requestedPeriod === "16:00～17:00"
-  ){
-
-    child.pickupTime =
-      "17:00";
-
-  }
-
-
-  if(
-    child.requestedPeriod === "16:00～18:00"
-  ){
-
-    child.pickupTime =
-      "18:00";
-
-  }
-
-
-  alert(
-
-`✅ 臨時托育已核准
-
-${child.name}
-
-課後班：
-${room}
-
-【測試版】
-正式版此時會自動 LINE 通知家長。`
-
-  );
-
-
-  renderAll();
-
-}
-
-
-
-/*
-  ==================================================
-  候補
-  ==================================================
-*/
-
-
-function waitlistTemporary(id){
-
-
-  const child =
-    childrenData.find(
-
-      x =>
-      x.id === id
-
-    );
-
-
-  if(
-    !child
-  ){
-
-    return;
-
-  }
-
-
-  const ok =
-    confirm(
-
-`確認將 ${child.name} 列為候補嗎？
-
-正式版會通知家長目前尚未核准。`
-
-    );
-
-
-  if(
-    !ok
-  ){
-
-    return;
-
-  }
-
-
-  child.temporaryStatus =
-    "waitlist";
-
-
-  child.status =
-    "waitlist";
-
-
-  child.needsAttention =
-    false;
-
-
-  alert(
-
-`🟡 已列入候補
-
-${child.name}
-
-正式版會自動通知家長。`
-
-  );
-
-
-  renderAll();
-
-}
-
-
-
-/*
-  ==================================================
-  無法安排
-  ==================================================
-*/
-
-
-function rejectTemporary(id){
-
-
-  const child =
-    childrenData.find(
-
-      x =>
-      x.id === id
-
-    );
-
-
-  if(
-    !child
-  ){
-
-    return;
-
-  }
-
-
-  const ok =
-    confirm(
-
-`確認本次無法安排？
-
-${child.morningClass} ${child.name}
-
-正式版會通知家長本次臨托未核准。`
-
-    );
-
-
-  if(
-    !ok
-  ){
-
-    return;
-
-  }
-
-
-  child.temporaryStatus =
-    "rejected";
-
-
-  child.status =
-    "rejected";
-
-
-  child.needsAttention =
-    false;
-
-
-  alert(
-
-`❌ 已標示無法安排
-
-${child.name}
-
-正式版會自動 LINE 通知家長。`
-
-  );
-
-
-  renderAll();
-
-}
-
-
-
-/*
-  ==================================================
-  晚到逾時
-  ==================================================
-*/
-
-
-function renderLate(){
-
-
-  const list =
-
-    visibleChildren()
-      .filter(
-
-        child =>
-        child.status === "late_notice"
-
-      );
-
-
-  const box =
-    $("lateList");
-
-
-  if(
-    !list.length
-  ){
-
-
-    box.innerHTML =
-
-    `
-      <div class="empty">
-
-        目前沒有晚到或逾時案件。
-
       </div>
-    `;
 
 
-    return;
-
-  }
-
-
-  box.innerHTML =
-
-    list
-      .map(
-
-        child => {
-
-
-          const missedDeadline =
-
-            timeToMinutes(
-              child.noticeTime
-            )
-
-            >
-
-            timeToMinutes(
-              child.noticeDeadline
-            );
-
-
-          return `
-
-            <div class="card orange">
-
-
-              <div class="cardTop">
-
-
-                <div class="childMain">
-
-
-                  <div class="childName">
-
-                    ${child.morningClass}｜${child.name}
-
-                  </div>
-
-
-                  <div class="meta">
-
-                    原訂接回：
-                    ${child.pickupTime}
-
-                    <br>
-
-                    最晚通知：
-                    ${child.noticeDeadline}
-
-                    <br>
-
-                    家長通報：
-                    ${child.noticeTime}
-
-                    <br>
-
-                    預計抵達：
-                    ${child.expectedArrival}
-
-                    <br>
-
-                    逾時門檻：
-                    ${child.lateAfter}
-
-                  </div>
-
-
-                </div>
-
-
-                <span class="badge badgeOrange">
-
-                  晚到通報
-
-                </span>
-
-
-              </div>
-
-
-              ${
-                missedDeadline
-
-                ?
-
-                `
-                  <div class="warning">
-
-                    未於提前30分鐘期限內通知。
-
-                    若最後實際完成接送時間超過 ${child.lateAfter}，
-
-                    正式系統將自動列為一次無故延遲。
-
-                  </div>
-                `
-
-                :
-
-                `
-                  <div class="success">
-
-                    已於通知期限前完成晚到通報。
-
-                  </div>
-                `
-              }
-
-
-              <div class="actions">
-
-
-                <button
-                  class="btn btnGreen"
-                  onclick="openPickupConfirm('${child.id}')"
-                >
-
-                  完成接送
-
-                </button>
-
-
-              </div>
-
-
-            </div>
-
-          `;
-
-        }
-
-      )
-      .join("");
-
-}
-
-
-
-/*
-  ==================================================
-  已離園
-  ==================================================
-*/
-
-
-function renderCompleted(){
-
-
-  const list =
-
-    visibleChildren()
-      .filter(
-
-        child =>
-        child.status === "completed"
-
-      );
-
-
-  const box =
-    $("completedList");
-
-
-  if(
-    !list.length
-  ){
-
-
-    box.innerHTML =
-
-    `
-      <div class="empty">
-
-        目前沒有已完成接送的資料。
-
+      <div
+        class="helper"
+        style="
+          margin-top:10px;
+        "
+      >
+        第一版目前僅供查看。核准、候補、退回與課後班指派會在下一階段加入。
       </div>
-    `;
 
+    </div>
 
-    return;
-
-  }
-
-
-  box.innerHTML =
-
-    list
-      .map(
-
-        child =>
-
-        `
-          <div class="card green">
-
-
-            <div class="cardTop">
-
-
-              <div class="childMain">
-
-
-                <div class="childName">
-
-                  ${child.morningClass}｜${child.name}
-
-                </div>
-
-
-                <div class="meta">
-
-                  原訂接回：
-                  ${child.pickupTime}
-
-                  <br>
-
-                  完成接送：
-                  ${child.completedTime || "-"}
-
-                </div>
-
-
-              </div>
-
-
-              <span class="badge badgeGreen">
-
-                已離園
-
-              </span>
-
-
-            </div>
-
-
-          </div>
-        `
-
-      )
-      .join("");
+  `;
 
 }
 
 
 
 /*
-  ==================================================
-  聯絡家長
-  ==================================================
+==================================================
+文字轉換
+==================================================
 */
 
+function requestTypeText(type){
 
-function contactParent(id){
+  const map = {
 
+    leave:
+      "今日請假",
 
-  const child =
-    childrenData.find(
+    temporary:
+      "臨時托育",
 
-      x =>
-      x.id === id
+    extended:
+      "延長托育",
 
-    );
+    pickup:
+      "接送通知",
 
+    late:
+      "晚到通報"
 
-  if(
-    !child
-  ){
-
-    return;
-
-  }
-
-
-  alert(
-
-`【測試版】
-
-正式版可由系統自動 LINE 通知家長：
-
-${child.morningClass} ${child.name}
-目前仍未完成接回，請家長留意接送時間。`
-
-  );
-
-}
-
-
-
-/*
-  ==================================================
-  完成接送
-  ==================================================
-*/
-
-
-function openPickupConfirm(id){
-
-
-  const child =
-    childrenData.find(
-
-      x =>
-      x.id === id
-
-    );
-
-
-  if(
-    !child
-  ){
-
-    return;
-
-  }
-
-
-  currentConfirmId =
-    id;
-
-
-  $("confirmTitle").textContent =
-    "確認完成接送";
-
-
-  $("confirmText").innerHTML =
-
-    `
-      請再次確認：
-
-      <br><br>
-
-      <b>
-        ${child.morningClass}｜${child.name}
-      </b>
-
-      <br>
-
-      原訂接回：
-      <b>
-        ${child.pickupTime}
-      </b>
-
-      <br><br>
-
-      按下確認後，系統會記錄現在的完成接送時間。
-    `;
-
-
-  $("confirmModal").style.display =
-    "flex";
-
-}
-
-
-
-function closeConfirm(){
-
-
-  $("confirmModal").style.display =
-    "none";
-
-
-  currentConfirmId =
-    null;
-
-}
-
-
-
-/*
-  ==================================================
-  實際完成接送
-  ==================================================
-*/
-
-
-function confirmPickup(){
-
-
-  const child =
-    childrenData.find(
-
-      x =>
-      x.id === currentConfirmId
-
-    );
-
-
-  if(
-    !child
-  ){
-
-
-    closeConfirm();
-
-    return;
-
-  }
-
-
-  const actualTime =
-    nowTime();
-
-
-  child.status =
-    "completed";
-
-
-  child.completedTime =
-    actualTime;
-
-
-  child.needsAttention =
-    false;
-
-
-  closeConfirm();
-
-
-  let result =
-
-`✅ 已完成接送
-
-${child.morningClass} ${child.name}
-
-實際完成時間：
-${actualTime}`;
-
-
-
-  /*
-    16:00
-  */
-
-
-  if(
-    child.pickupTime === "16:00"
-
-    &&
-
-    timeToMinutes(
-      actualTime
-    )
-
-    >
-
-    timeToMinutes(
-      "16:10"
-    )
-  ){
-
-
-    result +=
-
-`
-
-狀態：延遲接回
-
-費用：50元
-
-繳費方式：請準備剛好的現金
-
-※ 16:00 延遲接回不列入無故延遲三次。`;
-
-  }
-
-
-
-  /*
-    17:00
-  */
-
-
-  if(
-    child.pickupTime === "17:00"
-
-    &&
-
-    timeToMinutes(
-      actualTime
-    )
-
-    >
-
-    timeToMinutes(
-      "17:05"
-    )
-  ){
-
-
-    const unexcused =
-
-      child.noticeTime
-
-      ?
-
-      timeToMinutes(
-        child.noticeTime
-      )
-
-      >
-
-      timeToMinutes(
-        "16:30"
-      )
-
-      :
-
-      true;
-
-
-    result +=
-
-`
-
-狀態：逾時接送
-
-費用：35元
-
-繳費方式：請準備剛好的現金
-
-無故延遲：
-${unexcused ? "是" : "否"}`;
-
-  }
-
-
-
-  /*
-    18:00
-  */
-
-
-  if(
-    child.pickupTime === "18:00"
-
-    &&
-
-    timeToMinutes(
-      actualTime
-    )
-
-    >
-
-    timeToMinutes(
-      "18:05"
-    )
-  ){
-
-
-    const unexcused =
-
-      child.noticeTime
-
-      ?
-
-      timeToMinutes(
-        child.noticeTime
-      )
-
-      >
-
-      timeToMinutes(
-        "17:30"
-      )
-
-      :
-
-      true;
-
-
-    result +=
-
-`
-
-狀態：逾時接送
-
-費用：30元
-
-繳費方式：請準備剛好的現金
-
-無故延遲：
-${unexcused ? "是" : "否"}`;
-
-  }
-
-
-  alert(
-    result
-  );
-
-
-  renderAll();
-
-}
-
-
-
-/*
-  ==================================================
-  時間工具
-  ==================================================
-*/
-
-
-function nowTime(){
-
-
-  const d =
-    new Date();
+  };
 
 
   return (
+    map[type]
+    ||
+    type
+    ||
+    "未知"
+  );
+
+}
+
+
+function statusText(status){
+
+  const map = {
+
+    pending:
+      "待處理",
+
+    approved:
+      "已核准",
+
+    rejected:
+      "無法安排",
+
+    waitlist:
+      "候補",
+
+    cancelled:
+      "已取消"
+
+  };
+
+
+  return (
+    map[status]
+    ||
+    status
+    ||
+    "未知"
+  );
+
+}
+
+
+function statusClass(status){
+
+  if(
+    status === "pending"
+  ){
+    return "badgePending";
+  }
+
+
+  if(
+    status === "approved"
+  ){
+    return "badgeApproved";
+  }
+
+
+  if(
+    status === "rejected"
+  ){
+    return "badgeRejected";
+  }
+
+
+  if(
+    status === "waitlist"
+  ){
+    return "badgeWaitlist";
+  }
+
+
+  return "badgeOther";
+
+}
+
+
+function careGroupText(value){
+
+  if(
+    value === "mixed"
+  ){
+    return "混齡";
+  }
+
+
+  if(
+    value === "toddler"
+  ){
+    return "幼幼";
+  }
+
+
+  return (
+    value
+    ||
+    "-"
+  );
+
+}
+
+
+
+/*
+==================================================
+時間格式
+==================================================
+*/
+
+function localDateString(date){
+
+  const d =
+    new Date(
+      date
+    );
+
+
+  return (
+    d.getFullYear()
+    +
+    "-"
+    +
+    String(
+      d.getMonth()+1
+    ).padStart(
+      2,
+      "0"
+    )
+    +
+    "-"
+    +
+    String(
+      d.getDate()
+    ).padStart(
+      2,
+      "0"
+    )
+  );
+
+}
+
+
+function formatDateTime(value){
+
+  if(
+    !value
+  ){
+    return "-";
+  }
+
+
+  const d =
+    value instanceof Date
+    ?
+    value
+    :
+    new Date(
+      value
+    );
+
+
+  if(
+    Number.isNaN(
+      d.getTime()
+    )
+  ){
+
+    return String(
+      value
+    );
+
+  }
+
+
+  return (
+
+    d.getFullYear()
+
+    +
+
+    "/"
+
+    +
+
+    String(
+      d.getMonth()+1
+    ).padStart(
+      2,
+      "0"
+    )
+
+    +
+
+    "/"
+
+    +
+
+    String(
+      d.getDate()
+    ).padStart(
+      2,
+      "0"
+    )
+
+    +
+
+    " "
+
+    +
 
     String(
       d.getHours()
@@ -4393,36 +2535,74 @@ function nowTime(){
 
 
 
-function timeToMinutes(time){
+/*
+==================================================
+錯誤顯示
+==================================================
+*/
+
+function showError(text){
+
+  $("errorBox").textContent =
+    text;
 
 
-  if(
-    !time
-  ){
+  $("errorBox").style.display =
+    "block";
 
-    return 0;
-
-  }
+}
 
 
-  const [
-    hour,
-    minute
-  ] =
+function hideError(){
 
-    time
-      .split(":")
-      .map(Number);
+  $("errorBox").textContent =
+    "";
 
 
-  return (
+  $("errorBox").style.display =
+    "none";
 
-    hour * 60
+}
 
-    +
 
-    minute
 
+/*
+==================================================
+HTML escape
+==================================================
+*/
+
+function escapeHtml(value){
+
+  return String(
+    value
+    ??
+    ""
+  )
+
+  .replaceAll(
+    "&",
+    "&amp;"
+  )
+
+  .replaceAll(
+    "<",
+    "&lt;"
+  )
+
+  .replaceAll(
+    ">",
+    "&gt;"
+  )
+
+  .replaceAll(
+    '"',
+    "&quot;"
+  )
+
+  .replaceAll(
+    "'",
+    "&#039;"
   );
 
 }
@@ -4430,35 +2610,74 @@ function timeToMinutes(time){
 
 
 /*
-  ==================================================
-  全部重畫
-  ==================================================
+==================================================
+恢復 session
+==================================================
 */
 
+async function restoreSession(){
 
-function renderAll(){
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth.getSession();
 
 
-  renderSummary();
+  if(
+    error
+  ){
 
-  renderAttention();
+    $("loginState").textContent =
+      "Supabase：讀取登入狀態失敗";
 
-  renderFlow();
 
-  renderCapacity();
+    return;
 
-  renderAssignments();
+  }
 
-  renderLate();
 
-  renderCompleted();
+  if(
+    !data
+    ||
+    !data.session
+    ||
+    !data.session.user
+  ){
+
+    $("loginState").textContent =
+      "Supabase：尚未登入行政測試帳號";
+
+
+    return;
+
+  }
+
+
+  currentUser =
+    data.session.user;
+
+
+  await validateAdmin();
 
 }
 
 
 
-renderAll();
+/*
+==================================================
+初始化
+==================================================
+*/
 
+async function main(){
+
+  await restoreSession();
+
+}
+
+
+main();
 
 </script>
 
