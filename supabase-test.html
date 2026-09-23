@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Supabase 權限測試</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body{
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Noto Sans TC",
+        sans-serif;
+
+      background:#f4f7f6;
+      margin:0;
+      padding:24px;
+    }
+
+    .card{
+      max-width:480px;
+      margin:auto;
+      background:white;
+      padding:24px;
+      border-radius:18px;
+      box-shadow:0 8px 24px rgba(0,0,0,.08);
+    }
+
+    h2{
+      margin-top:0;
+      color:#1b5e20;
+    }
+
+    input{
+      width:100%;
+      box-sizing:border-box;
+      padding:12px;
+      margin-bottom:12px;
+      border:1px solid #ccc;
+      border-radius:10px;
+      font-size:16px;
+    }
+
+    button{
+      width:100%;
+      padding:13px;
+      border:0;
+      border-radius:10px;
+      background:#2e7d32;
+      color:white;
+      font-size:16px;
+      font-weight:bold;
+      cursor:pointer;
+      margin-bottom:10px;
+    }
+
+    .logout{
+      background:#607d8b;
+    }
+
+    #result{
+      margin-top:18px;
+      padding:14px;
+      background:#f5f5f5;
+      border-radius:10px;
+      white-space:pre-wrap;
+      word-break:break-word;
+      line-height:1.6;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <h2>Supabase RLS 測試</h2>
+
+  <input
+    id="email"
+    type="email"
+    placeholder="測試帳號 Email"
+  >
+
+  <input
+    id="password"
+    type="password"
+    placeholder="測試帳號密碼"
+  >
+
+  <button onclick="login()">
+    登入並讀取幼兒資料
+  </button>
+
+  <button
+    class="logout"
+    onclick="logout()"
+  >
+    登出
+  </button>
+
+  <div id="result">
+    尚未登入
+  </div>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+  "https://cqtvrpiapssjjctwqivn.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_PTpcF08CriR4_kH9KamB1w_akgHzTYw";
+
+
+const supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+
+async function login(){
+
+  const email =
+    document.getElementById("email")
+      .value
+      .trim();
+
+  const password =
+    document.getElementById("password")
+      .value;
+
+  const result =
+    document.getElementById("result");
+
+
+  result.textContent =
+    "登入中...";
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
+
+  if(error){
+
+    result.textContent =
+      "登入失敗：\n" +
+      error.message;
+
+    return;
+
+  }
+
+
+  result.textContent =
+    "登入成功\n\n正在讀取資料...";
+
+
+  await loadChildren();
+
+}
+
+
+
+async function loadChildren(){
+
+  const result =
+    document.getElementById("result");
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("children")
+      .select(
+        "school_code,name,morning_class_id"
+      )
+      .order(
+        "school_code"
+      );
+
+
+  if(error){
+
+    result.textContent =
+      "讀取失敗：\n" +
+      error.message;
+
+    return;
+
+  }
+
+
+  result.textContent =
+    "登入成功\n\n" +
+    "目前這個帳號可以看到的幼兒：\n\n" +
+    JSON.stringify(
+      data,
+      null,
+      2
+    );
+
+}
+
+
+
+async function logout(){
+
+  await supabaseClient.auth.signOut();
+
+  document.getElementById("result")
+    .textContent =
+      "已登出";
+
+}
+
+</script>
+
+</body>
+</html>
