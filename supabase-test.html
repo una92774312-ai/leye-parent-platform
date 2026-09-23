@@ -215,14 +215,20 @@ async function loadChildren(){
   }
 
 
-  result.textContent =
-    "登入成功\n\n" +
-    "目前這個帳號可以看到的幼兒：\n\n" +
-    JSON.stringify(
-      data,
-      null,
-      2
-    );
+const {
+  data: userData
+} = await supabaseClient.auth.getUser();
+
+result.textContent =
+  "登入成功\n\n" +
+  "實際登入 UID：\n" +
+  userData.user.id +
+  "\n\n目前這個帳號可以看到的幼兒：\n\n" +
+  JSON.stringify(
+    data,
+    null,
+    2
+  );
 
 }
 
