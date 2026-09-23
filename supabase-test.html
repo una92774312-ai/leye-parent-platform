@@ -171,8 +171,11 @@ async function login(){
   }
 
 
-  result.textContent =
-    "登入成功\n\n正在讀取資料...";
+result.textContent =
+  "登入成功\n\n" +
+  "目前登入 UID：\n" +
+  data.user.id +
+  "\n\n正在讀取資料...";
 
 
   await loadChildren();
