@@ -14,7 +14,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+
     body{
+
       font-family:
         -apple-system,
         BlinkMacSystemFont,
@@ -23,104 +25,189 @@
         sans-serif;
 
       background:#f4f7f6;
+
       margin:0;
+
       padding:24px;
+
     }
+
 
     .card{
+
       max-width:480px;
+
       margin:auto;
+
       background:#fff;
+
       padding:24px;
+
       border-radius:18px;
-      box-shadow:0 8px 24px rgba(0,0,0,.08);
+
+      box-shadow:
+        0 8px 24px
+        rgba(0,0,0,.08);
+
     }
+
 
     h2{
+
       margin-top:0;
+
       color:#1b5e20;
+
     }
+
 
     .desc{
+
       color:#607d8b;
+
       font-size:.9rem;
+
       line-height:1.6;
+
       margin-bottom:18px;
+
     }
+
 
     input{
+
       width:100%;
+
       box-sizing:border-box;
+
       padding:12px;
+
       margin-bottom:12px;
+
       border:1px solid #ccc;
+
       border-radius:10px;
+
       font-size:16px;
+
     }
+
 
     button{
+
       width:100%;
+
       padding:13px;
+
       border:0;
+
       border-radius:10px;
+
       background:#2e7d32;
+
       color:#fff;
+
       font-size:16px;
+
       font-weight:bold;
+
       cursor:pointer;
+
       margin-bottom:10px;
+
     }
+
 
     button:disabled{
+
       opacity:.6;
+
       cursor:not-allowed;
+
     }
+
 
     .logout{
+
       background:#607d8b;
+
     }
+
 
     .check{
+
       background:#1976d2;
+
     }
+
 
     #result{
+
       margin-top:18px;
+
       padding:14px;
+
       background:#f5f5f5;
+
       border-radius:10px;
+
       white-space:pre-wrap;
+
       word-break:break-word;
+
       line-height:1.6;
+
       min-height:80px;
+
     }
+
 
     .success{
+
       background:#e8f5e9 !important;
+
       color:#1b5e20;
+
     }
+
 
     .error{
+
       background:#ffebee !important;
+
       color:#b71c1c;
+
     }
 
+
     .warning{
+
       background:#fff8e1 !important;
+
       color:#7a6000;
+
     }
+
   </style>
+
 </head>
+
 
 <body>
 
+
 <div class="card">
 
-  <h2>Supabase RLS 測試</h2>
+
+  <h2>
+    Supabase RLS 測試
+  </h2>
+
 
   <div class="desc">
     這個頁面只用來測試 Supabase Auth 與 RLS 權限。
   </div>
+
 
   <input
     id="email"
@@ -129,12 +216,14 @@
     autocomplete="username"
   >
 
+
   <input
     id="password"
     type="password"
     placeholder="測試帳號密碼"
     autocomplete="current-password"
   >
+
 
   <button
     id="loginBtn"
@@ -144,6 +233,7 @@
     登入並讀取幼兒資料
   </button>
 
+
   <button
     class="check"
     type="button"
@@ -151,6 +241,7 @@
   >
     檢查目前登入身分
   </button>
+
 
   <button
     class="logout"
@@ -160,17 +251,22 @@
     登出並清除登入狀態
   </button>
 
+
   <div id="result">
     尚未登入
   </div>
 
+
 </div>
+
 
 
 <script>
 
+
 const SUPABASE_URL =
   "https://cqtvrpiapssjjctwqivn.supabase.co";
+
 
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_PTpcF08CriR4_kH9KamB1w_akgHzTYw";
@@ -183,11 +279,14 @@ const supabaseClient =
   );
 
 
+
 const EXPECTED_PARENT_UID =
   "4bc16a3c-4ab4-4d25-8986-56d47cf04bca";
 
+
 const EXPECTED_ADMIN_UID =
   "9a5d8e89-dda5-44fc-84a4-0a2d3156773f";
+
 
 
 function setResult(
@@ -196,17 +295,58 @@ function setResult(
 ){
 
   const result =
-    document.getElementById("result");
+    document.getElementById(
+      "result"
+    );
+
 
   result.textContent =
     text;
 
+
   result.className =
     "";
 
-  if(type){
-    result.classList.add(type);
+
+  if(
+    type
+  ){
+
+    result.classList.add(
+      type
+    );
+
   }
+
+}
+
+
+
+function getRoleText(
+  userId
+){
+
+  if(
+    userId ===
+    EXPECTED_PARENT_UID
+  ){
+
+    return "測試家長";
+
+  }
+
+
+  if(
+    userId ===
+    EXPECTED_ADMIN_UID
+  ){
+
+    return "測試行政";
+
+  }
+
+
+  return "未知測試身分";
 
 }
 
@@ -216,17 +356,25 @@ async function login(){
 
   const email =
     document
-      .getElementById("email")
+      .getElementById(
+        "email"
+      )
       .value
       .trim();
 
+
   const password =
     document
-      .getElementById("password")
+      .getElementById(
+        "password"
+      )
       .value;
 
+
   const loginBtn =
-    document.getElementById("loginBtn");
+    document.getElementById(
+      "loginBtn"
+    );
 
 
   if(
@@ -240,6 +388,7 @@ async function login(){
       "warning"
     );
 
+
     return;
 
   }
@@ -248,39 +397,51 @@ async function login(){
   loginBtn.disabled =
     true;
 
+
   setResult(
     "登入中..."
   );
 
 
   /*
-    先登出舊 session，
-    避免瀏覽器殘留行政帳號。
+  先清除舊 session，
+  避免瀏覽器殘留其他測試帳號
   */
 
-  await supabaseClient.auth.signOut();
+  await supabaseClient
+    .auth
+    .signOut();
 
 
   const {
     data,
     error
   } =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
+    await supabaseClient
+      .auth
+      .signInWithPassword(
+        {
+          email,
+          password
+        }
+      );
 
 
-  if(error){
+  if(
+    error
+  ){
 
     loginBtn.disabled =
       false;
 
+
     setResult(
-      "登入失敗：\n\n" +
+      "登入失敗：\n\n"
+      +
       error.message,
       "error"
     );
+
 
     return;
 
@@ -296,10 +457,12 @@ async function login(){
     loginBtn.disabled =
       false;
 
+
     setResult(
       "登入失敗：沒有取得使用者資料。",
       "error"
     );
+
 
     return;
 
@@ -307,14 +470,20 @@ async function login(){
 
 
   setResult(
-    "登入成功\n\n" +
-    "目前登入 UID：\n" +
-    data.user.id +
+
+    "登入成功\n\n"
+    +
+    "目前登入 UID：\n"
+    +
+    data.user.id
+    +
     "\n\n正在讀取幼兒資料..."
+
   );
 
 
   await loadChildren();
+
 
   loginBtn.disabled =
     false;
@@ -326,19 +495,28 @@ async function login(){
 async function loadChildren(){
 
   const {
-    data: userData,
-    error: userError
+    data:userData,
+    error:userError
   } =
-    await supabaseClient.auth.getUser();
+    await supabaseClient
+      .auth
+      .getUser();
 
 
-  if(userError){
+  if(
+    userError
+  ){
 
     setResult(
-      "讀取登入身分失敗：\n\n" +
+
+      "讀取登入身分失敗：\n\n"
+      +
       userError.message,
+
       "error"
+
     );
+
 
     return;
 
@@ -356,6 +534,7 @@ async function loadChildren(){
       "warning"
     );
 
+
     return;
 
   }
@@ -370,7 +549,9 @@ async function loadChildren(){
     error
   } =
     await supabaseClient
-      .from("children")
+      .from(
+        "children"
+      )
       .select(
         "school_code,name,morning_class_id"
       )
@@ -382,51 +563,53 @@ async function loadChildren(){
       );
 
 
-  if(error){
+  if(
+    error
+  ){
 
     setResult(
-      "讀取幼兒資料失敗：\n\n" +
+
+      "讀取幼兒資料失敗：\n\n"
+      +
       error.message,
+
       "error"
+
     );
+
 
     return;
 
   }
 
 
-  let roleText =
-    "未知測試身分";
-
-
-  if(
-    user.id === EXPECTED_PARENT_UID
-  ){
-
-    roleText =
-      "測試家長";
-
-  }
-  else if(
-    user.id === EXPECTED_ADMIN_UID
-  ){
-
-    roleText =
-      "測試行政";
-
-  }
+  const roleText =
+    getRoleText(
+      user.id
+    );
 
 
   let resultText =
-    "登入成功\n\n" +
 
-    "實際登入 UID：\n" +
-    user.id +
+    "登入成功\n\n"
 
-    "\n\n判斷身分：\n" +
-    roleText +
+    +
 
-    "\n\n目前這個帳號可以看到的幼兒：\n\n" +
+    "實際登入 UID：\n"
+    +
+    user.id
+
+    +
+
+    "\n\n判斷身分：\n"
+    +
+    roleText
+
+    +
+
+    "\n\n目前這個帳號可以看到的幼兒：\n\n"
+
+    +
 
     JSON.stringify(
       data,
@@ -436,23 +619,31 @@ async function loadChildren(){
 
 
   /*
-    額外提示測試結果
+  家長 RLS 測試
   */
 
   if(
-    user.id === EXPECTED_PARENT_UID
+    user.id ===
+    EXPECTED_PARENT_UID
   ){
 
     const canSeeTest001 =
       data.some(
+
         child =>
-        child.school_code === "TEST001"
+        child.school_code ===
+        "TEST001"
+
       );
+
 
     const canSeeTest002 =
       data.some(
+
         child =>
-        child.school_code === "TEST002"
+        child.school_code ===
+        "TEST002"
+
       );
 
 
@@ -463,14 +654,19 @@ async function loadChildren(){
     ){
 
       resultText +=
-        "\n\n✅ 家長 RLS 測試通過：\n" +
-        "看得到自己的 TEST001，" +
+
+        "\n\n✅ 家長 RLS 測試通過：\n"
+        +
+        "看得到自己的 TEST001，"
+        +
         "看不到 TEST002。";
+
 
       setResult(
         resultText,
         "success"
       );
+
 
       return;
 
@@ -478,33 +674,51 @@ async function loadChildren(){
 
 
     resultText +=
-      "\n\n⚠️ 家長 RLS 測試未通過：\n" +
-      "家長不應看到 TEST002。";
+
+      "\n\n⚠️ 家長 RLS 測試未通過：\n"
+      +
+      "家長應只能看到自己的 TEST001，"
+      +
+      "不應看到 TEST002。";
+
 
     setResult(
       resultText,
       "error"
     );
 
+
     return;
 
   }
 
 
+  /*
+  行政 RLS 測試
+  */
+
   if(
-    user.id === EXPECTED_ADMIN_UID
+    user.id ===
+    EXPECTED_ADMIN_UID
   ){
 
     const canSeeTest001 =
       data.some(
+
         child =>
-        child.school_code === "TEST001"
+        child.school_code ===
+        "TEST001"
+
       );
+
 
     const canSeeTest002 =
       data.some(
+
         child =>
-        child.school_code === "TEST002"
+        child.school_code ===
+        "TEST002"
+
       );
 
 
@@ -515,13 +729,17 @@ async function loadChildren(){
     ){
 
       resultText +=
-        "\n\n✅ 行政 RLS 測試通過：\n" +
+
+        "\n\n✅ 行政 RLS 測試通過：\n"
+        +
         "行政可以看到 TEST001 與 TEST002。";
+
 
       setResult(
         resultText,
         "success"
       );
+
 
       return;
 
@@ -529,13 +747,17 @@ async function loadChildren(){
 
 
     resultText +=
-      "\n\n⚠️ 行政 RLS 測試未通過：\n" +
+
+      "\n\n⚠️ 行政 RLS 測試未通過：\n"
+      +
       "行政目前沒有看到完整測試資料。";
+
 
     setResult(
       resultText,
       "warning"
     );
+
 
     return;
 
@@ -557,16 +779,25 @@ async function checkSession(){
     data,
     error
   } =
-    await supabaseClient.auth.getUser();
+    await supabaseClient
+      .auth
+      .getUser();
 
 
-  if(error){
+  if(
+    error
+  ){
 
     setResult(
-      "檢查登入狀態失敗：\n\n" +
+
+      "檢查登入狀態失敗：\n\n"
+      +
       error.message,
+
       "error"
+
     );
+
 
     return;
 
@@ -584,49 +815,46 @@ async function checkSession(){
       "warning"
     );
 
+
     return;
 
   }
 
 
-  let roleText =
-    "未知測試身分";
-
-
-  if(
-    data.user.id === EXPECTED_PARENT_UID
-  ){
-
-    roleText =
-      "測試家長";
-
-  }
-  else if(
-    data.user.id === EXPECTED_ADMIN_UID
-  ){
-
-    roleText =
-      "測試行政";
-
-  }
+  const roleText =
+    getRoleText(
+      data.user.id
+    );
 
 
   setResult(
-    "目前登入狀態：有效\n\n" +
 
-    "Email：\n" +
+    "目前登入狀態：有效\n\n"
+
+    +
+
+    "Email：\n"
+    +
     (
       data.user.email
       ||
       "未提供"
-    ) +
+    )
 
-    "\n\nUID：\n" +
-    data.user.id +
+    +
 
-    "\n\n判斷身分：\n" +
+    "\n\nUID：\n"
+    +
+    data.user.id
+
+    +
+
+    "\n\n判斷身分：\n"
+    +
     roleText,
+
     "success"
+
   );
 
 }
@@ -641,22 +869,27 @@ async function logout(){
 
 
   /*
-    登出 Supabase
+  登出 Supabase
   */
 
-  await supabaseClient.auth.signOut({
-    scope:"local"
-  });
+  await supabaseClient
+    .auth
+    .signOut(
+      {
+        scope:"local"
+      }
+    );
 
 
   /*
-    再清掉瀏覽器本地登入資料，
-    避免舊 session 影響測試。
+  再清除瀏覽器本地登入資料，
+  避免舊 session 影響測試
   */
 
   try{
 
     localStorage.clear();
+
     sessionStorage.clear();
 
   }
@@ -671,20 +904,29 @@ async function logout(){
 
 
   document
-    .getElementById("email")
+    .getElementById(
+      "email"
+    )
     .value =
       "";
 
+
   document
-    .getElementById("password")
+    .getElementById(
+      "password"
+    )
     .value =
       "";
 
 
   setResult(
-    "已登出並清除登入狀態。\n\n" +
+
+    "已登出並清除登入狀態。\n\n"
+    +
     "請重新輸入測試帳號登入。",
+
     "success"
+
   );
 
 }
@@ -692,8 +934,8 @@ async function logout(){
 
 
 /*
-  頁面開啟時顯示目前 session，
-  方便發現瀏覽器是否殘留舊帳號。
+頁面開啟時顯示目前 session，
+方便確認瀏覽器是否殘留舊帳號
 */
 
 async function init(){
@@ -701,7 +943,9 @@ async function init(){
   const {
     data
   } =
-    await supabaseClient.auth.getSession();
+    await supabaseClient
+      .auth
+      .getSession();
 
 
   if(
@@ -715,47 +959,47 @@ async function init(){
     const user =
       data.session.user;
 
-    let roleText =
-      "未知測試身分";
 
-
-    if(
-      user.id === EXPECTED_PARENT_UID
-    ){
-
-      roleText =
-        "測試家長";
-
-    }
-    else if(
-      user.id === EXPECTED_ADMIN_UID
-    ){
-
-      roleText =
-        "測試行政";
-
-    }
+    const roleText =
+      getRoleText(
+        user.id
+      );
 
 
     setResult(
-      "偵測到瀏覽器已有登入狀態。\n\n" +
 
-      "Email：\n" +
+      "偵測到瀏覽器已有登入狀態。\n\n"
+
+      +
+
+      "Email：\n"
+      +
       (
         user.email
         ||
         "未提供"
-      ) +
+      )
 
-      "\n\nUID：\n" +
-      user.id +
+      +
 
-      "\n\n判斷身分：\n" +
-      roleText +
+      "\n\nUID：\n"
+      +
+      user.id
 
-      "\n\n若要切換測試帳號，" +
+      +
+
+      "\n\n判斷身分：\n"
+      +
+      roleText
+
+      +
+
+      "\n\n若要切換測試帳號，"
+      +
       "請先按「登出並清除登入狀態」。",
+
       "warning"
+
     );
 
   }
@@ -771,6 +1015,7 @@ async function init(){
 
 
 init();
+
 
 </script>
 
