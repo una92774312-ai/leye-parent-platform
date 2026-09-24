@@ -444,19 +444,6 @@ button{
 }
 
 
-.toolbar{
-
-  display:flex;
-
-  align-items:center;
-
-  gap:8px;
-
-  flex-wrap:wrap;
-
-}
-
-
 .tabs{
 
   display:flex;
@@ -818,10 +805,6 @@ button{
 <div class="app">
 
 
-<!-- ====================================== -->
-<!-- 頁首 -->
-<!-- ====================================== -->
-
 <div class="header">
 
   <div class="headerTop">
@@ -858,11 +841,6 @@ button{
   </div>
 
 
-  <!-- ====================================== -->
-  <!-- 測試登入 -->
-  <!-- 正式老師 LINE 身分完成後移除 -->
-  <!-- ====================================== -->
-
   <div
     id="testLoginBox"
     class="testBox"
@@ -873,7 +851,7 @@ button{
     </div>
 
     <div class="helper">
-      正式上線後會改為老師從 LINE 進入並自動驗證身分，不會要求老師使用這組測試帳號。
+      目前為系統建置測試階段。正式版會改由老師從 LINE 進入並自動驗證身分，不會要求老師輸入這組測試帳號。
     </div>
 
 
@@ -921,10 +899,6 @@ button{
 </div>
 
 
-
-<!-- ====================================== -->
-<!-- 統計 -->
-<!-- ====================================== -->
 
 <div class="summaryGrid">
 
@@ -994,10 +968,6 @@ button{
 </div>
 
 
-
-<!-- ====================================== -->
-<!-- 申請列表 -->
-<!-- ====================================== -->
 
 <div class="panel">
 
@@ -1097,12 +1067,6 @@ button{
 
 <script>
 
-/*
-==================================================
-Supabase
-==================================================
-*/
-
 const SUPABASE_URL =
   "https://cqtvrpiapssjjctwqivn.supabase.co";
 
@@ -1117,13 +1081,6 @@ const supabaseClient =
     SUPABASE_PUBLISHABLE_KEY
   );
 
-
-
-/*
-==================================================
-上午班級
-==================================================
-*/
 
 const CLASS_MAP = {
 
@@ -1145,13 +1102,6 @@ const CLASS_MAP = {
 
 };
 
-
-
-/*
-==================================================
-狀態
-==================================================
-*/
 
 let currentUser =
   null;
@@ -1178,13 +1128,6 @@ const $ =
   document.getElementById(id);
 
 
-
-/*
-==================================================
-登入
-==================================================
-*/
-
 async function login(){
 
   const email =
@@ -1208,7 +1151,6 @@ async function login(){
       "請輸入行政測試帳號與密碼。"
     );
 
-
     return;
 
   }
@@ -1224,10 +1166,6 @@ async function login(){
 
   hideError();
 
-
-  /*
-  先清除舊 session
-  */
 
   await supabaseClient.auth.signOut();
 
@@ -1280,13 +1218,6 @@ async function login(){
 }
 
 
-
-/*
-==================================================
-登出
-==================================================
-*/
-
 async function logout(){
 
   await supabaseClient.auth.signOut();
@@ -1330,13 +1261,6 @@ async function logout(){
 }
 
 
-
-/*
-==================================================
-驗證行政身分
-==================================================
-*/
-
 async function validateAdmin(){
 
   if(
@@ -1356,10 +1280,6 @@ async function validateAdmin(){
   $("loginState").textContent =
     "Supabase：正在驗證行政身分...";
 
-
-  /*
-  先讀自己的 user_identities
-  */
 
   const {
     data:identity,
@@ -1413,10 +1333,6 @@ async function validateAdmin(){
 
   }
 
-
-  /*
-  讀 staff
-  */
 
   const {
     data:staff,
@@ -1539,13 +1455,6 @@ async function validateAdmin(){
 }
 
 
-
-/*
-==================================================
-重新整理
-==================================================
-*/
-
 async function refreshRequests(){
 
   if(
@@ -1579,11 +1488,6 @@ async function refreshRequests(){
 
   hideError();
 
-
-  /*
-  requests RLS：
-  admin 應可讀全部
-  */
 
   const {
     data:requestData,
@@ -1645,10 +1549,6 @@ async function refreshRequests(){
     ||
     [];
 
-
-  /*
-  收集 child_id
-  */
 
   const childIds =
 
@@ -1747,13 +1647,6 @@ async function refreshRequests(){
 }
 
 
-
-/*
-==================================================
-統計
-==================================================
-*/
-
 function updateCounts(){
 
   const today =
@@ -1836,13 +1729,6 @@ function resetCounts(){
 }
 
 
-
-/*
-==================================================
-篩選
-==================================================
-*/
-
 function setFilter(filter){
 
   currentFilter =
@@ -1908,13 +1794,6 @@ function setFilter(filter){
 
 }
 
-
-
-/*
-==================================================
-顯示 requests
-==================================================
-*/
 
 function renderRequests(){
 
@@ -2004,13 +1883,6 @@ function renderRequests(){
 
 }
 
-
-
-/*
-==================================================
-單筆卡片
-==================================================
-*/
 
 function requestCardHtml(r){
 
@@ -2258,7 +2130,7 @@ function requestCardHtml(r){
           margin-top:10px;
         "
       >
-        第一版目前僅供查看。核准、候補、退回與課後班指派會在下一階段加入。
+        第一版目前僅供查看。核准、候補、無法安排與課後班指派會在下一階段加入。
       </div>
 
     </div>
@@ -2267,13 +2139,6 @@ function requestCardHtml(r){
 
 }
 
-
-
-/*
-==================================================
-文字轉換
-==================================================
-*/
 
 function requestTypeText(type){
 
@@ -2401,13 +2266,6 @@ function careGroupText(value){
 }
 
 
-
-/*
-==================================================
-時間格式
-==================================================
-*/
-
 function localDateString(date){
 
   const d =
@@ -2534,13 +2392,6 @@ function formatDateTime(value){
 }
 
 
-
-/*
-==================================================
-錯誤顯示
-==================================================
-*/
-
 function showError(text){
 
   $("errorBox").textContent =
@@ -2564,13 +2415,6 @@ function hideError(){
 
 }
 
-
-
-/*
-==================================================
-HTML escape
-==================================================
-*/
 
 function escapeHtml(value){
 
@@ -2607,13 +2451,6 @@ function escapeHtml(value){
 
 }
 
-
-
-/*
-==================================================
-恢復 session
-==================================================
-*/
 
 async function restoreSession(){
 
@@ -2662,13 +2499,6 @@ async function restoreSession(){
 
 }
 
-
-
-/*
-==================================================
-初始化
-==================================================
-*/
 
 async function main(){
 
