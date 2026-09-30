@@ -894,23 +894,6 @@ async function logout(){
   避免舊 session 影響測試
   */
 
-  try{
-
-    localStorage.clear();
-
-    sessionStorage.clear();
-
-  }
-  catch(e){
-
-    console.warn(
-      "清除瀏覽器儲存資料失敗",
-      e
-    );
-
-  }
-
-
   document
     .getElementById(
       "email"
