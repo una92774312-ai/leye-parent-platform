@@ -3512,8 +3512,10 @@ async function submitTemporary(){
     return;
   }
 
+
   const date =
     $("temporaryDate").value;
+
 
   if(
     !date
@@ -3526,6 +3528,7 @@ async function submitTemporary(){
     return;
 
   }
+
 
   if(
     isSchoolClosedDate(
@@ -3541,13 +3544,16 @@ async function submitTemporary(){
 
   }
 
+
   const time =
     $("temporaryTime").value;
+
 
   const reason =
     $("temporaryReason")
       .value
       .trim();
+
 
   if(
     !reason
@@ -3561,40 +3567,219 @@ async function submitTemporary(){
 
   }
 
-  const msg =
 
-`🧸【樂業附幼臨時托育申請】
-👶 幼兒：${childrenText(list)}
-📅 日期：${date}
-⏰ 時段：${time}
-📝 原因：${reason}
-📋 狀態：待本園確認`;
+  let startTime =
+    "16:00";
+
+
+  let endTime =
+    "17:00";
+
+
+  if(
+    time === "16:00～18:00"
+  ){
+
+    endTime =
+      "18:00";
+
+  }
+
+
+  if(
+    !confirm(
+
+`確認送出臨時托育申請？
+
+幼兒：${childrenText(list)}
+日期：${date}
+時段：${time}
+原因：${reason}`
+
+    )
+  ){
+
+    return;
+
+  }
+
 
   try{
 
-    await sendLine(
-      msg
-    );
+
+    const {
+      data:userData,
+      error:userError
+    } =
+      await supabaseClient
+        .auth
+        .getUser();
+
+
+    if(
+      userError
+      ||
+      !userData
+      ||
+      !userData.user
+    ){
+
+      throw new Error(
+        "目前沒有有效的家長登入狀態，請重新登入。"
+      );
+
+    }
+
+
+    const {
+      data:identityData,
+      error:identityError
+    } =
+      await supabaseClient
+        .from(
+          "user_identities"
+        )
+        .select(
+          "guardian_id"
+        )
+        .eq(
+          "auth_user_id",
+          userData.user.id
+        )
+        .maybeSingle();
+
+
+    if(
+      identityError
+      ||
+      !identityData
+      ||
+      !identityData.guardian_id
+    ){
+
+      throw new Error(
+        "無法確認家長身分。"
+      );
+
+    }
+
+
+    const guardianId =
+      identityData.guardian_id;
+
+
+    const rows =
+      list.map(
+
+        child => ({
+
+          request_date:
+            date,
+
+          child_id:
+            child.id,
+
+          guardian_id:
+            guardianId,
+
+          request_type:
+            "temporary",
+
+          status:
+            "pending",
+
+          requested_start_time:
+            startTime,
+
+          requested_end_time:
+            endTime,
+
+          reason:
+            reason,
+
+          care_group:
+            child.careGroup
+            ||
+            "mixed"
+
+        })
+
+      );
+
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from(
+          "requests"
+        )
+        .insert(
+          rows
+        );
+
+
+    if(
+      error
+    ){
+
+      throw error;
+
+    }
+
+
+    currentGuardianId =
+      guardianId;
+
+
+    $("temporaryReason").value =
+      "";
+
 
     showStatus(
-      "✅ 臨時托育 LINE 測試申請已送出。目前尚未正式寫入 Supabase。"
+
+      "✅ 臨時托育申請已成功寫入 Supabase。\n"
+      +
+      "幼兒："
+      +
+      childrenText(list)
+      +
+      "\n日期："
+      +
+      date
+      +
+      "\n時段："
+      +
+      time
+      +
+      "\n目前狀態：pending，待本園確認"
+
     );
+
 
   }
   catch(e){
 
-    console.warn(
+    console.error(
       e
     );
 
-    showStatus(
-      "ℹ️ 臨時托育目前尚未正式寫入 Supabase。下一階段會接上行政審核流程。"
+
+    alert(
+
+      "臨時托育送出失敗。\n\n"
+      +
+      (
+        e.message
+        ||
+        String(e)
+      )
+
     );
 
   }
 
 }
-
 function showStatus(text){
 
   $("statusBox").textContent =
