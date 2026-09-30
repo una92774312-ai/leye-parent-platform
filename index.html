@@ -2861,20 +2861,10 @@ async function submitLeave(){
     return;
   }
 
-  if(
-    !currentGuardianId
-  ){
-
-    alert(
-      "目前沒有取得家長身分，請重新登入後再試。"
-    );
-
-    return;
-
-  }
 
   const date =
     $("leaveDate").value;
+
 
   if(
     !date
@@ -2887,6 +2877,7 @@ async function submitLeave(){
     return;
 
   }
+
 
   if(
     isSchoolClosedDate(
@@ -2902,13 +2893,16 @@ async function submitLeave(){
 
   }
 
+
   const reason =
     $("leaveReason").value;
+
 
   const note =
     $("leaveNote")
       .value
       .trim();
+
 
   if(
     !confirm(
@@ -2921,22 +2915,179 @@ async function submitLeave(){
 
     )
   ){
+
     return;
+
   }
+
 
   const btn =
     $("leaveSubmitBtn");
 
+
   btn.disabled =
     true;
+
 
   btn.textContent =
     "送出中...";
 
+
   try{
 
-    const rows =
+
+    /*
+    ==========================================
+    1. 每次送出前重新確認目前登入的 Supabase 使用者
+    ==========================================
+    */
+
+    const {
+      data:userData,
+      error:userError
+    } =
+      await supabaseClient
+        .auth
+        .getUser();
+
+
+    if(
+      userError
+      ||
+      !userData
+      ||
+      !userData.user
+    ){
+
+      throw new Error(
+        "目前沒有有效的家長登入狀態，請重新登入測試帳號。"
+      );
+
+    }
+
+
+    const authUser =
+      userData.user;
+
+
+    /*
+    ==========================================
+    2. 重新取得這個登入者真正對應的 guardian_id
+    不使用可能殘留的 currentGuardianId
+    ==========================================
+    */
+
+    const {
+      data:identityData,
+      error:identityError
+    } =
+      await supabaseClient
+        .from(
+          "user_identities"
+        )
+        .select(
+          "guardian_id"
+        )
+        .eq(
+          "auth_user_id",
+          authUser.id
+        )
+        .maybeSingle();
+
+
+    if(
+      identityError
+    ){
+
+      throw new Error(
+        "讀取家長身分失敗：" +
+        identityError.message
+      );
+
+    }
+
+
+    if(
+      !identityData
+      ||
+      !identityData.guardian_id
+    ){
+
+      throw new Error(
+        "目前登入帳號沒有綁定家長資料。"
+      );
+
+    }
+
+
+    const verifiedGuardianId =
+      identityData.guardian_id;
+
+
+    /*
+    ==========================================
+    3. 再確認畫面上的孩子確實是這個家長可看到的孩子
+    ==========================================
+    */
+
+    const selectedIds =
       list.map(
+        child =>
+        child.id
+      );
+
+
+    const {
+      data:verifiedChildren,
+      error:childError
+    } =
+      await supabaseClient
+        .from(
+          "children"
+        )
+        .select(
+          "id,school_code,name,morning_class_id,care_group"
+        )
+        .in(
+          "id",
+          selectedIds
+        );
+
+
+    if(
+      childError
+    ){
+
+      throw new Error(
+        "重新確認幼兒資料失敗：" +
+        childError.message
+      );
+
+    }
+
+
+    if(
+      !verifiedChildren
+      ||
+      verifiedChildren.length !==
+      selectedIds.length
+    ){
+
+      throw new Error(
+        "幼兒權限驗證失敗，請重新登入後再試。"
+      );
+
+    }
+
+
+    /*
+    ==========================================
+    4. 組合 requests
+    ==========================================
+    */
+
+    const rows =
+      verifiedChildren.map(
 
         child => ({
 
@@ -2947,7 +3098,7 @@ async function submitLeave(){
             child.id,
 
           guardian_id:
-            currentGuardianId,
+            verifiedGuardianId,
 
           request_type:
             "leave",
@@ -2969,7 +3120,7 @@ async function submitLeave(){
             reason,
 
           care_group:
-            child.careGroup
+            child.care_group
             ||
             "mixed"
 
@@ -2977,8 +3128,16 @@ async function submitLeave(){
 
       );
 
+
+    /*
+    ==========================================
+    5. 寫入 Supabase
+    ==========================================
+    */
+
     const {
-      error
+      data:insertedData,
+      error:insertError
     } =
       await supabaseClient
         .from(
@@ -2986,22 +3145,56 @@ async function submitLeave(){
         )
         .insert(
           rows
+        )
+        .select(
+          "id,request_date,request_type,status"
         );
 
+
     if(
-      error
+      insertError
     ){
 
       console.error(
-        error
+        "requests insert error:",
+        insertError
       );
 
-      throw error;
+
+      console.error(
+        "auth user:",
+        authUser.id
+      );
+
+
+      console.error(
+        "guardian id:",
+        verifiedGuardianId
+      );
+
+
+      console.error(
+        "rows:",
+        rows
+      );
+
+
+      throw insertError;
 
     }
 
+
+    /*
+    更新全域 guardian_id
+    */
+
+    currentGuardianId =
+      verifiedGuardianId;
+
+
     $("leaveNote").value =
       "";
+
 
     showStatus(
 
@@ -3019,12 +3212,20 @@ async function submitLeave(){
 
     );
 
+
+    console.log(
+      "請假寫入成功：",
+      insertedData
+    );
+
+
   }
   catch(e){
 
     console.error(
       e
     );
+
 
     alert(
 
@@ -3044,13 +3245,14 @@ async function submitLeave(){
     btn.disabled =
       false;
 
+
     btn.textContent =
       "❌ 確認送出請假";
 
   }
 
 }
-
+  
 async function submitExtended(){
 
   const list =
