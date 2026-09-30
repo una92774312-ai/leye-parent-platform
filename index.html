@@ -3266,8 +3266,10 @@ async function submitExtended(){
     return;
   }
 
+
   const date =
     $("extendedDate").value;
+
 
   if(
     !date
@@ -3280,6 +3282,7 @@ async function submitExtended(){
     return;
 
   }
+
 
   if(
     isSchoolClosedDate(
@@ -3295,40 +3298,201 @@ async function submitExtended(){
 
   }
 
+
   const note =
     $("extendedNote")
       .value
-      .trim()
-    ||
-    "無";
+      .trim();
 
-  const msg =
 
-`⏰【樂業附幼延長托育通知】
-👶 幼兒：${childrenText(list)}
-📅 日期：${date}
-⏰ 時段：17:00 → 18:00
-📌 備註：${note}`;
+  if(
+    !confirm(
+
+`確認送出延長托育申請？
+
+幼兒：${childrenText(list)}
+日期：${date}
+時段：17:00 → 18:00`
+
+    )
+  ){
+
+    return;
+
+  }
+
 
   try{
 
-    await sendLine(
-      msg
-    );
+
+    const {
+      data:userData,
+      error:userError
+    } =
+      await supabaseClient
+        .auth
+        .getUser();
+
+
+    if(
+      userError
+      ||
+      !userData
+      ||
+      !userData.user
+    ){
+
+      throw new Error(
+        "目前沒有有效的家長登入狀態，請重新登入。"
+      );
+
+    }
+
+
+    const {
+      data:identityData,
+      error:identityError
+    } =
+      await supabaseClient
+        .from(
+          "user_identities"
+        )
+        .select(
+          "guardian_id"
+        )
+        .eq(
+          "auth_user_id",
+          userData.user.id
+        )
+        .maybeSingle();
+
+
+    if(
+      identityError
+      ||
+      !identityData
+      ||
+      !identityData.guardian_id
+    ){
+
+      throw new Error(
+        "無法確認家長身分。"
+      );
+
+    }
+
+
+    const guardianId =
+      identityData.guardian_id;
+
+
+    const rows =
+      list.map(
+
+        child => ({
+
+          request_date:
+            date,
+
+          child_id:
+            child.id,
+
+          guardian_id:
+            guardianId,
+
+          request_type:
+            "extended",
+
+          status:
+            "pending",
+
+          requested_start_time:
+            "17:00",
+
+          requested_end_time:
+            "18:00",
+
+          reason:
+            note
+            ||
+            "延長托育",
+
+          care_group:
+            child.careGroup
+            ||
+            "mixed"
+
+        })
+
+      );
+
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from(
+          "requests"
+        )
+        .insert(
+          rows
+        );
+
+
+    if(
+      error
+    ){
+
+      throw error;
+
+    }
+
+
+    currentGuardianId =
+      guardianId;
+
+
+    $("extendedNote").value =
+      "";
+
 
     showStatus(
-      "✅ 延長托育 LINE 測試通知已送出。下一階段會正式寫入 Supabase。"
+
+      "✅ 延長托育申請已成功寫入 Supabase。\n"
+      +
+      "幼兒："
+      +
+      childrenText(list)
+      +
+      "\n日期："
+      +
+      date
+      +
+      "\n時段：17:00 → 18:00"
+      +
+      "\n目前狀態：pending"
+
     );
+
 
   }
   catch(e){
 
-    console.warn(
+    console.error(
       e
     );
 
-    showStatus(
-      "ℹ️ 延長托育目前尚未正式寫入 Supabase。下一階段再接資料庫。"
+
+    alert(
+
+      "延長托育送出失敗。\n\n"
+      +
+      (
+        e.message
+        ||
+        String(e)
+      )
+
     );
 
   }
