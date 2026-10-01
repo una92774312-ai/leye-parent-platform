@@ -79,6 +79,7 @@ body{
 
   margin:0;
 
+
   padding:
     16px
     14px
@@ -318,6 +319,7 @@ textarea{
   height:45px;
 
   border-radius:50%;
+
 
   object-fit:cover;
 
@@ -559,6 +561,7 @@ textarea::placeholder{
 
   color:#fff;
 
+
 }
 
 .btnGray{
@@ -638,6 +641,7 @@ textarea::placeholder{
 }
 
 .childName{
+
 
   color:var(--sage-dark);
 
@@ -879,6 +883,7 @@ textarea::placeholder{
     1px solid
     #d8e4d2;
 
+
   border-radius:15px;
 
   background:var(--sage-soft);
@@ -958,6 +963,7 @@ details.rules{
   border:
     1px solid
     #e4e2d9;
+
 
   border-radius:16px;
 
@@ -1050,7 +1056,7 @@ details.rules summary{
 
 
 /* ==================================================
-   底部四功能
+   底部五功能
    ================================================== */
 
 .quickTabs{
@@ -1199,6 +1205,7 @@ details.rules summary{
 
   line-height:1.6;
 
+
 }
 
 .hidden{
@@ -1267,7 +1274,6 @@ details.rules summary{
     width:100%;
     max-width:100%;
     min-width:0;
-
     box-sizing:border-box;
 
     -webkit-appearance:none;
@@ -1279,7 +1285,6 @@ details.rules summary{
 
     font-size:16px;
     line-height:1.45;
-
     background:#fff;
   }
 
@@ -1289,6 +1294,36 @@ details.rules summary{
   }
 
 }
+
+/* ==================================================
+   我的申請
+   ================================================== */
+.quickTabs{grid-template-columns:repeat(5,1fr);}
+.quickTab{min-width:0;font-size:.68rem;}
+.requestToolbar{display:flex;justify-content:flex-end;margin-bottom:14px;}
+.refreshRequestsBtn{width:auto;border:1px solid #d5e0cf;border-radius:999px;padding:9px 14px;background:#eef4ea;color:#52644e;font-size:.82rem;font-weight:850;cursor:pointer;}
+.requestList{display:flex;flex-direction:column;gap:14px;}
+.requestCard{overflow:hidden;border:1px solid #e4e2d8;border-radius:19px;background:#fff;box-shadow:0 5px 18px rgba(76,86,68,.06);}
+.requestCardTop{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 15px;background:linear-gradient(135deg,#f4f1e8,#eef4ea);}
+.requestType{min-width:0;color:#52644e;font-size:1rem;font-weight:900;}
+.requestStatus{flex:0 0 auto;padding:5px 10px;border-radius:999px;font-size:.75rem;font-weight:900;}
+.statusPending{background:#fff5d8;color:#806d3b;}
+.statusApproved{background:#dde9d5;color:#4e6a48;}
+.statusWaitlist{background:#fff0cf;color:#967026;}
+.statusRejected{background:#f8e6e3;color:#a7534e;}
+.statusCancelled{background:#eeeeea;color:#777b74;}
+.requestCardBody{padding:15px;}
+.requestChild{color:#40513d;font-size:1rem;font-weight:900;margin-bottom:13px;}
+.requestMetaGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.requestMeta{min-width:0;padding:10px 11px;border-radius:12px;background:#faf9f5;}
+.requestMetaFull{grid-column:1 / -1;}
+.requestLabel{margin-bottom:3px;color:#96998f;font-size:.7rem;}
+.requestValue{color:#555d52;font-size:.85rem;font-weight:800;line-height:1.5;word-break:break-word;}
+.requestClassBox{margin-top:13px;padding:12px 13px;border:1px solid #d8e4d2;border-radius:13px;background:#eef4ea;color:#52644e;font-size:.88rem;font-weight:800;}
+.requestNote{margin-top:10px;padding:11px 13px;border:1px solid #f1e3b8;border-radius:13px;background:#fff5d8;color:#76694a;font-size:.82rem;line-height:1.6;}
+.requestFoot{padding:10px 15px 13px;color:#a0a29c;font-size:.7rem;text-align:right;}
+@media(max-width:380px){.quickTabs{gap:4px;padding-left:7px;padding-right:7px}.quickTab{padding-left:1px;padding-right:1px;font-size:.64rem}.requestMetaGrid{grid-template-columns:1fr}.requestMetaFull{grid-column:auto}}
+
 </style>
 </head>
 
@@ -1322,6 +1357,7 @@ details.rules summary{
   </div>
 
   <div class="sub">
+
     🌷 家長服務平台
     <br>
     接送、請假與托育需求，都可以在這裡快速完成。
@@ -1402,6 +1438,7 @@ details.rules summary{
     type="button"
     style="margin-top:8px"
     onclick="supabaseLogout()"
+
   >
     登出測試帳號
   </button>
@@ -1562,6 +1599,7 @@ details.rules summary{
           margin-top:10px;
         "
       ></div>
+
 
       <label
         class="title"
@@ -1802,6 +1840,7 @@ details.rules summary{
     <select id="leaveReason">
       <option>病假</option>
       <option>事假</option>
+
       <option>家庭因素</option>
       <option>其他</option>
     </select>
@@ -1882,6 +1921,7 @@ details.rules summary{
       id="extendedDate"
       type="date"
       onchange="validateSchoolDate(this)"
+
     >
 
     <div class="helper">
@@ -2042,6 +2082,7 @@ details.rules summary{
     <textarea
       id="temporaryReason"
       rows="3"
+
       placeholder="例：臨時加班、家庭臨時有事"
     ></textarea>
 
@@ -2103,54 +2144,28 @@ details.rules summary{
 
 
 <!-- ====================================== -->
-<!-- 底部功能 -->
+<!-- 我的申請 -->
 <!-- ====================================== -->
 
+<div id="requestsPage" class="page hidden">
+  <div class="pageTitle">📋 我的申請</div>
+  <div class="pageDesc">查看近期請假、延長托育與臨時托育的申請進度。</div>
+  <div class="notice noticeBlue">🌷 本園完成處理後，申請狀態會同步更新在這裡。<br>臨時托育或延長托育核准後，如有安排課後班級，也會一併顯示。</div>
+  <div class="requestToolbar"><button class="refreshRequestsBtn" type="button" onclick="loadMyRequests()">↻ 更新申請狀態</button></div>
+  <div id="myRequestsList" class="requestList"><div class="empty">正在載入申請紀錄...</div></div>
+</div>
+
+<!-- ====================================== -->
+<!-- 底部功能 -->
+<!-- ====================================== -->
 <div class="quickTabs">
+  <button id="tabPickup" class="quickTab" onclick="showPage('pickup')">🚗<br>接孩子</button>
+  <button id="tabLeave" class="quickTab" onclick="showPage('leave')">❌<br>請假</button>
+  <button id="tabExtended" class="quickTab" onclick="showPage('extended')">⏰<br>延長</button>
+  <button id="tabTemporary" class="quickTab" onclick="showPage('temporary')">🧸<br>臨托</button>
 
-  <button
-    id="tabPickup"
-    class="quickTab"
-    onclick="showPage('pickup')"
-  >
-    🚗
-    <br>
-    接孩子
-  </button>
-
-  <button
-    id="tabLeave"
-    class="quickTab"
-    onclick="showPage('leave')"
-  >
-    ❌
-    <br>
-    請假
-  </button>
-
-  <button
-    id="tabExtended"
-    class="quickTab"
-    onclick="showPage('extended')"
-  >
-    ⏰
-    <br>
-    延長
-  </button>
-
-  <button
-    id="tabTemporary"
-    class="quickTab"
-    onclick="showPage('temporary')"
-  >
-    🧸
-    <br>
-    臨托
-  </button>
-
-</div>
-
-</div>
+  <button id="tabRequests" class="quickTab" onclick="showPage('requests')">📋<br>我的申請</button>
+</div></div>
 
 <div
   id="statusBox"
@@ -2227,6 +2242,7 @@ const CLASS_MAP = {
     name:"企鵝班",
     type:"混齡"
   }
+
 
 };
 
@@ -2309,6 +2325,7 @@ const SCHOOL_CLOSED_DATES = [
 ];
 
 
+
 let lineUserId =
   "";
 
@@ -2387,6 +2404,7 @@ function ymdToLocalDate(ymd){
     year,
     month-1,
     day,
+
     12,
     0,
     0
@@ -2467,6 +2485,7 @@ function getNextSchoolDay(ymd){
     }
 
     date.setDate(
+
       date.getDate()+1
     );
 
@@ -2548,6 +2567,7 @@ ${next}`
       "您選擇的日期為非上課日，請重新選擇。"
     );
 
+
   }
 
   return false;
@@ -2627,6 +2647,7 @@ async function supabaseTestLogin(){
   }
 
   $("supabaseState").textContent =
+
     "Supabase：登入中...";
 
   await supabaseClient.auth.signOut();
@@ -2788,6 +2809,7 @@ async function loadGuardianAndChildren(){
       "⚠️ 無法確認家長身分，請洽本園。"
     );
 
+
     renderChildrenEverywhere();
 
     return;
@@ -2868,6 +2890,7 @@ async function loadGuardianAndChildren(){
 
   }
 
+
   children =
     (
       childData
@@ -2947,6 +2970,7 @@ function renderChildrenEverywhere(){
       .join("、")
 
     :
+
 
     "尚未取得綁定幼兒資料";
 
@@ -3107,6 +3131,7 @@ function requireChildren(prefix){
     );
 
   if(
+
     !list.length
   ){
 
@@ -3135,105 +3160,18 @@ function childrenText(list){
 }
 
 
-function showPage(
-  page,
-  updateUrl=true
-){
-
-  const valid = [
-    "pickup",
-    "leave",
-    "extended",
-    "temporary"
-  ];
-
-  if(
-    !valid.includes(
-      page
-    )
-  ){
-    page =
-      "pickup";
-  }
-
-  currentPage =
-    page;
-
-  valid.forEach(
-
-    p => {
-
-      $(p+"Page")
-        .classList
-        .toggle(
-          "hidden",
-          p !== page
-        );
-
-      $(
-        "tab"
-        +
-        p[0].toUpperCase()
-        +
-        p.slice(1)
-      )
-      .classList
-      .toggle(
-        "active",
-        p === page
-      );
-
-    }
-
-  );
-
-  if(
-    updateUrl
-  ){
-
-    const u =
-      new URL(
-        window.location.href
-      );
-
-    u.searchParams.set(
-      "page",
-      page
-    );
-
-    u.searchParams.delete(
-      "code"
-    );
-
-    u.searchParams.delete(
-      "state"
-    );
-
-    u.searchParams.delete(
-      "liffClientId"
-    );
-
-    u.searchParams.delete(
-      "liffRedirectUri"
-    );
-
-    history.replaceState(
-      null,
-      "",
-      u.toString()
-    );
-
-  }
-
-  window.scrollTo(
-    {
-      top:0,
-      behavior:"smooth"
-    }
-  );
-
-}
-
+const AFTERCARE_CLASS_MAP = {AC01:"蝴蝶班",AC02:"白兔班",AC03:"蜜蜂班",AC04:"陽光書屋",AC05:"櫻桃班",AC06:"蘋果班"};
+function requestTypeLabel(type){return ({leave:"❌ 請假",extended:"⏰ 延長托育",temporary:"🧸 臨時托育"})[type]||"📋 申請";}
+function requestStatusInfo(status){const map={pending:{text:"待本園確認",icon:"🟡",className:"statusPending"},approved:{text:"已核准",icon:"✅",className:"statusApproved"},waitlist:{text:"候補",icon:"🟠",className:"statusWaitlist"},rejected:{text:"無法安排",icon:"❌",className:"statusRejected"},cancelled:{text:"已取消",icon:"⚪",className:"statusCancelled"}};return map[status]||{text:status||"未知狀態",icon:"📋",className:"statusCancelled"};}
+function requestDateText(value){if(!value)return "-";const parts=String(value).split("-");return parts.length===3?parts.join(" / "):String(value);}
+function requestShortTime(value){return value?String(value).slice(0,5):"";}
+function requestTimeText(row){const start=requestShortTime(row.requested_start_time),end=requestShortTime(row.requested_end_time);if(!start&&!end)return row.request_type==="leave"?"整日":"-";return (start||"-")+"－"+(end||"-");}
+function requestChildName(childId){const child=children.find(item=>item.id===childId);return child?child.className+"・"+child.name:"幼兒";}
+function requestAftercareName(code){return code?(AFTERCARE_CLASS_MAP[code]||code):"";}
+function requestCreatedText(value){if(!value)return "";const d=new Date(value);if(Number.isNaN(d.getTime()))return "";return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0")+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
+function renderRequestCard(row){const status=requestStatusInfo(row.status),className=requestAftercareName(row.assigned_aftercare_class_code),reason=row.reason?String(row.reason).trim():"",adminNote=row.admin_note?String(row.admin_note).trim():"";const classHtml=(row.status==="approved"&&className)?`<div class="requestClassBox">🏫 今日課後班：${escapeHtml(className)}</div>`:"";const noteHtml=adminNote?`<div class="requestNote">🌼 <b>本園備註</b><br>${escapeHtml(adminNote)}</div>`:"";return `<div class="requestCard"><div class="requestCardTop"><div class="requestType">${requestTypeLabel(row.request_type)}</div><div class="requestStatus ${status.className}">${status.icon} ${escapeHtml(status.text)}</div></div><div class="requestCardBody"><div class="requestChild">👶 ${escapeHtml(requestChildName(row.child_id))}</div><div class="requestMetaGrid"><div class="requestMeta"><div class="requestLabel">📅 日期</div><div class="requestValue">${escapeHtml(requestDateText(row.request_date))}</div></div><div class="requestMeta"><div class="requestLabel">⏰ 時段</div><div class="requestValue">${escapeHtml(requestTimeText(row))}</div></div>${reason?`<div class="requestMeta requestMetaFull"><div class="requestLabel">📝 申請內容</div><div class="requestValue">${escapeHtml(reason)}</div></div>`:""}</div>${classHtml}${noteHtml}</div>${row.created_at?`<div class="requestFoot">送出時間：${escapeHtml(requestCreatedText(row.created_at))}</div>`:""}</div>`;}
+async function loadMyRequests(){const box=$("myRequestsList");if(!box)return;if(!supabaseUser){box.innerHTML='<div class="empty">尚未登入家長測試帳號。<br><br>登入後即可查看申請紀錄。</div>';return;}box.innerHTML='<div class="empty">🌷 正在更新申請紀錄...</div>';try{const {data,error}=await supabaseClient.from("requests").select(`id,request_date,child_id,request_type,status,requested_start_time,requested_end_time,reason,assigned_aftercare_class_code,admin_note,created_at`).order("request_date",{ascending:false}).order("created_at",{ascending:false}).limit(50);if(error)throw error;const rows=data||[];if(!rows.length){box.innerHTML='<div class="empty">🌷 目前還沒有申請紀錄。<br><br>送出請假、延長托育或臨時托育後，就會顯示在這裡。</div>';return;}box.innerHTML=rows.map(renderRequestCard).join("");}catch(e){console.error("讀取申請紀錄失敗：",e);box.innerHTML=`<div class="notice noticeRed">⚠️ 目前無法讀取申請紀錄。<br><br>${escapeHtml(e.message||String(e))}</div>`;}}
+function showPage(page,updateUrl=true){const valid=["pickup","leave","extended","temporary","requests"];if(!valid.includes(page))page="pickup";currentPage=page;valid.forEach(p=>{const pageEl=$(p+"Page");if(pageEl)pageEl.classList.toggle("hidden",p!==page);const tabEl=$("tab"+p[0].toUpperCase()+p.slice(1));if(tabEl)tabEl.classList.toggle("active",p===page);});if(page==="requests")loadMyRequests();if(updateUrl){const u=new URL(window.location.href);u.searchParams.set("page",page);u.searchParams.delete("code");u.searchParams.delete("state");u.searchParams.delete("liffClientId");u.searchParams.delete("liffRedirectUri");history.replaceState(null,"",u.toString());}window.scrollTo({top:0,behavior:"smooth"});}
 
 function setPickupMode(
   el,
@@ -3354,6 +3292,7 @@ function refreshLateNotice(){
     `
       <div class="ruleLine">
         📢 最晚通知時間：${rule.noticeDeadline}
+
       </div>
 
       <div class="ruleLine">
@@ -3434,6 +3373,7 @@ function refreshLateNotice(){
 
     timeToMinutes(
       rule.noticeDeadline
+
     );
 
   if(
@@ -3515,6 +3455,7 @@ async function sendLine(message){
     !liff.isInClient()
   ){
 
+
     throw new Error(
       "目前不是從 LINE App 開啟"
     );
@@ -3594,6 +3535,7 @@ async function submitPickup(){
     detail =
 
       "\n⏰ 原訂接回："
+
       +
       original
 
@@ -3675,6 +3617,7 @@ ${currentPickupMode}`
 
 async function submitLeave(){
 
+
   const list =
     requireChildren(
       "leave"
@@ -3754,6 +3697,7 @@ async function submitLeave(){
       data:userData,
       error:userError
     } =
+
       await supabaseClient
         .auth
         .getUser();
@@ -3834,6 +3778,7 @@ async function submitLeave(){
         )
         .select(
           "id,school_code,name,morning_class_id,care_group"
+
         )
         .in(
           "id",
@@ -3914,6 +3859,7 @@ async function submitLeave(){
         .from(
           "requests"
         )
+
         .insert(
           rows
         )
@@ -3994,6 +3940,7 @@ async function submitLeave(){
       )
 
     );
+
 
   }
   finally{
@@ -4154,6 +4101,7 @@ async function submitExtended(){
             "17:00",
 
           requested_end_time:
+
             "18:00",
 
           reason:
@@ -4475,6 +4423,7 @@ async function submitTemporary(){
   }
   catch(e){
 
+
     console.error(
       e
     );
@@ -4554,6 +4503,7 @@ function resolvePageFromUrl(){
   const params =
     new URLSearchParams(
       window.location.search
+
     );
 
   return (
@@ -4634,6 +4584,7 @@ async function main(){
     resolvePageFromUrl(),
     false
   );
+
 
   refreshLateNotice();
 
