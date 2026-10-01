@@ -1780,8 +1780,15 @@ async function approveCareRequest(
     return;
   }
 
+
+  /*
+  ========================================
+  1. 先把申請更新為已核准
+  ========================================
+  */
+
   const {
-    error
+    error:updateError
   } =
     await supabaseClient
       .from("requests")
@@ -1802,25 +1809,148 @@ async function approveCareRequest(
         requestId
       );
 
-  if(error){
+
+  if(
+    updateError
+  ){
 
     alert(
       "核准失敗：\n\n" +
-      error.message
+      updateError.message
     );
 
     return;
 
   }
 
-  alert(
-    "✅ 已核准並完成課後班指派。"
-  );
+
+  /*
+  ========================================
+  2. 取得目前行政登入 Token
+  ========================================
+  */
+
+  const {
+    data:sessionData,
+    error:sessionError
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
+
+
+  if(
+    sessionError
+    ||
+    !sessionData
+    ||
+    !sessionData.session
+  ){
+
+    alert(
+      "✅ 申請已核准。\n\n" +
+      "⚠️ 但目前無法取得行政登入狀態，" +
+      "LINE 通知尚未送出。"
+    );
+
+    await refreshRequests();
+
+    return;
+
+  }
+
+
+  /*
+  ========================================
+  3. 呼叫 LINE 通知 Edge Function
+  ========================================
+  */
+
+  try{
+
+    const response =
+      await fetch(
+        SUPABASE_URL +
+        "/functions/v1/line-notify-test",
+        {
+          method:"POST",
+
+          headers:{
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              "Bearer " +
+              sessionData.session.access_token
+          },
+
+          body:
+            JSON.stringify(
+              {
+                requestId:
+                  requestId
+              }
+            )
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if(
+      !response.ok
+      ||
+      !result.ok
+    ){
+
+      console.error(
+        "LINE 通知失敗",
+        result
+      );
+
+      alert(
+        "✅ 申請已核准並完成課後班指派。\n\n" +
+        "⚠️ LINE 通知沒有成功送出。\n\n" +
+        (
+          result.message
+          ||
+          "未知錯誤"
+        )
+      );
+
+      await refreshRequests();
+
+      return;
+
+    }
+
+
+    alert(
+      "✅ 申請已核准並完成課後班指派。\n\n" +
+      "✅ LINE 通知已成功傳送給家長。"
+    );
+
+  }
+  catch(e){
+
+    console.error(
+      "LINE 通知錯誤",
+      e
+    );
+
+    alert(
+      "✅ 申請已核准並完成課後班指派。\n\n" +
+      "⚠️ LINE 通知傳送發生錯誤。"
+    );
+
+  }
+
 
   await refreshRequests();
 
 }
-
 
 async function updateRequestStatus(
   requestId,
