@@ -12,38 +12,109 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
+/* ==================================================
+   樂業附幼｜家長服務平台
+   LINE Flex Message 同系列視覺
+   ================================================== */
+
 :root{
-  --green:#2e7d32;
-  --green-dark:#1b5e20;
-  --green-light:#e8f5e9;
-  --orange:#ef6c00;
-  --orange-light:#fff3e0;
-  --blue:#1976d2;
-  --blue-light:#e3f2fd;
-  --purple:#7b1fa2;
-  --purple-light:#f3e5f5;
-  --red:#d32f2f;
-  --red-light:#ffebee;
-  --yellow:#f9a825;
-  --yellow-light:#fffde7;
-  --text:#263238;
-  --muted:#78909c;
-  --line:#dfe7e9;
-  --bg:#f4f7f6;
+
+  --sage:#819b73;
+  --sage-dark:#52644e;
+  --sage-deep:#40513d;
+  --sage-light:#dde9d5;
+  --sage-soft:#eef4ea;
+
+  --cream:#f4f1e8;
+  --cream-light:#fffefa;
+  --cream-deep:#ebe5d7;
+
+  --yellow:#fff5d8;
+  --yellow-dark:#806d3b;
+
+  --peach:#fae8dc;
+  --peach-dark:#a76546;
+
+  --rose:#f8e6e3;
+  --rose-dark:#a7534e;
+
+  --blue-soft:#eaf2f3;
+  --blue-dark:#4f6d72;
+
+  --purple-soft:#eee8f2;
+  --purple-dark:#745d7d;
+
+  --text:#4a5047;
+  --text-dark:#374035;
+  --muted:#81867c;
+  --line:#e8e3d8;
+
+  --white:#ffffff;
+
+  --shadow:
+    0 14px 40px
+    rgba(76,86,68,.10);
+
+  --soft-shadow:
+    0 5px 18px
+    rgba(76,86,68,.07);
+
 }
+
+
+/* ==================================================
+   基本設定
+   ================================================== */
 
 *{
   box-sizing:border-box;
 }
 
+
+html{
+  background:
+    #f4f1e8;
+}
+
+
 body{
+
   margin:0;
+
   padding:
+    16px
     14px
-    14px
-    calc(24px + env(safe-area-inset-bottom));
-  background:var(--bg);
-  color:var(--text);
+    calc(
+      30px +
+      env(safe-area-inset-bottom)
+    );
+
+  min-height:100vh;
+
+  background:
+
+    radial-gradient(
+      circle at 8% 2%,
+      rgba(222,233,213,.90),
+      transparent 30%
+    ),
+
+    radial-gradient(
+      circle at 100% 12%,
+      rgba(255,245,216,.85),
+      transparent 32%
+    ),
+
+    linear-gradient(
+      180deg,
+      #f8f5ed 0%,
+      #f3efe5 100%
+    );
+
+  color:
+    var(--text);
+
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -51,508 +122,1452 @@ body{
     "Noto Sans TC",
     Roboto,
     sans-serif;
+
+  -webkit-font-smoothing:
+    antialiased;
+
 }
+
+
+button,
+input,
+select,
+textarea{
+  font-family:inherit;
+}
+
 
 .app{
-  max-width:480px;
+
+  width:100%;
+  max-width:500px;
   margin:auto;
+
 }
+
+
+/* ==================================================
+   主卡片
+   ================================================== */
 
 .card{
-  background:#fff;
-  border-radius:20px;
+
+  background:
+    rgba(255,254,250,.96);
+
+  border:
+    1px solid
+    rgba(225,219,205,.88);
+
+  border-radius:
+    28px;
+
   overflow:hidden;
+
   box-shadow:
-    0 8px 24px
-    rgba(0,0,0,.06);
+    var(--shadow);
+
 }
+
+
+/* ==================================================
+   Header / 品牌
+   ================================================== */
 
 .header{
+
+  position:relative;
+
   padding:
-    18px
-    18px
-    14px;
+    23px
+    20px
+    18px;
+
   background:
+
     linear-gradient(
-      135deg,
-      #f1f8e9,
-      #e8f5e9
+      145deg,
+      #f4f1e8 0%,
+      #eef4ea 55%,
+      #f7f3e9 100%
     );
+
+  border-bottom:
+    1px solid
+    rgba(220,216,202,.7);
+
 }
 
-.brand{
-  font-size:1.25rem;
-  font-weight:900;
-  color:var(--green-dark);
-}
 
-.sub{
-  font-size:.88rem;
-  color:#607d8b;
-  margin-top:3px;
-  line-height:1.5;
-}
+.brandRow{
 
-.user{
-  margin-top:12px;
   display:flex;
   align-items:center;
-  gap:10px;
-  background:
-    rgba(255,255,255,.85);
-  border-radius:14px;
-  padding:
-    10px
-    12px;
+  gap:13px;
+
 }
+
+
+.schoolLogo{
+
+  width:64px;
+  height:64px;
+
+  object-fit:contain;
+
+  flex:0 0 auto;
+
+  background:#fff;
+
+  border-radius:
+    19px;
+
+  padding:7px;
+
+  border:
+    1px solid
+    rgba(210,218,205,.9);
+
+  box-shadow:
+    0 5px 14px
+    rgba(75,93,68,.09);
+
+}
+
+
+.brandArea{
+  min-width:0;
+  flex:1;
+}
+
+
+.brand{
+
+  color:
+    var(--sage-dark);
+
+  font-size:
+    1.32rem;
+
+  line-height:1.25;
+
+  letter-spacing:
+    .04em;
+
+  font-weight:
+    900;
+
+}
+
+
+.schoolName{
+
+  color:
+    #777d73;
+
+  font-size:
+    .74rem;
+
+  line-height:1.45;
+
+  margin-top:4px;
+
+}
+
+
+.sub{
+
+  margin-top:
+    15px;
+
+  padding:
+    11px
+    13px;
+
+  border-radius:
+    14px;
+
+  background:
+    rgba(255,255,255,.63);
+
+  border:
+    1px solid
+    rgba(227,224,213,.85);
+
+  color:
+    #74796f;
+
+  font-size:
+    .84rem;
+
+  line-height:
+    1.65;
+
+}
+
+
+/* ==================================================
+   家長身份卡
+   ================================================== */
+
+.user{
+
+  margin-top:
+    14px;
+
+  display:flex;
+
+  align-items:center;
+
+  gap:
+    11px;
+
+  padding:
+    12px;
+
+  border-radius:
+    17px;
+
+  background:
+    rgba(255,255,255,.88);
+
+  border:
+    1px solid
+    #e7e5dc;
+
+  box-shadow:
+    var(--soft-shadow);
+
+}
+
 
 .avatar{
-  width:38px;
-  height:38px;
-  border-radius:50%;
-  object-fit:cover;
-  background:#eceff1;
+
+  width:45px;
+  height:45px;
+
+  border-radius:
+    50%;
+
+  object-fit:
+    cover;
+
+  flex:
+    0 0 auto;
+
+  background:
+    #edf0e9;
+
+  border:
+    2px solid
+    #fff;
+
+  box-shadow:
+    0 2px 7px
+    rgba(0,0,0,.08);
+
 }
+
 
 .userText{
+
+  min-width:0;
   flex:1;
-  font-size:.9rem;
+
+  color:
+    #545b51;
+
+  font-size:
+    .88rem;
+
+  line-height:
+    1.5;
+
 }
+
+
+#lineStatus b{
+
+  color:
+    var(--sage-dark);
+
+  font-size:
+    .96rem;
+
+}
+
 
 .supabaseState{
-  font-size:.78rem;
-  color:#607d8b;
-  margin-top:3px;
+
+  margin-top:
+    3px;
+
+  color:
+    #989b94;
+
+  font-size:
+    .72rem;
+
 }
+
+
+/* ==================================================
+   Page
+   ================================================== */
 
 .page{
-  padding:18px;
+
+  padding:
+    22px
+    19px
+    24px;
+
 }
+
 
 .pageTitle{
-  font-size:1.25rem;
-  font-weight:900;
-  margin-bottom:4px;
+
+  margin-bottom:
+    6px;
+
+  color:
+    var(--sage-dark);
+
+  font-size:
+    1.32rem;
+
+  line-height:
+    1.4;
+
+  letter-spacing:
+    .02em;
+
+  font-weight:
+    900;
+
 }
+
 
 .pageDesc{
-  font-size:.88rem;
-  color:var(--muted);
-  margin-bottom:16px;
-  line-height:1.55;
+
+  margin-bottom:
+    19px;
+
+  color:
+    var(--muted);
+
+  font-size:
+    .87rem;
+
+  line-height:
+    1.7;
+
 }
+
+
+/* ==================================================
+   表單區塊
+   ================================================== */
 
 .group{
-  margin-bottom:16px;
+
+  margin-bottom:
+    20px;
+
 }
 
+
 label.title{
+
   display:block;
-  font-weight:900;
-  margin-bottom:7px;
+
+  margin-bottom:
+    9px;
+
+  color:
+    var(--text-dark);
+
+  font-size:
+    .93rem;
+
+  line-height:
+    1.5;
+
+  font-weight:
+    850;
+
 }
+
 
 input,
 select,
 textarea{
-  width:100%;
-  padding:12px;
+
+  width:
+    100%;
+
+  padding:
+    13px
+    14px;
+
   border:
     1.5px solid
-    #cfd8dc;
-  border-radius:12px;
-  font-size:16px;
-  font-family:inherit;
-  outline:none;
-  background:#fff;
+    #dddcd2;
+
+  border-radius:
+    14px;
+
+  outline:
+    none;
+
+  background:
+    #fff;
+
+  color:
+    var(--text);
+
+  font-size:
+    16px;
+
+  line-height:
+    1.45;
+
+  transition:
+    border-color .18s ease,
+    box-shadow .18s ease,
+    background .18s ease;
+
 }
+
 
 input:focus,
 select:focus,
 textarea:focus{
-  border-color:#81c784;
+
+  border-color:
+    #9eb092;
+
+  background:
+    #fffefa;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(129,155,115,.12);
+
 }
+
 
 textarea{
-  resize:vertical;
+
+  resize:
+    vertical;
+
+  min-height:
+    92px;
+
 }
+
+
+input::placeholder,
+textarea::placeholder{
+
+  color:
+    #b1b3ac;
+
+}
+
+
+/* ==================================================
+   按鈕
+   ================================================== */
 
 .btn{
+
   width:100%;
+
   border:0;
-  border-radius:13px;
-  padding:14px;
-  font-size:16px;
-  font-weight:900;
+
+  border-radius:
+    15px;
+
+  padding:
+    15px
+    14px;
+
   cursor:pointer;
+
+  font-size:
+    16px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    .015em;
+
+  box-shadow:
+    0 5px 13px
+    rgba(80,96,73,.12);
+
+  transition:
+    transform .12s ease,
+    opacity .15s ease,
+    box-shadow .15s ease;
+
 }
+
+
+.btn:active{
+
+  transform:
+    scale(.985);
+
+}
+
 
 .btn:disabled{
-  opacity:.55;
-  cursor:not-allowed;
+
+  opacity:
+    .55;
+
+  cursor:
+    not-allowed;
+
+  box-shadow:
+    none;
+
 }
 
-.btnPrimary{
-  background:var(--green);
-  color:#fff;
+
+.btnPrimary,
+.btnBlue,
+.btnPurple{
+
+  background:
+    var(--sage);
+
+  color:
+    #fff;
+
 }
+
 
 .btnOrange{
-  background:var(--orange);
-  color:#fff;
+
+  background:
+    #b98768;
+
+  color:
+    #fff;
+
 }
 
-.btnBlue{
-  background:var(--blue);
-  color:#fff;
-}
-
-.btnPurple{
-  background:var(--purple);
-  color:#fff;
-}
 
 .btnGray{
-  background:#607d8b;
-  color:#fff;
+
+  background:
+    #969b91;
+
+  color:
+    #fff;
+
 }
+
+
+/* ==================================================
+   幼兒選擇
+   ================================================== */
 
 .childList{
+
   display:flex;
-  flex-direction:column;
-  gap:8px;
+
+  flex-direction:
+    column;
+
+  gap:
+    9px;
+
 }
+
 
 .childPick{
+
   display:flex;
+
   align-items:center;
-  gap:10px;
+
+  gap:
+    11px;
+
+  padding:
+    13px;
+
   border:
     1.5px solid
-    #d7e2e4;
-  border-radius:13px;
-  padding:12px;
-  background:#fff;
+    #e1e2da;
+
+  border-radius:
+    15px;
+
+  background:
+    #fff;
+
   cursor:pointer;
+
+  box-shadow:
+    0 3px 10px
+    rgba(74,80,71,.035);
+
+  transition:
+    border-color .15s ease,
+    background .15s ease,
+    transform .12s ease;
+
 }
+
+
+.childPick:hover{
+
+  border-color:
+    #bdcbb4;
+
+  background:
+    #fbfdf9;
+
+}
+
+
+.childPick:active{
+
+  transform:
+    scale(.99);
+
+}
+
 
 .childPick input{
+
   width:auto;
+
+  accent-color:
+    var(--sage);
+
   transform:
-    scale(1.15);
+    scale(1.18);
+
 }
+
 
 .childName{
-  font-weight:900;
+
+  color:
+    var(--sage-dark);
+
+  font-weight:
+    900;
+
 }
+
 
 .childClass{
-  font-size:.82rem;
-  color:var(--muted);
-  margin-top:2px;
+
+  margin-top:
+    2px;
+
+  color:
+    var(--muted);
+
+  font-size:
+    .79rem;
+
 }
 
-.empty{
-  padding:14px;
-  border:
-    1.5px dashed
-    #b0bec5;
-  border-radius:13px;
-  color:#607d8b;
-  background:#fafcfc;
-  font-size:.9rem;
-  line-height:1.55;
-}
+
+/* ==================================================
+   接送選項
+   ================================================== */
 
 .choices{
+
   display:flex;
-  flex-direction:column;
-  gap:8px;
+
+  flex-direction:
+    column;
+
+  gap:
+    9px;
+
 }
+
 
 .choice{
+
   padding:
-    12px
+    13px
     14px;
+
   border:
     1.5px solid
-    #cfd8dc;
-  border-radius:12px;
-  background:#fff;
+    #e0e1d9;
+
+  border-radius:
+    14px;
+
+  background:
+    #fff;
+
+  color:
+    #60665c;
+
   cursor:pointer;
+
+  font-size:
+    .92rem;
+
+  transition:
+    .15s ease;
+
 }
+
 
 .choice.active{
-  border-color:var(--green);
-  background:var(--green-light);
-  color:var(--green-dark);
-  font-weight:900;
+
+  border-color:
+    #aabca0;
+
+  background:
+    var(--sage-soft);
+
+  color:
+    var(--sage-dark);
+
+  font-weight:
+    900;
+
+  box-shadow:
+    inset 4px 0 0
+    var(--sage);
+
 }
+
 
 .choice.delay.active{
-  border-color:var(--yellow);
-  background:var(--yellow-light);
-  color:#7a6000;
+
+  border-color:
+    #e7c28f;
+
+  background:
+    #fff6e7;
+
+  color:
+    #8a6840;
+
+  box-shadow:
+    inset 4px 0 0
+    #d7a75f;
+
 }
+
+
+/* ==================================================
+   展開區塊
+   ================================================== */
 
 .box{
+
   display:none;
-  background:#fafcfc;
+
+  margin-top:
+    10px;
+
+  padding:
+    14px;
+
   border:
     1px solid
-    #e0e6e8;
-  border-radius:12px;
-  padding:12px;
-  margin-top:9px;
+    #e5e2d8;
+
+  border-radius:
+    15px;
+
+  background:
+    #faf9f5;
+
 }
+
+
+/* ==================================================
+   Notice
+   ================================================== */
 
 .notice{
+
+  margin-bottom:
+    15px;
+
   padding:
-    11px
-    12px;
-  border-radius:11px;
-  font-size:.88rem;
-  line-height:1.6;
-  margin-bottom:14px;
+    13px
+    14px;
+
+  border-radius:
+    14px;
+
+  font-size:
+    .86rem;
+
+  line-height:
+    1.7;
+
+  border:
+    1px solid
+    transparent;
+
 }
+
 
 .noticeBlue{
-  background:var(--blue-light);
-  color:#0d47a1;
+
+  background:
+    var(--sage-soft);
+
+  border-color:
+    #d8e4d2;
+
+  color:
+    #586b52;
+
 }
 
-.noticeOrange{
-  background:var(--orange-light);
-  color:#e65100;
-}
-
-.noticeYellow{
-  background:var(--yellow-light);
-  color:#7a6000;
-}
-
-.noticeRed{
-  background:var(--red-light);
-  color:#b71c1c;
-}
-
-.noticePurple{
-  background:var(--purple-light);
-  color:#6a1b9a;
-}
 
 .noticeGreen{
-  background:var(--green-light);
-  color:var(--green-dark);
+
+  background:
+    #edf5e9;
+
+  border-color:
+    #d9e7d2;
+
+  color:
+    #56714e;
+
 }
+
+
+.noticeOrange{
+
+  background:
+    #fff1e6;
+
+  border-color:
+    #f3d8c5;
+
+  color:
+    #946044;
+
+}
+
+
+.noticeYellow{
+
+  background:
+    var(--yellow);
+
+  border-color:
+    #f1e3b8;
+
+  color:
+    var(--yellow-dark);
+
+}
+
+
+.noticeRed{
+
+  background:
+    #fbecea;
+
+  border-color:
+    #f0d2ce;
+
+  color:
+    #9a5650;
+
+}
+
+
+.noticePurple{
+
+  background:
+    var(--purple-soft);
+
+  border-color:
+    #ded2e5;
+
+  color:
+    var(--purple-dark);
+
+}
+
 
 .pickerNotice{
+
   display:none;
-  margin-top:8px;
+
+  margin-top:
+    9px;
+
 }
+
+
+/* ==================================================
+   延長 / 臨托資訊卡
+   ================================================== */
+
+.assignmentBox{
+
+  padding:
+    14px;
+
+  border:
+    1px solid
+    #dce6d7;
+
+  border-radius:
+    15px;
+
+  background:
+    var(--sage-soft);
+
+  color:
+    #5f7259;
+
+  font-size:
+    .88rem;
+
+  font-weight:
+    700;
+
+  line-height:
+    1.75;
+
+}
+
+
+/*
+  舊版容量資訊全面隱藏。
+  HTML 也會從新版臨時托育區塊移除。
+*/
+
+.capacityBox{
+  display:none!important;
+}
+
+
+.fixedTime{
+
+  padding:
+    16px;
+
+  border:
+    1px solid
+    #d8e4d2;
+
+  border-radius:
+    15px;
+
+  background:
+    var(--sage-soft);
+
+  color:
+    var(--sage-dark);
+
+  text-align:
+    center;
+
+  font-size:
+    1.08rem;
+
+  font-weight:
+    900;
+
+}
+
+
+/* ==================================================
+   輔助文字
+   ================================================== */
+
+.helper{
+
+  margin-top:
+    6px;
+
+  color:
+    var(--muted);
+
+  font-size:
+    .78rem;
+
+  line-height:
+    1.55;
+
+}
+
+
+/* ==================================================
+   接送遲到規則
+   ================================================== */
 
 .lateRuleBox{
-  margin-top:10px;
-  padding:12px;
-  border-radius:12px;
-  background:#fff;
+
+  margin-top:
+    10px;
+
+  padding:
+    14px;
+
   border:
     1px solid
-    #e0e6e8;
-  font-size:.9rem;
-  line-height:1.65;
+    #e6e1d4;
+
+  border-radius:
+    15px;
+
+  background:
+    #fffdf8;
+
+  color:
+    #666b62;
+
+  font-size:
+    .87rem;
+
+  line-height:
+    1.7;
+
 }
+
 
 .ruleTitle{
-  font-weight:900;
-  margin-bottom:5px;
+
+  margin-bottom:
+    7px;
+
+  color:
+    var(--sage-dark);
+
+  font-weight:
+    900;
+
 }
+
 
 .ruleLine{
-  margin:3px 0;
+
+  margin:
+    4px 0;
+
 }
+
 
 details.rules{
-  margin-top:18px;
+
+  margin-top:
+    20px;
+
   border:
     1px solid
-    #dfe7e9;
-  border-radius:13px;
-  background:#fafcfc;
-  overflow:hidden;
+    #e4e2d9;
+
+  border-radius:
+    16px;
+
+  overflow:
+    hidden;
+
+  background:
+    #faf9f5;
+
 }
+
 
 details.rules summary{
-  padding:13px;
-  font-weight:900;
-  cursor:pointer;
+
+  padding:
+    14px;
+
+  cursor:
+    pointer;
+
+  color:
+    var(--sage-dark);
+
+  font-weight:
+    900;
+
 }
 
+
 .rulesBody{
+
   padding:
     0
     13px
-    13px;
-  font-size:.86rem;
-  color:#546e7a;
-  line-height:1.65;
+    14px;
+
+  color:
+    #6c7168;
+
+  font-size:
+    .83rem;
+
+  line-height:
+    1.7;
+
 }
+
 
 .ruleCard{
-  background:#fff;
+
+  margin-top:
+    9px;
+
+  padding:
+    12px;
+
   border:
     1px solid
-    #e4eaec;
-  border-radius:10px;
-  padding:10px;
-  margin-top:8px;
+    #ebe7dc;
+
+  border-radius:
+    13px;
+
+  background:
+    #fff;
+
 }
 
-.assignmentBox{
-  padding:12px;
-  border-radius:12px;
-  background:var(--purple-light);
-  color:#6a1b9a;
-  font-weight:700;
-  line-height:1.65;
+
+.ruleCard b{
+
+  color:
+    var(--sage-dark);
+
 }
 
-.capacityBox{
-  border:
-    1.5px solid
-    #d1c4e9;
-  background:#faf7fd;
-  border-radius:13px;
-  padding:13px;
-  margin-bottom:16px;
-  color:#512da8;
-  font-size:.9rem;
-  line-height:1.7;
-}
 
-.capacityTitle{
-  font-weight:900;
-  margin-bottom:5px;
-}
-
-.capacityGrid{
-  display:grid;
-  grid-template-columns:
-    repeat(2,1fr);
-  gap:8px;
-  margin-top:9px;
-}
-
-.capacityItem{
-  background:#fff;
-  border-radius:10px;
-  padding:10px;
-  text-align:center;
-  border:
-    1px solid
-    #ede7f6;
-}
-
-.capacityNumber{
-  font-size:1.25rem;
-  font-weight:900;
-  color:#6a1b9a;
-}
-
-.capacityLabel{
-  font-size:.8rem;
-  margin-top:2px;
-}
-
-.fixedTime{
-  padding:14px;
-  border-radius:12px;
-  background:var(--blue-light);
-  color:#0d47a1;
-  font-weight:900;
-  text-align:center;
-  font-size:1.05rem;
-}
-
-.helper{
-  font-size:.8rem;
-  color:var(--muted);
-  line-height:1.5;
-  margin-top:6px;
-}
+/* ==================================================
+   狀態提示
+   ================================================== */
 
 .statusBox{
+
   display:none;
+
   margin:
     0
     18px
-    18px;
-  padding:13px;
-  border-radius:12px;
-  background:#fff8e1;
+    20px;
+
+  padding:
+    15px;
+
+  white-space:
+    pre-line;
+
   border:
     1px solid
-    #ffe0b2;
-  font-size:.9rem;
-  line-height:1.6;
+    #e9deb8;
+
+  border-radius:
+    15px;
+
+  background:
+    var(--yellow);
+
+  color:
+    #71623e;
+
+  font-size:
+    .88rem;
+
+  line-height:
+    1.7;
+
 }
+
+
+/* ==================================================
+   底部四個功能
+   ================================================== */
 
 .quickTabs{
+
+  position:
+    sticky;
+
+  bottom:
+    0;
+
+  z-index:
+    10;
+
   display:grid;
+
   grid-template-columns:
     repeat(4,1fr);
-  gap:6px;
+
+  gap:
+    7px;
+
   padding:
-    10px
-    12px;
+    11px
+    12px
+    calc(
+      11px +
+      env(safe-area-inset-bottom)
+    );
+
   border-top:
     1px solid
-    #eef2f3;
-  background:#fff;
+    #ece9df;
+
+  background:
+    rgba(255,254,250,.96);
+
+  backdrop-filter:
+    blur(12px);
+
+  -webkit-backdrop-filter:
+    blur(12px);
+
 }
+
 
 .quickTab{
-  border:0;
-  background:#f5f7f7;
-  border-radius:10px;
+
+  min-height:
+    54px;
+
+  border:
+    0;
+
+  border-radius:
+    13px;
+
+  background:
+    #f6f4ee;
+
+  color:
+    #7c8178;
+
+  cursor:
+    pointer;
+
   padding:
-    8px
-    4px;
-  font-size:.72rem;
-  cursor:pointer;
-  color:#546e7a;
+    7px
+    3px;
+
+  font-size:
+    .72rem;
+
+  line-height:
+    1.35;
+
+  transition:
+    .15s ease;
+
 }
+
 
 .quickTab.active{
-  background:var(--green-light);
-  color:var(--green-dark);
-  font-weight:900;
+
+  background:
+    var(--sage-light);
+
+  color:
+    var(--sage-dark);
+
+  font-weight:
+    900;
+
+  box-shadow:
+    inset 0 0 0 1px
+    rgba(129,155,115,.18);
+
 }
+
+
+/* ==================================================
+   測試登入
+   ================================================== */
 
 .testLogin{
-  margin:14px 18px 0;
-  padding:14px;
+
+  margin:
+    16px
+    18px
+    0;
+
+  padding:
+    15px;
+
   border:
     1px solid
-    #ffe0b2;
-  background:#fff8e1;
-  border-radius:13px;
+    #eadfbf;
+
+  border-radius:
+    16px;
+
+  background:
+    #fff9e9;
+
 }
+
 
 .testLoginTitle{
-  font-weight:900;
-  color:#8d6e00;
-  margin-bottom:7px;
+
+  margin-bottom:
+    7px;
+
+  color:
+    #816d3c;
+
+  font-weight:
+    900;
+
 }
 
+
 .testLogin .helper{
-  color:#8d6e00;
-  margin-bottom:10px;
+
+  margin-bottom:
+    11px;
+
+  color:
+    #8a7b56;
+
 }
+
+
+.testLogin input{
+
+  margin-bottom:
+    9px;
+
+}
+
+
+/* ==================================================
+   空資料
+   ================================================== */
+
+.empty{
+
+  padding:
+    15px;
+
+  border:
+    1.5px dashed
+    #c9cec3;
+
+  border-radius:
+    15px;
+
+  background:
+    #fafbf8;
+
+  color:
+    #81877d;
+
+  font-size:
+    .86rem;
+
+  line-height:
+    1.6;
+
+}
+
+
+/* ==================================================
+   共用
+   ================================================== */
 
 .hidden{
   display:none!important;
 }
+
+
+/* ==================================================
+   小螢幕
+   ================================================== */
+
+@media(
+  max-width:380px
+){
+
+  body{
+
+    padding-left:
+      9px;
+
+    padding-right:
+      9px;
+
+  }
+
+
+  .header{
+
+    padding-left:
+      16px;
+
+    padding-right:
+      16px;
+
+  }
+
+
+  .page{
+
+    padding-left:
+      16px;
+
+    padding-right:
+      16px;
+
+  }
+
+
+  .schoolLogo{
+
+    width:
+      56px;
+
+    height:
+      56px;
+
+  }
+
+
+  .brand{
+
+    font-size:
+      1.18rem;
+
+  }
+
+
+  .schoolName{
+
+    font-size:
+      .68rem;
+
+  }
+
+}
+
 </style>
 </head>
 
