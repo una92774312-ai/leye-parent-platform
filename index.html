@@ -1256,42 +1256,36 @@ details.rules summary{
 
 }
 /* ==================================================
-   iPhone / LINE 手機版表單寬度修正
+   iPhone / LINE 日期欄位修正
+   不強制高度，不影響 select
    ================================================== */
 
 @media (max-width:600px){
 
-  .page,
-  .group{
-    width:100%;
-    min-width:0;
-  }
-
-  input,
-  select,
-  textarea{
+  input[type="date"]{
     display:block;
     width:100%;
     max-width:100%;
     min-width:0;
+
     box-sizing:border-box;
+
+    -webkit-appearance:none;
+    appearance:none;
+
+    padding:
+      13px
+      14px;
+
+    font-size:16px;
+    line-height:1.45;
+
+    background:#fff;
   }
 
-  input[type="date"],
-  input[type="time"]{
-    width:100%;
-    max-width:100%;
-    min-width:0;
-    height:58px;
-    padding-left:14px;
-    padding-right:14px;
-  }
-
-  select{
-    width:100%;
-    max-width:100%;
-    min-width:0;
-    height:58px;
+  input[type="date"]::-webkit-date-and-time-value{
+    text-align:left;
+    min-height:1.45em;
   }
 
 }
