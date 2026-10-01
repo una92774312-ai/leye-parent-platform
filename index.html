@@ -1255,7 +1255,46 @@ details.rules summary{
   }
 
 }
+/* ==================================================
+   iPhone / LINE 手機版表單寬度修正
+   ================================================== */
 
+@media (max-width:600px){
+
+  .page,
+  .group{
+    width:100%;
+    min-width:0;
+  }
+
+  input,
+  select,
+  textarea{
+    display:block;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    box-sizing:border-box;
+  }
+
+  input[type="date"],
+  input[type="time"]{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    height:58px;
+    padding-left:14px;
+    padding-right:14px;
+  }
+
+  select{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    height:58px;
+  }
+
+}
 </style>
 </head>
 
