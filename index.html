@@ -2244,50 +2244,30 @@ details.rules summary{
   </div>
 
   <div class="pageDesc">
-    孩子原本沒有固定課後照顧，家長臨時有托育需求時使用。
+    孩子原本沒有固定課後照顧，家長臨時有托育需求時，可在這裡提出申請。
   </div>
+
 
   <div class="notice noticeBlue">
-    📌 臨時托育採申請制，送出申請不代表已核准。
+
+    🌼 <b>申請說明</b>
+
     <br><br>
-    本園將依當日名額、人力及班級安排進行確認。
-    <br>
-    確認後將再通知家長申請結果；如核准，也會一併通知今日課後班級。
-  </div>
 
-  <div class="capacityBox">
+    臨時托育採申請制，
+    <b>送出申請不代表已核准。</b>
 
-    <div class="capacityTitle">
-      本學期臨時托育可接收人數
-    </div>
+    <br><br>
 
-    <div class="capacityGrid">
+    本園將依當日人力、幼生狀況及課後班級安排進行確認。
 
-      <div class="capacityItem">
-        <div class="capacityNumber">
-          8 位
-        </div>
-        <div class="capacityLabel">
-          混齡｜每日最多
-        </div>
-      </div>
+    <br><br>
 
-      <div class="capacityItem">
-        <div class="capacityNumber">
-          6 位
-        </div>
-        <div class="capacityLabel">
-          幼幼｜每日最多
-        </div>
-      </div>
-
-    </div>
-
-    <div class="helper">
-      實際是否可安排，仍以本園當日確認結果為準。
-    </div>
+    完成審核後，將透過 LINE 通知申請結果；
+    如核准，也會一併告知寶貝當日安排的課後班級。
 
   </div>
+
 
   <div class="group">
 
@@ -2302,10 +2282,11 @@ details.rules summary{
 
   </div>
 
+
   <div class="group">
 
     <label class="title">
-      📅 日期
+      📅 托育日期
     </label>
 
     <input
@@ -2315,52 +2296,32 @@ details.rules summary{
     >
 
     <div class="helper">
-      非上課日不可選擇。
+      僅可選擇本園上課日。
     </div>
 
   </div>
 
+
   <div class="group">
 
     <label class="title">
-      ⏰ 臨時托育時段
+      ⏰ 托育時段
     </label>
 
     <select id="temporaryTime">
 
       <option value="16:00～17:00">
-        16:00～17:00
+        16:00－17:00
       </option>
 
       <option value="16:00～18:00">
-        16:00～18:00
+        16:00－18:00
       </option>
 
     </select>
 
   </div>
 
-  <div class="group">
-
-    <label class="title">
-      📋 申請狀態
-    </label>
-
-    <div class="assignmentBox">
-      目前：待本園確認
-      <br><br>
-      本園確認後將回覆：
-      <br>
-      ✅ 核准
-      <br>
-      🟡 候補
-      <br>
-      ❌ 無法安排
-      <br><br>
-      如核准，本園也會一併通知今日課後班級。
-    </div>
-
-  </div>
 
   <div class="group">
 
@@ -2371,14 +2332,57 @@ details.rules summary{
     <textarea
       id="temporaryReason"
       rows="3"
-      placeholder="例：臨時加班、家庭突發狀況"
+      placeholder="例：臨時加班、家庭臨時有事"
     ></textarea>
 
   </div>
 
+
+  <div class="group">
+
+    <label class="title">
+      📋 申請流程
+    </label>
+
+    <div class="assignmentBox">
+
+      <b>送出申請</b>
+
+      <br>
+
+      ↓
+
+      <br>
+
+      <b>本園確認安排</b>
+
+      <br>
+
+      ↓
+
+      <br>
+
+      <b>LINE 通知申請結果</b>
+
+      <br><br>
+
+      核准後，通知中也會顯示寶貝當日的課後班級。
+
+    </div>
+
+  </div>
+
+
   <div class="notice noticeGreen">
-  ✅ 此功能已接上 Supabase。送出後會建立臨時托育申請紀錄，並等待本園確認。
-</div>
+
+    🌷 送出後會建立臨時托育申請紀錄。
+
+    <br>
+
+    請等待本園完成確認，不需要重複送出。
+
+  </div>
+
 
   <button
     class="btn btnPurple"
@@ -2389,8 +2393,6 @@ details.rules summary{
   </button>
 
 </div>
-
-<div class="quickTabs">
 
   <button
     id="tabPickup"
