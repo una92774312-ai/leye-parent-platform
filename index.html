@@ -4556,29 +4556,203 @@ async function restoreSupabaseSession(){
 
 }
 
+/*
+==================================================
+LINE → Supabase 自動登入
+==================================================
+*/
 
+async function loginSupabaseWithLine(){
+
+  $("supabaseState").textContent =
+    "正在驗證家長身分...";
+
+
+  const idToken =
+    liff.getIDToken();
+
+
+  if(
+    !idToken
+  ){
+
+    throw new Error(
+      "無法取得 LINE ID Token。請確認 LIFF 已開啟 openid 權限。"
+    );
+
+  }
+
+
+  const response =
+    await fetch(
+      SUPABASE_URL
+      +
+      "/functions/v1/line-parent-auth",
+      {
+        method:
+          "POST",
+
+        headers:{
+          "Content-Type":
+            "application/json",
+
+          "apikey":
+            SUPABASE_PUBLISHABLE_KEY
+        },
+
+        body:
+          JSON.stringify(
+            {
+              idToken:
+                idToken
+            }
+          )
+      }
+    );
+
+
+  let result = {};
+
+
+  try{
+
+    result =
+      await response.json();
+
+  }
+  catch(e){
+
+    throw new Error(
+      "家長登入服務回傳格式錯誤。"
+    );
+
+  }
+
+
+  if(
+    !response.ok
+  ){
+
+    throw new Error(
+      result.message
+      ||
+      result.error
+      ||
+      "LINE 家長身分驗證失敗。"
+    );
+
+  }
+
+
+  if(
+    !result.session
+    ||
+    !result.session.access_token
+    ||
+    !result.session.refresh_token
+  ){
+
+    throw new Error(
+      "登入服務沒有回傳有效的 Supabase Session。"
+    );
+
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth.setSession(
+      {
+        access_token:
+          result.session.access_token,
+
+        refresh_token:
+          result.session.refresh_token
+      }
+    );
+
+
+  if(
+    error
+    ||
+    !data
+    ||
+    !data.session
+    ||
+    !data.session.user
+  ){
+
+    throw new Error(
+      error
+      ?
+      error.message
+      :
+      "建立 Supabase 登入狀態失敗。"
+    );
+
+  }
+
+
+  supabaseUser =
+    data.session.user;
+
+
+  await loadGuardianAndChildren();
+
+
+  /*
+  LINE 自動登入成功後，
+  暫時把測試登入區隱藏。
+  */
+  const testBox =
+    $("testLoginBox");
+
+
+  if(
+    testBox
+  ){
+
+    testBox.style.display =
+      "none";
+
+  }
+
+
+  $("supabaseState").textContent =
+    "✅ 家長身分已驗證";
+
+}
 async function main(){
 
   const initialSchoolDate =
     defaultSchoolDate();
 
+
   $("leaveDate").value =
     initialSchoolDate;
+
 
   $("extendedDate").value =
     initialSchoolDate;
 
+
   $("temporaryDate").value =
     initialSchoolDate;
+
 
   $("leaveDate").min =
     today();
 
+
   $("extendedDate").min =
     today();
 
+
   $("temporaryDate").min =
     today();
+
 
   showPage(
     resolvePageFromUrl(),
@@ -4588,12 +4762,18 @@ async function main(){
 
   refreshLateNotice();
 
-  await restoreSupabaseSession();
 
   try{
 
+    /*
+    ================================================
+    1. 初始化 LIFF
+    ================================================
+    */
+
     $("lineStatus").textContent =
       "正在連接 LINE...";
+
 
     await liff.init(
       {
@@ -4602,6 +4782,13 @@ async function main(){
       }
     );
 
+
+    /*
+    ================================================
+    2. 尚未登入 LINE → 前往 LINE Login
+    ================================================
+    */
+
     if(
       !liff.isLoggedIn()
     ){
@@ -4609,24 +4796,36 @@ async function main(){
       $("lineStatus").textContent =
         "正在前往 LINE 登入...";
 
+
       liff.login();
+
 
       return;
 
     }
 
+
+    /*
+    ================================================
+    3. 顯示 LINE 家長資料
+    ================================================
+    */
+
     const p =
       await liff.getProfile();
+
 
     lineUserId =
       p.userId
       ||
       "";
 
+
     lineDisplayName =
       p.displayName
       ||
       "家長";
+
 
     if(
       p.pictureUrl
@@ -4637,25 +4836,114 @@ async function main(){
 
     }
 
-    $("lineStatus").innerHTML =
 
+    $("lineStatus").innerHTML =
       `<b>${escapeHtml(lineDisplayName)}</b>（LINE 已連線）`;
+
+
+    /*
+    ================================================
+    4. 不沿用舊測試帳號 Session
+
+    正式 LINE 驗證時，
+    每次重新確認目前這個 LINE 身分。
+    ================================================
+    */
+
+    await supabaseClient.auth.signOut();
+
+
+    /*
+    ================================================
+    5. 用 LINE ID Token 自動建立 Supabase Session
+    ================================================
+    */
+
+    await loginSupabaseWithLine();
+
+
+    /*
+    ================================================
+    6. 成功
+    ================================================
+    */
+
+    $("lineStatus").innerHTML =
+      `<b>${escapeHtml(lineDisplayName)}</b>（LINE 身分已驗證）`;
+
 
   }
   catch(e){
 
     console.error(
-      "LIFF 初始化失敗：",
+      "LINE 自動登入失敗：",
       e
     );
 
-    $("lineStatus").innerHTML =
 
-      `⚠️ LINE 連線失敗<br><small>${escapeHtml(e.message || String(e))}</small>`;
+    /*
+    自動登入失敗時，
+    保留原本測試登入區，
+    方便我們現在測試。
+    */
+
+    const testBox =
+      $("testLoginBox");
+
+
+    if(
+      testBox
+    ){
+
+      testBox.style.display =
+        "";
+
+    }
+
+
+    $("supabaseState").textContent =
+      "⚠️ LINE 自動登入尚未完成";
+
+
+    $("lineStatus").innerHTML =
+      `⚠️ LINE 身分驗證失敗<br><small>${escapeHtml(
+        e.message
+        ||
+        String(e)
+      )}</small>`;
+
+
+    /*
+    失敗時不要讓舊 Session 留著，
+    避免 LINE A 誤用家長 B 的 Supabase Session。
+    */
+
+    try{
+
+      await supabaseClient.auth.signOut();
+
+    }
+    catch(ignore){}
+
+
+    supabaseUser =
+      null;
+
+
+    currentGuardianId =
+      null;
+
+
+    children =
+      [];
+
+
+    renderChildrenEverywhere();
 
   }
 
 }
+
 
 main();
 
