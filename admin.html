@@ -1,42 +1,21 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-
 <head>
 <meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0, viewport-fit=cover"
->
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>樂業附幼｜行政管理平台</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-
 :root{
   --green:#2e7d32;
   --green-dark:#1b5e20;
   --green-light:#e8f5e9;
-
   --blue:#1976d2;
-  --blue-light:#e3f2fd;
-
   --orange:#ef6c00;
-  --orange-light:#fff3e0;
-
-  --purple:#7b1fa2;
-  --purple-light:#f3e5f5;
-
   --red:#d32f2f;
-  --red-light:#ffebee;
-
   --yellow:#f9a825;
-  --yellow-light:#fff8e1;
-
   --gray:#607d8b;
-
   --text:#263238;
   --muted:#78909c;
   --line:#dfe7e9;
@@ -51,7 +30,6 @@ body{
   margin:0;
   background:var(--bg);
   color:var(--text);
-
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -67,19 +45,25 @@ body{
   padding:18px;
 }
 
-.header{
+.header,
+.panel,
+.summaryCard{
   background:#fff;
+  box-shadow:0 8px 24px rgba(0,0,0,.05);
+}
+
+.header,
+.panel{
   border-radius:20px;
-  padding:20px;
-  box-shadow:0 8px 24px rgba(0,0,0,.06);
+  padding:18px;
   margin-bottom:16px;
 }
 
 .headerTop{
   display:flex;
   justify-content:space-between;
-  align-items:flex-start;
   gap:14px;
+  align-items:flex-start;
 }
 
 .brand{
@@ -88,11 +72,20 @@ body{
   color:var(--green-dark);
 }
 
+.subtitle,
+.helper{
+  color:var(--muted);
+  line-height:1.55;
+}
+
 .subtitle{
   margin-top:5px;
-  color:var(--muted);
   font-size:.9rem;
-  line-height:1.55;
+}
+
+.helper{
+  font-size:.8rem;
+  margin-top:6px;
 }
 
 .loginState{
@@ -108,7 +101,7 @@ body{
 .testBox{
   margin-top:14px;
   padding:14px;
-  background:var(--yellow-light);
+  background:#fff8e1;
   border:1px solid #ffe0b2;
   border-radius:13px;
 }
@@ -116,30 +109,6 @@ body{
 .testTitle{
   font-weight:900;
   color:#8d6e00;
-  margin-bottom:8px;
-}
-
-.helper{
-  font-size:.8rem;
-  color:var(--muted);
-  line-height:1.55;
-  margin-top:6px;
-}
-
-input,
-select,
-textarea{
-  width:100%;
-  padding:11px;
-  border:1.5px solid #cfd8dc;
-  border-radius:10px;
-  font-size:15px;
-  font-family:inherit;
-  background:#fff;
-}
-
-textarea{
-  resize:vertical;
 }
 
 .loginGrid{
@@ -149,7 +118,14 @@ textarea{
   margin-top:10px;
 }
 
-button{
+input,
+select{
+  width:100%;
+  padding:11px;
+  border:1.5px solid #cfd8dc;
+  border-radius:10px;
+  font-size:15px;
+  background:#fff;
   font-family:inherit;
 }
 
@@ -160,6 +136,7 @@ button{
   font-weight:900;
   cursor:pointer;
   font-size:.88rem;
+  font-family:inherit;
 }
 
 .btn:disabled{
@@ -200,10 +177,8 @@ button{
 }
 
 .summaryCard{
-  background:#fff;
   border-radius:16px;
   padding:16px;
-  box-shadow:0 6px 18px rgba(0,0,0,.05);
 }
 
 .summaryLabel{
@@ -227,18 +202,11 @@ button{
 }
 
 .purple{
-  color:var(--purple);
+  color:#7b1fa2;
 }
 
 .green{
   color:var(--green);
-}
-
-.panel{
-  background:#fff;
-  border-radius:20px;
-  padding:18px;
-  box-shadow:0 8px 24px rgba(0,0,0,.05);
 }
 
 .panelTitle{
@@ -308,23 +276,23 @@ button{
 }
 
 .badgePending{
-  background:var(--yellow-light);
+  background:#fff8e1;
   color:#8d6e00;
 }
 
 .badgeApproved{
-  background:var(--green-light);
-  color:var(--green-dark);
+  background:#e8f5e9;
+  color:#1b5e20;
 }
 
 .badgeRejected{
-  background:var(--red-light);
-  color:var(--red);
+  background:#ffebee;
+  color:#d32f2f;
 }
 
 .badgeWaitlist{
-  background:var(--orange-light);
-  color:var(--orange);
+  background:#fff3e0;
+  color:#ef6c00;
 }
 
 .badgeOther{
@@ -347,14 +315,14 @@ button{
 .infoLabel{
   color:var(--muted);
   font-size:.76rem;
-  margin-bottom:2px;
 }
 
 .infoValue{
   font-weight:700;
 }
 
-.reasonBox{
+.reasonBox,
+.actionBox{
   margin-top:11px;
   padding:10px;
   border-radius:10px;
@@ -364,9 +332,7 @@ button{
 }
 
 .actionBox{
-  margin-top:12px;
   padding:12px;
-  border-radius:12px;
   background:#fafcfc;
   border:1px solid #e5ebed;
 }
@@ -385,26 +351,24 @@ button{
   margin-top:10px;
 }
 
-.empty{
-  padding:28px;
-  text-align:center;
-  color:var(--muted);
-  border:1.5px dashed #b0bec5;
-  border-radius:14px;
-  background:#fafcfc;
-  line-height:1.7;
-}
-
+.empty,
 .loading{
   padding:24px;
   text-align:center;
   color:var(--muted);
 }
 
+.empty{
+  border:1.5px dashed #b0bec5;
+  border-radius:14px;
+  background:#fafcfc;
+  line-height:1.7;
+}
+
 .errorBox{
   padding:14px;
   border-radius:12px;
-  background:var(--red-light);
+  background:#ffebee;
   color:#b71c1c;
   margin-bottom:14px;
   line-height:1.6;
@@ -425,17 +389,13 @@ button{
     grid-template-columns:repeat(2,1fr);
   }
 
-  .loginGrid{
-    grid-template-columns:1fr;
-  }
-
+  .loginGrid,
   .requestBody,
   .actionGrid{
     grid-template-columns:1fr;
   }
 
 }
-
 </style>
 </head>
 
@@ -443,184 +403,211 @@ button{
 
 <div class="app">
 
-<div class="header">
+  <div class="header">
 
-  <div class="headerTop">
+    <div class="headerTop">
 
-    <div>
+      <div>
 
-      <div class="brand">
-        樂業附幼｜行政管理平台
+        <div class="brand">
+          樂業附幼｜行政管理平台
+        </div>
+
+        <div class="subtitle">
+          家長申請審核｜Supabase 測試版
+        </div>
+
       </div>
-
-      <div class="subtitle">
-        家長申請審核｜Supabase 第二版
-      </div>
-
-    </div>
-
-    <button
-      class="btn btnBlue"
-      type="button"
-      onclick="refreshRequests()"
-    >
-      ↻ 重新整理
-    </button>
-
-  </div>
-
-  <div
-    id="loginState"
-    class="loginState"
-  >
-    Supabase：檢查登入狀態中...
-  </div>
-
-  <div class="testBox">
-
-    <div class="testTitle">
-      🧪 行政測試登入
-    </div>
-
-    <div class="helper">
-      正式版之後會改由 LINE 自動驗證老師身分。
-    </div>
-
-    <div class="loginGrid">
-
-      <input
-        id="email"
-        type="email"
-        value="admin-test-0923@example.com"
-        placeholder="Email"
-      >
-
-      <input
-        id="password"
-        type="password"
-        placeholder="測試密碼"
-      >
 
       <button
-        id="loginBtn"
-        class="btn btnGreen"
-        onclick="login()"
+        class="btn btnBlue"
+        onclick="refreshRequests()"
       >
-        登入
+        ↻ 重新整理
       </button>
 
     </div>
 
-    <button
-      class="btn btnGray"
-      style="width:100%;margin-top:8px"
-      onclick="logout()"
+    <div
+      id="loginState"
+      class="loginState"
     >
-      登出測試帳號
-    </button>
-
-  </div>
-
-</div>
-
-
-<div class="summaryGrid">
-
-  <div class="summaryCard">
-    <div class="summaryLabel">待處理申請</div>
-    <div id="pendingCount" class="summaryNumber red">0</div>
-  </div>
-
-  <div class="summaryCard">
-    <div class="summaryLabel">今日請假</div>
-    <div id="leaveCount" class="summaryNumber blue">0</div>
-  </div>
-
-  <div class="summaryCard">
-    <div class="summaryLabel">今日臨托</div>
-    <div id="temporaryCount" class="summaryNumber purple">0</div>
-  </div>
-
-  <div class="summaryCard">
-    <div class="summaryLabel">全部申請</div>
-    <div id="allCount" class="summaryNumber green">0</div>
-  </div>
-
-</div>
-
-
-<div class="panel">
-
-  <div class="panelTitle">
-    📋 家長申請紀錄
-  </div>
-
-  <div
-    id="lastUpdated"
-    class="helper"
-  >
-    尚未載入
-  </div>
-
-  <div
-    id="errorBox"
-    class="errorBox"
-  ></div>
-
-  <div class="tabs">
-
-    <button
-      id="tabAll"
-      class="tab active"
-      onclick="setFilter('all')"
-    >
-      全部
-    </button>
-
-    <button
-      id="tabPending"
-      class="tab"
-      onclick="setFilter('pending')"
-    >
-      待處理
-    </button>
-
-    <button
-      id="tabLeave"
-      class="tab"
-      onclick="setFilter('leave')"
-    >
-      請假
-    </button>
-
-    <button
-      id="tabTemporary"
-      class="tab"
-      onclick="setFilter('temporary')"
-    >
-      臨時托育
-    </button>
-
-    <button
-      id="tabExtended"
-      class="tab"
-      onclick="setFilter('extended')"
-    >
-      延長托育
-    </button>
-
-  </div>
-
-  <div
-    id="requestList"
-    class="requestList"
-  >
-    <div class="empty">
-      尚未登入行政帳號。
+      Supabase：檢查登入狀態中...
     </div>
+
+    <div class="testBox">
+
+      <div class="testTitle">
+        🧪 行政測試登入
+      </div>
+
+      <div class="helper">
+        正式版之後會改由 LINE 自動驗證老師身分。
+      </div>
+
+      <div class="loginGrid">
+
+        <input
+          id="email"
+          type="email"
+          value="admin-test-0923@example.com"
+          placeholder="Email"
+        >
+
+        <input
+          id="password"
+          type="password"
+          placeholder="測試密碼"
+        >
+
+        <button
+          id="loginBtn"
+          class="btn btnGreen"
+          onclick="login()"
+        >
+          登入
+        </button>
+
+      </div>
+
+      <button
+        class="btn btnGray"
+        style="width:100%;margin-top:8px"
+        onclick="logout()"
+      >
+        登出測試帳號
+      </button>
+
+    </div>
+
   </div>
 
-</div>
+
+  <div class="summaryGrid">
+
+    <div class="summaryCard">
+      <div class="summaryLabel">
+        待處理申請
+      </div>
+      <div
+        id="pendingCount"
+        class="summaryNumber red"
+      >
+        0
+      </div>
+    </div>
+
+    <div class="summaryCard">
+      <div class="summaryLabel">
+        今日請假
+      </div>
+      <div
+        id="leaveCount"
+        class="summaryNumber blue"
+      >
+        0
+      </div>
+    </div>
+
+    <div class="summaryCard">
+      <div class="summaryLabel">
+        今日臨托
+      </div>
+      <div
+        id="temporaryCount"
+        class="summaryNumber purple"
+      >
+        0
+      </div>
+    </div>
+
+    <div class="summaryCard">
+      <div class="summaryLabel">
+        全部申請
+      </div>
+      <div
+        id="allCount"
+        class="summaryNumber green"
+      >
+        0
+      </div>
+    </div>
+
+  </div>
+
+
+  <div class="panel">
+
+    <div class="panelTitle">
+      📋 家長申請紀錄
+    </div>
+
+    <div
+      id="lastUpdated"
+      class="helper"
+    >
+      尚未載入
+    </div>
+
+    <div
+      id="errorBox"
+      class="errorBox"
+    ></div>
+
+    <div class="tabs">
+
+      <button
+        id="tabAll"
+        class="tab active"
+        onclick="setFilter('all')"
+      >
+        全部
+      </button>
+
+      <button
+        id="tabPending"
+        class="tab"
+        onclick="setFilter('pending')"
+      >
+        待處理
+      </button>
+
+      <button
+        id="tabLeave"
+        class="tab"
+        onclick="setFilter('leave')"
+      >
+        請假
+      </button>
+
+      <button
+        id="tabTemporary"
+        class="tab"
+        onclick="setFilter('temporary')"
+      >
+        臨時托育
+      </button>
+
+      <button
+        id="tabExtended"
+        class="tab"
+        onclick="setFilter('extended')"
+      >
+        延長托育
+      </button>
+
+    </div>
+
+    <div
+      id="requestList"
+      class="requestList"
+    >
+      <div class="empty">
+        尚未登入行政帳號。
+      </div>
+    </div>
+
+  </div>
 
 </div>
 
@@ -633,30 +620,55 @@ const SUPABASE_URL =
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_PTpcF08CriR4_kH9KamB1w_akgHzTYw";
 
+
 const supabaseClient =
   supabase.createClient(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY,
     {
       auth:{
-        storageKey:"leye-admin-auth",
-        persistSession:true,
-        autoRefreshToken:true,
-        detectSessionInUrl:true
+        storageKey:
+          "leye-admin-auth",
+
+        persistSession:
+          true,
+
+        autoRefreshToken:
+          true,
+
+        detectSessionInUrl:
+          true
       }
     }
   );
 
 
 const CLASS_MAP = {
-  C01:"櫻桃班",
-  C02:"蘋果班",
-  C03:"蝴蝶班",
-  C04:"白兔班",
-  C05:"蜜蜂班",
-  C06:"袋鼠班",
-  C07:"綿羊班",
-  C08:"企鵝班"
+
+  C01:
+    "櫻桃班",
+
+  C02:
+    "蘋果班",
+
+  C03:
+    "蝴蝶班",
+
+  C04:
+    "白兔班",
+
+  C05:
+    "蜜蜂班",
+
+  C06:
+    "袋鼠班",
+
+  C07:
+    "綿羊班",
+
+  C08:
+    "企鵝班"
+
 };
 
 
@@ -681,7 +693,7 @@ const AFTERCARE_CLASSES = {
   },
 
   AC04:{
-    name:"陽光書屋班",
+    name:"陽光書屋",
     group:"mixed",
     endTime:"17:00"
   },
@@ -719,16 +731,22 @@ let currentFilter =
 
 const $ =
   id =>
-  document.getElementById(id);
+  document.getElementById(
+    id
+  );
 
 
 async function login(){
 
   const email =
-    $("email").value.trim();
+    $("email")
+      .value
+      .trim();
 
   const password =
-    $("password").value;
+    $("password")
+      .value;
+
 
   if(
     !email
@@ -744,29 +762,36 @@ async function login(){
 
   }
 
+
   $("loginBtn").disabled =
     true;
 
-  hideError();
-
-  await supabaseClient.auth.signOut();
 
   const {
     data,
     error
   } =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
+    await supabaseClient
+      .auth
+      .signInWithPassword(
+        {
+          email,
+          password
+        }
+      );
 
-  if(error){
 
-    $("loginBtn").disabled =
-      false;
+  $("loginBtn").disabled =
+    false;
 
-    showError(
-      "登入失敗：" +
+
+  if(
+    error
+  ){
+
+    alert(
+      "登入失敗：\n\n"
+      +
       error.message
     );
 
@@ -774,20 +799,22 @@ async function login(){
 
   }
 
+
   currentUser =
     data.user;
 
-  await validateAdmin();
 
-  $("loginBtn").disabled =
-    false;
+  await validateAdmin();
 
 }
 
 
 async function logout(){
 
-  await supabaseClient.auth.signOut();
+  await supabaseClient
+    .auth
+    .signOut();
+
 
   currentUser =
     null;
@@ -801,20 +828,20 @@ async function logout(){
   childrenMap =
     {};
 
-  $("password").value =
-    "";
 
   $("loginState").textContent =
-    "Supabase：已登出";
+    "Supabase：尚未登入行政測試帳號";
 
-  resetCounts();
 
   $("requestList").innerHTML =
     `
       <div class="empty">
-        已登出行政測試帳號。
+        尚未登入行政帳號。
       </div>
     `;
+
+
+  resetCounts();
 
 }
 
@@ -824,62 +851,53 @@ async function validateAdmin(){
   if(
     !currentUser
   ){
-
-    showError(
-      "目前沒有登入中的 Supabase 使用者。"
-    );
-
     return false;
-
   }
 
-  $("loginState").textContent =
-    "Supabase：正在驗證行政身分...";
 
   const {
     data:identity,
     error:identityError
   } =
     await supabaseClient
-      .from("user_identities")
-      .select("staff_id,guardian_id")
+      .from(
+        "user_identities"
+      )
+      .select(
+        "staff_id"
+      )
       .eq(
         "auth_user_id",
         currentUser.id
       )
       .maybeSingle();
 
-  if(identityError){
-
-    showError(
-      "讀取身分對應失敗：" +
-      identityError.message
-    );
-
-    return false;
-
-  }
 
   if(
+    identityError
+    ||
     !identity
     ||
     !identity.staff_id
   ){
 
     showError(
-      "此帳號沒有綁定 staff 身分。"
+      "此帳號沒有行政身分綁定。"
     );
 
     return false;
 
   }
 
+
   const {
     data:staff,
     error:staffError
   } =
     await supabaseClient
-      .from("staff")
+      .from(
+        "staff"
+      )
       .select(
         "id,display_name,role,active"
       )
@@ -889,53 +907,43 @@ async function validateAdmin(){
       )
       .maybeSingle();
 
-  if(staffError){
-
-    showError(
-      "讀取 staff 失敗：" +
-      staffError.message
-    );
-
-    return false;
-
-  }
 
   if(
+    staffError
+    ||
     !staff
     ||
-    staff.active !== true
+    !staff.active
+    ||
+    staff.role !==
+      "admin"
   ){
 
     showError(
-      "此行政帳號不存在或已停用。"
+      "此行政帳號不存在、已停用，或不是 admin。"
     );
 
     return false;
 
   }
 
-  if(
-    staff.role !== "admin"
-  ){
-
-    showError(
-      "目前此頁只開放 admin 行政角色。"
-    );
-
-    return false;
-
-  }
 
   currentStaff =
     staff;
 
+
   $("loginState").innerHTML =
-    "✅ Supabase 已登入<br>"
+
+    "✅ Supabase 已登入"
+    +
+    "<br>"
     +
     "帳號："
     +
     escapeHtml(
-      currentUser.email || ""
+      currentUser.email
+      ||
+      ""
     )
     +
     "<br>"
@@ -944,6 +952,8 @@ async function validateAdmin(){
     +
     escapeHtml(
       staff.display_name
+      ||
+      "行政人員"
     )
     +
     "｜"
@@ -952,9 +962,12 @@ async function validateAdmin(){
       staff.role
     );
 
+
   hideError();
 
+
   await refreshRequests();
+
 
   return true;
 
@@ -980,6 +993,7 @@ async function refreshRequests(){
 
   }
 
+
   $("requestList").innerHTML =
     `
       <div class="loading">
@@ -987,14 +1001,18 @@ async function refreshRequests(){
       </div>
     `;
 
+
   hideError();
+
 
   const {
     data:requestData,
     error:requestError
   } =
     await supabaseClient
-      .from("requests")
+      .from(
+        "requests"
+      )
       .select(
         `
           id,
@@ -1019,10 +1037,14 @@ async function refreshRequests(){
         }
       );
 
-  if(requestError){
+
+  if(
+    requestError
+  ){
 
     showError(
-      "讀取 requests 失敗：" +
+      "讀取 requests 失敗："
+      +
       requestError.message
     );
 
@@ -1030,31 +1052,45 @@ async function refreshRequests(){
 
   }
 
-  requests =
-    requestData || [];
 
-  const childIds =
-    [
-      ...new Set(
-        requests
-          .map(
-            r => r.child_id
-          )
-          .filter(Boolean)
-      )
-    ];
+  requests =
+    requestData
+    ||
+    [];
+
 
   childrenMap =
     {};
 
-  if(childIds.length){
+
+  const childIds =
+
+    [
+      ...new Set(
+        requests
+          .map(
+            r =>
+            r.child_id
+          )
+          .filter(
+            Boolean
+          )
+      )
+    ];
+
+
+  if(
+    childIds.length
+  ){
 
     const {
       data:childData,
       error:childError
     } =
       await supabaseClient
-        .from("children")
+        .from(
+          "children"
+        )
         .select(
           `
             id,
@@ -1069,40 +1105,52 @@ async function refreshRequests(){
           childIds
         );
 
-    if(childError){
+
+    if(
+      childError
+    ){
 
       showError(
-        "幼兒資料讀取失敗：" +
+        "幼兒資料讀取失敗："
+        +
         childError.message
       );
 
     }
     else{
 
-      (childData || [])
-        .forEach(
+      (
+        childData
+        ||
+        []
+      )
+      .forEach(
 
-          child => {
+        child => {
 
-            childrenMap[
-              child.id
-            ] =
-              child;
+          childrenMap[
+            child.id
+          ] =
+            child;
 
-          }
+        }
 
-        );
+      );
 
     }
 
   }
 
+
   updateCounts();
 
   renderRequests();
 
+
   $("lastUpdated").textContent =
-    "最後更新：" +
+
+    "最後更新："
+    +
     formatDateTime(
       new Date()
     );
@@ -1117,27 +1165,39 @@ function updateCounts(){
       new Date()
     );
 
+
   $("pendingCount").textContent =
+
     requests.filter(
       r =>
-      r.status === "pending"
+      r.status ===
+      "pending"
     ).length;
+
 
   $("leaveCount").textContent =
+
     requests.filter(
       r =>
-      r.request_type === "leave"
+      r.request_type ===
+      "leave"
       &&
-      r.request_date === today
+      r.request_date ===
+      today
     ).length;
 
+
   $("temporaryCount").textContent =
+
     requests.filter(
       r =>
-      r.request_type === "temporary"
+      r.request_type ===
+      "temporary"
       &&
-      r.request_date === today
+      r.request_date ===
+      today
     ).length;
+
 
   $("allCount").textContent =
     requests.length;
@@ -1147,17 +1207,20 @@ function updateCounts(){
 
 function resetCounts(){
 
-  $("pendingCount").textContent =
-    "0";
+  [
+    "pendingCount",
+    "leaveCount",
+    "temporaryCount",
+    "allCount"
+  ]
+  .forEach(
 
-  $("leaveCount").textContent =
-    "0";
+    id =>
+    $(id).textContent =
+      "0"
 
-  $("temporaryCount").textContent =
-    "0";
+  );
 
-  $("allCount").textContent =
-    "0";
 
   $("lastUpdated").textContent =
     "尚未載入";
@@ -1165,10 +1228,13 @@ function resetCounts(){
 }
 
 
-function setFilter(filter){
+function setFilter(
+  filter
+){
 
   currentFilter =
     filter;
+
 
   [
     "All",
@@ -1183,15 +1249,20 @@ function setFilter(filter){
 
       const btn =
         $(
-          "tab" +
+          "tab"
+          +
           name
         );
 
-      if(btn){
+      if(
+        btn
+      ){
 
-        btn.classList.remove(
-          "active"
-        );
+        btn
+          .classList
+          .remove(
+            "active"
+          );
 
       }
 
@@ -1199,22 +1270,30 @@ function setFilter(filter){
 
   );
 
+
   const selected =
     $(
       "tab"
       +
-      filter[0].toUpperCase()
+      filter[0]
+        .toUpperCase()
       +
       filter.slice(1)
     );
 
-  if(selected){
 
-    selected.classList.add(
-      "active"
-    );
+  if(
+    selected
+  ){
+
+    selected
+      .classList
+      .add(
+        "active"
+      );
 
   }
+
 
   renderRequests();
 
@@ -1224,82 +1303,99 @@ function setFilter(filter){
 function renderRequests(){
 
   let list =
-    [...requests];
+    [
+      ...requests
+    ];
+
 
   if(
-    currentFilter === "pending"
+    currentFilter ===
+    "pending"
   ){
 
     list =
       list.filter(
         r =>
-        r.status === "pending"
+        r.status ===
+        "pending"
       );
 
   }
 
+
   if(
-    currentFilter === "leave"
+    currentFilter ===
+    "leave"
   ){
 
     list =
       list.filter(
         r =>
-        r.request_type === "leave"
+        r.request_type ===
+        "leave"
       );
 
   }
 
+
   if(
-    currentFilter === "temporary"
+    currentFilter ===
+    "temporary"
   ){
 
     list =
       list.filter(
         r =>
-        r.request_type === "temporary"
+        r.request_type ===
+        "temporary"
       );
 
   }
 
+
   if(
-    currentFilter === "extended"
+    currentFilter ===
+    "extended"
   ){
 
     list =
       list.filter(
         r =>
-        r.request_type === "extended"
+        r.request_type ===
+        "extended"
       );
 
   }
 
-  if(
-    !list.length
-  ){
-
-    $("requestList").innerHTML =
-      `
-        <div class="empty">
-          目前沒有符合條件的申請。
-        </div>
-      `;
-
-    return;
-
-  }
 
   $("requestList").innerHTML =
+
+    list.length
+
+    ?
+
     list
       .map(
         requestCardHtml
       )
-      .join("");
+      .join(
+        ""
+      )
+
+    :
+
+    `
+      <div class="empty">
+        目前沒有符合條件的申請。
+      </div>
+    `;
 
 }
 
 
-function requestCardHtml(r){
+function requestCardHtml(
+  r
+){
 
   const child =
     childrenMap[
@@ -1308,12 +1404,14 @@ function requestCardHtml(r){
     ||
     null;
 
+
   const childName =
     child
     ?
     child.name
     :
     "未知幼兒";
+
 
   const className =
     child
@@ -1330,6 +1428,7 @@ function requestCardHtml(r){
     :
     "未設定班級";
 
+
   const schoolCode =
     child
     ?
@@ -1337,18 +1436,17 @@ function requestCardHtml(r){
     :
     "";
 
-  const status =
-    statusText(
-      r.status
-    );
 
-  const assignedClass =
+  const assigned =
+
     r.assigned_aftercare_class_code
     &&
     AFTERCARE_CLASSES[
       r.assigned_aftercare_class_code
     ]
+
     ?
+
     (
       r.assigned_aftercare_class_code
       +
@@ -1358,8 +1456,11 @@ function requestCardHtml(r){
         r.assigned_aftercare_class_code
       ].name
     )
+
     :
+
     "尚未指派";
+
 
   return `
 
@@ -1375,11 +1476,15 @@ function requestCardHtml(r){
 
           <div class="requestClass">
             ${escapeHtml(className)}
+
             ${
               schoolCode
               ?
-              "｜" +
-              escapeHtml(schoolCode)
+              "｜"
+              +
+              escapeHtml(
+                schoolCode
+              )
               :
               ""
             }
@@ -1388,9 +1493,12 @@ function requestCardHtml(r){
         </div>
 
         <span
-          class="badge ${statusClass(r.status)}"
+          class="
+            badge
+            ${statusClass(r.status)}
+          "
         >
-          ${escapeHtml(status)}
+          ${escapeHtml(statusText(r.status))}
         </span>
 
       </div>
@@ -1398,70 +1506,62 @@ function requestCardHtml(r){
 
       <div class="requestBody">
 
-        <div class="info">
-          <div class="infoLabel">
-            申請類型
-          </div>
-          <div class="infoValue">
-            ${escapeHtml(requestTypeText(r.request_type))}
-          </div>
-        </div>
+        ${infoHtml(
+          "申請類型",
+          requestTypeText(
+            r.request_type
+          )
+        )}
 
-        <div class="info">
-          <div class="infoLabel">
-            日期
-          </div>
-          <div class="infoValue">
-            ${escapeHtml(r.request_date || "-")}
-          </div>
-        </div>
+        ${infoHtml(
+          "日期",
+          r.request_date
+          ||
+          "-"
+        )}
 
-        <div class="info">
-          <div class="infoLabel">
-            申請時段
-          </div>
-          <div class="infoValue">
-            ${escapeHtml(requestTimeText(r))}
-          </div>
-        </div>
+        ${infoHtml(
+          "申請時段",
+          requestTimeText(
+            r
+          )
+        )}
 
-        <div class="info">
-          <div class="infoLabel">
-            托育類別
-          </div>
-          <div class="infoValue">
-            ${escapeHtml(careGroupText(r.care_group))}
-          </div>
-        </div>
+        ${infoHtml(
+          "托育類別",
+          careGroupText(
+            r.care_group
+          )
+        )}
 
-        <div class="info">
-          <div class="infoLabel">
-            本園安排課後班
-          </div>
-          <div class="infoValue">
-            ${escapeHtml(assignedClass)}
-          </div>
-        </div>
+        ${infoHtml(
+          "本園安排課後班",
+          assigned
+        )}
 
-        <div class="info">
-          <div class="infoLabel">
-            建立時間
-          </div>
-          <div class="infoValue">
-            ${escapeHtml(formatDateTime(r.created_at))}
-          </div>
-        </div>
+        ${infoHtml(
+          "建立時間",
+          formatDateTime(
+            r.created_at
+          )
+        )}
 
       </div>
 
 
       <div class="reasonBox">
 
-        <b>📝 家長原因／備註</b>
+        <b>
+          📝 家長原因／備註
+        </b>
 
         <br>
 
-        ${escapeHtml(r.reason || "未填寫")}
+        ${escapeHtml(
+          r.reason
+          ||
+          "未填寫"
+        )}
 
       </div>
 
@@ -1471,9 +1571,17 @@ function requestCardHtml(r){
         ?
         `
           <div class="reasonBox">
-            <b>🏫 本園備註</b>
+
+            <b>
+              🏫 本園備註
+            </b>
+
             <br>
-            ${escapeHtml(r.admin_note)}
+
+            ${escapeHtml(
+              r.admin_note
+            )}
+
           </div>
         `
         :
@@ -1490,41 +1598,79 @@ function requestCardHtml(r){
 }
 
 
-function adminActionHtml(r){
+function infoHtml(
+  label,
+  value
+){
+
+  return `
+
+    <div class="info">
+
+      <div class="infoLabel">
+        ${escapeHtml(label)}
+      </div>
+
+      <div class="infoValue">
+        ${escapeHtml(value)}
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+function adminActionHtml(
+  r
+){
 
   if(
-    r.status !== "pending"
+    r.status !==
+      "pending"
     &&
-    r.status !== "waitlist"
+    r.status !==
+      "waitlist"
   ){
 
     return `
-      <div class="helper" style="margin-top:10px">
+
+      <div
+        class="helper"
+        style="margin-top:10px"
+      >
         此申請目前已完成行政處理。
       </div>
+
     `;
 
   }
 
 
   if(
-    r.request_type === "leave"
+    r.request_type ===
+    "leave"
   ){
 
     return `
 
       <div class="actionBox">
 
-        <b>行政處理</b>
+        <b>
+          行政處理
+        </b>
 
         <div class="actionButtons">
 
           <button
             class="btn btnGreen"
-            onclick="updateRequestStatus(
-              '${r.id}',
-              'approved'
-            )"
+            onclick="
+              updateRequestStatus(
+                '${r.id}',
+                'approved'
+              )
+            "
           >
             ✅ 確認收到請假
           </button>
@@ -1539,16 +1685,20 @@ function adminActionHtml(r){
 
 
   if(
-    r.request_type === "extended"
+    r.request_type ===
+      "extended"
     ||
-    r.request_type === "temporary"
+    r.request_type ===
+      "temporary"
   ){
 
     return `
 
       <div class="actionBox">
 
-        <b>行政審核</b>
+        <b>
+          行政審核
+        </b>
 
         <div class="actionGrid">
 
@@ -1566,6 +1716,7 @@ function adminActionHtml(r){
 
           </div>
 
+
           <div>
 
             <div class="helper">
@@ -1574,7 +1725,11 @@ function adminActionHtml(r){
 
             <input
               id="note_${r.id}"
-              value="${escapeHtml(r.admin_note || "")}"
+              value="${escapeHtml(
+                r.admin_note
+                ||
+                ""
+              )}"
               placeholder="例：今日安排至蜜蜂班"
             >
 
@@ -1582,41 +1737,55 @@ function adminActionHtml(r){
 
         </div>
 
+
         <div class="actionButtons">
 
           <button
             class="btn btnGreen"
-            onclick="approveCareRequest(
-              '${r.id}'
-            )"
+            onclick="
+              approveCareRequest(
+                '${r.id}'
+              )
+            "
           >
             ✅ 核准
           </button>
 
+
           ${
-            r.request_type === "temporary"
+            r.request_type ===
+            "temporary"
+
             ?
+
             `
               <button
                 class="btn btnOrange"
-                onclick="updateRequestStatus(
-                  '${r.id}',
-                  'waitlist'
-                )"
+                onclick="
+                  updateRequestStatus(
+                    '${r.id}',
+                    'waitlist'
+                  )
+                "
               >
                 🟡 候補
               </button>
             `
+
             :
+
             ""
           }
 
+
           <button
             class="btn btnRed"
-            onclick="updateRequestStatus(
-              '${r.id}',
-              'rejected'
-            )"
+            onclick="
+              updateRequestStatus(
+                '${r.id}',
+                'rejected'
+              )
+            "
           >
             ❌ 無法安排
           </button>
@@ -1635,21 +1804,33 @@ function adminActionHtml(r){
 }
 
 
-function aftercareOptions(r){
+function aftercareOptions(
+  r
+){
 
   const child =
     childrenMap[
       r.child_id
     ];
 
+
   const careGroup =
+
     r.care_group
     ||
-    child?.care_group
+    (
+      child
+      ?
+      child.care_group
+      :
+      null
+    )
     ||
     "mixed";
 
+
   const needs18 =
+
     r.requested_end_time
     &&
     String(
@@ -1658,30 +1839,45 @@ function aftercareOptions(r){
       "18:00"
     );
 
+
   const items =
+
     Object.entries(
       AFTERCARE_CLASSES
     )
     .filter(
 
-      ([code,item]) => {
+      (
+        [
+          code,
+          item
+        ]
+      ) => {
 
         if(
           item.group !==
           careGroup
         ){
+
           return false;
+
         }
 
+
         if(
-          careGroup === "mixed"
+          careGroup ===
+            "mixed"
           &&
           needs18
           &&
-          item.endTime !== "18:00"
+          item.endTime !==
+            "18:00"
         ){
+
           return false;
+
         }
+
 
         return true;
 
@@ -1689,43 +1885,221 @@ function aftercareOptions(r){
 
     );
 
-  let html =
-    `<option value="">請選擇課後班</option>`;
 
-  items.forEach(
+  return (
 
-    ([code,item]) => {
+    `<option value="">
+      請選擇課後班
+    </option>`
 
-      const selected =
-        r.assigned_aftercare_class_code === code
-        ?
-        "selected"
-        :
-        "";
+    +
 
-      html +=
+    items
+      .map(
+
+        (
+          [
+            code,
+            item
+          ]
+        ) =>
+
         `
           <option
             value="${code}"
-            ${selected}
+            ${
+              r.assigned_aftercare_class_code ===
+              code
+              ?
+              "selected"
+              :
+              ""
+            }
           >
-            ${code} ${escapeHtml(item.name)}
+            ${code}
+            ${escapeHtml(item.name)}
             ${
               item.endTime
               ?
-              "｜至 " +
+              "｜至 "
+              +
               item.endTime
               :
               ""
             }
           </option>
-        `;
+        `
 
-    }
+      )
+      .join(
+        ""
+      )
 
   );
 
-  return html;
+}
+
+
+async function notifyRequestResult(
+  requestId
+){
+
+  const {
+    data:sessionData,
+    error:sessionError
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
+
+
+  if(
+    sessionError
+    ||
+    !sessionData
+    ||
+    !sessionData.session
+    ||
+    !sessionData.session.access_token
+  ){
+
+    throw new Error(
+      "目前沒有有效的行政登入狀態，無法發送 LINE 通知。"
+    );
+
+  }
+
+
+  const response =
+
+    await fetch(
+
+      SUPABASE_URL
+      +
+      "/functions/v1/line-notify-test",
+
+      {
+        method:
+          "POST",
+
+        headers:{
+          "Content-Type":
+            "application/json",
+
+          "Authorization":
+            "Bearer "
+            +
+            sessionData
+              .session
+              .access_token,
+
+          "apikey":
+            SUPABASE_PUBLISHABLE_KEY
+        },
+
+        body:
+          JSON.stringify(
+            {
+              requestId
+            }
+          )
+      }
+
+    );
+
+
+  let result =
+    {};
+
+
+  try{
+
+    result =
+      await response
+        .json();
+
+  }
+  catch(e){
+
+    result = {
+      error:
+        "通知服務回傳了無法解析的內容。"
+    };
+
+  }
+
+
+  if(
+    !response.ok
+  ){
+
+    throw new Error(
+      result.error
+      ||
+      result.message
+      ||
+      "LINE 通知發送失敗。"
+    );
+
+  }
+
+
+  return result;
+
+}
+
+
+async function finishRequestUpdate(
+  requestId,
+  statusLabel
+){
+
+  let lineText =
+    "LINE 通知已送出。";
+
+
+  try{
+
+    await notifyRequestResult(
+      requestId
+    );
+
+  }
+  catch(e){
+
+    console.error(
+      "LINE 通知失敗：",
+      e
+    );
+
+
+    lineText =
+
+      "⚠️ 資料已更新，但 LINE 通知失敗："
+      +
+      (
+        e.message
+        ||
+        String(e)
+      );
+
+  }
+
+
+  alert(
+
+    "✅ 狀態已更新為「"
+    +
+    statusLabel
+    +
+    "」。\n\n"
+    +
+    lineText
+
+  );
+
+
+  await refreshRequests();
 
 }
 
@@ -1734,31 +2108,39 @@ async function approveCareRequest(
   requestId
 ){
 
-  const classEl =
-    $(
-      "class_" +
-      requestId
-    );
-
-  const noteEl =
-    $(
-      "note_" +
-      requestId
-    );
-
   const classCode =
-    classEl
+
+    $(
+      "class_"
+      +
+      requestId
+    )
     ?
-    classEl.value
+    $(
+      "class_"
+      +
+      requestId
+    ).value
     :
     "";
+
 
   const adminNote =
-    noteEl
+
+    $(
+      "note_"
+      +
+      requestId
+    )
     ?
-    noteEl.value.trim()
+    $(
+      "note_"
+      +
+      requestId
+    ).value.trim()
     :
     "";
+
 
   if(
     !classCode
@@ -1772,26 +2154,25 @@ async function approveCareRequest(
 
   }
 
+
   if(
     !confirm(
-      "確定要核准此申請？"
+      "確定要核准此申請並發送 LINE 通知給家長嗎？"
     )
   ){
+
     return;
+
   }
 
 
-  /*
-  ========================================
-  1. 先把申請更新為已核准
-  ========================================
-  */
-
   const {
-    error:updateError
+    error
   } =
     await supabaseClient
-      .from("requests")
+      .from(
+        "requests"
+      )
       .update(
         {
           status:
@@ -1811,12 +2192,13 @@ async function approveCareRequest(
 
 
   if(
-    updateError
+    error
   ){
 
     alert(
-      "核准失敗：\n\n" +
-      updateError.message
+      "核准失敗：\n\n"
+      +
+      error.message
     );
 
     return;
@@ -1824,133 +2206,13 @@ async function approveCareRequest(
   }
 
 
-  /*
-  ========================================
-  2. 取得目前行政登入 Token
-  ========================================
-  */
-
-  const {
-    data:sessionData,
-    error:sessionError
-  } =
-    await supabaseClient
-      .auth
-      .getSession();
-
-
-  if(
-    sessionError
-    ||
-    !sessionData
-    ||
-    !sessionData.session
-  ){
-
-    alert(
-      "✅ 申請已核准。\n\n" +
-      "⚠️ 但目前無法取得行政登入狀態，" +
-      "LINE 通知尚未送出。"
-    );
-
-    await refreshRequests();
-
-    return;
-
-  }
-
-
-  /*
-  ========================================
-  3. 呼叫 LINE 通知 Edge Function
-  ========================================
-  */
-
-  try{
-
-    const response =
-      await fetch(
-        SUPABASE_URL +
-        "/functions/v1/line-notify-test",
-        {
-          method:"POST",
-
-          headers:{
-            "Content-Type":
-              "application/json",
-
-            "Authorization":
-              "Bearer " +
-              sessionData.session.access_token
-          },
-
-          body:
-            JSON.stringify(
-              {
-                requestId:
-                  requestId
-              }
-            )
-        }
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if(
-      !response.ok
-      ||
-      !result.ok
-    ){
-
-      console.error(
-        "LINE 通知失敗",
-        result
-      );
-
-      alert(
-        "✅ 申請已核准並完成課後班指派。\n\n" +
-        "⚠️ LINE 通知沒有成功送出。\n\n" +
-        (
-          result.message
-          ||
-          "未知錯誤"
-        )
-      );
-
-      await refreshRequests();
-
-      return;
-
-    }
-
-
-    alert(
-      "✅ 申請已核准並完成課後班指派。\n\n" +
-      "✅ LINE 通知已成功傳送給家長。"
-    );
-
-  }
-  catch(e){
-
-    console.error(
-      "LINE 通知錯誤",
-      e
-    );
-
-    alert(
-      "✅ 申請已核准並完成課後班指派。\n\n" +
-      "⚠️ LINE 通知傳送發生錯誤。"
-    );
-
-  }
-
-
-  await refreshRequests();
+  await finishRequestUpdate(
+    requestId,
+    "已核准"
+  );
 
 }
+
 
 async function updateRequestStatus(
   requestId,
@@ -1958,66 +2220,82 @@ async function updateRequestStatus(
 ){
 
   let confirmText =
-    "確定要更新此申請嗎？";
+    "確定要更新此申請並通知家長嗎？";
+
 
   if(
-    newStatus === "approved"
+    newStatus ===
+    "approved"
   ){
+
     confirmText =
-      "確定已收到並確認這筆請假嗎？";
+      "確定已收到並確認這筆請假，並發送 LINE 通知給家長嗎？";
+
   }
 
-  if(
-    newStatus === "waitlist"
-  ){
-    confirmText =
-      "確定將此申請設為候補嗎？";
-  }
 
   if(
-    newStatus === "rejected"
+    newStatus ===
+    "waitlist"
   ){
+
     confirmText =
-      "確定此申請無法安排嗎？";
+      "確定將此申請設為候補，並發送 LINE 通知給家長嗎？";
+
   }
+
+
+  if(
+    newStatus ===
+    "rejected"
+  ){
+
+    confirmText =
+      "確定將此申請設為無法安排，並發送 LINE 通知給家長嗎？";
+
+  }
+
 
   if(
     !confirm(
       confirmText
     )
   ){
+
     return;
+
   }
+
 
   const noteEl =
     $(
-      "note_" +
+      "note_"
+      +
       requestId
     );
 
-  const adminNote =
-    noteEl
-    ?
-    noteEl.value.trim()
-    :
-    null;
 
   const payload = {
     status:
       newStatus
   };
 
+
   if(
-    adminNote !== null
+    noteEl
   ){
 
     payload.admin_note =
-      adminNote;
+      noteEl
+        .value
+        .trim();
 
   }
 
+
   if(
-    newStatus !== "approved"
+    newStatus !==
+    "approved"
   ){
 
     payload.assigned_aftercare_class_code =
@@ -2025,11 +2303,14 @@ async function updateRequestStatus(
 
   }
 
+
   const {
     error
   } =
     await supabaseClient
-      .from("requests")
+      .from(
+        "requests"
+      )
       .update(
         payload
       )
@@ -2038,7 +2319,10 @@ async function updateRequestStatus(
         requestId
       );
 
-  if(error){
+
+  if(
+    error
+  ){
 
     alert(
       "狀態更新失敗：\n\n"
@@ -2050,43 +2334,62 @@ async function updateRequestStatus(
 
   }
 
-  alert(
-    "✅ 狀態已更新為「"
-    +
+
+  await finishRequestUpdate(
+
+    requestId,
+
     statusText(
       newStatus
     )
-    +
-    "」。"
-  );
 
-  await refreshRequests();
+  );
 
 }
 
 
-function requestTimeText(r){
+function requestTimeText(
+  r
+){
 
   if(
     !r.requested_start_time
     &&
     !r.requested_end_time
   ){
-    return "-";
+
+    return (
+      r.request_type ===
+      "leave"
+      ?
+      "整日"
+      :
+      "-"
+    );
+
   }
 
-  return (
+
+  const start =
     shortTime(
       r.requested_start_time
-    )
+    );
+
+  const end =
+    shortTime(
+      r.requested_end_time
+    );
+
+
+  return (
+    start
     +
     (
-      r.requested_end_time
+      end
       ?
-      " → " +
-      shortTime(
-        r.requested_end_time
-      )
+      " → "
+      +
+      end
       :
       ""
     )
@@ -2095,30 +2398,49 @@ function requestTimeText(r){
 }
 
 
-function shortTime(value){
+function shortTime(
+  value
+){
 
-  if(!value){
-    return "";
-  }
-
-  return String(value)
-    .slice(
+  return (
+    value
+    ?
+    String(
+      value
+    ).slice(
       0,
       5
-    );
+    )
+    :
+    ""
+  );
 
 }
 
 
-function requestTypeText(type){
+function requestTypeText(
+  type
+){
 
   const map = {
-    leave:"今日請假",
-    temporary:"臨時托育",
-    extended:"延長托育",
-    pickup:"接送通知",
-    late:"晚到通報"
+
+    leave:
+      "今日請假",
+
+    temporary:
+      "臨時托育",
+
+    extended:
+      "延長托育",
+
+    pickup:
+      "接送通知",
+
+    late:
+      "晚到通報"
+
   };
+
 
   return (
     map[type]
@@ -2131,15 +2453,29 @@ function requestTypeText(type){
 }
 
 
-function statusText(status){
+function statusText(
+  status
+){
 
   const map = {
-    pending:"待處理",
-    approved:"已核准",
-    rejected:"無法安排",
-    waitlist:"候補",
-    cancelled:"已取消"
+
+    pending:
+      "待處理",
+
+    approved:
+      "已核准",
+
+    rejected:
+      "無法安排",
+
+    waitlist:
+      "候補",
+
+    cancelled:
+      "已取消"
+
   };
+
 
   return (
     map[status]
@@ -2152,100 +2488,125 @@ function statusText(status){
 }
 
 
-function statusClass(status){
+function statusClass(
+  status
+){
 
   if(
-    status === "pending"
+    status ===
+    "pending"
   ){
     return "badgePending";
   }
 
+
   if(
-    status === "approved"
+    status ===
+    "approved"
   ){
     return "badgeApproved";
   }
 
+
   if(
-    status === "rejected"
+    status ===
+    "rejected"
   ){
     return "badgeRejected";
   }
 
+
   if(
-    status === "waitlist"
+    status ===
+    "waitlist"
   ){
     return "badgeWaitlist";
   }
+
 
   return "badgeOther";
 
 }
 
 
-function careGroupText(value){
+function careGroupText(
+  value
+){
 
   if(
-    value === "mixed"
+    value ===
+    "mixed"
   ){
     return "混齡";
   }
 
+
   if(
-    value === "toddler"
+    value ===
+    "toddler"
   ){
     return "幼幼";
   }
 
-  return value || "-";
-
-}
-
-
-function localDateString(date){
-
-  const d =
-    new Date(
-      date
-    );
 
   return (
-    d.getFullYear()
-    +
+    value
+    ||
     "-"
-    +
-    String(
-      d.getMonth()+1
-    ).padStart(
-      2,
-      "0"
-    )
-    +
-    "-"
-    +
-    String(
-      d.getDate()
-    ).padStart(
-      2,
-      "0"
-    )
   );
 
 }
 
 
-function formatDateTime(value){
+function localDateString(
+  date
+){
+
+  return (
+
+    date.getFullYear()
+    +
+    "-"
+    +
+    String(
+      date.getMonth()+1
+    ).padStart(
+      2,
+      "0"
+    )
+    +
+    "-"
+    +
+    String(
+      date.getDate()
+    ).padStart(
+      2,
+      "0"
+    )
+
+  );
+
+}
+
+
+function formatDateTime(
+  value
+){
 
   if(
     !value
   ){
+
     return "-";
+
   }
+
 
   const d =
     new Date(
       value
     );
+
 
   if(
     Number.isNaN(
@@ -2259,7 +2620,9 @@ function formatDateTime(value){
 
   }
 
+
   return (
+
     d.getFullYear()
     +
     "/"
@@ -2297,15 +2660,19 @@ function formatDateTime(value){
       2,
       "0"
     )
+
   );
 
 }
 
 
-function showError(text){
+function showError(
+  text
+){
 
   $("errorBox").textContent =
     text;
+
 
   $("errorBox").style.display =
     "block";
@@ -2318,16 +2685,21 @@ function hideError(){
   $("errorBox").textContent =
     "";
 
+
   $("errorBox").style.display =
     "none";
 
 }
 
 
-function escapeHtml(value){
+function escapeHtml(
+  value
+){
 
   return String(
-    value ?? ""
+    value
+    ??
+    ""
   )
   .replaceAll(
     "&",
@@ -2359,9 +2731,14 @@ async function restoreSession(){
     data,
     error
   } =
-    await supabaseClient.auth.getSession();
+    await supabaseClient
+      .auth
+      .getSession();
 
-  if(error){
+
+  if(
+    error
+  ){
 
     $("loginState").textContent =
       "Supabase：讀取登入狀態失敗";
@@ -2369,6 +2746,7 @@ async function restoreSession(){
     return;
 
   }
+
 
   if(
     !data
@@ -2385,22 +2763,17 @@ async function restoreSession(){
 
   }
 
+
   currentUser =
     data.session.user;
+
 
   await validateAdmin();
 
 }
 
 
-async function main(){
-
-  await restoreSession();
-
-}
-
-
-main();
+restoreSession();
 
 </script>
 
