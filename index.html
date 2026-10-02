@@ -4729,36 +4729,23 @@ async function main(){
   const initialSchoolDate =
     defaultSchoolDate();
 
-
   $("leaveDate").value =
     initialSchoolDate;
-
 
   $("extendedDate").value =
     initialSchoolDate;
 
-
   $("temporaryDate").value =
     initialSchoolDate;
-
 
   $("leaveDate").min =
     today();
 
-
   $("extendedDate").min =
     today();
 
-
   $("temporaryDate").min =
     today();
-
-
-  showPage(
-    resolvePageFromUrl(),
-    false
-  );
-
 
   refreshLateNotice();
 
@@ -4767,25 +4754,35 @@ async function main(){
 
     /*
     ================================================
-    1. 初始化 LIFF
+    1. 先初始化 LIFF
+    初始化完成前，不修改網址
     ================================================
     */
 
     $("lineStatus").textContent =
       "正在連接 LINE...";
 
+    await liff.init({
+      liffId:
+        LIFF_ID
+    });
 
-    await liff.init(
-      {
-        liffId:
-          LIFF_ID
-      }
+
+    /*
+    ================================================
+    2. LIFF 完成後，才讀取 page 參數
+    ================================================
+    */
+
+    showPage(
+      resolvePageFromUrl(),
+      false
     );
 
 
     /*
     ================================================
-    2. 尚未登入 LINE → 前往 LINE Login
+    3. 尚未登入 LINE
     ================================================
     */
 
@@ -4796,9 +4793,7 @@ async function main(){
       $("lineStatus").textContent =
         "正在前往 LINE 登入...";
 
-
       liff.login();
-
 
       return;
 
@@ -4807,25 +4802,22 @@ async function main(){
 
     /*
     ================================================
-    3. 顯示 LINE 家長資料
+    4. 取得 LINE 顯示資料
     ================================================
     */
 
     const p =
       await liff.getProfile();
 
-
     lineUserId =
       p.userId
       ||
       "";
 
-
     lineDisplayName =
       p.displayName
       ||
       "家長";
-
 
     if(
       p.pictureUrl
@@ -4836,41 +4828,67 @@ async function main(){
 
     }
 
-
     $("lineStatus").innerHTML =
       `<b>${escapeHtml(lineDisplayName)}</b>（LINE 已連線）`;
 
 
     /*
     ================================================
-    4. 不沿用舊測試帳號 Session
-
-    正式 LINE 驗證時，
-    每次重新確認目前這個 LINE 身分。
+    5. 此時 LIFF OAuth 已處理完
+    才清理網址
     ================================================
     */
 
-    await supabaseClient.auth.signOut();
+    const cleanUrl =
+      new URL(
+        window.location.href
+      );
+
+    cleanUrl.searchParams.delete(
+      "code"
+    );
+
+    cleanUrl.searchParams.delete(
+      "state"
+    );
+
+    cleanUrl.searchParams.delete(
+      "liffClientId"
+    );
+
+    cleanUrl.searchParams.delete(
+      "liffRedirectUri"
+    );
+
+    history.replaceState(
+      null,
+      "",
+      cleanUrl.toString()
+    );
 
 
     /*
     ================================================
-    5. 用 LINE ID Token 自動建立 Supabase Session
+    6. 清掉舊 Supabase 測試 Session
+    ================================================
+    */
+
+    await supabaseClient
+      .auth
+      .signOut();
+
+
+    /*
+    ================================================
+    7. LINE → Supabase 自動登入
     ================================================
     */
 
     await loginSupabaseWithLine();
 
 
-    /*
-    ================================================
-    6. 成功
-    ================================================
-    */
-
     $("lineStatus").innerHTML =
       `<b>${escapeHtml(lineDisplayName)}</b>（LINE 身分已驗證）`;
-
 
   }
   catch(e){
@@ -4880,16 +4898,8 @@ async function main(){
       e
     );
 
-
-    /*
-    自動登入失敗時，
-    保留原本測試登入區，
-    方便我們現在測試。
-    */
-
     const testBox =
       $("testLoginBox");
-
 
     if(
       testBox
@@ -4900,10 +4910,8 @@ async function main(){
 
     }
 
-
     $("supabaseState").textContent =
       "⚠️ LINE 自動登入尚未完成";
-
 
     $("lineStatus").innerHTML =
       `⚠️ LINE 身分驗證失敗<br><small>${escapeHtml(
@@ -4912,31 +4920,23 @@ async function main(){
         String(e)
       )}</small>`;
 
-
-    /*
-    失敗時不要讓舊 Session 留著，
-    避免 LINE A 誤用家長 B 的 Supabase Session。
-    */
-
     try{
 
-      await supabaseClient.auth.signOut();
+      await supabaseClient
+        .auth
+        .signOut();
 
     }
     catch(ignore){}
 
-
     supabaseUser =
       null;
-
 
     currentGuardianId =
       null;
 
-
     children =
       [];
-
 
     renderChildrenEverywhere();
 
