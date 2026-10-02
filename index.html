@@ -2188,12 +2188,12 @@ const supabaseClient =
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY,
     {
-      auth:{
-        storageKey:"leye-parent-auth",
-        persistSession:true,
-        autoRefreshToken:true,
-        detectSessionInUrl:true
-      }
+     auth:{
+  storageKey:"leye-parent-auth",
+  persistSession:true,
+  autoRefreshToken:true,
+  detectSessionInUrl:false
+}
     }
   );
 
