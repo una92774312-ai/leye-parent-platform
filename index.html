@@ -3429,35 +3429,182 @@ async function submitPickup(){
       "pickup"
     );
 
+
   if(
     !list
   ){
     return;
   }
 
-  let detail =
-    "";
 
   if(
+    !currentGuardianId
+  ){
+
+    alert(
+      "目前尚未完成家長身分驗證，請重新開啟家長服務平台。"
+    );
+
+    return;
+
+  }
+
+
+  const picker =
+    $("picker").value;
+
+
+  let pickupModeCode =
+    "";
+
+  let scheduledTime =
+    "";
+
+  let expectedArrival =
+    null;
+
+  let noticeReason =
+    null;
+
+  let displayText =
+    currentPickupMode;
+
+
+  /*
+  ================================================
+  正常放學 16:00
+  ================================================
+  */
+
+  if(
+    currentPickupMode ===
+    "正常放學16:00"
+  ){
+
+    pickupModeCode =
+      "normal_1600";
+
+    scheduledTime =
+      "16:00";
+
+    displayText =
+      "正常放學 16:00";
+
+  }
+
+
+  /*
+  ================================================
+  第一梯 17:00
+  ================================================
+  */
+
+  else if(
+    currentPickupMode ===
+    "第一梯17:00"
+  ){
+
+    pickupModeCode =
+      "first_1700";
+
+    scheduledTime =
+      "17:00";
+
+    displayText =
+      "第一梯 17:00";
+
+  }
+
+
+  /*
+  ================================================
+  第二梯 18:00
+  ================================================
+  */
+
+  else if(
+    currentPickupMode ===
+    "第二梯18:00"
+  ){
+
+    pickupModeCode =
+      "second_1800";
+
+    scheduledTime =
+      "18:00";
+
+    displayText =
+      "第二梯 18:00";
+
+  }
+
+
+  /*
+  ================================================
+  提早接孩子
+  ================================================
+  */
+
+  else if(
     currentPickupMode ===
     "提早接孩子"
   ){
 
-    detail =
-
-      "\n📝 原因："
-      +
-      $("earlyReason").value
-
-      +
-
-      "\n⏰ 預計接送："
-      +
+    const earlyTime =
       $("earlyTime").value;
+
+
+    const earlyReason =
+      $("earlyReason").value;
+
+
+    if(
+      !earlyTime
+    ){
+
+      alert(
+        "請填寫預計接送時間。"
+      );
+
+      return;
+
+    }
+
+
+    pickupModeCode =
+      "early";
+
+    scheduledTime =
+      earlyTime;
+
+    expectedArrival =
+      earlyTime;
+
+    noticeReason =
+      earlyReason;
+
+
+    displayText =
+      "提早接孩子"
+      +
+      "｜"
+      +
+      earlyTime
+      +
+      "｜"
+      +
+      earlyReason;
 
   }
 
-  if(
+
+  /*
+  ================================================
+  我會晚到
+  ================================================
+  */
+
+  else if(
     currentPickupMode ===
     "我會晚到"
   ){
@@ -3465,104 +3612,207 @@ async function submitPickup(){
     const original =
       $("delayOriginalTime").value;
 
+
     const arrival =
       $("delayArrivalTime").value;
+
 
     const reason =
       $("delayReason")
         .value
-        .trim()
+        .trim();
+
+
+    if(
+      !original
+      ||
+      !arrival
+    ){
+
+      alert(
+        "請填寫原訂接回時間及預計抵達時間。"
+      );
+
+      return;
+
+    }
+
+
+    if(
+      arrival <= original
+    ){
+
+      alert(
+        "「我會晚到」的預計抵達時間應晚於原訂接回時間。"
+      );
+
+      return;
+
+    }
+
+
+    pickupModeCode =
+      "late_notice";
+
+    scheduledTime =
+      original;
+
+    expectedArrival =
+      arrival;
+
+    noticeReason =
+      reason
       ||
       "未填寫";
 
-    const rule =
-      LATE_RULES[
-        original
-      ];
 
-    detail =
-
-      "\n⏰ 原訂接回："
-
+    displayText =
+      "我會晚到"
+      +
+      "｜原訂 "
       +
       original
-
       +
-
-      "\n🚗 預計抵達："
+      "｜預計 "
       +
-      arrival
-
-      +
-
-      "\n📝 原因："
-      +
-      reason
-
-      +
-
-      "\n💵 若實際完成接送時間超過 "
-      +
-      rule.lateAfter
-      +
-      "，費用 "
-      +
-      rule.fee
-      +
-      " 元";
+      arrival;
 
   }
 
-  const picker =
-    $("picker").value;
 
-  const msg =
+  else{
 
-`🚗【樂業附幼接送通知】
-👶 幼兒：${childrenText(list)}
-👤 接送人員：${picker}
-📍 接送狀態：${currentPickupMode}${detail}`;
+    alert(
+      "無法辨識目前的接送方式，請重新選擇。"
+    );
+
+    return;
+
+  }
+
+
+  /*
+  ================================================
+  家長最後確認
+  ================================================
+  */
 
   if(
     !confirm(
 
-`確認送出？
+`確認通知本園？
 
-${childrenText(list)}
+幼兒：${childrenText(list)}
 
-${currentPickupMode}`
+接送方式：${displayText}
+
+接送人員：${picker}`
 
     )
   ){
+
     return;
+
   }
+
 
   try{
 
-    await sendLine(
-      msg
-    );
+
+    /*
+    ================================================
+    正式寫入 pickup_records
+    透過安全 RPC，不直接讓家長修改資料表
+    ================================================
+    */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .rpc(
+          "submit_pickup_notice",
+          {
+            p_child_ids:
+              list.map(
+                child =>
+                child.id
+              ),
+
+            p_pickup_date:
+              today(),
+
+            p_pickup_person:
+              picker,
+
+            p_pickup_mode:
+              pickupModeCode,
+
+            p_scheduled_pickup_time:
+              scheduledTime,
+
+            p_expected_arrival_time:
+              expectedArrival,
+
+            p_notice_reason:
+              noticeReason
+          }
+        );
+
+
+    if(
+      error
+    ){
+
+      throw error;
+
+    }
+
 
     showStatus(
-      "✅ LINE 測試接送通知已送出。下一階段會改為寫入 Supabase。"
+
+      "✅ 接送通知已送出。\n"
+      +
+      "幼兒："
+      +
+      childrenText(list)
+      +
+      "\n接送方式："
+      +
+      displayText
+      +
+      "\n接送人員："
+      +
+      picker
+
     );
+
 
   }
   catch(e){
 
-    console.warn(
+    console.error(
+      "接送通知送出失敗：",
       e
     );
 
-    showStatus(
-      "ℹ️ 目前接送功能尚未接上 Supabase，而且此頁不是 LINE 對話環境，因此暫時沒有送出正式資料。"
+
+    alert(
+
+      "接送通知送出失敗。\n\n"
+      +
+      (
+        e.message
+        ||
+        String(e)
+      )
+
     );
 
   }
 
 }
-
-
 async function submitLeave(){
 
 
