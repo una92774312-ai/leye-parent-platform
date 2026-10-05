@@ -1766,7 +1766,54 @@ async function refreshPickupRecords(){
       )
     ];
 
+const {
+  data:unexcusedRows,
+  error:unexcusedError
+} =
+  await supabaseClient
+    .from("pickup_records")
+    .select("child_id")
+    .in(
+      "child_id",
+      childIds
+    )
+    .eq(
+      "unexcused_late",
+      true
+    );
 
+
+const unexcusedCountMap =
+  {};
+
+
+if(
+  !unexcusedError
+){
+
+  (
+    unexcusedRows || []
+  )
+  .forEach(
+    row => {
+
+      unexcusedCountMap[
+        row.child_id
+      ] =
+        (
+          unexcusedCountMap[
+            row.child_id
+          ]
+          ||
+          0
+        )
+        +
+        1;
+
+    }
+  );
+
+}
   let pickupChildrenMap =
     {};
 
