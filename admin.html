@@ -1766,54 +1766,78 @@ async function refreshPickupRecords(){
       )
     ];
 
-const {
-  data:unexcusedRows,
-  error:unexcusedError
-} =
-  await supabaseClient
-    .from("pickup_records")
-    .select("child_id")
-    .in(
-      "child_id",
-      childIds
-    )
-    .eq(
-      "unexcused_late",
-      true
-    );
+
+  /*
+  ================================================
+  無故延遲累計
+  只統計 unexcused_late = true
+  ================================================
+  */
+
+  const unexcusedCountMap =
+    {};
 
 
-const unexcusedCountMap =
-  {};
+  if(
+    childIds.length
+  ){
+
+    const {
+      data:unexcusedRows,
+      error:unexcusedError
+    } =
+      await supabaseClient
+        .from("pickup_records")
+        .select(
+          "child_id"
+        )
+        .in(
+          "child_id",
+          childIds
+        )
+        .eq(
+          "unexcused_late",
+          true
+        );
 
 
-if(
-  !unexcusedError
-){
+    if(
+      !unexcusedError
+    ){
 
-  (
-    unexcusedRows || []
-  )
-  .forEach(
-    row => {
+      (
+        unexcusedRows || []
+      )
+      .forEach(
+        row => {
 
-      unexcusedCountMap[
-        row.child_id
-      ] =
-        (
           unexcusedCountMap[
             row.child_id
-          ]
-          ||
-          0
-        )
-        +
-        1;
+          ] =
+            (
+              unexcusedCountMap[
+                row.child_id
+              ]
+              ||
+              0
+            )
+            +
+            1;
+
+        }
+      );
 
     }
-  );
 
-}
+  }
+
+
+  /*
+  ================================================
+  幼兒資料
+  ================================================
+  */
+
   let pickupChildrenMap =
     {};
 
@@ -1865,6 +1889,12 @@ if(
 
   }
 
+
+  /*
+  ================================================
+  原班級資料
+  ================================================
+  */
 
   const classIds =
     [
@@ -1918,6 +1948,12 @@ if(
 
   }
 
+
+  /*
+  ================================================
+  今日接送統計
+  ================================================
+  */
 
   const waitingCount =
     pickupRecords
@@ -1985,6 +2021,12 @@ if(
   }
 
 
+  /*
+  ================================================
+  顯示接送卡片
+  ================================================
+  */
+
   $("pickupList").innerHTML =
     pickupRecords
       .map(
@@ -1992,7 +2034,8 @@ if(
         renderPickupCard(
           row,
           pickupChildrenMap,
-          pickupClassMap
+          pickupClassMap,
+          unexcusedCountMap
         )
       )
       .join("");
@@ -2123,6 +2166,63 @@ function renderPickupCard(
     !!row.actual_pickup_at;
 
 
+  /*
+  ================================================
+  無故延遲累計顯示
+  ================================================
+  */
+
+  const unexcusedCount =
+    unexcusedCountMap[
+      row.child_id
+    ]
+    ||
+    0;
+
+
+  const unexcusedHtml =
+    unexcusedCount >= 3
+    ?
+    `
+      <div
+        style="
+          margin-top:10px;
+          padding:10px;
+          border-radius:10px;
+          background:#ffebee;
+          color:#b71c1c;
+          font-weight:900;
+          line-height:1.6;
+        "
+      >
+        🚨 無故延遲累計：${unexcusedCount} 次
+        <br>
+        已達 3 次，請行政確認延長照顧服務資格。
+      </div>
+    `
+    :
+    `
+      <div
+        style="
+          margin-top:10px;
+          padding:10px;
+          border-radius:10px;
+          background:#fff8e1;
+          color:#8d6e00;
+          font-weight:800;
+        "
+      >
+        ⚠️ 無故延遲累計：${unexcusedCount} / 3 次
+      </div>
+    `;
+
+
+  /*
+  ================================================
+  晚到通知
+  ================================================
+  */
+
   let lateNoticeHtml =
     "";
 
@@ -2171,6 +2271,12 @@ function renderPickupCard(
 
   }
 
+
+  /*
+  ================================================
+  完成接送結果
+  ================================================
+  */
 
   let completionHtml =
     "";
@@ -2278,6 +2384,117 @@ function renderPickupCard(
 
   }
 
+
+  /*
+  ================================================
+  TEST 測試功能
+  正式上線前再移除
+  ================================================
+  */
+
+  const testHtml =
+    child.school_code
+    &&
+    child.school_code.startsWith(
+      "TEST"
+    )
+    ?
+    `
+      <div
+        style="
+          margin-top:12px;
+          padding:12px;
+          border-radius:12px;
+          background:#fff8e1;
+          border:1px solid #ffe0b2;
+        "
+      >
+
+        <div
+          style="
+            font-weight:900;
+            color:#8d6e00;
+            margin-bottom:8px;
+          "
+        >
+          🧪 測試完成時間
+        </div>
+
+
+        <div
+          style="
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+            align-items:end;
+          "
+        >
+
+          <div
+            style="
+              flex:1;
+              min-width:150px;
+            "
+          >
+
+            <div class="helper">
+              模擬完成時間
+            </div>
+
+            <input
+              id="testTime_${escapeHtml(
+                row.id
+              )}"
+              type="time"
+              value="16:11"
+            >
+
+          </div>
+
+
+          <button
+            class="btn btnOrange"
+            type="button"
+            onclick="completePickupTest(
+              '${escapeJs(
+                row.id
+              )}'
+            )"
+          >
+            🧪 模擬完成接送
+          </button>
+
+
+          <button
+            class="btn btnGray"
+            type="button"
+            onclick="resetPickupTest(
+              '${escapeJs(
+                row.id
+              )}'
+            )"
+          >
+            ↺ 重設測試紀錄
+          </button>
+
+        </div>
+
+
+        <div class="helper">
+          僅 TEST 測試幼兒可使用，不影響正式幼兒資料。
+        </div>
+
+      </div>
+    `
+    :
+    "";
+
+
+  /*
+  ================================================
+  完整卡片
+  ================================================
+  */
 
   return `
     <div
@@ -2394,99 +2611,18 @@ function renderPickupCard(
       </div>
 
 
-${completionHtml}
+      ${unexcusedHtml}
 
-${
-  child.school_code
-  &&
-  child.school_code.startsWith("TEST")
-  ?
-  `
-    <div
-      style="
-        margin-top:12px;
-        padding:12px;
-        border-radius:12px;
-        background:#fff8e1;
-        border:1px solid #ffe0b2;
-      "
-    >
 
-      <div
-        style="
-          font-weight:900;
-          color:#8d6e00;
-          margin-bottom:8px;
-        "
-      >
-        🧪 測試完成時間
-      </div>
+      ${completionHtml}
 
-      <div
-        style="
-          display:flex;
-          gap:8px;
-          flex-wrap:wrap;
-          align-items:end;
-        "
-      >
 
-        <div
-          style="
-            flex:1;
-            min-width:150px;
-          "
-        >
-
-          <div class="helper">
-            模擬完成時間
-          </div>
-
-          <input
-            id="testTime_${escapeHtml(row.id)}"
-            type="time"
-            value="16:11"
-          >
-
-        </div>
-
-        <button
-          class="btn btnOrange"
-          type="button"
-          onclick="completePickupTest(
-            '${escapeJs(row.id)}'
-          )"
-        >
-          🧪 模擬完成接送
-        </button>
-
-        <button
-          class="btn btnGray"
-          type="button"
-          onclick="resetPickupTest(
-            '${escapeJs(row.id)}'
-          )"
-        >
-          ↺ 重設測試紀錄
-        </button>
-
-      </div>
-
-      <div class="helper">
-        僅 TEST 測試幼兒可使用，不影響正式幼兒資料。
-      </div>
+      ${testHtml}
 
     </div>
-  `
-  :
-  ""
-}
-
-</div>
   `;
 
 }
-
 
 /*
 ==================================================
