@@ -2346,9 +2346,95 @@ function renderPickupCard(
       </div>
 
 
-      ${completionHtml}
+${completionHtml}
+
+${
+  child.school_code
+  &&
+  child.school_code.startsWith("TEST")
+  ?
+  `
+    <div
+      style="
+        margin-top:12px;
+        padding:12px;
+        border-radius:12px;
+        background:#fff8e1;
+        border:1px solid #ffe0b2;
+      "
+    >
+
+      <div
+        style="
+          font-weight:900;
+          color:#8d6e00;
+          margin-bottom:8px;
+        "
+      >
+        🧪 測試完成時間
+      </div>
+
+      <div
+        style="
+          display:flex;
+          gap:8px;
+          flex-wrap:wrap;
+          align-items:end;
+        "
+      >
+
+        <div
+          style="
+            flex:1;
+            min-width:150px;
+          "
+        >
+
+          <div class="helper">
+            模擬完成時間
+          </div>
+
+          <input
+            id="testTime_${escapeHtml(row.id)}"
+            type="time"
+            value="16:11"
+          >
+
+        </div>
+
+        <button
+          class="btn btnOrange"
+          type="button"
+          onclick="completePickupTest(
+            '${escapeJs(row.id)}'
+          )"
+        >
+          🧪 模擬完成接送
+        </button>
+
+        <button
+          class="btn btnGray"
+          type="button"
+          onclick="resetPickupTest(
+            '${escapeJs(row.id)}'
+          )"
+        >
+          ↺ 重設測試紀錄
+        </button>
+
+      </div>
+
+      <div class="helper">
+        僅 TEST 測試幼兒可使用，不影響正式幼兒資料。
+      </div>
 
     </div>
+  `
+  :
+  ""
+}
+
+</div>
   `;
 
 }
