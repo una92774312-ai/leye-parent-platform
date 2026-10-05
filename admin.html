@@ -847,9 +847,7 @@ button{
 
 
 <script>
-
-
-const SUPABASE_URL =
+  const SUPABASE_URL =
   "https://cqtvrpiapssjjctwqivn.supabase.co";
 
 
@@ -1108,6 +1106,8 @@ async function logout(){
     "已完成 0";
 
 }
+
+
 /*
 ==================================================
 驗證行政身分
@@ -1767,13 +1767,6 @@ async function refreshPickupRecords(){
     ];
 
 
-  /*
-  ================================================
-  無故延遲累計
-  只統計 unexcused_late = true
-  ================================================
-  */
-
   const unexcusedCountMap =
     {};
 
@@ -1788,9 +1781,7 @@ async function refreshPickupRecords(){
     } =
       await supabaseClient
         .from("pickup_records")
-        .select(
-          "child_id"
-        )
+        .select("child_id")
         .in(
           "child_id",
           childIds
@@ -1831,12 +1822,6 @@ async function refreshPickupRecords(){
 
   }
 
-
-  /*
-  ================================================
-  幼兒資料
-  ================================================
-  */
 
   let pickupChildrenMap =
     {};
@@ -1890,12 +1875,6 @@ async function refreshPickupRecords(){
   }
 
 
-  /*
-  ================================================
-  原班級資料
-  ================================================
-  */
-
   const classIds =
     [
       ...new Set(
@@ -1948,12 +1927,6 @@ async function refreshPickupRecords(){
 
   }
 
-
-  /*
-  ================================================
-  今日接送統計
-  ================================================
-  */
 
   const waitingCount =
     pickupRecords
@@ -2021,12 +1994,6 @@ async function refreshPickupRecords(){
   }
 
 
-  /*
-  ================================================
-  顯示接送卡片
-  ================================================
-  */
-
   $("pickupList").innerHTML =
     pickupRecords
       .map(
@@ -2041,9 +2008,7 @@ async function refreshPickupRecords(){
       .join("");
 
 }
-
-
-/*
+  /*
 ==================================================
 取得班級名稱
 ==================================================
@@ -2168,7 +2133,7 @@ function renderPickupCard(
 
   /*
   ================================================
-  無故延遲累計顯示
+  無故延遲累計
   ================================================
   */
 
@@ -2387,8 +2352,8 @@ function renderPickupCard(
 
   /*
   ================================================
-  TEST 測試功能
-  正式上線前再移除
+  TEST 測試區
+  正式上線前移除
   ================================================
   */
 
@@ -2492,7 +2457,7 @@ function renderPickupCard(
 
   /*
   ================================================
-  完整卡片
+  完整接送卡片
   ================================================
   */
 
@@ -2623,6 +2588,7 @@ function renderPickupCard(
   `;
 
 }
+
 
 /*
 ==================================================
@@ -2839,7 +2805,10 @@ async function completePickupRecord(
 
   await refreshPickupRecords();
 
-}/*
+}
+
+
+/*
 ==================================================
 測試模式：模擬完成接送
 ==================================================
@@ -2964,7 +2933,8 @@ async function completePickupTest(
     +
     (
       data?.unexcused_late
-      === true
+      ===
+      true
       ?
       "是"
       :
