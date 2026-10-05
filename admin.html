@@ -1,21 +1,42 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+>
+
 <title>樂業附幼｜行政管理平台</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
 :root{
   --green:#2e7d32;
   --green-dark:#1b5e20;
   --green-light:#e8f5e9;
+
   --blue:#1976d2;
+  --blue-light:#e3f2fd;
+
   --orange:#ef6c00;
+  --orange-light:#fff3e0;
+
+  --purple:#7b1fa2;
+  --purple-light:#f3e5f5;
+
   --red:#d32f2f;
+  --red-light:#ffebee;
+
   --yellow:#f9a825;
+  --yellow-light:#fff8e1;
+
   --gray:#607d8b;
+
   --text:#263238;
   --muted:#78909c;
   --line:#dfe7e9;
@@ -30,6 +51,7 @@ body{
   margin:0;
   background:var(--bg);
   color:var(--text);
+
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -45,25 +67,19 @@ body{
   padding:18px;
 }
 
-.header,
-.panel,
-.summaryCard{
+.header{
   background:#fff;
-  box-shadow:0 8px 24px rgba(0,0,0,.05);
-}
-
-.header,
-.panel{
   border-radius:20px;
-  padding:18px;
+  padding:20px;
+  box-shadow:0 8px 24px rgba(0,0,0,.06);
   margin-bottom:16px;
 }
 
 .headerTop{
   display:flex;
   justify-content:space-between;
-  gap:14px;
   align-items:flex-start;
+  gap:14px;
 }
 
 .brand{
@@ -72,20 +88,11 @@ body{
   color:var(--green-dark);
 }
 
-.subtitle,
-.helper{
-  color:var(--muted);
-  line-height:1.55;
-}
-
 .subtitle{
   margin-top:5px;
+  color:var(--muted);
   font-size:.9rem;
-}
-
-.helper{
-  font-size:.8rem;
-  margin-top:6px;
+  line-height:1.55;
 }
 
 .loginState{
@@ -101,7 +108,7 @@ body{
 .testBox{
   margin-top:14px;
   padding:14px;
-  background:#fff8e1;
+  background:var(--yellow-light);
   border:1px solid #ffe0b2;
   border-radius:13px;
 }
@@ -109,6 +116,30 @@ body{
 .testTitle{
   font-weight:900;
   color:#8d6e00;
+  margin-bottom:8px;
+}
+
+.helper{
+  font-size:.8rem;
+  color:var(--muted);
+  line-height:1.55;
+  margin-top:6px;
+}
+
+input,
+select,
+textarea{
+  width:100%;
+  padding:11px;
+  border:1.5px solid #cfd8dc;
+  border-radius:10px;
+  font-size:15px;
+  font-family:inherit;
+  background:#fff;
+}
+
+textarea{
+  resize:vertical;
 }
 
 .loginGrid{
@@ -118,14 +149,7 @@ body{
   margin-top:10px;
 }
 
-input,
-select{
-  width:100%;
-  padding:11px;
-  border:1.5px solid #cfd8dc;
-  border-radius:10px;
-  font-size:15px;
-  background:#fff;
+button{
   font-family:inherit;
 }
 
@@ -136,7 +160,6 @@ select{
   font-weight:900;
   cursor:pointer;
   font-size:.88rem;
-  font-family:inherit;
 }
 
 .btn:disabled{
@@ -177,8 +200,10 @@ select{
 }
 
 .summaryCard{
+  background:#fff;
   border-radius:16px;
   padding:16px;
+  box-shadow:0 6px 18px rgba(0,0,0,.05);
 }
 
 .summaryLabel{
@@ -202,11 +227,18 @@ select{
 }
 
 .purple{
-  color:#7b1fa2;
+  color:var(--purple);
 }
 
 .green{
   color:var(--green);
+}
+
+.panel{
+  background:#fff;
+  border-radius:20px;
+  padding:18px;
+  box-shadow:0 8px 24px rgba(0,0,0,.05);
 }
 
 .panelTitle{
@@ -276,23 +308,23 @@ select{
 }
 
 .badgePending{
-  background:#fff8e1;
+  background:var(--yellow-light);
   color:#8d6e00;
 }
 
 .badgeApproved{
-  background:#e8f5e9;
-  color:#1b5e20;
+  background:var(--green-light);
+  color:var(--green-dark);
 }
 
 .badgeRejected{
-  background:#ffebee;
-  color:#d32f2f;
+  background:var(--red-light);
+  color:var(--red);
 }
 
 .badgeWaitlist{
-  background:#fff3e0;
-  color:#ef6c00;
+  background:var(--orange-light);
+  color:var(--orange);
 }
 
 .badgeOther{
@@ -315,14 +347,14 @@ select{
 .infoLabel{
   color:var(--muted);
   font-size:.76rem;
+  margin-bottom:2px;
 }
 
 .infoValue{
   font-weight:700;
 }
 
-.reasonBox,
-.actionBox{
+.reasonBox{
   margin-top:11px;
   padding:10px;
   border-radius:10px;
@@ -332,7 +364,9 @@ select{
 }
 
 .actionBox{
+  margin-top:12px;
   padding:12px;
+  border-radius:12px;
   background:#fafcfc;
   border:1px solid #e5ebed;
 }
@@ -351,29 +385,117 @@ select{
   margin-top:10px;
 }
 
-.empty,
-.loading{
-  padding:24px;
+.empty{
+  padding:28px;
   text-align:center;
   color:var(--muted);
-}
-
-.empty{
   border:1.5px dashed #b0bec5;
   border-radius:14px;
   background:#fafcfc;
   line-height:1.7;
 }
 
+.loading{
+  padding:24px;
+  text-align:center;
+  color:var(--muted);
+}
+
 .errorBox{
   padding:14px;
   border-radius:12px;
-  background:#ffebee;
+  background:var(--red-light);
   color:#b71c1c;
   margin-bottom:14px;
   line-height:1.6;
   display:none;
 }
+
+
+/* ====================================== */
+/* 今日接送 */
+/* ====================================== */
+
+.pickupPanel{
+  margin-bottom:16px;
+}
+
+.pickupToolbar{
+  display:flex;
+  align-items:end;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:14px 0;
+}
+
+.pickupToolbarField{
+  min-width:180px;
+  flex:1;
+}
+
+.pickupStats{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+
+.pickupStat{
+  padding:8px 11px;
+  border-radius:999px;
+  font-size:.82rem;
+  font-weight:900;
+  background:#f1f4f4;
+  color:#546e7a;
+}
+
+.pickupStat.waiting{
+  background:var(--yellow-light);
+  color:#8d6e00;
+}
+
+.pickupStat.done{
+  background:var(--green-light);
+  color:var(--green-dark);
+}
+
+.pickupList{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.pickupCard{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  background:#fff;
+}
+
+.pickupCard.waiting{
+  border-left:5px solid var(--yellow);
+}
+
+.pickupCard.done{
+  border-left:5px solid var(--green);
+}
+
+.pickupAction{
+  margin-top:12px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.pickupResult{
+  margin-top:10px;
+  padding:10px;
+  border-radius:10px;
+  background:#f7f9f9;
+  font-size:.86rem;
+  line-height:1.6;
+}
+
 
 @media(max-width:760px){
 
@@ -389,13 +511,17 @@ select{
     grid-template-columns:repeat(2,1fr);
   }
 
-  .loginGrid,
+  .loginGrid{
+    grid-template-columns:1fr;
+  }
+
   .requestBody,
   .actionGrid{
     grid-template-columns:1fr;
   }
 
 }
+
 </style>
 </head>
 
@@ -403,219 +529,329 @@ select{
 
 <div class="app">
 
-  <div class="header">
 
-    <div class="headerTop">
+<div class="header">
 
-      <div>
+  <div class="headerTop">
 
-        <div class="brand">
-          樂業附幼｜行政管理平台
-        </div>
+    <div>
 
-        <div class="subtitle">
-          家長申請審核｜Supabase 測試版
-        </div>
-
+      <div class="brand">
+        樂業附幼｜行政管理平台
       </div>
 
-      <button
-        class="btn btnBlue"
-        onclick="refreshRequests()"
-      >
-        ↻ 重新整理
-      </button>
+      <div class="subtitle">
+        家長申請審核｜Supabase 第二版
+      </div>
 
     </div>
 
-    <div
-      id="loginState"
-      class="loginState"
+
+    <button
+      class="btn btnBlue"
+      type="button"
+      onclick="refreshAll()"
     >
-      Supabase：檢查登入狀態中...
-    </div>
-
-    <div class="testBox">
-
-      <div class="testTitle">
-        🧪 行政測試登入
-      </div>
-
-      <div class="helper">
-        正式版之後會改由 LINE 自動驗證老師身分。
-      </div>
-
-      <div class="loginGrid">
-
-        <input
-          id="email"
-          type="email"
-          value="admin-test-0923@example.com"
-          placeholder="Email"
-        >
-
-        <input
-          id="password"
-          type="password"
-          placeholder="測試密碼"
-        >
-
-        <button
-          id="loginBtn"
-          class="btn btnGreen"
-          onclick="login()"
-        >
-          登入
-        </button>
-
-      </div>
-
-      <button
-        class="btn btnGray"
-        style="width:100%;margin-top:8px"
-        onclick="logout()"
-      >
-        登出測試帳號
-      </button>
-
-    </div>
+      ↻ 重新整理
+    </button>
 
   </div>
 
 
-  <div class="summaryGrid">
-
-    <div class="summaryCard">
-      <div class="summaryLabel">
-        待處理申請
-      </div>
-      <div
-        id="pendingCount"
-        class="summaryNumber red"
-      >
-        0
-      </div>
-    </div>
-
-    <div class="summaryCard">
-      <div class="summaryLabel">
-        今日請假
-      </div>
-      <div
-        id="leaveCount"
-        class="summaryNumber blue"
-      >
-        0
-      </div>
-    </div>
-
-    <div class="summaryCard">
-      <div class="summaryLabel">
-        今日臨托
-      </div>
-      <div
-        id="temporaryCount"
-        class="summaryNumber purple"
-      >
-        0
-      </div>
-    </div>
-
-    <div class="summaryCard">
-      <div class="summaryLabel">
-        全部申請
-      </div>
-      <div
-        id="allCount"
-        class="summaryNumber green"
-      >
-        0
-      </div>
-    </div>
-
+  <div
+    id="loginState"
+    class="loginState"
+  >
+    Supabase：檢查登入狀態中...
   </div>
 
 
-  <div class="panel">
+  <div class="testBox">
 
-    <div class="panelTitle">
-      📋 家長申請紀錄
+    <div class="testTitle">
+      🧪 行政測試登入
     </div>
 
-    <div
-      id="lastUpdated"
-      class="helper"
+    <div class="helper">
+      正式版之後會改由 LINE 自動驗證老師身分。
+    </div>
+
+
+    <div class="loginGrid">
+
+      <input
+        id="email"
+        type="email"
+        value="admin-test-0923@example.com"
+        placeholder="Email"
+      >
+
+
+      <input
+        id="password"
+        type="password"
+        placeholder="測試密碼"
+      >
+
+
+      <button
+        id="loginBtn"
+        class="btn btnGreen"
+        onclick="login()"
+      >
+        登入
+      </button>
+
+    </div>
+
+
+    <button
+      class="btn btnGray"
+      style="width:100%;margin-top:8px"
+      onclick="logout()"
     >
-      尚未載入
-    </div>
-
-    <div
-      id="errorBox"
-      class="errorBox"
-    ></div>
-
-    <div class="tabs">
-
-      <button
-        id="tabAll"
-        class="tab active"
-        onclick="setFilter('all')"
-      >
-        全部
-      </button>
-
-      <button
-        id="tabPending"
-        class="tab"
-        onclick="setFilter('pending')"
-      >
-        待處理
-      </button>
-
-      <button
-        id="tabLeave"
-        class="tab"
-        onclick="setFilter('leave')"
-      >
-        請假
-      </button>
-
-      <button
-        id="tabTemporary"
-        class="tab"
-        onclick="setFilter('temporary')"
-      >
-        臨時托育
-      </button>
-
-      <button
-        id="tabExtended"
-        class="tab"
-        onclick="setFilter('extended')"
-      >
-        延長托育
-      </button>
-
-    </div>
-
-    <div
-      id="requestList"
-      class="requestList"
-    >
-      <div class="empty">
-        尚未登入行政帳號。
-      </div>
-    </div>
+      登出測試帳號
+    </button>
 
   </div>
 
 </div>
 
 
+<div class="summaryGrid">
+
+  <div class="summaryCard">
+    <div class="summaryLabel">
+      待處理申請
+    </div>
+
+    <div
+      id="pendingCount"
+      class="summaryNumber red"
+    >
+      0
+    </div>
+  </div>
+
+
+  <div class="summaryCard">
+    <div class="summaryLabel">
+      今日請假
+    </div>
+
+    <div
+      id="leaveCount"
+      class="summaryNumber blue"
+    >
+      0
+    </div>
+  </div>
+
+
+  <div class="summaryCard">
+    <div class="summaryLabel">
+      今日臨托
+    </div>
+
+    <div
+      id="temporaryCount"
+      class="summaryNumber purple"
+    >
+      0
+    </div>
+  </div>
+
+
+  <div class="summaryCard">
+    <div class="summaryLabel">
+      全部申請
+    </div>
+
+    <div
+      id="allCount"
+      class="summaryNumber green"
+    >
+      0
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ====================================== -->
+<!-- 今日接送 -->
+<!-- ====================================== -->
+
+<div class="panel pickupPanel">
+
+  <div class="panelTitle">
+    🚗 今日接送
+  </div>
+
+
+  <div class="pickupToolbar">
+
+    <div class="pickupToolbarField">
+
+      <div class="helper">
+        查看日期
+      </div>
+
+      <input
+        id="pickupDateFilter"
+        type="date"
+        onchange="refreshPickupRecords()"
+      >
+
+    </div>
+
+
+    <button
+      class="btn btnBlue"
+      type="button"
+      onclick="refreshPickupRecords()"
+    >
+      ↻ 更新接送資料
+    </button>
+
+  </div>
+
+
+  <div class="pickupStats">
+
+    <div
+      id="pickupWaitingCount"
+      class="pickupStat waiting"
+    >
+      等待接送 0
+    </div>
+
+
+    <div
+      id="pickupDoneCount"
+      class="pickupStat done"
+    >
+      已完成 0
+    </div>
+
+  </div>
+
+
+  <div
+    id="pickupLastUpdated"
+    class="helper"
+  >
+    尚未載入
+  </div>
+
+
+  <div
+    id="pickupList"
+    class="pickupList"
+  >
+    <div class="empty">
+      尚未登入行政帳號。
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ====================================== -->
+<!-- 家長申請 -->
+<!-- ====================================== -->
+
+<div class="panel">
+
+  <div class="panelTitle">
+    📋 家長申請紀錄
+  </div>
+
+
+  <div
+    id="lastUpdated"
+    class="helper"
+  >
+    尚未載入
+  </div>
+
+
+  <div
+    id="errorBox"
+    class="errorBox"
+  ></div>
+
+
+  <div class="tabs">
+
+    <button
+      id="tabAll"
+      class="tab active"
+      onclick="setFilter('all')"
+    >
+      全部
+    </button>
+
+
+    <button
+      id="tabPending"
+      class="tab"
+      onclick="setFilter('pending')"
+    >
+      待處理
+    </button>
+
+
+    <button
+      id="tabLeave"
+      class="tab"
+      onclick="setFilter('leave')"
+    >
+      請假
+    </button>
+
+
+    <button
+      id="tabTemporary"
+      class="tab"
+      onclick="setFilter('temporary')"
+    >
+      臨時托育
+    </button>
+
+
+    <button
+      id="tabExtended"
+      class="tab"
+      onclick="setFilter('extended')"
+    >
+      延長托育
+    </button>
+
+  </div>
+
+
+  <div
+    id="requestList"
+    class="requestList"
+  >
+    <div class="empty">
+      尚未登入行政帳號。
+    </div>
+  </div>
+
+</div>
+
+
+</div>
+
+
 <script>
+
 
 const SUPABASE_URL =
   "https://cqtvrpiapssjjctwqivn.supabase.co";
+
 
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_PTpcF08CriR4_kH9KamB1w_akgHzTYw";
@@ -624,50 +860,20 @@ const SUPABASE_PUBLISHABLE_KEY =
 const supabaseClient =
   supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY,
-    {
-      auth:{
-        storageKey:
-          "leye-admin-auth",
-
-        persistSession:
-          true,
-
-        autoRefreshToken:
-          true,
-
-        detectSessionInUrl:
-          true
-      }
-    }
+    SUPABASE_PUBLISHABLE_KEY
   );
 
 
 const CLASS_MAP = {
 
-  C01:
-    "櫻桃班",
-
-  C02:
-    "蘋果班",
-
-  C03:
-    "蝴蝶班",
-
-  C04:
-    "白兔班",
-
-  C05:
-    "蜜蜂班",
-
-  C06:
-    "袋鼠班",
-
-  C07:
-    "綿羊班",
-
-  C08:
-    "企鵝班"
+  C01:"櫻桃班",
+  C02:"蘋果班",
+  C03:"蝴蝶班",
+  C04:"白兔班",
+  C05:"蜜蜂班",
+  C06:"袋鼠班",
+  C07:"綿羊班",
+  C08:"企鵝班"
 
 };
 
@@ -693,7 +899,7 @@ const AFTERCARE_CLASSES = {
   },
 
   AC04:{
-    name:"陽光書屋",
+    name:"陽光書屋班",
     group:"mixed",
     endTime:"17:00"
   },
@@ -716,25 +922,37 @@ const AFTERCARE_CLASSES = {
 let currentUser =
   null;
 
+
 let currentStaff =
   null;
+
 
 let requests =
   [];
 
+
 let childrenMap =
   {};
+
 
 let currentFilter =
   "all";
 
 
+let pickupRecords =
+  [];
+
+
 const $ =
   id =>
-  document.getElementById(
-    id
-  );
+  document.getElementById(id);
 
+
+/*
+==================================================
+登入
+==================================================
+*/
 
 async function login(){
 
@@ -743,9 +961,9 @@ async function login(){
       .value
       .trim();
 
+
   const password =
-    $("password")
-      .value;
+    $("password").value;
 
 
   if(
@@ -767,6 +985,14 @@ async function login(){
     true;
 
 
+  hideError();
+
+
+  await supabaseClient
+    .auth
+    .signOut();
+
+
   const {
     data,
     error
@@ -781,19 +1007,20 @@ async function login(){
       );
 
 
-  $("loginBtn").disabled =
-    false;
-
-
   if(
     error
   ){
 
-    alert(
-      "登入失敗：\n\n"
+    $("loginBtn").disabled =
+      false;
+
+
+    showError(
+      "登入失敗："
       +
       error.message
     );
+
 
     return;
 
@@ -806,8 +1033,18 @@ async function login(){
 
   await validateAdmin();
 
+
+  $("loginBtn").disabled =
+    false;
+
 }
 
+
+/*
+==================================================
+登出
+==================================================
+*/
 
 async function logout(){
 
@@ -819,40 +1056,81 @@ async function logout(){
   currentUser =
     null;
 
+
   currentStaff =
     null;
 
+
   requests =
     [];
+
+
+  pickupRecords =
+    [];
+
 
   childrenMap =
     {};
 
 
+  $("password").value =
+    "";
+
+
   $("loginState").textContent =
-    "Supabase：尚未登入行政測試帳號";
+    "Supabase：已登出";
+
+
+  resetCounts();
 
 
   $("requestList").innerHTML =
     `
       <div class="empty">
-        尚未登入行政帳號。
+        已登出行政測試帳號。
       </div>
     `;
 
 
-  resetCounts();
+  $("pickupList").innerHTML =
+    `
+      <div class="empty">
+        已登出行政帳號。
+      </div>
+    `;
+
+
+  $("pickupWaitingCount").textContent =
+    "等待接送 0";
+
+
+  $("pickupDoneCount").textContent =
+    "已完成 0";
 
 }
-
+/*
+==================================================
+驗證行政身分
+==================================================
+*/
 
 async function validateAdmin(){
 
   if(
     !currentUser
   ){
+
+    showError(
+      "目前沒有登入中的 Supabase 使用者。"
+    );
+
     return false;
+
   }
+
+
+  $("loginState").textContent =
+    "Supabase：正在驗證行政身分...";
 
 
   const {
@@ -860,11 +1138,9 @@ async function validateAdmin(){
     error:identityError
   } =
     await supabaseClient
-      .from(
-        "user_identities"
-      )
+      .from("user_identities")
       .select(
-        "staff_id"
+        "staff_id,guardian_id"
       )
       .eq(
         "auth_user_id",
@@ -875,14 +1151,27 @@ async function validateAdmin(){
 
   if(
     identityError
-    ||
+  ){
+
+    showError(
+      "讀取身分對應失敗："
+      +
+      identityError.message
+    );
+
+    return false;
+
+  }
+
+
+  if(
     !identity
     ||
     !identity.staff_id
   ){
 
     showError(
-      "此帳號沒有行政身分綁定。"
+      "此帳號沒有綁定 staff 身分。"
     );
 
     return false;
@@ -895,9 +1184,7 @@ async function validateAdmin(){
     error:staffError
   } =
     await supabaseClient
-      .from(
-        "staff"
-      )
+      .from("staff")
       .select(
         "id,display_name,role,active"
       )
@@ -910,17 +1197,40 @@ async function validateAdmin(){
 
   if(
     staffError
-    ||
-    !staff
-    ||
-    !staff.active
-    ||
-    staff.role !==
-      "admin"
   ){
 
     showError(
-      "此行政帳號不存在、已停用，或不是 admin。"
+      "讀取 staff 失敗："
+      +
+      staffError.message
+    );
+
+    return false;
+
+  }
+
+
+  if(
+    !staff
+    ||
+    staff.active !== true
+  ){
+
+    showError(
+      "此行政帳號不存在或已停用。"
+    );
+
+    return false;
+
+  }
+
+
+  if(
+    staff.role !== "admin"
+  ){
+
+    showError(
+      "目前此頁只開放 admin 行政角色。"
     );
 
     return false;
@@ -933,17 +1243,12 @@ async function validateAdmin(){
 
 
   $("loginState").innerHTML =
-
-    "✅ Supabase 已登入"
-    +
-    "<br>"
+    "✅ Supabase 已登入<br>"
     +
     "帳號："
     +
     escapeHtml(
-      currentUser.email
-      ||
-      ""
+      currentUser.email || ""
     )
     +
     "<br>"
@@ -952,8 +1257,6 @@ async function validateAdmin(){
     +
     escapeHtml(
       staff.display_name
-      ||
-      "行政人員"
     )
     +
     "｜"
@@ -966,13 +1269,1312 @@ async function validateAdmin(){
   hideError();
 
 
-  await refreshRequests();
+  await refreshAll();
 
 
   return true;
 
 }
 
+
+/*
+==================================================
+全部重新整理
+==================================================
+*/
+
+async function refreshAll(){
+
+  if(
+    !currentUser
+    ||
+    !currentStaff
+  ){
+
+    return;
+
+  }
+
+
+  await Promise.all([
+    refreshPickupRecords(),
+    refreshRequests()
+  ]);
+
+}
+
+
+/*
+==================================================
+取得台灣日期 YYYY-MM-DD
+==================================================
+*/
+
+function getTaiwanDateString(){
+
+  const parts =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:"Asia/Taipei",
+        year:"numeric",
+        month:"2-digit",
+        day:"2-digit"
+      }
+    )
+    .formatToParts(
+      new Date()
+    );
+
+
+  const map =
+    {};
+
+
+  parts.forEach(
+    part => {
+
+      if(
+        part.type !== "literal"
+      ){
+
+        map[
+          part.type
+        ] =
+          part.value;
+
+      }
+
+    }
+  );
+
+
+  return (
+    map.year
+    +
+    "-"
+    +
+    map.month
+    +
+    "-"
+    +
+    map.day
+  );
+
+}
+
+
+/*
+==================================================
+時間格式
+==================================================
+*/
+
+function formatClockTime(
+  value
+){
+
+  if(
+    !value
+  ){
+
+    return "—";
+
+  }
+
+
+  const text =
+    String(value);
+
+
+  if(
+    text.includes("T")
+  ){
+
+    try{
+
+      return new Intl.DateTimeFormat(
+        "zh-TW",
+        {
+          timeZone:"Asia/Taipei",
+          hour:"2-digit",
+          minute:"2-digit",
+          hour12:false
+        }
+      )
+      .format(
+        new Date(text)
+      );
+
+    }
+    catch(e){
+
+      return text;
+
+    }
+
+  }
+
+
+  return text.substring(
+    0,
+    5
+  );
+
+}
+
+
+/*
+==================================================
+日期時間格式
+==================================================
+*/
+
+function formatDateTime(
+  value
+){
+
+  if(
+    !value
+  ){
+
+    return "—";
+
+  }
+
+
+  try{
+
+    return new Intl.DateTimeFormat(
+      "zh-TW",
+      {
+        timeZone:"Asia/Taipei",
+        month:"2-digit",
+        day:"2-digit",
+        hour:"2-digit",
+        minute:"2-digit",
+        hour12:false
+      }
+    )
+    .format(
+      new Date(value)
+    );
+
+  }
+  catch(e){
+
+    return String(value);
+
+  }
+
+}
+
+
+/*
+==================================================
+接送模式中文
+==================================================
+*/
+
+function pickupModeText(
+  mode
+){
+
+  const map = {
+
+    normal_1600:
+      "正常放學 16:00",
+
+    first_1700:
+      "第一梯 17:00",
+
+    second_1800:
+      "第二梯 18:00",
+
+    early:
+      "提早接孩子",
+
+    late_notice:
+      "我會晚到"
+
+  };
+
+
+  return (
+    map[
+      mode
+    ]
+    ||
+    mode
+    ||
+    "—"
+  );
+
+}
+
+
+/*
+==================================================
+接送狀態中文
+==================================================
+*/
+
+function pickupStatusText(
+  status
+){
+
+  const map = {
+
+    waiting:
+      "等待接送",
+
+    on_time:
+      "正常完成",
+
+    delayed_pickup:
+      "延遲接回",
+
+    late_pickup:
+      "逾時接送"
+
+  };
+
+
+  return (
+    map[
+      status
+    ]
+    ||
+    status
+    ||
+    "—"
+  );
+
+}
+
+
+/*
+==================================================
+接送狀態 Badge
+==================================================
+*/
+
+function pickupStatusBadge(
+  status
+){
+
+  if(
+    status === "waiting"
+  ){
+
+    return (
+      '<span class="badge badgePending">'
+      +
+      "等待接送"
+      +
+      "</span>"
+    );
+
+  }
+
+
+  if(
+    status === "on_time"
+  ){
+
+    return (
+      '<span class="badge badgeApproved">'
+      +
+      "正常完成"
+      +
+      "</span>"
+    );
+
+  }
+
+
+  if(
+    status === "delayed_pickup"
+  ){
+
+    return (
+      '<span class="badge badgeWaitlist">'
+      +
+      "延遲接回"
+      +
+      "</span>"
+    );
+
+  }
+
+
+  if(
+    status === "late_pickup"
+  ){
+
+    return (
+      '<span class="badge badgeRejected">'
+      +
+      "逾時接送"
+      +
+      "</span>"
+    );
+
+  }
+
+
+  return (
+    '<span class="badge badgeOther">'
+    +
+    escapeHtml(
+      status || "未知"
+    )
+    +
+    "</span>"
+  );
+
+}
+
+
+/*
+==================================================
+讀取今日接送
+==================================================
+*/
+
+async function refreshPickupRecords(){
+
+  if(
+    !currentUser
+    ||
+    !currentStaff
+  ){
+
+    $("pickupList").innerHTML =
+      `
+        <div class="empty">
+          請先登入行政帳號。
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  let targetDate =
+    $("pickupDateFilter")
+      .value;
+
+
+  if(
+    !targetDate
+  ){
+
+    targetDate =
+      getTaiwanDateString();
+
+
+    $("pickupDateFilter").value =
+      targetDate;
+
+  }
+
+
+  $("pickupList").innerHTML =
+    `
+      <div class="loading">
+        正在讀取接送資料...
+      </div>
+    `;
+
+
+  const {
+    data:records,
+    error:recordError
+  } =
+    await supabaseClient
+      .from("pickup_records")
+      .select(
+        `
+          id,
+          pickup_date,
+          child_id,
+          guardian_id,
+          pickup_person,
+          pickup_mode,
+          scheduled_pickup_time,
+          expected_arrival_time,
+          notice_reason,
+          guardian_notice_at,
+          actual_pickup_at,
+          completed_by,
+          pickup_status,
+          fee_amount,
+          fee_status,
+          unexcused_late,
+          correction_reason,
+          created_at,
+          updated_at
+        `
+      )
+      .eq(
+        "pickup_date",
+        targetDate
+      )
+      .order(
+        "scheduled_pickup_time",
+        {
+          ascending:true
+        }
+      );
+
+
+  if(
+    recordError
+  ){
+
+    $("pickupList").innerHTML =
+      `
+        <div class="empty">
+          ⚠️ 接送資料讀取失敗
+          <br><br>
+          ${escapeHtml(
+            recordError.message
+          )}
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  pickupRecords =
+    records || [];
+
+
+  const childIds =
+    [
+      ...new Set(
+        pickupRecords
+          .map(
+            row =>
+            row.child_id
+          )
+          .filter(Boolean)
+      )
+    ];
+
+
+  let pickupChildrenMap =
+    {};
+
+
+  if(
+    childIds.length
+  ){
+
+    const {
+      data:childRows,
+      error:childError
+    } =
+      await supabaseClient
+        .from("children")
+        .select(
+          `
+            id,
+            school_code,
+            name,
+            morning_class_id,
+            care_group
+          `
+        )
+        .in(
+          "id",
+          childIds
+        );
+
+
+    if(
+      !childError
+    ){
+
+      (
+        childRows || []
+      )
+      .forEach(
+        child => {
+
+          pickupChildrenMap[
+            child.id
+          ] =
+            child;
+
+        }
+      );
+
+    }
+
+  }
+
+
+  const classIds =
+    [
+      ...new Set(
+        Object
+          .values(
+            pickupChildrenMap
+          )
+          .map(
+            child =>
+            child.morning_class_id
+          )
+          .filter(Boolean)
+      )
+    ];
+
+
+  let pickupClassMap =
+    {};
+
+
+  if(
+    classIds.length
+  ){
+
+    const {
+      data:classRows
+    } =
+      await supabaseClient
+        .from("classes")
+        .select("*")
+        .in(
+          "id",
+          classIds
+        );
+
+
+    (
+      classRows || []
+    )
+    .forEach(
+      row => {
+
+        pickupClassMap[
+          row.id
+        ] =
+          row;
+
+      }
+    );
+
+  }
+
+
+  const waitingCount =
+    pickupRecords
+      .filter(
+        row =>
+        !row.actual_pickup_at
+      )
+      .length;
+
+
+  const doneCount =
+    pickupRecords
+      .filter(
+        row =>
+        !!row.actual_pickup_at
+      )
+      .length;
+
+
+  $("pickupWaitingCount").textContent =
+    "等待接送 "
+    +
+    waitingCount;
+
+
+  $("pickupDoneCount").textContent =
+    "已完成 "
+    +
+    doneCount;
+
+
+  $("pickupLastUpdated").textContent =
+    "最後更新："
+    +
+    new Intl.DateTimeFormat(
+      "zh-TW",
+      {
+        timeZone:"Asia/Taipei",
+        hour:"2-digit",
+        minute:"2-digit",
+        second:"2-digit",
+        hour12:false
+      }
+    )
+    .format(
+      new Date()
+    );
+
+
+  if(
+    !pickupRecords.length
+  ){
+
+    $("pickupList").innerHTML =
+      `
+        <div class="empty">
+          🌷 ${escapeHtml(
+            targetDate
+          )} 目前沒有接送通知。
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  $("pickupList").innerHTML =
+    pickupRecords
+      .map(
+        row =>
+        renderPickupCard(
+          row,
+          pickupChildrenMap,
+          pickupClassMap
+        )
+      )
+      .join("");
+
+}
+
+
+/*
+==================================================
+取得班級名稱
+==================================================
+*/
+
+function getPickupClassName(
+  child,
+  pickupClassMap
+){
+
+  if(
+    !child
+  ){
+
+    return "—";
+
+  }
+
+
+  const classRow =
+    pickupClassMap[
+      child.morning_class_id
+    ];
+
+
+  if(
+    classRow
+  ){
+
+    if(
+      classRow.name
+    ){
+
+      return classRow.name;
+
+    }
+
+
+    if(
+      classRow.class_name
+    ){
+
+      return classRow.class_name;
+
+    }
+
+
+    if(
+      classRow.code
+      &&
+      CLASS_MAP[
+        classRow.code
+      ]
+    ){
+
+      return CLASS_MAP[
+        classRow.code
+      ];
+
+    }
+
+
+    if(
+      classRow.class_code
+      &&
+      CLASS_MAP[
+        classRow.class_code
+      ]
+    ){
+
+      return CLASS_MAP[
+        classRow.class_code
+      ];
+
+    }
+
+  }
+
+
+  return "原班級";
+
+}
+
+
+/*
+==================================================
+建立接送卡片
+==================================================
+*/
+
+function renderPickupCard(
+  row,
+  pickupChildrenMap,
+  pickupClassMap
+){
+
+  const child =
+    pickupChildrenMap[
+      row.child_id
+    ]
+    ||
+    {};
+
+
+  const childName =
+    child.name
+    ||
+    "未知幼兒";
+
+
+  const className =
+    getPickupClassName(
+      child,
+      pickupClassMap
+    );
+
+
+  const isDone =
+    !!row.actual_pickup_at;
+
+
+  let lateNoticeHtml =
+    "";
+
+
+  if(
+    row.pickup_mode
+    ===
+    "late_notice"
+  ){
+
+    lateNoticeHtml =
+      `
+        <div class="info">
+
+          <div class="infoLabel">
+            預計抵達
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              formatClockTime(
+                row.expected_arrival_time
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            晚到原因
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              row.notice_reason
+              ||
+              "未填寫"
+            )}
+          </div>
+
+        </div>
+      `;
+
+  }
+
+
+  let completionHtml =
+    "";
+
+
+  if(
+    isDone
+  ){
+
+    let extra =
+      "";
+
+
+    if(
+      Number(
+        row.fee_amount || 0
+      )
+      >
+      0
+    ){
+
+      extra +=
+        `
+          <br>
+          💰 費用：
+          <b>
+            ${escapeHtml(
+              String(
+                row.fee_amount
+              )
+            )} 元
+          </b>
+        `;
+
+    }
+
+
+    if(
+      row.unexcused_late
+      ===
+      true
+    ){
+
+      extra +=
+        `
+          <br>
+          ⚠️ 本次列入「無故延遲接回」1 次
+        `;
+
+    }
+
+
+    completionHtml =
+      `
+        <div class="pickupResult">
+
+          ✅ 完成時間：
+          <b>
+            ${escapeHtml(
+              formatDateTime(
+                row.actual_pickup_at
+              )
+            )}
+          </b>
+
+          <br>
+
+          接送結果：
+          <b>
+            ${escapeHtml(
+              pickupStatusText(
+                row.pickup_status
+              )
+            )}
+          </b>
+
+          ${extra}
+
+        </div>
+      `;
+
+  }
+  else{
+
+    completionHtml =
+      `
+        <div class="pickupAction">
+
+          <button
+            class="btn btnGreen"
+            id="completePickup_${escapeHtml(
+              row.id
+            )}"
+            onclick="completePickupRecord(
+              '${escapeJs(
+                row.id
+              )}'
+            )"
+          >
+            ✅ 完成接送
+          </button>
+
+        </div>
+      `;
+
+  }
+
+
+  return `
+    <div
+      class="pickupCard ${
+        isDone
+        ?
+        "done"
+        :
+        "waiting"
+      }"
+    >
+
+      <div class="requestTop">
+
+        <div>
+
+          <div class="requestChild">
+            ${escapeHtml(
+              childName
+            )}
+          </div>
+
+          <div class="requestClass">
+            原班級：
+            ${escapeHtml(
+              className
+            )}
+          </div>
+
+        </div>
+
+
+        <div>
+          ${pickupStatusBadge(
+            row.pickup_status
+          )}
+        </div>
+
+      </div>
+
+
+      <div class="requestBody">
+
+        <div class="info">
+
+          <div class="infoLabel">
+            原訂接回
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              formatClockTime(
+                row.scheduled_pickup_time
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            接送人員
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              row.pickup_person
+              ||
+              "—"
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            接送方式
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              pickupModeText(
+                row.pickup_mode
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            家長通知時間
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              formatDateTime(
+                row.guardian_notice_at
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        ${lateNoticeHtml}
+
+      </div>
+
+
+      ${completionHtml}
+
+    </div>
+  `;
+
+}
+
+
+/*
+==================================================
+完成接送
+==================================================
+*/
+
+async function completePickupRecord(
+  pickupRecordId
+){
+
+  if(
+    !pickupRecordId
+  ){
+
+    return;
+
+  }
+
+
+  const record =
+    pickupRecords
+      .find(
+        row =>
+        row.id
+        ===
+        pickupRecordId
+      );
+
+
+  if(
+    !record
+  ){
+
+    alert(
+      "找不到這筆接送資料。"
+    );
+
+    return;
+
+  }
+
+
+  if(
+    record.actual_pickup_at
+  ){
+
+    alert(
+      "這筆接送已經完成。"
+    );
+
+    return;
+
+  }
+
+
+  const ok =
+    confirm(
+      "確定孩子已完成接送嗎？\n\n"
+      +
+      "系統將以現在時間作為正式完成接送時間，"
+      +
+      "並自動判斷是否延遲、逾時及相關費用。"
+    );
+
+
+  if(
+    !ok
+  ){
+
+    return;
+
+  }
+
+
+  const button =
+    $(
+      "completePickup_"
+      +
+      pickupRecordId
+    );
+
+
+  if(
+    button
+  ){
+
+    button.disabled =
+      true;
+
+
+    button.textContent =
+      "處理中...";
+
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .rpc(
+        "complete_pickup",
+        {
+          p_pickup_record_id:
+            pickupRecordId
+        }
+      );
+
+
+  if(
+    error
+  ){
+
+    if(
+      button
+    ){
+
+      button.disabled =
+        false;
+
+
+      button.textContent =
+        "✅ 完成接送";
+
+    }
+
+
+    alert(
+      "完成接送失敗：\n"
+      +
+      error.message
+    );
+
+
+    return;
+
+  }
+
+
+  let message =
+    "✅ 已完成接送";
+
+
+  if(
+    data
+  ){
+
+    if(
+      data.pickup_status
+      ===
+      "delayed_pickup"
+    ){
+
+      message +=
+        "\n\n本次為：延遲接回";
+
+    }
+
+
+    if(
+      data.pickup_status
+      ===
+      "late_pickup"
+    ){
+
+      message +=
+        "\n\n本次為：逾時接送";
+
+    }
+
+
+    if(
+      Number(
+        data.fee_amount || 0
+      )
+      >
+      0
+    ){
+
+      message +=
+        "\n費用："
+        +
+        data.fee_amount
+        +
+        " 元";
+
+
+      message +=
+        "\n繳費方式：請準備剛好的現金";
+
+    }
+
+
+    if(
+      data.unexcused_late
+      ===
+      true
+    ){
+
+      message +=
+        "\n⚠️ 本次列入無故延遲接回 1 次";
+
+    }
+
+  }
+
+
+  alert(
+    message
+  );
+
+
+  await refreshPickupRecords();
+
+}
+  /*
+==================================================
+讀取家長申請
+==================================================
+*/
 
 async function refreshRequests(){
 
@@ -1010,9 +2612,7 @@ async function refreshRequests(){
     error:requestError
   } =
     await supabaseClient
-      .from(
-        "requests"
-      )
+      .from("requests")
       .select(
         `
           id,
@@ -1054,17 +2654,10 @@ async function refreshRequests(){
 
 
   requests =
-    requestData
-    ||
-    [];
-
-
-  childrenMap =
-    {};
+    requestData || [];
 
 
   const childIds =
-
     [
       ...new Set(
         requests
@@ -1072,11 +2665,13 @@ async function refreshRequests(){
             r =>
             r.child_id
           )
-          .filter(
-            Boolean
-          )
+          .filter(Boolean)
       )
     ];
+
+
+  childrenMap =
+    {};
 
 
   if(
@@ -1088,9 +2683,7 @@ async function refreshRequests(){
       error:childError
     } =
       await supabaseClient
-        .from(
-          "children"
-        )
+        .from("children")
         .select(
           `
             id,
@@ -1120,12 +2713,9 @@ async function refreshRequests(){
     else{
 
       (
-        childData
-        ||
-        []
+        childData || []
       )
       .forEach(
-
         child => {
 
           childrenMap[
@@ -1134,7 +2724,6 @@ async function refreshRequests(){
             child;
 
         }
-
       );
 
     }
@@ -1148,7 +2737,6 @@ async function refreshRequests(){
 
 
   $("lastUpdated").textContent =
-
     "最後更新："
     +
     formatDateTime(
@@ -1158,45 +2746,47 @@ async function refreshRequests(){
 }
 
 
+/*
+==================================================
+統計
+==================================================
+*/
+
 function updateCounts(){
 
   const today =
-    localDateString(
-      new Date()
-    );
+    getTaiwanDateString();
 
 
   $("pendingCount").textContent =
-
-    requests.filter(
-      r =>
-      r.status ===
-      "pending"
-    ).length;
+    requests
+      .filter(
+        r =>
+        r.status === "pending"
+      )
+      .length;
 
 
   $("leaveCount").textContent =
-
-    requests.filter(
-      r =>
-      r.request_type ===
-      "leave"
-      &&
-      r.request_date ===
-      today
-    ).length;
+    requests
+      .filter(
+        r =>
+        r.request_type === "leave"
+        &&
+        r.request_date === today
+      )
+      .length;
 
 
   $("temporaryCount").textContent =
-
-    requests.filter(
-      r =>
-      r.request_type ===
-      "temporary"
-      &&
-      r.request_date ===
-      today
-    ).length;
+    requests
+      .filter(
+        r =>
+        r.request_type === "temporary"
+        &&
+        r.request_date === today
+      )
+      .length;
 
 
   $("allCount").textContent =
@@ -1207,26 +2797,29 @@ function updateCounts(){
 
 function resetCounts(){
 
-  [
-    "pendingCount",
-    "leaveCount",
-    "temporaryCount",
-    "allCount"
-  ]
-  .forEach(
+  $("pendingCount").textContent =
+    "0";
 
-    id =>
-    $(id).textContent =
-      "0"
+  $("leaveCount").textContent =
+    "0";
 
-  );
+  $("temporaryCount").textContent =
+    "0";
 
+  $("allCount").textContent =
+    "0";
 
   $("lastUpdated").textContent =
     "尚未載入";
 
 }
 
+
+/*
+==================================================
+申請篩選
+==================================================
+*/
 
 function setFilter(
   filter
@@ -1244,7 +2837,6 @@ function setFilter(
     "Extended"
   ]
   .forEach(
-
     name => {
 
       const btn =
@@ -1254,20 +2846,18 @@ function setFilter(
           name
         );
 
+
       if(
         btn
       ){
 
-        btn
-          .classList
-          .remove(
-            "active"
-          );
+        btn.classList.remove(
+          "active"
+        );
 
       }
 
     }
-
   );
 
 
@@ -1275,8 +2865,7 @@ function setFilter(
     $(
       "tab"
       +
-      filter[0]
-        .toUpperCase()
+      filter[0].toUpperCase()
       +
       filter.slice(1)
     );
@@ -1286,11 +2875,9 @@ function setFilter(
     selected
   ){
 
-    selected
-      .classList
-      .add(
-        "active"
-      );
+    selected.classList.add(
+      "active"
+    );
 
   }
 
@@ -1299,6 +2886,12 @@ function setFilter(
 
 }
 
+
+/*
+==================================================
+顯示申請
+==================================================
+*/
 
 function renderRequests(){
 
@@ -1309,89 +2902,88 @@ function renderRequests(){
 
 
   if(
-    currentFilter ===
-    "pending"
+    currentFilter === "pending"
   ){
 
     list =
       list.filter(
         r =>
-        r.status ===
-        "pending"
+        r.status === "pending"
       );
 
   }
 
 
   if(
-    currentFilter ===
-    "leave"
+    currentFilter === "leave"
   ){
 
     list =
       list.filter(
         r =>
-        r.request_type ===
-        "leave"
+        r.request_type === "leave"
       );
 
   }
 
 
   if(
-    currentFilter ===
-    "temporary"
+    currentFilter === "temporary"
   ){
 
     list =
       list.filter(
         r =>
-        r.request_type ===
-        "temporary"
+        r.request_type === "temporary"
       );
 
   }
 
 
   if(
-    currentFilter ===
-    "extended"
+    currentFilter === "extended"
   ){
 
     list =
       list.filter(
         r =>
-        r.request_type ===
-        "extended"
+        r.request_type === "extended"
       );
+
+  }
+
+
+  if(
+    !list.length
+  ){
+
+    $("requestList").innerHTML =
+      `
+        <div class="empty">
+          目前沒有符合條件的申請。
+        </div>
+      `;
+
+    return;
 
   }
 
 
   $("requestList").innerHTML =
-
-    list.length
-
-    ?
-
     list
       .map(
         requestCardHtml
       )
-      .join(
-        ""
-      )
-
-    :
-
-    `
-      <div class="empty">
-        目前沒有符合條件的申請。
-      </div>
-    `;
+      .join("");
 
 }
 
+
+/*
+==================================================
+申請卡片
+==================================================
+*/
 
 function requestCardHtml(
   r
@@ -1437,16 +3029,19 @@ function requestCardHtml(
     "";
 
 
-  const assigned =
+  const status =
+    statusText(
+      r.status
+    );
 
+
+  const assignedClass =
     r.assigned_aftercare_class_code
     &&
     AFTERCARE_CLASSES[
       r.assigned_aftercare_class_code
     ]
-
     ?
-
     (
       r.assigned_aftercare_class_code
       +
@@ -1456,9 +3051,7 @@ function requestCardHtml(
         r.assigned_aftercare_class_code
       ].name
     )
-
     :
-
     "尚未指派";
 
 
@@ -1471,11 +3064,16 @@ function requestCardHtml(
         <div>
 
           <div class="requestChild">
-            ${escapeHtml(childName)}
+            ${escapeHtml(
+              childName
+            )}
           </div>
 
           <div class="requestClass">
-            ${escapeHtml(className)}
+
+            ${escapeHtml(
+              className
+            )}
 
             ${
               schoolCode
@@ -1488,17 +3086,22 @@ function requestCardHtml(
               :
               ""
             }
+
           </div>
 
         </div>
 
+
         <span
-          class="
-            badge
-            ${statusClass(r.status)}
-          "
+          class="badge ${
+            statusClass(
+              r.status
+            )
+          }"
         >
-          ${escapeHtml(statusText(r.status))}
+          ${escapeHtml(
+            status
+          )}
         </span>
 
       </div>
@@ -1506,45 +3109,104 @@ function requestCardHtml(
 
       <div class="requestBody">
 
-        ${infoHtml(
-          "申請類型",
-          requestTypeText(
-            r.request_type
-          )
-        )}
+        <div class="info">
 
-        ${infoHtml(
-          "日期",
-          r.request_date
-          ||
-          "-"
-        )}
+          <div class="infoLabel">
+            申請類型
+          </div>
 
-        ${infoHtml(
-          "申請時段",
-          requestTimeText(
-            r
-          )
-        )}
+          <div class="infoValue">
+            ${escapeHtml(
+              requestTypeText(
+                r.request_type
+              )
+            )}
+          </div>
 
-        ${infoHtml(
-          "托育類別",
-          careGroupText(
-            r.care_group
-          )
-        )}
+        </div>
 
-        ${infoHtml(
-          "本園安排課後班",
-          assigned
-        )}
 
-        ${infoHtml(
-          "建立時間",
-          formatDateTime(
-            r.created_at
-          )
-        )}
+        <div class="info">
+
+          <div class="infoLabel">
+            日期
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              r.request_date
+              ||
+              "-"
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            申請時段
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              requestTimeText(
+                r
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            托育類別
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              careGroupText(
+                r.care_group
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            本園安排課後班
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              assignedClass
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            建立時間
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              formatDateTime(
+                r.created_at
+              )
+            )}
+          </div>
+
+        </div>
 
       </div>
 
@@ -1589,68 +3251,46 @@ function requestCardHtml(
       }
 
 
-      ${adminActionHtml(r)}
+      ${adminActionHtml(
+        r
+      )}
 
     </div>
-
   `;
 
 }
 
 
-function infoHtml(
-  label,
-  value
-){
-
-  return `
-
-    <div class="info">
-
-      <div class="infoLabel">
-        ${escapeHtml(label)}
-      </div>
-
-      <div class="infoValue">
-        ${escapeHtml(value)}
-      </div>
-
-    </div>
-
-  `;
-
-}
-
+/*
+==================================================
+行政操作區
+==================================================
+*/
 
 function adminActionHtml(
   r
 ){
 
   if(
-    r.status !==
-      "pending"
+    r.status !== "pending"
     &&
-    r.status !==
-      "waitlist"
+    r.status !== "waitlist"
   ){
 
     return `
-
       <div
         class="helper"
         style="margin-top:10px"
       >
         此申請目前已完成行政處理。
       </div>
-
     `;
 
   }
 
 
   if(
-    r.request_type ===
-    "leave"
+    r.request_type === "leave"
   ){
 
     return `
@@ -1665,12 +3305,10 @@ function adminActionHtml(
 
           <button
             class="btn btnGreen"
-            onclick="
-              updateRequestStatus(
-                '${r.id}',
-                'approved'
-              )
-            "
+            onclick="updateRequestStatus(
+              '${r.id}',
+              'approved'
+            )"
           >
             ✅ 確認收到請假
           </button>
@@ -1678,18 +3316,15 @@ function adminActionHtml(
         </div>
 
       </div>
-
     `;
 
   }
 
 
   if(
-    r.request_type ===
-      "extended"
+    r.request_type === "extended"
     ||
-    r.request_type ===
-      "temporary"
+    r.request_type === "temporary"
   ){
 
     return `
@@ -1699,6 +3334,7 @@ function adminActionHtml(
         <b>
           行政審核
         </b>
+
 
         <div class="actionGrid">
 
@@ -1711,7 +3347,9 @@ function adminActionHtml(
             <select
               id="class_${r.id}"
             >
-              ${aftercareOptions(r)}
+              ${aftercareOptions(
+                r
+              )}
             </select>
 
           </div>
@@ -1742,50 +3380,41 @@ function adminActionHtml(
 
           <button
             class="btn btnGreen"
-            onclick="
-              approveCareRequest(
-                '${r.id}'
-              )
-            "
+            onclick="approveCareRequest(
+              '${r.id}'
+            )"
           >
             ✅ 核准
           </button>
 
 
           ${
-            r.request_type ===
+            r.request_type
+            ===
             "temporary"
-
             ?
-
             `
               <button
                 class="btn btnOrange"
-                onclick="
-                  updateRequestStatus(
-                    '${r.id}',
-                    'waitlist'
-                  )
-                "
+                onclick="updateRequestStatus(
+                  '${r.id}',
+                  'waitlist'
+                )"
               >
                 🟡 候補
               </button>
             `
-
             :
-
             ""
           }
 
 
           <button
             class="btn btnRed"
-            onclick="
-              updateRequestStatus(
-                '${r.id}',
-                'rejected'
-              )
-            "
+            onclick="updateRequestStatus(
+              '${r.id}',
+              'rejected'
+            )"
           >
             ❌ 無法安排
           </button>
@@ -1793,7 +3422,6 @@ function adminActionHtml(
         </div>
 
       </div>
-
     `;
 
   }
@@ -1803,6 +3431,12 @@ function adminActionHtml(
 
 }
 
+
+/*
+==================================================
+課後班選單
+==================================================
+*/
 
 function aftercareOptions(
   r
@@ -1815,47 +3449,34 @@ function aftercareOptions(
 
 
   const careGroup =
-
     r.care_group
     ||
-    (
-      child
-      ?
-      child.care_group
-      :
-      null
-    )
+    child?.care_group
     ||
     "mixed";
 
 
   const needs18 =
-
     r.requested_end_time
     &&
     String(
       r.requested_end_time
-    ).startsWith(
+    )
+    .startsWith(
       "18:00"
     );
 
 
   const items =
-
     Object.entries(
       AFTERCARE_CLASSES
     )
     .filter(
-
-      (
-        [
-          code,
-          item
-        ]
-      ) => {
+      ([code,item]) => {
 
         if(
-          item.group !==
+          item.group
+          !==
           careGroup
         ){
 
@@ -1865,13 +3486,13 @@ function aftercareOptions(
 
 
         if(
-          careGroup ===
-            "mixed"
+          careGroup === "mixed"
           &&
           needs18
           &&
-          item.endTime !==
-            "18:00"
+          item.endTime
+          !==
+          "18:00"
         ){
 
           return false;
@@ -1882,42 +3503,41 @@ function aftercareOptions(
         return true;
 
       }
-
     );
 
 
-  return (
+  let html =
+    `
+      <option value="">
+        請選擇課後班
+      </option>
+    `;
 
-    `<option value="">
-      請選擇課後班
-    </option>`
 
-    +
+  items.forEach(
+    ([code,item]) => {
 
-    items
-      .map(
+      const selected =
+        r.assigned_aftercare_class_code
+        ===
+        code
+        ?
+        "selected"
+        :
+        "";
 
-        (
-          [
-            code,
-            item
-          ]
-        ) =>
 
+      html +=
         `
           <option
             value="${code}"
-            ${
-              r.assigned_aftercare_class_code ===
-              code
-              ?
-              "selected"
-              :
-              ""
-            }
+            ${selected}
           >
             ${code}
-            ${escapeHtml(item.name)}
+            ${escapeHtml(
+              item.name
+            )}
+
             ${
               item.endTime
               ?
@@ -1927,18 +3547,24 @@ function aftercareOptions(
               :
               ""
             }
+
           </option>
-        `
+        `;
 
-      )
-      .join(
-        ""
-      )
-
+    }
   );
+
+
+  return html;
 
 }
 
+
+/*
+==================================================
+發送 LINE 審核通知
+==================================================
+*/
 
 async function notifyRequestResult(
   requestId
@@ -1971,31 +3597,31 @@ async function notifyRequestResult(
 
 
   const response =
-
     await fetch(
-
       SUPABASE_URL
       +
       "/functions/v1/line-notify-test",
-
       {
+
         method:
           "POST",
 
+
         headers:{
+
           "Content-Type":
             "application/json",
 
           "Authorization":
             "Bearer "
             +
-            sessionData
-              .session
-              .access_token,
+            sessionData.session.access_token,
 
           "apikey":
             SUPABASE_PUBLISHABLE_KEY
+
         },
+
 
         body:
           JSON.stringify(
@@ -2003,8 +3629,8 @@ async function notifyRequestResult(
               requestId
             }
           )
-      }
 
+      }
     );
 
 
@@ -2015,8 +3641,7 @@ async function notifyRequestResult(
   try{
 
     result =
-      await response
-        .json();
+      await response.json();
 
   }
   catch(e){
@@ -2049,6 +3674,12 @@ async function notifyRequestResult(
 }
 
 
+/*
+==================================================
+更新後統一處理
+==================================================
+*/
+
 async function finishRequestUpdate(
   requestId,
   statusLabel
@@ -2074,7 +3705,6 @@ async function finishRequestUpdate(
 
 
     lineText =
-
       "⚠️ 資料已更新，但 LINE 通知失敗："
       +
       (
@@ -2087,7 +3717,6 @@ async function finishRequestUpdate(
 
 
   alert(
-
     "✅ 狀態已更新為「"
     +
     statusLabel
@@ -2095,7 +3724,6 @@ async function finishRequestUpdate(
     "」。\n\n"
     +
     lineText
-
   );
 
 
@@ -2104,40 +3732,44 @@ async function finishRequestUpdate(
 }
 
 
+/*
+==================================================
+核准托育
+==================================================
+*/
+
 async function approveCareRequest(
   requestId
 ){
 
-  const classCode =
+  const classEl =
+    $(
+      "class_"
+      +
+      requestId
+    );
 
+
+  const noteEl =
     $(
-      "class_"
+      "note_"
       +
       requestId
-    )
+    );
+
+
+  const classCode =
+    classEl
     ?
-    $(
-      "class_"
-      +
-      requestId
-    ).value
+    classEl.value
     :
     "";
 
 
   const adminNote =
-
-    $(
-      "note_"
-      +
-      requestId
-    )
+    noteEl
     ?
-    $(
-      "note_"
-      +
-      requestId
-    ).value.trim()
+    noteEl.value.trim()
     :
     "";
 
@@ -2170,11 +3802,10 @@ async function approveCareRequest(
     error
   } =
     await supabaseClient
-      .from(
-        "requests"
-      )
+      .from("requests")
       .update(
         {
+
           status:
             "approved",
 
@@ -2183,6 +3814,7 @@ async function approveCareRequest(
 
           admin_note:
             adminNote
+
         }
       )
       .eq(
@@ -2214,6 +3846,12 @@ async function approveCareRequest(
 }
 
 
+/*
+==================================================
+變更申請狀態
+==================================================
+*/
+
 async function updateRequestStatus(
   requestId,
   newStatus
@@ -2224,8 +3862,7 @@ async function updateRequestStatus(
 
 
   if(
-    newStatus ===
-    "approved"
+    newStatus === "approved"
   ){
 
     confirmText =
@@ -2235,8 +3872,7 @@ async function updateRequestStatus(
 
 
   if(
-    newStatus ===
-    "waitlist"
+    newStatus === "waitlist"
   ){
 
     confirmText =
@@ -2246,8 +3882,7 @@ async function updateRequestStatus(
 
 
   if(
-    newStatus ===
-    "rejected"
+    newStatus === "rejected"
   ){
 
     confirmText =
@@ -2275,26 +3910,37 @@ async function updateRequestStatus(
     );
 
 
+  const adminNote =
+    noteEl
+    ?
+    noteEl.value.trim()
+    :
+    null;
+
+
   const payload = {
+
     status:
       newStatus
+
   };
 
 
   if(
-    noteEl
+    adminNote
+    !==
+    null
   ){
 
     payload.admin_note =
-      noteEl
-        .value
-        .trim();
+      adminNote;
 
   }
 
 
   if(
-    newStatus !==
+    newStatus
+    !==
     "approved"
   ){
 
@@ -2308,9 +3954,7 @@ async function updateRequestStatus(
     error
   } =
     await supabaseClient
-      .from(
-        "requests"
-      )
+      .from("requests")
       .update(
         payload
       )
@@ -2336,17 +3980,20 @@ async function updateRequestStatus(
 
 
   await finishRequestUpdate(
-
     requestId,
-
     statusText(
       newStatus
     )
-
   );
 
 }
 
+
+/*
+==================================================
+工具函式
+==================================================
+*/
 
 function requestTimeText(
   r
@@ -2358,38 +4005,24 @@ function requestTimeText(
     !r.requested_end_time
   ){
 
-    return (
-      r.request_type ===
-      "leave"
-      ?
-      "整日"
-      :
-      "-"
-    );
+    return "-";
 
   }
 
 
-  const start =
+  return (
     shortTime(
       r.requested_start_time
-    );
-
-  const end =
-    shortTime(
-      r.requested_end_time
-    );
-
-
-  return (
-    start
+    )
     +
     (
-      end
+      r.requested_end_time
       ?
       " → "
       +
-      end
+      shortTime(
+        r.requested_end_time
+      )
       :
       ""
     )
@@ -2402,17 +4035,21 @@ function shortTime(
   value
 ){
 
-  return (
+  if(
+    !value
+  ){
+
+    return "";
+
+  }
+
+
+  return String(
     value
-    ?
-    String(
-      value
-    ).slice(
-      0,
-      5
-    )
-    :
-    ""
+  )
+  .slice(
+    0,
+    5
   );
 
 }
@@ -2443,7 +4080,9 @@ function requestTypeText(
 
 
   return (
-    map[type]
+    map[
+      type
+    ]
     ||
     type
     ||
@@ -2478,7 +4117,9 @@ function statusText(
 
 
   return (
-    map[status]
+    map[
+      status
+    ]
     ||
     status
     ||
@@ -2493,34 +4134,38 @@ function statusClass(
 ){
 
   if(
-    status ===
-    "pending"
+    status === "pending"
   ){
+
     return "badgePending";
+
   }
 
 
   if(
-    status ===
-    "approved"
+    status === "approved"
   ){
+
     return "badgeApproved";
+
   }
 
 
   if(
-    status ===
-    "rejected"
+    status === "rejected"
   ){
+
     return "badgeRejected";
+
   }
 
 
   if(
-    status ===
-    "waitlist"
+    status === "waitlist"
   ){
+
     return "badgeWaitlist";
+
   }
 
 
@@ -2534,18 +4179,20 @@ function careGroupText(
 ){
 
   if(
-    value ===
-    "mixed"
+    value === "mixed"
   ){
+
     return "混齡";
+
   }
 
 
   if(
-    value ===
-    "toddler"
+    value === "toddler"
   ){
+
     return "幼幼";
+
   }
 
 
@@ -2558,109 +4205,34 @@ function careGroupText(
 }
 
 
-function localDateString(
-  date
-){
+/*
+==================================================
+供 onclick 安全使用
+==================================================
+*/
 
-  return (
-
-    date.getFullYear()
-    +
-    "-"
-    +
-    String(
-      date.getMonth()+1
-    ).padStart(
-      2,
-      "0"
-    )
-    +
-    "-"
-    +
-    String(
-      date.getDate()
-    ).padStart(
-      2,
-      "0"
-    )
-
-  );
-
-}
-
-
-function formatDateTime(
+function escapeJs(
   value
 ){
 
-  if(
-    !value
-  ){
-
-    return "-";
-
-  }
-
-
-  const d =
-    new Date(
-      value
-    );
-
-
-  if(
-    Number.isNaN(
-      d.getTime()
-    )
-  ){
-
-    return String(
-      value
-    );
-
-  }
-
-
-  return (
-
-    d.getFullYear()
-    +
-    "/"
-    +
-    String(
-      d.getMonth()+1
-    ).padStart(
-      2,
-      "0"
-    )
-    +
-    "/"
-    +
-    String(
-      d.getDate()
-    ).padStart(
-      2,
-      "0"
-    )
-    +
-    " "
-    +
-    String(
-      d.getHours()
-    ).padStart(
-      2,
-      "0"
-    )
-    +
-    ":"
-    +
-    String(
-      d.getMinutes()
-    ).padStart(
-      2,
-      "0"
-    )
-
+  return String(
+    value ?? ""
+  )
+  .replaceAll(
+    "\\",
+    "\\\\"
+  )
+  .replaceAll(
+    "'",
+    "\\'"
+  )
+  .replaceAll(
+    "\r",
+    "\\r"
+  )
+  .replaceAll(
+    "\n",
+    "\\n"
   );
 
 }
@@ -2697,9 +4269,7 @@ function escapeHtml(
 ){
 
   return String(
-    value
-    ??
-    ""
+    value ?? ""
   )
   .replaceAll(
     "&",
@@ -2724,6 +4294,12 @@ function escapeHtml(
 
 }
 
+
+/*
+==================================================
+恢復 Supabase 登入
+==================================================
+*/
 
 async function restoreSession(){
 
@@ -2773,7 +4349,24 @@ async function restoreSession(){
 }
 
 
-restoreSession();
+/*
+==================================================
+啟動
+==================================================
+*/
+
+async function main(){
+
+  $("pickupDateFilter").value =
+    getTaiwanDateString();
+
+
+  await restoreSession();
+
+}
+
+
+main();
 
 </script>
 
