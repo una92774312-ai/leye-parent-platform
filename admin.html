@@ -2655,6 +2655,205 @@ async function completePickupRecord(
 
   await refreshPickupRecords();
 
+}/*
+==================================================
+測試模式：模擬完成接送
+==================================================
+*/
+
+async function completePickupTest(
+  pickupRecordId
+){
+
+  const input =
+    $(
+      "testTime_"
+      +
+      pickupRecordId
+    );
+
+
+  if(
+    !input
+    ||
+    !input.value
+  ){
+
+    alert(
+      "請先選擇測試完成時間。"
+    );
+
+    return;
+
+  }
+
+
+  const ok =
+    confirm(
+      "確定要用 "
+      +
+      input.value
+      +
+      " 模擬完成接送嗎？"
+    );
+
+
+  if(
+    !ok
+  ){
+
+    return;
+
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .rpc(
+        "complete_pickup_test",
+        {
+          p_pickup_record_id:
+            pickupRecordId,
+
+          p_test_time:
+            input.value
+        }
+      );
+
+
+  if(
+    error
+  ){
+
+    alert(
+      "測試失敗：\n"
+      +
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  let resultText =
+    "🧪 測試完成";
+
+
+  if(
+    data?.pickup_status
+  ){
+
+    resultText +=
+      "\n\n結果："
+      +
+      pickupStatusText(
+        data.pickup_status
+      );
+
+  }
+
+
+  if(
+    Number(
+      data?.fee_amount || 0
+    )
+    >
+    0
+  ){
+
+    resultText +=
+      "\n費用："
+      +
+      data.fee_amount
+      +
+      " 元";
+
+  }
+
+
+  resultText +=
+    "\n無故延遲："
+    +
+    (
+      data?.unexcused_late
+      === true
+      ?
+      "是"
+      :
+      "否"
+    );
+
+
+  alert(
+    resultText
+  );
+
+
+  await refreshPickupRecords();
+
+}
+
+
+/*
+==================================================
+測試模式：重設接送紀錄
+==================================================
+*/
+
+async function resetPickupTest(
+  pickupRecordId
+){
+
+  if(
+    !confirm(
+      "確定要把這筆 TEST 接送紀錄重設為「等待接送」嗎？"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .rpc(
+        "reset_test_pickup_record",
+        {
+          p_pickup_record_id:
+            pickupRecordId
+        }
+      );
+
+
+  if(
+    error
+  ){
+
+    alert(
+      "重設失敗：\n"
+      +
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  alert(
+    "✅ 測試紀錄已重設。"
+  );
+
+
+  await refreshPickupRecords();
+
 }
   /*
 ==================================================
