@@ -2358,9 +2358,888 @@ async function refreshPickupRecords(){
 
 }
 
+/*
+==================================================
+取得班級名稱
+==================================================
+*/
+
+function getPickupClassName(
+  child,
+  pickupClassMap
+){
+
+  if(
+    !child
+  ){
+
+    return "—";
+
+  }
+
+
+  const classRow =
+    pickupClassMap[
+      child.morning_class_id
+    ];
+
+
+  if(
+    classRow
+  ){
+
+    if(
+      classRow.name
+    ){
+
+      return classRow.name;
+
+    }
+
+
+    if(
+      classRow.class_name
+    ){
+
+      return classRow.class_name;
+
+    }
+
+
+    if(
+      classRow.code
+      &&
+      CLASS_MAP[
+        classRow.code
+      ]
+    ){
+
+      return CLASS_MAP[
+        classRow.code
+      ];
+
+    }
+
+
+    if(
+      classRow.class_code
+      &&
+      CLASS_MAP[
+        classRow.class_code
+      ]
+    ){
+
+      return CLASS_MAP[
+        classRow.class_code
+      ];
+
+    }
+
+  }
+
+
+  return "原班級";
+
+}
+
 
 /*
+==================================================
+建立接送卡片
+==================================================
+*/
+
+function renderPickupCard(
+  row,
+  pickupChildrenMap,
+  pickupClassMap,
+  unexcusedCountMap
+){
+
+  const child =
+    pickupChildrenMap[
+      row.child_id
+    ]
+    ||
+    {};
+
+
+  const childName =
+    child.name
+    ||
+    "未知幼兒";
+
+
+  const className =
+    getPickupClassName(
+      child,
+      pickupClassMap
+    );
+
+
+  const isDone =
+    !!row.actual_pickup_at;
+
+
+  /*
+  ================================================
+  無故延遲累計
+  ================================================
+  */
+
+  const unexcusedCount =
+    unexcusedCountMap[
+      row.child_id
+    ]
+    ||
+    0;
+
+
+  const unexcusedHtml =
+    unexcusedCount >= 3
+    ?
+    `
+      <div
+        style="
+          margin-top:10px;
+          padding:10px;
+          border-radius:10px;
+          background:#ffebee;
+          color:#b71c1c;
+          font-weight:900;
+          line-height:1.6;
+        "
+      >
+        🚨 無故延遲累計：${unexcusedCount} 次
+        <br>
+        已達 3 次，請行政確認延長照顧服務資格。
+      </div>
+    `
+    :
+    `
+      <div
+        style="
+          margin-top:10px;
+          padding:10px;
+          border-radius:10px;
+          background:#fff8e1;
+          color:#8d6e00;
+          font-weight:800;
+        "
+      >
+        ⚠️ 無故延遲累計：${unexcusedCount} / 3 次
+      </div>
+    `;
+
+
+  /*
+  ================================================
+  晚到通知
+  ================================================
+  */
+
+  let lateNoticeHtml =
+    "";
+
+
+  if(
+    row.pickup_mode
+    ===
+    "late_notice"
+  ){
+
+    lateNoticeHtml =
+      `
+        <div class="info">
+
+          <div class="infoLabel">
+            預計抵達
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              formatClockTime(
+                row.expected_arrival_time
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            晚到原因
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              row.notice_reason
+              ||
+              "未填寫"
+            )}
+          </div>
+
+        </div>
+      `;
+
+  }
+
+
+  /*
+  ================================================
+  完成接送結果
+  ================================================
+  */
+
+  let completionHtml =
+    "";
+
+
+  if(
+    isDone
+  ){
+
+    let extra =
+      "";
+
+
+    if(
+      Number(
+        row.fee_amount || 0
+      )
+      >
+      0
+    ){
+
+      extra +=
+        `
+          <br>
+          💰 費用：
+          <b>
+            ${escapeHtml(
+              String(
+                row.fee_amount
+              )
+            )} 元
+          </b>
+        `;
+
     }
+
+
+    if(
+      row.unexcused_late
+      ===
+      true
+    ){
+
+      extra +=
+        `
+          <br>
+          ⚠️ 本次列入「無故延遲接回」1 次
+        `;
+
+    }
+
+
+    completionHtml =
+      `
+        <div class="pickupResult">
+
+          ✅ 完成時間：
+          <b>
+            ${escapeHtml(
+              formatDateTime(
+                row.actual_pickup_at
+              )
+            )}
+          </b>
+
+          <br>
+
+          接送結果：
+          <b>
+            ${escapeHtml(
+              pickupStatusText(
+                row.pickup_status
+              )
+            )}
+          </b>
+
+          ${extra}
+
+        </div>
+      `;
+
+  }
+  else{
+
+    completionHtml =
+      `
+        <div class="pickupAction">
+
+          <button
+            class="btn btnGreen"
+            id="completePickup_${escapeHtml(
+              row.id
+            )}"
+            onclick="completePickupRecord(
+              '${escapeJs(
+                row.id
+              )}'
+            )"
+          >
+            ✅ 完成接送
+          </button>
+
+        </div>
+      `;
+
+  }
+
+
+  /*
+  ================================================
+  TEST 測試區
+  正式上線前移除
+  ================================================
+  */
+
+  const testHtml =
+    child.school_code
+    &&
+    child.school_code.startsWith(
+      "TEST"
+    )
+    ?
+    `
+      <div
+        style="
+          margin-top:12px;
+          padding:12px;
+          border-radius:12px;
+          background:#fff8e1;
+          border:1px solid #ffe0b2;
+        "
+      >
+
+        <div
+          style="
+            font-weight:900;
+            color:#8d6e00;
+            margin-bottom:8px;
+          "
+        >
+          🧪 測試完成時間
+        </div>
+
+
+        <div
+          style="
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+            align-items:end;
+          "
+        >
+
+          <div
+            style="
+              flex:1;
+              min-width:150px;
+            "
+          >
+
+            <div class="helper">
+              模擬完成時間
+            </div>
+
+            <input
+              id="testTime_${escapeHtml(
+                row.id
+              )}"
+              type="time"
+              value="16:11"
+            >
+
+          </div>
+
+
+          <button
+            class="btn btnOrange"
+            type="button"
+            onclick="completePickupTest(
+              '${escapeJs(
+                row.id
+              )}'
+            )"
+          >
+            🧪 模擬完成接送
+          </button>
+
+
+          <button
+            class="btn btnGray"
+            type="button"
+            onclick="resetPickupTest(
+              '${escapeJs(
+                row.id
+              )}'
+            )"
+          >
+            ↺ 重設測試紀錄
+          </button>
+
+        </div>
+
+
+        <div class="helper">
+          僅 TEST 測試幼兒可使用，不影響正式幼兒資料。
+        </div>
+
+      </div>
+    `
+    :
+    "";
+
+
+  /*
+  ================================================
+  完整接送卡片
+  ================================================
+  */
+
+  return `
+    <div
+      class="pickupCard ${
+        isDone
+        ?
+        "done"
+        :
+        "waiting"
+      }"
+    >
+
+      <div class="requestTop">
+
+        <div>
+
+          <div class="requestChild">
+            ${escapeHtml(
+              childName
+            )}
+          </div>
+
+          <div class="requestClass">
+            原班級：
+            ${escapeHtml(
+              className
+            )}
+          </div>
+
+        </div>
+
+
+        <div>
+          ${pickupStatusBadge(
+            row.pickup_status
+          )}
+        </div>
+
+      </div>
+
+
+      <div class="requestBody">
+
+        <div class="info">
+
+          <div class="infoLabel">
+            原訂接回
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              formatClockTime(
+                row.scheduled_pickup_time
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            接送人員
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              row.pickup_person
+              ||
+              "—"
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            接送方式
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              pickupModeText(
+                row.pickup_mode
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            家長通知時間
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              formatDateTime(
+                row.guardian_notice_at
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        ${lateNoticeHtml}
+
+      </div>
+
+
+      ${unexcusedHtml}
+
+
+      ${completionHtml}
+
+
+      ${testHtml}
+
+    </div>
+  `;
+
+}
+
+
+/*
+==================================================
+完成接送
+==================================================
+*/
+
+async function completePickupRecord(
+  pickupRecordId
+){
+
+  if(
+    !pickupRecordId
+  ){
+
+    return;
+
+  }
+
+
+  const record =
+    pickupRecords
+      .find(
+        row =>
+        row.id
+        ===
+        pickupRecordId
+      );
+
+
+  if(
+    !record
+  ){
+
+    alert(
+      "找不到這筆接送資料。"
+    );
+
+    return;
+
+  }
+
+
+  if(
+    record.actual_pickup_at
+  ){
+
+    alert(
+      "這筆接送已經完成。"
+    );
+
+    return;
+
+  }
+
+
+  const ok =
+    confirm(
+      "確定孩子已完成接送嗎？\n\n"
+      +
+      "系統將以現在時間作為正式完成接送時間，"
+      +
+      "並自動判斷是否延遲、逾時及相關費用。"
+    );
+
+
+  if(
+    !ok
+  ){
+
+    return;
+
+  }
+
+
+  const button =
+    $(
+      "completePickup_"
+      +
+      pickupRecordId
+    );
+
+
+  if(
+    button
+  ){
+
+    button.disabled =
+      true;
+
+
+    button.textContent =
+      "處理中...";
+
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .rpc(
+        "complete_pickup",
+        {
+          p_pickup_record_id:
+            pickupRecordId
+        }
+      );
+
+
+  if(
+    error
+  ){
+
+    if(
+      button
+    ){
+
+      button.disabled =
+        false;
+
+
+      button.textContent =
+        "✅ 完成接送";
+
+    }
+
+
+    alert(
+      "完成接送失敗：\n"
+      +
+      error.message
+    );
+
+
+    return;
+
+  }
+
+
+  let message =
+    "✅ 已完成接送";
+
+
+  if(
+    data
+  ){
+
+    if(
+      data.pickup_status
+      ===
+      "delayed_pickup"
+    ){
+
+      message +=
+        "\n\n本次為：延遲接回";
+
+    }
+
+
+    if(
+      data.pickup_status
+      ===
+      "late_pickup"
+    ){
+
+      message +=
+        "\n\n本次為：逾時接送";
+
+    }
+
+
+    if(
+      Number(
+        data.fee_amount || 0
+      )
+      >
+      0
+    ){
+
+      message +=
+        "\n費用："
+        +
+        data.fee_amount
+        +
+        " 元";
+
+
+      message +=
+        "\n繳費方式：請準備剛好的現金";
+
+    }
+
+
+    if(
+      data.unexcused_late
+      ===
+      true
+    ){
+
+      message +=
+        "\n⚠️ 本次列入無故延遲接回 1 次";
+
+    }
+
+  }
+
+
+  alert(
+    message
+  );
+
+
+  await refreshPickupRecords();
+
+}
+
+
+/*
+==================================================
+測試模式：模擬完成接送
+==================================================
+*/
+
+async function completePickupTest(
+  pickupRecordId
+){
+
+  const input =
+    $(
+      "testTime_"
+      +
+      pickupRecordId
+    );
+
+
+  if(
+    !input
+    ||
+    !input.value
+  ){
+
+    alert(
+      "請先選擇測試完成時間。"
+    );
+
+    return;
+
+  }
+
+
+  const ok =
+    confirm(
+      "確定要用 "
+      +
+      input.value
+      +
+      " 模擬完成接送嗎？"
+    );
+
+
+  if(
+    !ok
+  ){
+
+    return;
+
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .rpc(
+        "complete_pickup_test",
+        {
+          p_pickup_record_id:
+            pickupRecordId,
+
+          p_test_time:
+            input.value
+        }
+      );
+
+
+  if(
+    error
+  ){
+
+    alert(
+      "測試失敗：\n"
+      +
+      error.message
+    );
+
+    return;
+
+  }
 
 
   let resultText =
