@@ -12,6 +12,7 @@
 <title>樂業附幼｜行政管理平台</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
 
@@ -497,6 +498,164 @@ button{
 }
 
 
+/* ====================================== */
+/* 老師管理 / Excel 月排班 */
+/* ====================================== */
+
+.adminManagePanel{
+  margin-bottom:16px;
+}
+
+.manageTabs{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:14px 0;
+}
+
+.manageTab{
+  border:0;
+  padding:9px 13px;
+  border-radius:999px;
+  background:#f1f4f4;
+  color:#546e7a;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.manageTab.active{
+  background:var(--blue-light);
+  color:var(--blue);
+}
+
+.manageSection{
+  display:none;
+}
+
+.manageSection.active{
+  display:block;
+}
+
+.manageGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+.manageCard{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  background:#fafcfc;
+}
+
+.manageCardTitle{
+  font-weight:900;
+  margin-bottom:10px;
+}
+
+.staffList{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:12px;
+}
+
+.staffRow{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+  background:#fff;
+}
+
+.staffRowGrid{
+  display:grid;
+  grid-template-columns:1.2fr 1fr 1fr 1.4fr auto;
+  gap:8px;
+  align-items:end;
+}
+
+.aliasText{
+  margin-top:7px;
+  color:var(--muted);
+  font-size:.78rem;
+  line-height:1.5;
+}
+
+.scheduleToolbar{
+  display:grid;
+  grid-template-columns:1fr 1fr auto;
+  gap:10px;
+  align-items:end;
+  margin-top:12px;
+}
+
+.scheduleSummary{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-top:12px;
+}
+
+.scheduleSummaryItem{
+  border-radius:12px;
+  padding:11px;
+  background:#f7f9f9;
+  text-align:center;
+}
+
+.scheduleSummaryNumber{
+  font-size:1.25rem;
+  font-weight:900;
+}
+
+.previewBox{
+  margin-top:12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden;
+  background:#fff;
+}
+
+.previewHeader{
+  padding:11px 12px;
+  background:#f7f9f9;
+  font-weight:900;
+}
+
+.previewBody{
+  max-height:420px;
+  overflow:auto;
+}
+
+.previewRow{
+  display:grid;
+  grid-template-columns:105px 130px 1fr;
+  gap:10px;
+  padding:9px 12px;
+  border-top:1px solid #edf1f2;
+  font-size:.84rem;
+  line-height:1.45;
+}
+
+.previewProblem{
+  background:#fff8e1;
+}
+
+.diffAdd{ color:var(--green-dark); }
+.diffRemove{ color:var(--red); }
+
+@media(max-width:760px){
+  .manageGrid,
+  .scheduleToolbar,
+  .scheduleSummary,
+  .staffRowGrid,
+  .previewRow{
+    grid-template-columns:1fr;
+  }
+}
+
+
 @media(max-width:760px){
 
   .app{
@@ -679,6 +838,151 @@ button{
 
 
 <!-- ====================================== -->
+<!-- 老師與課後班排班管理 -->
+<!-- ====================================== -->
+
+<div class="panel adminManagePanel">
+
+  <div class="panelTitle">
+    👩‍🏫 老師與課後班管理
+  </div>
+
+  <div class="helper">
+    行政可在這裡維護老師資料，並上傳每月 Excel 課後班表。Excel 會先解析與檢查，確認後才寫入資料庫。
+  </div>
+
+  <div class="manageTabs">
+    <button id="manageTabStaff" class="manageTab active" type="button" onclick="setManageTab('staff')">👩‍🏫 老師名單</button>
+    <button id="manageTabSchedule" class="manageTab" type="button" onclick="setManageTab('schedule')">📅 月排班匯入</button>
+  </div>
+
+  <div id="manageStaffSection" class="manageSection active">
+
+    <div class="manageGrid">
+
+      <div class="manageCard">
+        <div class="manageCardTitle">新增老師</div>
+
+        <div class="actionGrid">
+          <div>
+            <div class="helper">姓名</div>
+            <input id="newStaffName" placeholder="例：王小美">
+          </div>
+
+          <div>
+            <div class="helper">主要身分</div>
+            <select id="newStaffRole">
+              <option value="class_teacher">原班導師</option>
+              <option value="aftercare_teacher">課後／支援老師</option>
+              <option value="admin">行政老師</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="helper">固定原班（沒有可留空）</div>
+            <select id="newStaffHomeroom">
+              <option value="">無</option>
+              <option value="C01">櫻桃班</option>
+              <option value="C02">蘋果班</option>
+              <option value="C03">蝴蝶班</option>
+              <option value="C04">白兔班</option>
+              <option value="C05">蜜蜂班</option>
+              <option value="C06">袋鼠班</option>
+              <option value="C07">綿羊班</option>
+              <option value="C08">企鵝班</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="helper">Excel 常用簡稱（選填，可用逗號分隔）</div>
+            <input id="newStaffAliases" placeholder="例：小美, 美美">
+          </div>
+        </div>
+
+        <button class="btn btnGreen" style="margin-top:10px" type="button" onclick="addStaffMember()">
+          ＋ 新增老師
+        </button>
+      </div>
+
+      <div class="manageCard">
+        <div class="manageCardTitle">使用方式</div>
+        <div class="helper" style="font-size:.86rem;line-height:1.8">
+          ・行政老師仍可被排進當日課後班。<br>
+          ・原班導師可同時有固定原班與每日課後排班。<br>
+          ・外聘課後老師沒有白天班級也沒問題。<br>
+          ・停用老師不刪除歷史紀錄，只是不再出現在新排班名單中。<br>
+          ・園務會議巡輔／國小支援人員只保留班表紀錄，不建立登入身分。
+        </div>
+      </div>
+
+    </div>
+
+    <div id="staffManageList" class="staffList">
+      <div class="empty">請先登入行政帳號。</div>
+    </div>
+
+  </div>
+
+
+  <div id="manageScheduleSection" class="manageSection">
+
+    <div class="manageCard">
+      <div class="manageCardTitle">上傳每月 Excel 班表</div>
+
+      <div class="scheduleToolbar">
+        <div>
+          <div class="helper">Excel 檔案</div>
+          <input id="scheduleExcelFile" type="file" accept=".xlsx,.xls" onchange="loadScheduleExcel(event)">
+        </div>
+
+        <div>
+          <div class="helper">工作表</div>
+          <select id="scheduleSheetSelect" onchange="parseSelectedScheduleSheet()">
+            <option value="">請先選擇 Excel</option>
+          </select>
+        </div>
+
+        <button class="btn btnBlue" type="button" onclick="parseSelectedScheduleSheet()">
+          🔎 解析班表
+        </button>
+      </div>
+
+      <div id="scheduleFileState" class="helper">尚未選擇 Excel。</div>
+
+      <div class="scheduleSummary">
+        <div class="scheduleSummaryItem"><div class="helper">月份</div><div id="scheduleMonthSummary" class="scheduleSummaryNumber">—</div></div>
+        <div class="scheduleSummaryItem"><div class="helper">正式老師排班</div><div id="scheduleStaffCount" class="scheduleSummaryNumber">0</div></div>
+        <div class="scheduleSummaryItem"><div class="helper">支援人員</div><div id="scheduleSupportCount" class="scheduleSummaryNumber">0</div></div>
+        <div class="scheduleSummaryItem"><div class="helper">未辨識／錯誤</div><div id="scheduleProblemCount" class="scheduleSummaryNumber red">0</div></div>
+      </div>
+
+      <div id="schedulePreview" class="previewBox" style="display:none">
+        <div class="previewHeader">班表預覽與檢查</div>
+        <div id="schedulePreviewBody" class="previewBody"></div>
+      </div>
+
+      <div class="actionButtons">
+        <button id="scheduleImportBtn" class="btn btnGreen" type="button" onclick="confirmScheduleImport()" disabled>
+          ✅ 確認匯入本月班表
+        </button>
+      </div>
+
+      <div class="helper">
+        匯入前不會修改資料庫；若有未辨識姓名、同一老師同日跨班、或班級老師數量異常，系統會先阻止匯入。
+      </div>
+    </div>
+
+    <div id="currentScheduleBox" class="manageCard" style="margin-top:12px">
+      <div class="manageCardTitle">目前資料庫月排班</div>
+      <div id="currentScheduleList" class="empty">解析 Excel 後會顯示該月份目前資料庫排班與差異。</div>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ====================================== -->
 <!-- 今日接送 -->
 <!-- ====================================== -->
 
@@ -847,7 +1151,7 @@ button{
 
 
 <script>
-  const SUPABASE_URL =
+    const SUPABASE_URL =
   "https://cqtvrpiapssjjctwqivn.supabase.co";
 
 
@@ -939,6 +1243,38 @@ let currentFilter =
 
 let pickupRecords =
   [];
+
+
+let staffList =
+  [];
+
+
+let staffAliases =
+  [];
+
+
+let fixedHomeroomMap =
+  {};
+
+
+let scheduleWorkbook =
+  null;
+
+
+let parsedScheduleRows =
+  [];
+
+
+let parsedScheduleProblems =
+  [];
+
+
+let parsedScheduleYear =
+  null;
+
+
+let parsedScheduleMonth =
+  null;
 
 
 const $ =
@@ -1104,6 +1440,18 @@ async function logout(){
 
   $("pickupDoneCount").textContent =
     "已完成 0";
+
+
+  if($("staffManageList")){
+    $("staffManageList").innerHTML =
+      `<div class="empty">已登出行政帳號。</div>`;
+  }
+
+
+  if($("currentScheduleList")){
+    $("currentScheduleList").innerHTML =
+      `<div class="empty">已登出行政帳號。</div>`;
+  }
 
 }
 
@@ -1298,7 +1646,8 @@ async function refreshAll(){
 
   await Promise.all([
     refreshPickupRecords(),
-    refreshRequests()
+    refreshRequests(),
+    refreshStaffManagement()
   ]);
 
 }
@@ -2008,888 +2357,10 @@ async function refreshPickupRecords(){
       .join("");
 
 }
-  /*
-==================================================
-取得班級名稱
-==================================================
-*/
-
-function getPickupClassName(
-  child,
-  pickupClassMap
-){
-
-  if(
-    !child
-  ){
-
-    return "—";
-
-  }
-
-
-  const classRow =
-    pickupClassMap[
-      child.morning_class_id
-    ];
-
-
-  if(
-    classRow
-  ){
-
-    if(
-      classRow.name
-    ){
-
-      return classRow.name;
-
-    }
-
-
-    if(
-      classRow.class_name
-    ){
-
-      return classRow.class_name;
-
-    }
-
-
-    if(
-      classRow.code
-      &&
-      CLASS_MAP[
-        classRow.code
-      ]
-    ){
-
-      return CLASS_MAP[
-        classRow.code
-      ];
-
-    }
-
-
-    if(
-      classRow.class_code
-      &&
-      CLASS_MAP[
-        classRow.class_code
-      ]
-    ){
-
-      return CLASS_MAP[
-        classRow.class_code
-      ];
-
-    }
-
-  }
-
-
-  return "原班級";
-
-}
 
 
 /*
-==================================================
-建立接送卡片
-==================================================
-*/
-
-function renderPickupCard(
-  row,
-  pickupChildrenMap,
-  pickupClassMap,
-  unexcusedCountMap
-){
-
-  const child =
-    pickupChildrenMap[
-      row.child_id
-    ]
-    ||
-    {};
-
-
-  const childName =
-    child.name
-    ||
-    "未知幼兒";
-
-
-  const className =
-    getPickupClassName(
-      child,
-      pickupClassMap
-    );
-
-
-  const isDone =
-    !!row.actual_pickup_at;
-
-
-  /*
-  ================================================
-  無故延遲累計
-  ================================================
-  */
-
-  const unexcusedCount =
-    unexcusedCountMap[
-      row.child_id
-    ]
-    ||
-    0;
-
-
-  const unexcusedHtml =
-    unexcusedCount >= 3
-    ?
-    `
-      <div
-        style="
-          margin-top:10px;
-          padding:10px;
-          border-radius:10px;
-          background:#ffebee;
-          color:#b71c1c;
-          font-weight:900;
-          line-height:1.6;
-        "
-      >
-        🚨 無故延遲累計：${unexcusedCount} 次
-        <br>
-        已達 3 次，請行政確認延長照顧服務資格。
-      </div>
-    `
-    :
-    `
-      <div
-        style="
-          margin-top:10px;
-          padding:10px;
-          border-radius:10px;
-          background:#fff8e1;
-          color:#8d6e00;
-          font-weight:800;
-        "
-      >
-        ⚠️ 無故延遲累計：${unexcusedCount} / 3 次
-      </div>
-    `;
-
-
-  /*
-  ================================================
-  晚到通知
-  ================================================
-  */
-
-  let lateNoticeHtml =
-    "";
-
-
-  if(
-    row.pickup_mode
-    ===
-    "late_notice"
-  ){
-
-    lateNoticeHtml =
-      `
-        <div class="info">
-
-          <div class="infoLabel">
-            預計抵達
-          </div>
-
-          <div class="infoValue">
-            ${escapeHtml(
-              formatClockTime(
-                row.expected_arrival_time
-              )
-            )}
-          </div>
-
-        </div>
-
-
-        <div class="info">
-
-          <div class="infoLabel">
-            晚到原因
-          </div>
-
-          <div class="infoValue">
-            ${escapeHtml(
-              row.notice_reason
-              ||
-              "未填寫"
-            )}
-          </div>
-
-        </div>
-      `;
-
-  }
-
-
-  /*
-  ================================================
-  完成接送結果
-  ================================================
-  */
-
-  let completionHtml =
-    "";
-
-
-  if(
-    isDone
-  ){
-
-    let extra =
-      "";
-
-
-    if(
-      Number(
-        row.fee_amount || 0
-      )
-      >
-      0
-    ){
-
-      extra +=
-        `
-          <br>
-          💰 費用：
-          <b>
-            ${escapeHtml(
-              String(
-                row.fee_amount
-              )
-            )} 元
-          </b>
-        `;
-
     }
-
-
-    if(
-      row.unexcused_late
-      ===
-      true
-    ){
-
-      extra +=
-        `
-          <br>
-          ⚠️ 本次列入「無故延遲接回」1 次
-        `;
-
-    }
-
-
-    completionHtml =
-      `
-        <div class="pickupResult">
-
-          ✅ 完成時間：
-          <b>
-            ${escapeHtml(
-              formatDateTime(
-                row.actual_pickup_at
-              )
-            )}
-          </b>
-
-          <br>
-
-          接送結果：
-          <b>
-            ${escapeHtml(
-              pickupStatusText(
-                row.pickup_status
-              )
-            )}
-          </b>
-
-          ${extra}
-
-        </div>
-      `;
-
-  }
-  else{
-
-    completionHtml =
-      `
-        <div class="pickupAction">
-
-          <button
-            class="btn btnGreen"
-            id="completePickup_${escapeHtml(
-              row.id
-            )}"
-            onclick="completePickupRecord(
-              '${escapeJs(
-                row.id
-              )}'
-            )"
-          >
-            ✅ 完成接送
-          </button>
-
-        </div>
-      `;
-
-  }
-
-
-  /*
-  ================================================
-  TEST 測試區
-  正式上線前移除
-  ================================================
-  */
-
-  const testHtml =
-    child.school_code
-    &&
-    child.school_code.startsWith(
-      "TEST"
-    )
-    ?
-    `
-      <div
-        style="
-          margin-top:12px;
-          padding:12px;
-          border-radius:12px;
-          background:#fff8e1;
-          border:1px solid #ffe0b2;
-        "
-      >
-
-        <div
-          style="
-            font-weight:900;
-            color:#8d6e00;
-            margin-bottom:8px;
-          "
-        >
-          🧪 測試完成時間
-        </div>
-
-
-        <div
-          style="
-            display:flex;
-            gap:8px;
-            flex-wrap:wrap;
-            align-items:end;
-          "
-        >
-
-          <div
-            style="
-              flex:1;
-              min-width:150px;
-            "
-          >
-
-            <div class="helper">
-              模擬完成時間
-            </div>
-
-            <input
-              id="testTime_${escapeHtml(
-                row.id
-              )}"
-              type="time"
-              value="16:11"
-            >
-
-          </div>
-
-
-          <button
-            class="btn btnOrange"
-            type="button"
-            onclick="completePickupTest(
-              '${escapeJs(
-                row.id
-              )}'
-            )"
-          >
-            🧪 模擬完成接送
-          </button>
-
-
-          <button
-            class="btn btnGray"
-            type="button"
-            onclick="resetPickupTest(
-              '${escapeJs(
-                row.id
-              )}'
-            )"
-          >
-            ↺ 重設測試紀錄
-          </button>
-
-        </div>
-
-
-        <div class="helper">
-          僅 TEST 測試幼兒可使用，不影響正式幼兒資料。
-        </div>
-
-      </div>
-    `
-    :
-    "";
-
-
-  /*
-  ================================================
-  完整接送卡片
-  ================================================
-  */
-
-  return `
-    <div
-      class="pickupCard ${
-        isDone
-        ?
-        "done"
-        :
-        "waiting"
-      }"
-    >
-
-      <div class="requestTop">
-
-        <div>
-
-          <div class="requestChild">
-            ${escapeHtml(
-              childName
-            )}
-          </div>
-
-          <div class="requestClass">
-            原班級：
-            ${escapeHtml(
-              className
-            )}
-          </div>
-
-        </div>
-
-
-        <div>
-          ${pickupStatusBadge(
-            row.pickup_status
-          )}
-        </div>
-
-      </div>
-
-
-      <div class="requestBody">
-
-        <div class="info">
-
-          <div class="infoLabel">
-            原訂接回
-          </div>
-
-          <div class="infoValue">
-            ${escapeHtml(
-              formatClockTime(
-                row.scheduled_pickup_time
-              )
-            )}
-          </div>
-
-        </div>
-
-
-        <div class="info">
-
-          <div class="infoLabel">
-            接送人員
-          </div>
-
-          <div class="infoValue">
-            ${escapeHtml(
-              row.pickup_person
-              ||
-              "—"
-            )}
-          </div>
-
-        </div>
-
-
-        <div class="info">
-
-          <div class="infoLabel">
-            接送方式
-          </div>
-
-          <div class="infoValue">
-            ${escapeHtml(
-              pickupModeText(
-                row.pickup_mode
-              )
-            )}
-          </div>
-
-        </div>
-
-
-        <div class="info">
-
-          <div class="infoLabel">
-            家長通知時間
-          </div>
-
-          <div class="infoValue">
-            ${escapeHtml(
-              formatDateTime(
-                row.guardian_notice_at
-              )
-            )}
-          </div>
-
-        </div>
-
-
-        ${lateNoticeHtml}
-
-      </div>
-
-
-      ${unexcusedHtml}
-
-
-      ${completionHtml}
-
-
-      ${testHtml}
-
-    </div>
-  `;
-
-}
-
-
-/*
-==================================================
-完成接送
-==================================================
-*/
-
-async function completePickupRecord(
-  pickupRecordId
-){
-
-  if(
-    !pickupRecordId
-  ){
-
-    return;
-
-  }
-
-
-  const record =
-    pickupRecords
-      .find(
-        row =>
-        row.id
-        ===
-        pickupRecordId
-      );
-
-
-  if(
-    !record
-  ){
-
-    alert(
-      "找不到這筆接送資料。"
-    );
-
-    return;
-
-  }
-
-
-  if(
-    record.actual_pickup_at
-  ){
-
-    alert(
-      "這筆接送已經完成。"
-    );
-
-    return;
-
-  }
-
-
-  const ok =
-    confirm(
-      "確定孩子已完成接送嗎？\n\n"
-      +
-      "系統將以現在時間作為正式完成接送時間，"
-      +
-      "並自動判斷是否延遲、逾時及相關費用。"
-    );
-
-
-  if(
-    !ok
-  ){
-
-    return;
-
-  }
-
-
-  const button =
-    $(
-      "completePickup_"
-      +
-      pickupRecordId
-    );
-
-
-  if(
-    button
-  ){
-
-    button.disabled =
-      true;
-
-
-    button.textContent =
-      "處理中...";
-
-  }
-
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .rpc(
-        "complete_pickup",
-        {
-          p_pickup_record_id:
-            pickupRecordId
-        }
-      );
-
-
-  if(
-    error
-  ){
-
-    if(
-      button
-    ){
-
-      button.disabled =
-        false;
-
-
-      button.textContent =
-        "✅ 完成接送";
-
-    }
-
-
-    alert(
-      "完成接送失敗：\n"
-      +
-      error.message
-    );
-
-
-    return;
-
-  }
-
-
-  let message =
-    "✅ 已完成接送";
-
-
-  if(
-    data
-  ){
-
-    if(
-      data.pickup_status
-      ===
-      "delayed_pickup"
-    ){
-
-      message +=
-        "\n\n本次為：延遲接回";
-
-    }
-
-
-    if(
-      data.pickup_status
-      ===
-      "late_pickup"
-    ){
-
-      message +=
-        "\n\n本次為：逾時接送";
-
-    }
-
-
-    if(
-      Number(
-        data.fee_amount || 0
-      )
-      >
-      0
-    ){
-
-      message +=
-        "\n費用："
-        +
-        data.fee_amount
-        +
-        " 元";
-
-
-      message +=
-        "\n繳費方式：請準備剛好的現金";
-
-    }
-
-
-    if(
-      data.unexcused_late
-      ===
-      true
-    ){
-
-      message +=
-        "\n⚠️ 本次列入無故延遲接回 1 次";
-
-    }
-
-  }
-
-
-  alert(
-    message
-  );
-
-
-  await refreshPickupRecords();
-
-}
-
-
-/*
-==================================================
-測試模式：模擬完成接送
-==================================================
-*/
-
-async function completePickupTest(
-  pickupRecordId
-){
-
-  const input =
-    $(
-      "testTime_"
-      +
-      pickupRecordId
-    );
-
-
-  if(
-    !input
-    ||
-    !input.value
-  ){
-
-    alert(
-      "請先選擇測試完成時間。"
-    );
-
-    return;
-
-  }
-
-
-  const ok =
-    confirm(
-      "確定要用 "
-      +
-      input.value
-      +
-      " 模擬完成接送嗎？"
-    );
-
-
-  if(
-    !ok
-  ){
-
-    return;
-
-  }
-
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .rpc(
-        "complete_pickup_test",
-        {
-          p_pickup_record_id:
-            pickupRecordId,
-
-          p_test_time:
-            input.value
-        }
-      );
-
-
-  if(
-    error
-  ){
-
-    alert(
-      "測試失敗：\n"
-      +
-      error.message
-    );
-
-    return;
-
-  }
 
 
   let resultText =
@@ -3009,13 +2480,14 @@ async function resetPickupTest(
   await refreshPickupRecords();
 
 }
-  /*
+
+
+/*
 ==================================================
 讀取家長申請
 ==================================================
 */
-
-async function refreshRequests(){
+  async function refreshRequests(){
 
   if(
     !currentUser
@@ -3705,8 +3177,7 @@ function requestCardHtml(
 行政操作區
 ==================================================
 */
-
-function adminActionHtml(
+  function adminActionHtml(
   r
 ){
 
@@ -4424,6 +3895,2677 @@ async function updateRequestStatus(
       newStatus
     )
   );
+
+}
+
+
+/*
+==================================================
+老師管理分頁
+==================================================
+*/
+
+function setManageTab(
+  tab
+){
+
+  const isStaff =
+    tab === "staff";
+
+
+  $("manageTabStaff")
+    .classList
+    .toggle(
+      "active",
+      isStaff
+    );
+
+
+  $("manageTabSchedule")
+    .classList
+    .toggle(
+      "active",
+      !isStaff
+    );
+
+
+  $("manageStaffSection")
+    .classList
+    .toggle(
+      "active",
+      isStaff
+    );
+
+
+  $("manageScheduleSection")
+    .classList
+    .toggle(
+      "active",
+      !isStaff
+    );
+
+}
+
+
+/*
+==================================================
+讀取老師名單管理資料
+==================================================
+*/
+
+async function refreshStaffManagement(){
+
+  if(
+    !currentUser
+    ||
+    !currentStaff
+  ){
+
+    return;
+
+  }
+
+
+  $("staffManageList").innerHTML =
+    `
+      <div class="loading">
+        正在讀取老師資料...
+      </div>
+    `;
+
+
+  const [
+    staffResult,
+    aliasResult,
+    assignmentResult
+  ] =
+    await Promise.all([
+
+      supabaseClient
+        .from("staff")
+        .select(
+          `
+            id,
+            display_name,
+            role,
+            active,
+            line_user_id
+          `
+        )
+        .order(
+          "display_name",
+          {
+            ascending:true
+          }
+        ),
+
+      supabaseClient
+        .from("staff_aliases")
+        .select(
+          `
+            id,
+            staff_id,
+            alias_name,
+            active
+          `
+        )
+        .order(
+          "alias_name",
+          {
+            ascending:true
+          }
+        ),
+
+      supabaseClient
+        .from("staff_assignments")
+        .select(
+          `
+            id,
+            staff_id,
+            assignment_date,
+            morning_class_id,
+            aftercare_class_id,
+            active
+          `
+        )
+        .is(
+          "assignment_date",
+          null
+        )
+        .eq(
+          "active",
+          true
+        )
+
+    ]);
+
+
+  if(
+    staffResult.error
+  ){
+
+    $("staffManageList").innerHTML =
+      `
+        <div class="empty">
+          ⚠️ 老師資料讀取失敗
+          <br><br>
+          ${escapeHtml(
+            staffResult.error.message
+          )}
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  staffList =
+    staffResult.data || [];
+
+
+  staffAliases =
+    aliasResult.error
+    ?
+    []
+    :
+    (
+      aliasResult.data || []
+    );
+
+
+  fixedHomeroomMap =
+    {};
+
+
+  if(
+    !assignmentResult.error
+  ){
+
+    (
+      assignmentResult.data || []
+    )
+    .forEach(
+      row => {
+
+        if(
+          row.morning_class_id
+        ){
+
+          fixedHomeroomMap[
+            row.staff_id
+          ] =
+            row.morning_class_id;
+
+        }
+
+      }
+    );
+
+  }
+
+
+  renderStaffManagement();
+
+}
+
+
+/*
+==================================================
+角色顯示名稱
+==================================================
+*/
+
+function staffRoleText(
+  role
+){
+
+  const map = {
+
+    admin:
+      "行政老師",
+
+    class_teacher:
+      "原班導師",
+
+    aftercare_teacher:
+      "課後／支援老師"
+
+  };
+
+
+  return (
+    map[
+      role
+    ]
+    ||
+    role
+    ||
+    "—"
+  );
+
+}
+
+
+/*
+==================================================
+老師別名文字
+==================================================
+*/
+
+function getStaffAliasText(
+  staffId
+){
+
+  const aliases =
+    staffAliases
+      .filter(
+        row =>
+        row.staff_id === staffId
+        &&
+        row.active === true
+      )
+      .map(
+        row =>
+        row.alias_name
+      );
+
+
+  return aliases.length
+    ?
+    aliases.join("、")
+    :
+    "無";
+
+}
+
+
+/*
+==================================================
+固定原班選單
+==================================================
+*/
+
+function homeroomOptions(
+  selectedValue
+){
+
+  let html =
+    `<option value="">無</option>`;
+
+
+  Object.entries(
+    CLASS_MAP
+  )
+  .forEach(
+    ([code,name]) => {
+
+      const selected =
+        selectedValue === code
+        ?
+        "selected"
+        :
+        "";
+
+
+      html +=
+        `
+          <option
+            value="${code}"
+            ${selected}
+          >
+            ${code} ${escapeHtml(
+              name
+            )}
+          </option>
+        `;
+
+    }
+  );
+
+
+  return html;
+
+}
+
+
+/*
+==================================================
+顯示老師名單
+==================================================
+*/
+
+function renderStaffManagement(){
+
+  if(
+    !staffList.length
+  ){
+
+    $("staffManageList").innerHTML =
+      `
+        <div class="empty">
+          目前沒有老師資料。
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  $("staffManageList").innerHTML =
+    staffList
+      .map(
+        staff => {
+
+          const homeroom =
+            fixedHomeroomMap[
+              staff.id
+            ]
+            ||
+            "";
+
+
+          return `
+            <div class="staffRow">
+
+              <div class="staffRowGrid">
+
+                <div>
+                  <div class="helper">
+                    姓名
+                  </div>
+
+                  <input
+                    id="staffName_${staff.id}"
+                    value="${escapeHtml(
+                      staff.display_name
+                    )}"
+                  >
+                </div>
+
+
+                <div>
+                  <div class="helper">
+                    主要身分
+                  </div>
+
+                  <select
+                    id="staffRole_${staff.id}"
+                  >
+
+                    <option
+                      value="admin"
+                      ${
+                        staff.role === "admin"
+                        ?
+                        "selected"
+                        :
+                        ""
+                      }
+                    >
+                      行政老師
+                    </option>
+
+                    <option
+                      value="class_teacher"
+                      ${
+                        staff.role === "class_teacher"
+                        ?
+                        "selected"
+                        :
+                        ""
+                      }
+                    >
+                      原班導師
+                    </option>
+
+                    <option
+                      value="aftercare_teacher"
+                      ${
+                        staff.role === "aftercare_teacher"
+                        ?
+                        "selected"
+                        :
+                        ""
+                      }
+                    >
+                      課後／支援老師
+                    </option>
+
+                  </select>
+                </div>
+
+
+                <div>
+                  <div class="helper">
+                    固定原班
+                  </div>
+
+                  <select
+                    id="staffHomeroom_${staff.id}"
+                  >
+                    ${homeroomOptions(
+                      homeroom
+                    )}
+                  </select>
+                </div>
+
+
+                <div>
+                  <div class="helper">
+                    Excel 別名
+                  </div>
+
+                  <input
+                    id="staffAliases_${staff.id}"
+                    value="${escapeHtml(
+                      getStaffAliasText(
+                        staff.id
+                      )
+                      ===
+                      "無"
+                      ?
+                      ""
+                      :
+                      getStaffAliasText(
+                        staff.id
+                      )
+                    )}"
+                    placeholder="用逗號分隔"
+                  >
+                </div>
+
+
+                <div>
+
+                  <button
+                    class="btn ${
+                      staff.active
+                      ?
+                      "btnGreen"
+                      :
+                      "btnGray"
+                    }"
+                    type="button"
+                    onclick="saveStaffMember(
+                      '${escapeJs(
+                        staff.id
+                      )}'
+                    )"
+                  >
+                    儲存
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              <div class="aliasText">
+                目前狀態：
+                ${
+                  staff.active
+                  ?
+                  "✅ 啟用"
+                  :
+                  "⛔ 停用"
+                }
+                ｜角色：
+                ${escapeHtml(
+                  staffRoleText(
+                    staff.role
+                  )
+                )}
+                ${
+                  homeroom
+                  ?
+                  "｜固定原班："
+                  +
+                  escapeHtml(
+                    CLASS_MAP[
+                      homeroom
+                    ]
+                    ||
+                    homeroom
+                  )
+                  :
+                  ""
+                }
+              </div>
+
+
+              <div class="actionButtons">
+
+                <button
+                  class="btn ${
+                    staff.active
+                    ?
+                    "btnRed"
+                    :
+                    "btnGreen"
+                  }"
+                  type="button"
+                  onclick="toggleStaffActive(
+                    '${escapeJs(
+                      staff.id
+                    )}',
+                    ${
+                      staff.active
+                      ?
+                      "false"
+                      :
+                      "true"
+                    }
+                  )"
+                >
+
+                  ${
+                    staff.active
+                    ?
+                    "停用老師"
+                    :
+                    "重新啟用"
+                  }
+
+                </button>
+
+              </div>
+
+            </div>
+          `;
+
+        }
+      )
+      .join("");
+
+}
+
+
+/*
+==================================================
+新增老師
+==================================================
+*/
+
+async function addStaffMember(){
+
+  const name =
+    $("newStaffName")
+      .value
+      .trim();
+
+
+  const role =
+    $("newStaffRole")
+      .value;
+
+
+  const homeroom =
+    $("newStaffHomeroom")
+      .value;
+
+
+  const aliasText =
+    $("newStaffAliases")
+      .value
+      .trim();
+
+
+  if(
+    !name
+  ){
+
+    alert(
+      "請輸入老師姓名。"
+    );
+
+    return;
+
+  }
+
+
+  const existing =
+    staffList
+      .find(
+        staff =>
+        staff.display_name.trim()
+        ===
+        name
+      );
+
+
+  if(
+    existing
+  ){
+
+    alert(
+      "這個老師姓名已經存在。"
+    );
+
+    return;
+
+  }
+
+
+  const {
+    data:newStaff,
+    error
+  } =
+    await supabaseClient
+      .from("staff")
+      .insert(
+        {
+          display_name:
+            name,
+
+          role:
+            role,
+
+          active:
+            true
+        }
+      )
+      .select(
+        "id"
+      )
+      .single();
+
+
+  if(
+    error
+  ){
+
+    alert(
+      "新增老師失敗：\n"
+      +
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  if(
+    homeroom
+  ){
+
+    const {
+      error:assignmentError
+    } =
+      await supabaseClient
+        .from(
+          "staff_assignments"
+        )
+        .insert(
+          {
+            staff_id:
+              newStaff.id,
+
+            assignment_date:
+              null,
+
+            morning_class_id:
+              homeroom,
+
+            aftercare_class_id:
+              null,
+
+            active:
+              true
+          }
+        );
+
+
+    if(
+      assignmentError
+    ){
+
+      alert(
+        "老師已新增，但固定原班建立失敗：\n"
+        +
+        assignmentError.message
+      );
+
+    }
+
+  }
+
+
+  await replaceStaffAliases(
+    newStaff.id,
+    aliasText
+  );
+
+
+  $("newStaffName").value =
+    "";
+
+
+  $("newStaffHomeroom").value =
+    "";
+
+
+  $("newStaffAliases").value =
+    "";
+
+
+  alert(
+    "✅ 老師資料已新增。"
+  );
+
+
+  await refreshStaffManagement();
+
+}
+
+
+/*
+==================================================
+儲存老師資料
+==================================================
+*/
+
+async function saveStaffMember(
+  staffId
+){
+
+  const name =
+    $(
+      "staffName_"
+      +
+      staffId
+    )
+    .value
+    .trim();
+
+
+  const role =
+    $(
+      "staffRole_"
+      +
+      staffId
+    )
+    .value;
+
+
+  const homeroom =
+    $(
+      "staffHomeroom_"
+      +
+      staffId
+    )
+    .value;
+
+
+  const aliasText =
+    $(
+      "staffAliases_"
+      +
+      staffId
+    )
+    .value
+    .trim();
+
+
+  if(
+    !name
+  ){
+
+    alert(
+      "老師姓名不能留空。"
+    );
+
+    return;
+
+  }
+
+
+  const {
+    error:staffError
+  } =
+    await supabaseClient
+      .from("staff")
+      .update(
+        {
+          display_name:
+            name,
+
+          role:
+            role,
+
+          updated_at:
+            new Date()
+              .toISOString()
+        }
+      )
+      .eq(
+        "id",
+        staffId
+      );
+
+
+  if(
+    staffError
+  ){
+
+    alert(
+      "老師資料更新失敗：\n"
+      +
+      staffError.message
+    );
+
+    return;
+
+  }
+
+
+  /*
+  先停用目前固定原班
+  */
+  const {
+    error:disableError
+  } =
+    await supabaseClient
+      .from("staff_assignments")
+      .update(
+        {
+          active:false
+        }
+      )
+      .eq(
+        "staff_id",
+        staffId
+      )
+      .is(
+        "assignment_date",
+        null
+      )
+      .not(
+        "morning_class_id",
+        "is",
+        null
+      );
+
+
+  if(
+    disableError
+  ){
+
+    alert(
+      "固定原班更新失敗：\n"
+      +
+      disableError.message
+    );
+
+    return;
+
+  }
+
+
+  if(
+    homeroom
+  ){
+
+    const {
+      data:existingAssignment
+    } =
+      await supabaseClient
+        .from(
+          "staff_assignments"
+        )
+        .select(
+          "id"
+        )
+        .eq(
+          "staff_id",
+          staffId
+        )
+        .is(
+          "assignment_date",
+          null
+        )
+        .eq(
+          "morning_class_id",
+          homeroom
+        )
+        .maybeSingle();
+
+
+    if(
+      existingAssignment
+    ){
+
+      const {
+        error:reactivateError
+      } =
+        await supabaseClient
+          .from(
+            "staff_assignments"
+          )
+          .update(
+            {
+              active:true
+            }
+          )
+          .eq(
+            "id",
+            existingAssignment.id
+          );
+
+
+      if(
+        reactivateError
+      ){
+
+        alert(
+          "固定原班更新失敗：\n"
+          +
+          reactivateError.message
+        );
+
+        return;
+
+      }
+
+    }
+    else{
+
+      const {
+        error:insertAssignmentError
+      } =
+        await supabaseClient
+          .from(
+            "staff_assignments"
+          )
+          .insert(
+            {
+              staff_id:
+                staffId,
+
+              assignment_date:
+                null,
+
+              morning_class_id:
+                homeroom,
+
+              aftercare_class_id:
+                null,
+
+              active:
+                true
+            }
+          );
+
+
+      if(
+        insertAssignmentError
+      ){
+
+        alert(
+          "固定原班建立失敗：\n"
+          +
+          insertAssignmentError.message
+        );
+
+        return;
+
+      }
+
+    }
+
+  }
+
+
+  const aliasResult =
+    await replaceStaffAliases(
+      staffId,
+      aliasText
+    );
+
+
+  if(
+    aliasResult
+    !==
+    true
+  ){
+
+    return;
+
+  }
+
+
+  alert(
+    "✅ 老師資料已儲存。"
+  );
+
+
+  await refreshStaffManagement();
+
+}
+
+
+/*
+==================================================
+老師別名更新
+==================================================
+*/
+
+async function replaceStaffAliases(
+  staffId,
+  aliasText
+){
+
+  const aliases =
+    [
+      ...new Set(
+        String(
+          aliasText || ""
+        )
+        .split(/[,，]/)
+        .map(
+          value =>
+          value.trim()
+        )
+        .filter(Boolean)
+      )
+    ];
+
+
+  const {
+    error:disableError
+  } =
+    await supabaseClient
+      .from("staff_aliases")
+      .update(
+        {
+          active:false
+        }
+      )
+      .eq(
+        "staff_id",
+        staffId
+      );
+
+
+  if(
+    disableError
+  ){
+
+    alert(
+      "老師別名更新失敗：\n"
+      +
+      disableError.message
+    );
+
+    return false;
+
+  }
+
+
+  for(
+    const aliasName
+    of aliases
+  ){
+
+    const {
+      data:existingAlias,
+      error:findError
+    } =
+      await supabaseClient
+        .from(
+          "staff_aliases"
+        )
+        .select(
+          "id,staff_id"
+        )
+        .eq(
+          "alias_name",
+          aliasName
+        )
+        .maybeSingle();
+
+
+    if(
+      findError
+    ){
+
+      alert(
+        "老師別名檢查失敗：\n"
+        +
+        findError.message
+      );
+
+      return false;
+
+    }
+
+
+    if(
+      existingAlias
+      &&
+      existingAlias.staff_id
+      !==
+      staffId
+    ){
+
+      alert(
+        "別名「"
+        +
+        aliasName
+        +
+        "」已經被其他老師使用，請先確認。"
+      );
+
+      return false;
+
+    }
+
+
+    if(
+      existingAlias
+    ){
+
+      const {
+        error:updateError
+      } =
+        await supabaseClient
+          .from(
+            "staff_aliases"
+          )
+          .update(
+            {
+              active:true
+            }
+          )
+          .eq(
+            "id",
+            existingAlias.id
+          );
+
+
+      if(
+        updateError
+      ){
+
+        alert(
+          "老師別名更新失敗：\n"
+          +
+          updateError.message
+        );
+
+        return false;
+
+      }
+
+    }
+    else{
+
+      const {
+        error:insertError
+      } =
+        await supabaseClient
+          .from(
+            "staff_aliases"
+          )
+          .insert(
+            {
+              staff_id:
+                staffId,
+
+              alias_name:
+                aliasName,
+
+              active:
+                true
+            }
+          );
+
+
+      if(
+        insertError
+      ){
+
+        alert(
+          "老師別名新增失敗：\n"
+          +
+          insertError.message
+        );
+
+        return false;
+
+      }
+
+    }
+
+  }
+
+
+  return true;
+
+}
+
+
+/*
+==================================================
+啟用／停用老師
+==================================================
+*/
+
+async function toggleStaffActive(
+  staffId,
+  newActive
+){
+
+  const text =
+    newActive
+    ?
+    "重新啟用"
+    :
+    "停用";
+
+
+  if(
+    !confirm(
+      "確定要"
+      +
+      text
+      +
+      "這位老師嗎？"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("staff")
+      .update(
+        {
+          active:
+            newActive,
+
+          updated_at:
+            new Date()
+              .toISOString()
+        }
+      )
+      .eq(
+        "id",
+        staffId
+      );
+
+
+  if(
+    error
+  ){
+
+    alert(
+      text
+      +
+      "老師失敗：\n"
+      +
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  await refreshStaffManagement();
+
+}
+
+
+/*
+==================================================
+Excel 月排班：讀取檔案
+==================================================
+*/
+  function loadScheduleExcel(event){
+
+  const file =
+    event.target.files?.[0];
+
+
+  if(!file){
+    return;
+  }
+
+
+  if(
+    typeof XLSX === "undefined"
+  ){
+    alert("Excel 解析元件載入失敗，請重新整理頁面後再試。");
+    return;
+  }
+
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload = e => {
+
+    try{
+
+      scheduleWorkbook =
+        XLSX.read(
+          e.target.result,
+          {
+            type:"array",
+            cellDates:true
+          }
+        );
+
+
+      $("scheduleSheetSelect").innerHTML =
+        scheduleWorkbook.SheetNames
+          .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`)
+          .join("");
+
+
+      const preferred =
+        scheduleWorkbook.SheetNames
+          .find(name => /115[- ]?\d+月/.test(name))
+        ||
+        scheduleWorkbook.SheetNames[0];
+
+
+      $("scheduleSheetSelect").value =
+        preferred;
+
+
+      $("scheduleFileState").textContent =
+        `已載入：${file.name}｜${scheduleWorkbook.SheetNames.length} 個工作表`;
+
+
+      parseSelectedScheduleSheet();
+
+    }
+    catch(err){
+
+      console.error(err);
+      alert("Excel 讀取失敗：\n" + (err.message || String(err)));
+
+    }
+
+  };
+
+
+  reader.readAsArrayBuffer(file);
+
+}
+
+
+function cleanExcelName(value){
+
+  return String(value ?? "")
+    .replace(/\u3000/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+}
+
+
+function normalizeSupportName(label){
+
+  let name =
+    cleanExcelName(label);
+
+  name = name
+    .replace(/國小師\s*/g,"")
+    .replace(/國小[-－]\s*/g,"")
+    .replace(/\([^)]*\)/g,"")
+    .replace(/（[^）]*）/g,"")
+    .replace(/\s+/g,"")
+    .trim();
+
+  return name;
+
+}
+
+
+function supportTypeFromLabel(label){
+
+  const text =
+    cleanExcelName(label);
+
+  if(text.includes("巡輔")){
+    return "巡輔";
+  }
+
+  if(text.includes("國小")){
+    return "國小支援";
+  }
+
+  return "其他支援";
+
+}
+
+
+function isSupportLabel(label){
+
+  const text =
+    cleanExcelName(label);
+
+  return (
+    text.includes("巡輔")
+    ||
+    text.includes("國小-")
+    ||
+    text.includes("國小－")
+    ||
+    text.includes("國小師")
+  );
+
+}
+
+
+function staffLookupMaps(){
+
+  const exact = {};
+  const alias = {};
+
+
+  staffList
+    .filter(row => row.active === true)
+    .forEach(row => {
+      exact[cleanExcelName(row.display_name)] = row;
+    });
+
+
+  staffAliases
+    .filter(row => row.active === true)
+    .forEach(row => {
+      const staff = staffList.find(s => s.id === row.staff_id);
+      if(staff && staff.active === true){
+        alias[cleanExcelName(row.alias_name)] = staff;
+      }
+    });
+
+
+  return {exact,alias};
+
+}
+
+
+function parseExcelDate(value){
+
+  if(value instanceof Date && !isNaN(value)){
+    return new Date(
+      value.getFullYear(),
+      value.getMonth(),
+      value.getDate()
+    );
+  }
+
+
+  if(typeof value === "number"){
+
+    const parsed =
+      XLSX.SSF.parse_date_code(value);
+
+    if(parsed){
+      return new Date(parsed.y,parsed.m - 1,parsed.d);
+    }
+
+  }
+
+
+  const text =
+    cleanExcelName(value);
+
+
+  let match =
+    text.match(/(20\d{2})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+
+
+  if(match){
+    return new Date(
+      Number(match[1]),
+      Number(match[2]) - 1,
+      Number(match[3])
+    );
+  }
+
+
+  match =
+    text.match(/(\d{1,2})[\/\-.](\d{1,2})/);
+
+
+  if(match && parsedScheduleYear){
+    return new Date(
+      parsedScheduleYear,
+      Number(match[1]) - 1,
+      Number(match[2])
+    );
+  }
+
+
+  return null;
+
+}
+
+
+function localDateKey(date){
+
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2,"0");
+  const d = String(date.getDate()).padStart(2,"0");
+
+  return `${y}-${m}-${d}`;
+
+}
+
+
+function findScheduleHeaderRow(rows){
+
+  for(let r = 0; r < Math.min(rows.length,12); r++){
+
+    const text =
+      rows[r]
+        .map(cleanExcelName)
+        .join("|");
+
+    if(
+      text.includes("蜜蜂班")
+      &&
+      text.includes("白兔班")
+      &&
+      text.includes("蝴蝶班")
+    ){
+      return r;
+    }
+
+  }
+
+  return -1;
+
+}
+
+
+function scheduleClassGroups(rows,headerRow){
+
+  const header =
+    rows[headerRow] || [];
+
+  const classNames = [
+    {needle:"蜜蜂班",id:"AC03",name:"蜜蜂班"},
+    {needle:"白兔班",id:"AC02",name:"白兔班"},
+    {needle:"蝴蝶班",id:"AC01",name:"蝴蝶班"},
+    {needle:"陽光書屋",id:"AC04",name:"陽光書屋"},
+    {needle:"蘋果班",id:"AC06",name:"蘋果班"},
+    {needle:"櫻桃班",id:"AC05",name:"櫻桃班"}
+  ];
+
+
+  const starts = [];
+
+  classNames.forEach(item => {
+
+    const col =
+      header.findIndex(cell => cleanExcelName(cell).includes(item.needle));
+
+    if(col >= 0){
+      starts.push({...item,col});
+    }
+
+  });
+
+
+  starts.sort((a,b) => a.col - b.col);
+
+
+  return starts.map((item,index) => {
+
+    const next = starts[index + 1];
+
+    let endCol =
+      next
+      ? next.col - 1
+      : item.col;
+
+
+    if(item.id === "AC04"){
+      endCol = item.col;
+    }
+
+    if(item.id === "AC06" || item.id === "AC05"){
+      endCol = item.col + 1;
+    }
+
+    if(item.id === "AC03" || item.id === "AC02" || item.id === "AC01"){
+      endCol = item.col + 1;
+    }
+
+    return {
+      ...item,
+      endCol
+    };
+
+  });
+
+}
+
+
+async function parseSelectedScheduleSheet(){
+
+  if(!scheduleWorkbook){
+    return;
+  }
+
+
+  await refreshStaffManagement();
+
+
+  const sheetName =
+    $("scheduleSheetSelect").value;
+
+  const ws =
+    scheduleWorkbook.Sheets[sheetName];
+
+
+  if(!ws){
+    return;
+  }
+
+
+  const rows =
+    XLSX.utils.sheet_to_json(
+      ws,
+      {
+        header:1,
+        raw:true,
+        defval:null
+      }
+    );
+
+
+  const headerRow =
+    findScheduleHeaderRow(rows);
+
+
+  if(headerRow < 0){
+    alert("找不到課後班欄位。請確認選到正確的月班表工作表。");
+    return;
+  }
+
+
+  const groups =
+    scheduleClassGroups(rows,headerRow);
+
+
+  if(groups.length < 6){
+    alert("班表欄位辨識不完整，目前只找到 " + groups.length + " 個課後班。");
+    return;
+  }
+
+
+  const lookup =
+    staffLookupMaps();
+
+
+  parsedScheduleRows = [];
+  parsedScheduleProblems = [];
+  parsedScheduleYear = null;
+  parsedScheduleMonth = null;
+
+
+  /*
+  先從日期欄找出年月
+  */
+  for(let r = headerRow + 1; r < rows.length; r++){
+
+    const raw = rows[r]?.[0];
+
+    let date = null;
+
+    if(raw instanceof Date && !isNaN(raw)){
+      date = raw;
+    }
+    else{
+      const text = cleanExcelName(raw);
+      const m = text.match(/(20\d{2})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+
+      if(m){
+        date = new Date(
+          Number(m[1]),
+          Number(m[2]) - 1,
+          Number(m[3])
+        );
+      }
+    }
+
+    if(date){
+      parsedScheduleYear = date.getFullYear();
+      parsedScheduleMonth = date.getMonth() + 1;
+      break;
+    }
+
+  }
+
+
+  if(!parsedScheduleYear || !parsedScheduleMonth){
+    alert("無法從班表日期判斷年份與月份。");
+    return;
+  }
+
+
+  const seenStaffDay = {};
+  const formalCountByClassDay = {};
+
+
+  for(let r = headerRow + 1; r < rows.length; r++){
+
+    const row = rows[r] || [];
+
+    const date =
+      parseExcelDate(row[0]);
+
+
+    if(!date){
+      continue;
+    }
+
+
+    if(
+      date.getFullYear() !== parsedScheduleYear
+      ||
+      date.getMonth() + 1 !== parsedScheduleMonth
+    ){
+      continue;
+    }
+
+
+    const dateKey =
+      localDateKey(date);
+
+
+    const wholeRowText =
+      row.map(cleanExcelName).join(" ");
+
+
+    if(
+      wholeRowText.includes("放假")
+      &&
+      groups.every(group => {
+
+        const vals = [];
+
+        for(
+          let c = group.col;
+          c <= group.endCol;
+          c++
+        ){
+          vals.push(
+            cleanExcelName(
+              row[c]
+            )
+          );
+        }
+
+        return vals.filter(Boolean).length <= 1;
+
+      })
+    ){
+      continue;
+    }
+
+
+    for(const group of groups){
+
+      for(
+        let c = group.col;
+        c <= group.endCol;
+        c++
+      ){
+
+        const sourceLabel =
+          cleanExcelName(
+            row[c]
+          );
+
+
+        if(!sourceLabel){
+          continue;
+        }
+
+
+        if(
+          sourceLabel.includes("放假")
+          ||
+          sourceLabel.includes("停課")
+        ){
+          continue;
+        }
+
+
+        if(
+          isSupportLabel(
+            sourceLabel
+          )
+        ){
+
+          parsedScheduleRows.push({
+            kind:"support",
+            assignment_date:dateKey,
+            date:dateKey,
+            aftercare_class_id:group.id,
+            class_id:group.id,
+            support_name:normalizeSupportName(sourceLabel),
+            support_type:supportTypeFromLabel(sourceLabel),
+            source_label:sourceLabel
+          });
+
+          continue;
+        }
+
+
+        const normalized =
+          cleanExcelName(
+            sourceLabel
+          )
+          .replace(/\([^)]*\)/g,"")
+          .replace(/（[^）]*）/g,"")
+          .trim();
+
+
+        const staff =
+          lookup.exact[
+            normalized
+          ]
+          ||
+          lookup.alias[
+            normalized
+          ];
+
+
+        if(!staff){
+
+          parsedScheduleProblems.push({
+            type:"unresolved",
+            date:dateKey,
+            className:group.name,
+            label:sourceLabel,
+            message:`未辨識老師：${sourceLabel}`
+          });
+
+          continue;
+        }
+
+
+        const staffDayKey =
+          `${dateKey}|${staff.id}`;
+
+
+        if(
+          seenStaffDay[
+            staffDayKey
+          ]
+          &&
+          seenStaffDay[
+            staffDayKey
+          ]
+          !==
+          group.id
+        ){
+
+          parsedScheduleProblems.push({
+            type:"duplicate_staff",
+            date:dateKey,
+            className:group.name,
+            label:staff.display_name,
+            message:
+              `${staff.display_name} 同一天被排到 `
+              +
+              `${AFTERCARE_CLASSES[
+                seenStaffDay[
+                  staffDayKey
+                ]
+              ]?.name || seenStaffDay[staffDayKey]}`
+              +
+              ` 與 ${group.name}`
+          });
+
+        }
+        else{
+
+          seenStaffDay[
+            staffDayKey
+          ] =
+            group.id;
+
+        }
+
+
+        const countKey =
+          `${dateKey}|${group.id}`;
+
+
+        formalCountByClassDay[
+          countKey
+        ] =
+          (
+            formalCountByClassDay[
+              countKey
+            ]
+            ||
+            0
+          )
+          +
+          1;
+
+
+        parsedScheduleRows.push({
+          kind:"staff",
+          type:"staff",
+          assignment_date:dateKey,
+          date:dateKey,
+          aftercare_class_id:group.id,
+          class_id:group.id,
+          staff_id:staff.id,
+          staff_name:staff.display_name,
+          source_label:sourceLabel
+        });
+
+      }
+
+    }
+
+  }
+
+
+  Object.entries(
+    formalCountByClassDay
+  )
+  .forEach(
+    ([key,count]) => {
+
+      if(
+        count > 2
+      ){
+
+        const [
+          dateKey,
+          classId
+        ] =
+          key.split("|");
+
+
+        parsedScheduleProblems.push({
+          type:"too_many",
+          date:dateKey,
+          className:
+            AFTERCARE_CLASSES[
+              classId
+            ]?.name
+            ||
+            classId,
+
+          label:
+            String(count),
+
+          message:
+            `正式老師共 ${count} 位，超過每班每日最多 2 位`
+        });
+
+      }
+
+    }
+  );
+
+
+  await renderSchedulePreview();
+
+}
+
+
+/*
+==================================================
+讀取資料庫目前月份排班
+==================================================
+*/
+
+async function loadExistingMonthSchedule(){
+
+  if(
+    !parsedScheduleYear
+    ||
+    !parsedScheduleMonth
+  ){
+
+    return {
+      formal:[],
+      support:[]
+    };
+
+  }
+
+
+  const start =
+    `${parsedScheduleYear}-${String(
+      parsedScheduleMonth
+    ).padStart(2,"0")}-01`;
+
+
+  const nextMonth =
+    parsedScheduleMonth === 12
+    ?
+    `${parsedScheduleYear + 1}-01-01`
+    :
+    `${parsedScheduleYear}-${String(
+      parsedScheduleMonth + 1
+    ).padStart(2,"0")}-01`;
+
+
+  const [
+    formalResult,
+    supportResult
+  ] =
+    await Promise.all([
+
+      supabaseClient
+        .from(
+          "staff_assignments"
+        )
+        .select(
+          "staff_id,assignment_date,aftercare_class_id,active"
+        )
+        .gte(
+          "assignment_date",
+          start
+        )
+        .lt(
+          "assignment_date",
+          nextMonth
+        )
+        .not(
+          "aftercare_class_id",
+          "is",
+          null
+        )
+        .eq(
+          "active",
+          true
+        ),
+
+      supabaseClient
+        .from(
+          "aftercare_support_assignments"
+        )
+        .select(
+          "assignment_date,aftercare_class_id,support_name,support_type,source_label,active"
+        )
+        .gte(
+          "assignment_date",
+          start
+        )
+        .lt(
+          "assignment_date",
+          nextMonth
+        )
+        .eq(
+          "active",
+          true
+        )
+
+    ]);
+
+
+  return {
+
+    formal:
+      formalResult.error
+      ?
+      []
+      :
+      (
+        formalResult.data || []
+      ),
+
+    support:
+      supportResult.error
+      ?
+      []
+      :
+      (
+        supportResult.data || []
+      )
+
+  };
+
+}
+
+
+/*
+==================================================
+班表列唯一鍵
+==================================================
+*/
+
+function scheduleRowKey(
+  row
+){
+
+  if(
+    row.kind === "support"
+  ){
+
+    return (
+      `support|`
+      +
+      `${row.assignment_date}|`
+      +
+      `${row.aftercare_class_id}|`
+      +
+      `${row.support_name}`
+    );
+
+  }
+
+
+  return (
+    `staff|`
+    +
+    `${row.assignment_date}|`
+    +
+    `${row.aftercare_class_id}|`
+    +
+    `${row.staff_id}`
+  );
+
+}
+
+
+/*
+==================================================
+顯示 Excel 預覽與差異
+==================================================
+*/
+
+async function renderSchedulePreview(){
+
+  const existing =
+    await loadExistingMonthSchedule();
+
+
+  const currentRows =
+    [];
+
+
+  existing.formal
+    .forEach(
+      row => {
+
+        const staff =
+          staffList.find(
+            s =>
+            s.id === row.staff_id
+          );
+
+
+        currentRows.push({
+          kind:"staff",
+          assignment_date:
+            row.assignment_date,
+          aftercare_class_id:
+            row.aftercare_class_id,
+          staff_id:
+            row.staff_id,
+          staff_name:
+            staff?.display_name
+            ||
+            "未知老師"
+        });
+
+      }
+    );
+
+
+  existing.support
+    .forEach(
+      row => {
+
+        currentRows.push({
+          kind:"support",
+          assignment_date:
+            row.assignment_date,
+          aftercare_class_id:
+            row.aftercare_class_id,
+          support_name:
+            row.support_name,
+          support_type:
+            row.support_type,
+          source_label:
+            row.source_label
+        });
+
+      }
+    );
+
+
+  const newKeys =
+    new Set(
+      parsedScheduleRows
+        .map(
+          scheduleRowKey
+        )
+    );
+
+
+  const oldKeys =
+    new Set(
+      currentRows
+        .map(
+          scheduleRowKey
+        )
+    );
+
+
+  const added =
+    parsedScheduleRows
+      .filter(
+        row =>
+        !oldKeys.has(
+          scheduleRowKey(
+            row
+          )
+        )
+      );
+
+
+  const removed =
+    currentRows
+      .filter(
+        row =>
+        !newKeys.has(
+          scheduleRowKey(
+            row
+          )
+        )
+      );
+
+
+  const staffCount =
+    parsedScheduleRows
+      .filter(
+        row =>
+        row.kind === "staff"
+      )
+      .length;
+
+
+  const supportCount =
+    parsedScheduleRows
+      .filter(
+        row =>
+        row.kind === "support"
+      )
+      .length;
+
+
+  $("scheduleMonthSummary").textContent =
+    `${parsedScheduleYear}/${String(
+      parsedScheduleMonth
+    ).padStart(2,"0")}`;
+
+
+  $("scheduleStaffCount").textContent =
+    String(
+      staffCount
+    );
+
+
+  $("scheduleSupportCount").textContent =
+    String(
+      supportCount
+    );
+
+
+  $("scheduleProblemCount").textContent =
+    String(
+      parsedScheduleProblems.length
+    );
+
+
+  const previewRows =
+    [];
+
+
+  parsedScheduleProblems
+    .forEach(
+      item => {
+
+        previewRows.push(`
+          <div class="previewRow previewProblem">
+
+            <div>
+              ${escapeHtml(
+                item.date
+              )}
+            </div>
+
+            <div>
+              ${escapeHtml(
+                item.className
+                ||
+                "—"
+              )}
+            </div>
+
+            <div>
+              ⚠️
+              ${escapeHtml(
+                item.message
+              )}
+            </div>
+
+          </div>
+        `);
+
+      }
+    );
+
+
+  added
+    .slice(
+      0,
+      120
+    )
+    .forEach(
+      row => {
+
+        const name =
+          row.kind === "support"
+          ?
+          `${row.support_name}（${row.support_type || "支援"}）`
+          :
+          row.staff_name;
+
+
+        previewRows.push(`
+          <div class="previewRow">
+
+            <div>
+              ${escapeHtml(
+                row.assignment_date
+              )}
+            </div>
+
+            <div>
+              ${escapeHtml(
+                AFTERCARE_CLASSES[
+                  row.aftercare_class_id
+                ]?.name
+                ||
+                row.aftercare_class_id
+              )}
+            </div>
+
+            <div class="diffAdd">
+              ＋
+              ${escapeHtml(
+                name
+              )}
+            </div>
+
+          </div>
+        `);
+
+      }
+    );
+
+
+  removed
+    .slice(
+      0,
+      120
+    )
+    .forEach(
+      row => {
+
+        const name =
+          row.kind === "support"
+          ?
+          `${row.support_name}（支援）`
+          :
+          row.staff_name;
+
+
+        previewRows.push(`
+          <div class="previewRow">
+
+            <div>
+              ${escapeHtml(
+                row.assignment_date
+              )}
+            </div>
+
+            <div>
+              ${escapeHtml(
+                AFTERCARE_CLASSES[
+                  row.aftercare_class_id
+                ]?.name
+                ||
+                row.aftercare_class_id
+              )}
+            </div>
+
+            <div class="diffRemove">
+              －
+              ${escapeHtml(
+                name
+              )}
+            </div>
+
+          </div>
+        `);
+
+      }
+    );
+
+
+  if(
+    !previewRows.length
+  ){
+
+    previewRows.push(
+      `
+        <div
+          class="empty"
+          style="margin:10px"
+        >
+          Excel 與目前資料庫班表沒有差異。
+        </div>
+      `
+    );
+
+  }
+
+
+  $("schedulePreview").style.display =
+    "block";
+
+
+  $("schedulePreviewBody").innerHTML =
+    previewRows.join("");
+
+
+  $("currentScheduleList").innerHTML =
+    `
+      <div
+        class="helper"
+        style="
+          font-size:.86rem;
+          line-height:1.8
+        "
+      >
+        目前資料庫：
+        ${currentRows.length}
+        筆
+        <br>
+
+        Excel 新班表：
+        ${parsedScheduleRows.length}
+        筆
+        <br>
+
+        <span class="diffAdd">
+          新增／變更：
+          ${added.length}
+          筆
+        </span>
+
+        <br>
+
+        <span class="diffRemove">
+          將被取代：
+          ${removed.length}
+          筆
+        </span>
+      </div>
+    `;
+
+
+  $("scheduleImportBtn").disabled =
+    parsedScheduleProblems.length > 0
+    ||
+    parsedScheduleRows.length === 0;
+
+}
+
+
+/*
+==================================================
+確認匯入 Excel 月班表
+==================================================
+*/
+  async function confirmScheduleImport(){
+
+  if(
+    !parsedScheduleYear
+    ||
+    !parsedScheduleMonth
+    ||
+    !parsedScheduleRows.length
+  ){
+
+    alert(
+      "目前沒有可匯入的班表。"
+    );
+
+    return;
+
+  }
+
+
+  if(
+    parsedScheduleProblems.length
+  ){
+
+    alert(
+      "班表仍有未處理問題，請先修正 Excel 後重新解析。"
+    );
+
+    return;
+
+  }
+
+
+  if(
+    !confirm(
+      `確定要匯入 ${parsedScheduleYear}/${String(
+        parsedScheduleMonth
+      ).padStart(
+        2,
+        "0"
+      )} 課後班表嗎？\n\n系統會以這份 Excel 更新該月份的課後排班。`
+    )
+  ){
+
+    return;
+
+  }
+
+
+  $("scheduleImportBtn").disabled =
+    true;
+
+
+  $("scheduleImportBtn").textContent =
+    "匯入中...";
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .rpc(
+        "admin_import_aftercare_schedule",
+        {
+          p_year:
+            parsedScheduleYear,
+
+          p_month:
+            parsedScheduleMonth,
+
+          p_rows:
+            parsedScheduleRows
+        }
+      );
+
+
+  $("scheduleImportBtn").textContent =
+    "✅ 確認匯入本月班表";
+
+
+  if(
+    error
+  ){
+
+    $("scheduleImportBtn").disabled =
+      false;
+
+
+    alert(
+      "班表匯入失敗：\n\n"
+      +
+      error.message
+    );
+
+
+    return;
+
+  }
+
+
+  alert(
+    "✅ 月班表匯入完成。\n\n"
+    +
+    (
+      data
+      ?
+      JSON.stringify(
+        data,
+        null,
+        2
+      )
+      :
+      ""
+    )
+  );
+
+
+  await renderSchedulePreview();
 
 }
 
