@@ -756,13 +756,23 @@ button{
     </div>
 
 
-    <button
-      class="btn btnBlue"
-      type="button"
-      onclick="refreshAll()"
-    >
-      ↻ 重新整理
-    </button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a
+        class="btn btnGreen"
+        href="staff-admin.html"
+        style="text-decoration:none;display:inline-flex;align-items:center"
+      >
+        👩‍🏫 老師與排班管理
+      </a>
+
+      <button
+        class="btn btnBlue"
+        type="button"
+        onclick="refreshAll()"
+      >
+        ↻ 重新整理
+      </button>
+    </div>
 
   </div>
 
@@ -892,7 +902,7 @@ button{
 <!-- 老師與課後班排班管理 V16 -->
 <!-- ====================================== -->
 
-<div class="panel adminManagePanel">
+<div class="panel adminManagePanel" style="display:none">
   <div class="panelTitle">👩‍🏫 老師與課後班管理</div>
   <div class="helper">正式啟用名單以 27 位人員為主；停用舊資料收在下方，不再佔滿畫面。</div>
 
@@ -1641,8 +1651,7 @@ async function refreshAll(){
 
   await Promise.all([
     refreshPickupRecords(),
-    refreshRequests(),
-    refreshStaffManagement()
+    refreshRequests()
   ]);
 
 }
