@@ -759,6 +759,13 @@ button{
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a
         class="btn btnGray"
+        href="teacher.html?v=7"
+        style="text-decoration:none;display:inline-flex;align-items:center"
+      >
+        ← 教職員平台
+      </a>
+      <a
+        class="btn btnGray"
         href="admin.html"
         style="text-decoration:none;display:inline-flex;align-items:center"
       >
@@ -785,7 +792,7 @@ button{
   </div>
 
 
-  <div class="testBox">
+  <div id="adminLoginBox" class="testBox">
 
     <div class="testTitle">
       🧪 行政測試登入
@@ -1167,7 +1174,44 @@ const SUPABASE_PUBLISHABLE_KEY =
 const supabaseClient =
   supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth:{
+        storageKey:
+          "leye-admin-auth",
+
+        persistSession:
+          true,
+
+        autoRefreshToken:
+          true,
+
+        detectSessionInUrl:
+          false
+      }
+    }
+  );
+
+
+const teacherSessionClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth:{
+        storageKey:
+          "leye-teacher-auth",
+
+        persistSession:
+          true,
+
+        autoRefreshToken:
+          true,
+
+        detectSessionInUrl:
+          false
+      }
+    }
   );
 
 
@@ -1387,6 +1431,12 @@ async function login(){
 
 async function logout(){
 
+  sessionStorage.setItem(
+    "leye-admin-manual-logout",
+    "1"
+  );
+
+
   await supabaseClient
     .auth
     .signOut();
@@ -1414,6 +1464,15 @@ async function logout(){
 
   $("password").value =
     "";
+
+
+  if(
+    $("adminLoginBox")
+  ){
+    $("adminLoginBox")
+      .style.display =
+        "block";
+  }
 
 
   $("loginState").textContent =
@@ -1593,6 +1652,20 @@ async function validateAdmin(){
 
   currentStaff =
     staff;
+
+
+  sessionStorage.removeItem(
+    "leye-admin-manual-logout"
+  );
+
+
+  if(
+    $("adminLoginBox")
+  ){
+    $("adminLoginBox")
+      .style.display =
+        "none";
+  }
 
 
   $("loginState").innerHTML =
@@ -6646,9 +6719,15 @@ function escapeHtml(
 
 async function restoreSession(){
 
+  /*
+  ------------------------------------------------
+  1. 先恢復行政頁自己既有的 Session
+  ------------------------------------------------
+  */
+
   const {
-    data,
-    error
+    data:adminData,
+    error:adminError
   } =
     await supabaseClient
       .auth
@@ -6656,27 +6735,138 @@ async function restoreSession(){
 
 
   if(
-    error
+    adminError
+  ){
+
+    console.error(
+      "admin session restore error:",
+      adminError
+    );
+
+  }
+
+
+  if(
+    adminData
+    &&
+    adminData.session
+    &&
+    adminData.session.user
+  ){
+
+    currentUser =
+      adminData.session.user;
+
+
+    const ok =
+      await validateAdmin();
+
+
+    if(
+      ok
+    ){
+      return;
+    }
+
+  }
+
+
+  /*
+  ------------------------------------------------
+  2. 若行政頁沒有有效登入，
+     嘗試沿用教職員平台的老師 Session
+  ------------------------------------------------
+  */
+
+  if(
+    sessionStorage.getItem(
+      "leye-admin-manual-logout"
+    ) === "1"
   ){
 
     $("loginState").textContent =
-      "Supabase：讀取登入狀態失敗";
+      "Supabase：尚未登入行政帳號";
 
     return;
 
   }
 
 
+  const {
+    data:teacherData,
+    error:teacherError
+  } =
+    await teacherSessionClient
+      .auth
+      .getSession();
+
+
   if(
-    !data
+    teacherError
+  ){
+
+    console.error(
+      "teacher session restore error:",
+      teacherError
+    );
+
+  }
+
+
+  if(
+    !teacherData
     ||
-    !data.session
+    !teacherData.session
     ||
-    !data.session.user
+    !teacherData.session.user
   ){
 
     $("loginState").textContent =
-      "Supabase：尚未登入行政測試帳號";
+      "Supabase：尚未登入行政帳號";
+
+    return;
+
+  }
+
+
+  $("loginState").textContent =
+    "Supabase：正在從教職員平台確認行政身分...";
+
+
+  const {
+    data:setData,
+    error:setError
+  } =
+    await supabaseClient
+      .auth
+      .setSession(
+        {
+          access_token:
+            teacherData.session.access_token,
+
+          refresh_token:
+            teacherData.session.refresh_token
+        }
+      );
+
+
+  if(
+    setError
+    ||
+    !setData
+    ||
+    !setData.session
+    ||
+    !setData.session.user
+  ){
+
+    console.error(
+      "admin teacher SSO setSession error:",
+      setError
+    );
+
+    $("loginState").textContent =
+      "Supabase：教職員登入狀態轉入失敗";
 
     return;
 
@@ -6684,10 +6874,36 @@ async function restoreSession(){
 
 
   currentUser =
-    data.session.user;
+    setData.session.user;
 
 
-  await validateAdmin();
+  const ok =
+    await validateAdmin();
+
+
+  if(
+    !ok
+  ){
+
+    await supabaseClient
+      .auth
+      .signOut();
+
+    currentUser =
+      null;
+
+    currentStaff =
+      null;
+
+    if(
+      $("adminLoginBox")
+    ){
+      $("adminLoginBox")
+        .style.display =
+          "block";
+    }
+
+  }
 
 }
 
