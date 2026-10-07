@@ -419,6 +419,14 @@
           重新載入
         </button>
 
+        <button
+          id="lineReloginBtn"
+          class="primary hidden"
+          type="button"
+        >
+          重新登入 LINE
+        </button>
+
       </div>
     </section>
   </main>
@@ -515,6 +523,73 @@ function roleLabel(role){
   }
 
   return "教職員";
+}
+
+function isLineTokenExpiredError(err){
+  const code =
+    err?.data?.error ||
+    err?.data?.code ||
+    "";
+
+  const message =
+    String(
+      err?.message ||
+      err?.data?.message ||
+      ""
+    );
+
+  return (
+    code === "invalid_line_token"
+    ||
+    message.includes("LINE 身分驗證失敗")
+  );
+}
+
+async function forceLineRelogin(){
+  try{
+    el("lineReloginBtn")
+      .disabled = true;
+
+    el("lineReloginBtn")
+      .textContent =
+        "正在開啟 LINE 登入…";
+
+    try{
+      await teacherSupabase
+        .auth
+        .signOut();
+    }
+    catch(_){ }
+
+    if(
+      liff.isLoggedIn()
+    ){
+      liff.logout();
+    }
+
+    liff.login({
+      redirectUri:
+        window.location.href
+    });
+  }
+  catch(err){
+    console.error(
+      "LINE relogin error:",
+      err
+    );
+
+    el("lineReloginBtn")
+      .disabled = false;
+
+    el("lineReloginBtn")
+      .textContent =
+        "重新登入 LINE";
+
+    showStatus(
+      "無法重新開啟 LINE 登入，請關閉此分頁後再從老師入口進入。",
+      "error"
+    );
+  }
 }
 
 async function callFunction(
@@ -959,6 +1034,31 @@ async function init(){
         "hidden"
       );
 
+    if(
+      isLineTokenExpiredError(err)
+    ){
+      el("pageIntro")
+        .innerHTML =
+          "LINE 登入已逾期。<br>請重新登入 LINE 後繼續。";
+
+      el("lineReloginBtn")
+        .classList.remove(
+          "hidden"
+        );
+
+      el("reloadBtn")
+        .classList.add(
+          "hidden"
+        );
+
+      showStatus(
+        "LINE 登入憑證已逾期。請按下方「重新登入 LINE」，不需要重新綁定老師姓名。",
+        "warn"
+      );
+
+      return;
+    }
+
     el("reloadBtn")
       .classList.remove(
         "hidden"
@@ -1086,6 +1186,12 @@ el("reloadBtn")
     "click",
     () =>
       location.reload()
+  );
+
+el("lineReloginBtn")
+  .addEventListener(
+    "click",
+    forceLineRelogin
   );
 
 init();
