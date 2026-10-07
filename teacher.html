@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>樂業附幼｜教職員 LINE 綁定</title>
+
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <style>
+    :root{
+      --bg:#f5f7f4;
+      --card:#ffffff;
+      --text:#243126;
+      --muted:#6f7c71;
+      --green:#26743d;
+      --green2:#eaf4ec;
+      --line:#dce5dd;
+      --danger:#b33a3a;
+      --warn:#9a6a00;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      width:min(560px,100%);
+      margin:0 auto;
+      padding:24px 16px 40px;
+    }
+    .brand{
+      text-align:center;
+      margin-bottom:18px;
+    }
+    .brand h1{
+      margin:0 0 6px;
+      font-size:24px;
+    }
+    .brand p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:20px;
+      box-shadow:0 8px 24px rgba(35,55,40,.06);
+    }
+    .profile{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px;
+      border-radius:14px;
+      background:var(--green2);
+      margin-bottom:18px;
+    }
+    .avatar{
+      width:50px;
+      height:50px;
+      border-radius:50%;
+      object-fit:cover;
+      background:#ddd;
+      flex:0 0 auto;
+    }
+    .profileName{
+      font-weight:700;
+      font-size:17px;
+    }
+    .profileSub{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:3px;
+    }
+    label{
+      display:block;
+      font-weight:700;
+      margin:0 0 8px;
+    }
+    select{
+      width:100%;
+      height:48px;
+      border:1px solid #cfd9d1;
+      border-radius:12px;
+      padding:0 12px;
+      font-size:16px;
+      background:#fff;
+    }
+    button{
+      width:100%;
+      border:0;
+      border-radius:12px;
+      padding:14px 16px;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:14px;
+    }
+    .primary{
+      background:var(--green);
+      color:#fff;
+    }
+    .primary:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+    }
+    .secondary{
+      background:#eef1ee;
+      color:#344438;
+    }
+    .status{
+      margin-top:16px;
+      padding:12px 14px;
+      border-radius:12px;
+      line-height:1.65;
+      font-size:14px;
+      display:none;
+      white-space:pre-line;
+    }
+    .status.show{display:block}
+    .status.info{background:#eef4ff;color:#315278}
+    .status.ok{background:#eaf6ed;color:#236238}
+    .status.warn{background:#fff6dd;color:#805d00}
+    .status.error{background:#fff0f0;color:#992d2d}
+    .note{
+      margin-top:18px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+    .loading{
+      text-align:center;
+      padding:28px 10px;
+      color:var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+    <div class="brand">
+      <h1>樂業附幼教職員平台</h1>
+      <p>首次使用請完成 LINE 身分綁定。<br>送出後需由行政人員確認才會正式啟用。</p>
+    </div>
+
+    <section class="card">
+      <div id="loading" class="loading">正在連接 LINE…</div>
+
+      <div id="content" style="display:none">
+        <div class="profile">
+          <img id="avatar" class="avatar" alt="LINE 頭像" />
+          <div>
+            <div id="lineName" class="profileName">—</div>
+            <div class="profileSub">目前登入的 LINE 帳號</div>
+          </div>
+        </div>
+
+        <label for="staffSelect">請選擇您的姓名</label>
+        <select id="staffSelect">
+          <option value="">載入老師名單中…</option>
+        </select>
+
+        <button id="submitBtn" class="primary" type="button" disabled>
+          送出 LINE 綁定申請
+        </button>
+
+        <button id="reloadBtn" class="secondary" type="button" style="display:none">
+          重新載入
+        </button>
+
+        <div id="status" class="status"></div>
+
+        <div class="note">
+          為避免綁錯帳號，送出申請後不會立即完成綁定。行政人員確認您的姓名與 LINE 帳號後，才會正式啟用教職員平台。
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+const LIFF_ID = "2011537895-h5RKwVM4";
+const FUNCTION_URL = "https://cqtvrpiapssjjctwqivn.supabase.co/functions/v1/line-teacher-bind";
+
+let idToken = "";
+let profile = null;
+
+const el = (id) => document.getElementById(id);
+
+function showStatus(message, type="info"){
+  const box = el("status");
+  box.className = "status show " + type;
+  box.textContent = message;
+}
+
+function setBusy(busy){
+  el("submitBtn").disabled = busy || !el("staffSelect").value;
+  el("submitBtn").textContent = busy ? "送出中…" : "送出 LINE 綁定申請";
+}
+
+async function callTeacherFunction(payload){
+  const res = await fetch(FUNCTION_URL, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(payload)
+  });
+
+  let data = {};
+  try { data = await res.json(); } catch (_) {}
+
+  if (!res.ok) {
+    const err = new Error(data?.message || "系統目前無法處理，請稍後再試。");
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+async function loadStaff(){
+  const data = await callTeacherFunction({
+    action: "list_staff",
+    idToken
+  });
+
+  const list = Array.isArray(data.staff) ? data.staff : [];
+  const select = el("staffSelect");
+
+  select.innerHTML = '<option value="">請選擇您的姓名</option>';
+
+  for (const item of list) {
+    const opt = document.createElement("option");
+    opt.value = item.id;
+    opt.textContent = item.name;
+    select.appendChild(opt);
+  }
+
+  if (!list.length) {
+    select.innerHTML = '<option value="">目前沒有可綁定的老師</option>';
+    showStatus("目前讀不到正式老師名單，請聯絡行政人員。", "warn");
+  }
+}
+
+async function init(){
+  try {
+    await liff.init({ liffId: LIFF_ID });
+
+    if (!liff.isLoggedIn()) {
+      liff.login({ redirectUri: window.location.href });
+      return;
+    }
+
+    profile = await liff.getProfile();
+    idToken = liff.getIDToken();
+
+    if (!idToken) {
+      throw new Error("無法取得 LINE 登入驗證資料，請重新開啟老師平台。");
+    }
+
+    el("lineName").textContent = profile?.displayName || "LINE 使用者";
+
+    if (profile?.pictureUrl) {
+      el("avatar").src = profile.pictureUrl;
+    } else {
+      el("avatar").style.display = "none";
+    }
+
+    el("loading").style.display = "none";
+    el("content").style.display = "block";
+
+    await loadStaff();
+
+  } catch (err) {
+    console.error(err);
+    el("loading").style.display = "none";
+    el("content").style.display = "block";
+    el("reloadBtn").style.display = "block";
+    showStatus(err?.message || "老師平台載入失敗，請重新開啟。", "error");
+  }
+}
+
+el("staffSelect").addEventListener("change", () => {
+  el("submitBtn").disabled = !el("staffSelect").value;
+});
+
+el("submitBtn").addEventListener("click", async () => {
+  const staffId = el("staffSelect").value;
+  const staffName = el("staffSelect").selectedOptions[0]?.textContent || "";
+
+  if (!staffId) return;
+
+  const ok = confirm(
+    `請確認：\n\nLINE：${profile?.displayName || "LINE 使用者"}\n老師姓名：${staffName}\n\n確定送出綁定申請嗎？`
+  );
+  if (!ok) return;
+
+  try {
+    setBusy(true);
+    showStatus("正在送出綁定申請…", "info");
+
+    const data = await callTeacherFunction({
+      action: "bind",
+      idToken,
+      staffId
+    });
+
+    if (data.status === "already_bound") {
+      showStatus(
+        `已完成綁定。\n老師：${data.staffName || staffName}\nLINE：${data.lineDisplayName || profile?.displayName || ""}`,
+        "ok"
+      );
+      el("staffSelect").disabled = true;
+      el("submitBtn").style.display = "none";
+      return;
+    }
+
+    showStatus(
+      `申請已送出。\n老師：${data.staffName || staffName}\nLINE：${data.lineDisplayName || profile?.displayName || ""}\n\n請等待行政人員確認。`,
+      "ok"
+    );
+
+    el("staffSelect").disabled = true;
+    el("submitBtn").style.display = "none";
+
+  } catch (err) {
+    console.error(err);
+    showStatus(err?.message || "送出失敗，請稍後再試。", "error");
+  } finally {
+    setBusy(false);
+  }
+});
+
+el("reloadBtn").addEventListener("click", () => location.reload());
+
+init();
+</script>
+</body>
+</html>
