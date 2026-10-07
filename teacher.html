@@ -6,7 +6,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
-  <title>樂業附幼｜教職員平台</title>
+  <title>樂業附幼｜教職員平台 V7</title>
 
   <script
     charset="utf-8"
@@ -149,6 +149,25 @@
       font-size:12px;
       font-weight:700;
       color:#415046;
+    }
+
+    .adminPortalBtn{
+      display:flex;
+      width:100%;
+      align-items:center;
+      justify-content:center;
+      margin-top:14px;
+      padding:13px 14px;
+      border-radius:12px;
+      background:#243126;
+      color:#fff;
+      text-decoration:none;
+      font-size:15px;
+      font-weight:800;
+    }
+
+    .adminPortalBtn:hover{
+      opacity:.92;
     }
 
     .scopeGrid{
@@ -515,6 +534,15 @@
             </div>
 
             <div id="roleBadge" class="roleBadge">—</div>
+
+            <a
+              id="adminPortalBtn"
+              class="adminPortalBtn hidden"
+              href="admin.html?v=17"
+              onclick="prepareAdminPortal(event)"
+            >
+              ⚙️ 進入行政管理平台
+            </a>
 
             <div class="scopeGrid">
               <div class="scopeCard">
@@ -1326,6 +1354,20 @@ async function loadTeacherTodayItems(){
   return data;
 }
 
+
+function prepareAdminPortal(event){
+  event.preventDefault();
+
+  // 若行政人員曾在行政頁按過「登出」，
+  // 從老師平台再次進入時允許重新啟用老師 Session 單一登入。
+  sessionStorage.removeItem(
+    "leye-admin-manual-logout"
+  );
+
+  window.location.href =
+    "admin.html?v=17";
+}
+
 async function establishTeacherSession(
   statusData
 ){
@@ -1424,6 +1466,21 @@ async function establishTeacherSession(
       roleLabel(
         staff.role
       );
+
+    if(
+      staff.role === "admin"
+    ){
+      el("adminPortalBtn")
+        .classList.remove(
+          "hidden"
+        );
+    }
+    else{
+      el("adminPortalBtn")
+        .classList.add(
+          "hidden"
+        );
+    }
 
     el("workEntry")
       .classList.remove(
