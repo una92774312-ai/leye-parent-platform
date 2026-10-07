@@ -183,6 +183,190 @@
       font-weight:500;
     }
 
+    .todayBox{
+      margin-top:18px;
+      border-top:1px solid var(--line);
+      padding-top:18px;
+    }
+
+    .todayHeader{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .todayTitle{
+      font-size:18px;
+      font-weight:800;
+      margin:0;
+    }
+
+    .todayDate{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .totalBadge{
+      min-width:42px;
+      height:32px;
+      padding:0 10px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      background:var(--green);
+      color:#fff;
+      font-weight:800;
+      font-size:14px;
+    }
+
+    .todayCounts{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      margin-bottom:14px;
+    }
+
+    .countCard{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 8px;
+      background:#fafcf9;
+      text-align:center;
+    }
+
+    .countNum{
+      font-size:21px;
+      font-weight:800;
+      line-height:1.1;
+    }
+
+    .countLabel{
+      margin-top:5px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .itemGroup{
+      margin-top:14px;
+    }
+
+    .itemGroupHeader{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:15px;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    .groupCount{
+      display:inline-flex;
+      min-width:24px;
+      height:24px;
+      padding:0 7px;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      background:#eef1ee;
+      color:#46544a;
+      font-size:12px;
+    }
+
+    .itemList{
+      display:grid;
+      gap:8px;
+    }
+
+    .studentItem{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      background:#fff;
+    }
+
+    .studentTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .studentName{
+      font-size:16px;
+      font-weight:800;
+    }
+
+    .studentClass{
+      margin-top:2px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .itemBadge{
+      flex:0 0 auto;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+      background:#eef1ee;
+      color:#46544a;
+    }
+
+    .itemBadge.leave{
+      background:#f3edff;
+      color:#6941a5;
+    }
+
+    .itemBadge.late{
+      background:#fff2dd;
+      color:#8a5b00;
+    }
+
+    .itemBadge.waiting{
+      background:#eaf3ff;
+      color:#315f91;
+    }
+
+    .itemDetail{
+      margin-top:8px;
+      font-size:13px;
+      line-height:1.65;
+      color:#3d4b40;
+    }
+
+    .itemDetail strong{
+      font-weight:800;
+    }
+
+    .todayEmpty{
+      border:1px dashed #cfd9d1;
+      border-radius:12px;
+      padding:18px 12px;
+      color:var(--muted);
+      text-align:center;
+      font-size:13px;
+      background:#fafcf9;
+    }
+
+    @media (max-width:480px){
+      .todayCounts{
+        grid-template-columns:1fr 1fr 1fr;
+      }
+
+      .countNum{
+        font-size:18px;
+      }
+
+      .countLabel{
+        font-size:11px;
+      }
+    }
+
     label{
       display:block;
       font-weight:700;
@@ -351,6 +535,64 @@
 
             <div id="scopeStatus" class="status show info">
               正在讀取老師可查看範圍…
+            </div>
+
+            <div id="todayItemsSection" class="todayBox">
+              <div class="todayHeader">
+                <div>
+                  <div class="todayTitle">今日學生事項</div>
+                  <div id="todayItemsDate" class="todayDate">讀取中…</div>
+                </div>
+
+                <div id="todayTotalBadge" class="totalBadge">0</div>
+              </div>
+
+              <div class="todayCounts">
+                <div class="countCard">
+                  <div id="leaveCount" class="countNum">0</div>
+                  <div class="countLabel">今日請假</div>
+                </div>
+
+                <div class="countCard">
+                  <div id="lateCount" class="countNum">0</div>
+                  <div class="countLabel">延遲通知</div>
+                </div>
+
+                <div class="countCard">
+                  <div id="waitingCount" class="countNum">0</div>
+                  <div class="countLabel">等待接送</div>
+                </div>
+              </div>
+
+              <div id="todayItemsStatus" class="status show info">
+                正在讀取今日學生事項…
+              </div>
+
+              <div id="todayItemsContent" class="hidden">
+                <div class="itemGroup">
+                  <div class="itemGroupHeader">
+                    <span>🟣 今日請假</span>
+                    <span id="leaveGroupCount" class="groupCount">0</span>
+                  </div>
+                  <div id="leaveItems" class="itemList"></div>
+                </div>
+
+                <div class="itemGroup">
+                  <div class="itemGroupHeader">
+                    <span>🟠 延遲接送通知</span>
+                    <span id="lateGroupCount" class="groupCount">0</span>
+                  </div>
+                  <div id="lateItems" class="itemList"></div>
+                </div>
+
+                <div class="itemGroup">
+                  <div class="itemGroupHeader">
+                    <span>🔵 等待接送</span>
+                    <span id="waitingGroupCount" class="groupCount">0</span>
+                  </div>
+                  <div id="waitingItems" class="itemList"></div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -728,6 +970,362 @@ async function loadTeacherScope(){
   return data;
 }
 
+
+function formatClock(value){
+  if(!value){
+    return "—";
+  }
+
+  const text = String(value);
+
+  if(
+    /^\d{2}:\d{2}/.test(text)
+  ){
+    return text.slice(0,5);
+  }
+
+  return text;
+}
+
+function formatDateText(value){
+  if(!value){
+    return "今日";
+  }
+
+  const parts = String(value).split("-");
+
+  if(parts.length === 3){
+    return `${Number(parts[1])}/${Number(parts[2])}`;
+  }
+
+  return String(value);
+}
+
+function setText(id, value){
+  const node = el(id);
+
+  if(node){
+    node.textContent =
+      value == null
+        ? ""
+        : String(value);
+  }
+}
+
+function makeStudentItem(
+  item,
+  type
+){
+  const card =
+    document.createElement("div");
+
+  card.className =
+    "studentItem";
+
+  const top =
+    document.createElement("div");
+
+  top.className =
+    "studentTop";
+
+  const left =
+    document.createElement("div");
+
+  const name =
+    document.createElement("div");
+
+  name.className =
+    "studentName";
+
+  name.textContent =
+    item?.child_name ||
+    "未命名學生";
+
+  const className =
+    document.createElement("div");
+
+  className.className =
+    "studentClass";
+
+  className.textContent =
+    item?.morning_class_name ||
+    item?.morning_class_id ||
+    "原班未設定";
+
+  left.appendChild(name);
+  left.appendChild(className);
+
+  const badge =
+    document.createElement("div");
+
+  badge.className =
+    "itemBadge";
+
+  if(type === "leave"){
+    badge.classList.add("leave");
+
+    badge.textContent =
+      item?.status === "approved"
+        ? "已核准"
+        : "請假";
+  }
+  else if(type === "late"){
+    badge.classList.add("late");
+    badge.textContent =
+      "延遲";
+  }
+  else{
+    badge.classList.add("waiting");
+    badge.textContent =
+      "等待";
+  }
+
+  top.appendChild(left);
+  top.appendChild(badge);
+
+  const detail =
+    document.createElement("div");
+
+  detail.className =
+    "itemDetail";
+
+  if(type === "leave"){
+    const rows = [];
+
+    if(item?.reason){
+      rows.push(
+        `原因：${item.reason}`
+      );
+    }
+
+    if(item?.note){
+      rows.push(
+        `備註：${item.note}`
+      );
+    }
+
+    if(
+      item?.status === "pending"
+    ){
+      rows.push(
+        "狀態：待處理"
+      );
+    }
+
+    detail.textContent =
+      rows.length
+        ? rows.join("\n")
+        : "今日請假";
+  }
+  else if(type === "late"){
+    const rows = [
+      `原訂接送：${formatClock(item?.scheduled_pickup_time)}`,
+      `預計抵達：${formatClock(item?.expected_arrival_time)}`
+    ];
+
+    if(item?.pickup_person){
+      rows.push(
+        `接送者：${item.pickup_person}`
+      );
+    }
+
+    if(item?.notice_reason){
+      rows.push(
+        `原因：${item.notice_reason}`
+      );
+    }
+
+    detail.textContent =
+      rows.join("\n");
+  }
+  else{
+    const rows = [
+      `原訂接送：${formatClock(item?.scheduled_pickup_time)}`
+    ];
+
+    if(item?.pickup_person){
+      rows.push(
+        `接送者：${item.pickup_person}`
+      );
+    }
+
+    detail.textContent =
+      rows.join("\n");
+  }
+
+  detail.style.whiteSpace =
+    "pre-line";
+
+  card.appendChild(top);
+  card.appendChild(detail);
+
+  return card;
+}
+
+function renderItemList(
+  containerId,
+  items,
+  type
+){
+  const container =
+    el(containerId);
+
+  container.innerHTML = "";
+
+  if(
+    !Array.isArray(items)
+    ||
+    items.length === 0
+  ){
+    const empty =
+      document.createElement("div");
+
+    empty.className =
+      "todayEmpty";
+
+    empty.textContent =
+      "目前沒有";
+
+    container.appendChild(
+      empty
+    );
+
+    return;
+  }
+
+  for(
+    const item of items
+  ){
+    container.appendChild(
+      makeStudentItem(
+        item,
+        type
+      )
+    );
+  }
+}
+
+async function loadTeacherTodayItems(){
+  const statusBox =
+    el("todayItemsStatus");
+
+  statusBox.className =
+    "status show info";
+
+  statusBox.textContent =
+    "正在讀取今日學生事項…";
+
+  const {
+    data,
+    error
+  } =
+    await teacherSupabase.rpc(
+      "get_teacher_today_items"
+    );
+
+  if(error){
+    console.error(
+      "get_teacher_today_items error:",
+      error
+    );
+
+    throw new Error(
+      "今日學生事項讀取失敗。"
+    );
+  }
+
+  const counts =
+    data?.counts || {};
+
+  const leave =
+    Array.isArray(data?.leave)
+      ? data.leave
+      : [];
+
+  const late =
+    Array.isArray(data?.late_notice)
+      ? data.late_notice
+      : [];
+
+  const waiting =
+    Array.isArray(data?.pickup_waiting)
+      ? data.pickup_waiting
+      : [];
+
+  setText(
+    "todayItemsDate",
+    `${formatDateText(data?.date)} 今日`
+  );
+
+  setText(
+    "todayTotalBadge",
+    counts.total ?? 0
+  );
+
+  setText(
+    "leaveCount",
+    counts.leave ?? leave.length
+  );
+
+  setText(
+    "lateCount",
+    counts.late_notice ?? late.length
+  );
+
+  setText(
+    "waitingCount",
+    counts.pickup_waiting ?? waiting.length
+  );
+
+  setText(
+    "leaveGroupCount",
+    counts.leave ?? leave.length
+  );
+
+  setText(
+    "lateGroupCount",
+    counts.late_notice ?? late.length
+  );
+
+  setText(
+    "waitingGroupCount",
+    counts.pickup_waiting ?? waiting.length
+  );
+
+  renderItemList(
+    "leaveItems",
+    leave,
+    "leave"
+  );
+
+  renderItemList(
+    "lateItems",
+    late,
+    "late"
+  );
+
+  renderItemList(
+    "waitingItems",
+    waiting,
+    "waiting"
+  );
+
+  el("todayItemsContent")
+    .classList.remove(
+      "hidden"
+    );
+
+  statusBox.className =
+    "status show ok";
+
+  statusBox.textContent =
+    counts.total > 0
+      ? `✓ 今日共有 ${counts.total} 筆學生事項`
+      : "✓ 今日目前沒有待顯示的學生事項";
+
+  return data;
+}
+
 async function establishTeacherSession(
   statusData
 ){
@@ -833,10 +1431,11 @@ async function establishTeacherSession(
       );
 
     await loadTeacherScope();
+    await loadTeacherTodayItems();
 
     el("pageIntro")
       .innerHTML =
-        "LINE 與教職員身分已確認。<br>老師權限範圍已載入。";
+        "LINE 與教職員身分已確認。<br>老師權限與今日學生事項已載入。";
 
   }
   catch(err){
