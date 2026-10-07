@@ -6,11 +6,15 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
-  <title>樂業附幼｜教職員 LINE 綁定</title>
+  <title>樂業附幼｜教職員平台</title>
 
   <script
     charset="utf-8"
     src="https://static.line-scdn.net/liff/edge/2/sdk.js"
+  ></script>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
   ></script>
 
   <style>
@@ -22,6 +26,9 @@
       --green:#26743d;
       --greenSoft:#eaf4ec;
       --line:#dce5dd;
+      --blueSoft:#eef4ff;
+      --warnSoft:#fff6dd;
+      --errorSoft:#fff0f0;
     }
 
     *{box-sizing:border-box}
@@ -39,7 +46,7 @@
     }
 
     .wrap{
-      width:min(560px,100%);
+      width:min(620px,100%);
       margin:0 auto;
       padding:24px 16px 40px;
     }
@@ -113,6 +120,37 @@
       margin-bottom:4px;
     }
 
+    .workBox{
+      margin-top:16px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      background:#fff;
+    }
+
+    .workTitle{
+      font-weight:800;
+      font-size:17px;
+      margin-bottom:6px;
+    }
+
+    .workSub{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.65;
+    }
+
+    .roleBadge{
+      display:inline-flex;
+      margin-top:10px;
+      padding:5px 10px;
+      border-radius:999px;
+      background:#eef1ee;
+      font-size:12px;
+      font-weight:700;
+      color:#415046;
+    }
+
     label{
       display:block;
       font-weight:700;
@@ -166,10 +204,10 @@
     }
 
     .status.show{display:block}
-    .status.info{background:#eef4ff;color:#315278}
-    .status.ok{background:#eaf6ed;color:#236238}
-    .status.warn{background:#fff6dd;color:#805d00}
-    .status.error{background:#fff0f0;color:#992d2d}
+    .status.info{background:var(--blueSoft);color:#315278}
+    .status.ok{background:var(--greenSoft);color:#236238}
+    .status.warn{background:var(--warnSoft);color:#805d00}
+    .status.error{background:var(--errorSoft);color:#992d2d}
 
     .note{
       margin-top:18px;
@@ -196,15 +234,14 @@
     <div class="brand">
       <h1>樂業附幼教職員平台</h1>
       <p id="pageIntro">
-        首次使用請完成 LINE 身分綁定。<br>
-        送出後需由行政人員確認才會正式啟用。
+        正在確認您的 LINE 與教職員身分。
       </p>
     </div>
 
     <section class="card">
 
       <div id="loading" class="loading">
-        正在確認 LINE 身分…
+        正在登入教職員平台…
       </div>
 
       <div id="content" class="hidden">
@@ -234,7 +271,7 @@
 
           <div class="identityBox">
             <div class="identityTitle">
-              ✓ 已完成 LINE 綁定
+              ✓ 教職員身分已確認
             </div>
 
             <div>
@@ -248,10 +285,23 @@
             </div>
           </div>
 
-          <div class="note">
-            這個 LINE 帳號已完成教職員身分綁定。
-            之後開啟老師平台時，系統會自動辨識您的身分，
-            不需要再次選擇姓名或送出綁定申請。
+          <div id="loginStatus" class="status show info">
+            正在建立老師系統登入狀態…
+          </div>
+
+          <div id="workEntry" class="workBox hidden">
+            <div class="workTitle">
+              老師工作平台已登入
+            </div>
+
+            <div class="workSub">
+              系統已建立您的老師專用登入 Session。
+              下一階段會依您的身分與排班，只顯示您有權限查看的學生與工作事項。
+            </div>
+
+            <div id="roleBadge" class="roleBadge">
+              —
+            </div>
           </div>
 
         </div>
@@ -275,8 +325,7 @@
           </div>
 
           <div class="note">
-            行政確認完成後，您下次開啟本頁時會自動顯示已完成綁定，
-            不需要重新送出申請。
+            行政確認完成後，重新開啟本頁即可自動登入老師平台。
           </div>
 
         </div>
@@ -328,8 +377,38 @@
 const LIFF_ID =
   "2011537895-h5RKwVM4";
 
-const FUNCTION_URL =
+const BIND_FUNCTION_URL =
   "https://cqtvrpiapssjjctwqivn.supabase.co/functions/v1/line-teacher-bind";
+
+const AUTH_FUNCTION_URL =
+  "https://cqtvrpiapssjjctwqivn.supabase.co/functions/v1/line-teacher-auth";
+
+const SUPABASE_URL =
+  "https://cqtvrpiapssjjctwqivn.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_PTpcF08CriR4_kH9KamB1w_akgHzTYw";
+
+const teacherSupabase =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth:{
+        storageKey:
+          "leye-teacher-auth",
+
+        persistSession:
+          true,
+
+        autoRefreshToken:
+          true,
+
+        detectSessionInUrl:
+          false
+      }
+    }
+  );
 
 let idToken = "";
 let profile = null;
@@ -372,37 +451,55 @@ function setBusy(busy){
       : "送出 LINE 綁定申請";
 }
 
-async function callTeacherFunction(
+function roleLabel(role){
+  if(role === "admin"){
+    return "行政人員";
+  }
+
+  if(role === "class_teacher"){
+    return "原班老師";
+  }
+
+  if(role === "aftercare_teacher"){
+    return "課後／支援老師";
+  }
+
+  return "教職員";
+}
+
+async function callFunction(
+  url,
   payload
 ){
   const res =
     await fetch(
-      FUNCTION_URL,
+      url,
       {
-        method: "POST",
+        method:"POST",
 
-        headers: {
+        headers:{
           "Content-Type":
-            "application/json",
+            "application/json"
         },
 
         body:
-          JSON.stringify(payload),
-      },
+          JSON.stringify(payload)
+      }
     );
 
   let data = {};
 
-  try {
+  try{
     data =
       await res.json();
-  } catch (_) {}
+  }
+  catch(_){}
 
-  if (!res.ok) {
+  if(!res.ok){
     const err =
       new Error(
         data?.message ||
-        "系統目前無法處理，請稍後再試。",
+        "系統目前無法處理，請稍後再試。"
       );
 
     err.data = data;
@@ -415,12 +512,15 @@ async function callTeacherFunction(
 
 async function loadStaff(){
   const data =
-    await callTeacherFunction({
-      action:
-        "list_staff",
+    await callFunction(
+      BIND_FUNCTION_URL,
+      {
+        action:
+          "list_staff",
 
-      idToken,
-    });
+        idToken
+      }
+    );
 
   const list =
     Array.isArray(data.staff)
@@ -433,10 +533,10 @@ async function loadStaff(){
   select.innerHTML =
     '<option value="">請選擇您的姓名</option>';
 
-  for (const item of list) {
+  for(const item of list){
     const opt =
       document.createElement(
-        "option",
+        "option"
       );
 
     opt.value =
@@ -448,18 +548,146 @@ async function loadStaff(){
     select.appendChild(opt);
   }
 
-  if (!list.length) {
+  if(!list.length){
     select.innerHTML =
       '<option value="">目前沒有可綁定的老師</option>';
 
     showStatus(
       "目前讀不到正式老師名單，請聯絡行政人員。",
-      "warn",
+      "warn"
     );
   }
 }
 
-function showBoundState(data){
+async function establishTeacherSession(
+  statusData
+){
+  const box =
+    el("loginStatus");
+
+  box.className =
+    "status show info";
+
+  box.textContent =
+    "正在建立老師系統登入狀態…";
+
+  try{
+    const authData =
+      await callFunction(
+        AUTH_FUNCTION_URL,
+        {
+          idToken
+        }
+      );
+
+    if(
+      !authData?.session?.access_token
+      ||
+      !authData?.session?.refresh_token
+    ){
+      throw new Error(
+        "老師登入憑證不完整。"
+      );
+    }
+
+    const {
+      data:setSessionData,
+      error:setSessionError
+    } =
+      await teacherSupabase
+        .auth
+        .setSession({
+          access_token:
+            authData.session.access_token,
+
+          refresh_token:
+            authData.session.refresh_token
+        });
+
+    if(
+      setSessionError
+      ||
+      !setSessionData?.session
+    ){
+      console.error(
+        "teacher setSession error:",
+        setSessionError
+      );
+
+      throw new Error(
+        "老師系統登入狀態建立失敗。"
+      );
+    }
+
+    const {
+      data:userData,
+      error:userError
+    } =
+      await teacherSupabase
+        .auth
+        .getUser();
+
+    if(
+      userError
+      ||
+      !userData?.user
+    ){
+      console.error(
+        "teacher getUser error:",
+        userError
+      );
+
+      throw new Error(
+        "老師登入身分確認失敗。"
+      );
+    }
+
+    box.className =
+      "status show ok";
+
+    box.textContent =
+      "✓ 老師系統登入完成";
+
+    const staff =
+      authData.staff ||
+      statusData.staff ||
+      {};
+
+    el("roleBadge").textContent =
+      roleLabel(
+        staff.role
+      );
+
+    el("workEntry")
+      .classList.remove(
+        "hidden"
+      );
+
+    el("pageIntro")
+      .innerHTML =
+        "LINE 與教職員身分已確認。<br>老師系統登入完成。";
+
+  }
+  catch(err){
+    console.error(err);
+
+    box.className =
+      "status show error";
+
+    box.textContent =
+      err?.message ||
+      "老師系統登入失敗，請重新開啟。";
+
+    el("reloadBtn")
+      .classList.remove(
+        "hidden"
+      );
+  }
+}
+
+async function showBoundState(
+  data
+){
   hideAllStateSections();
 
   el("boundStaffName")
@@ -473,15 +701,19 @@ function showBoundState(data){
       profile?.displayName ||
       "LINE 使用者";
 
-  el("pageIntro")
-    .innerHTML =
-      "LINE 身分已完成綁定。<br>系統已自動辨識您的教職員身分。";
-
   el("boundSection")
-    .classList.remove("hidden");
+    .classList.remove(
+      "hidden"
+    );
+
+  await establishTeacherSession(
+    data
+  );
 }
 
-function showPendingState(data){
+function showPendingState(
+  data
+){
   hideAllStateSections();
 
   el("pendingStaffName")
@@ -500,7 +732,9 @@ function showPendingState(data){
       "LINE 綁定申請已送出。<br>請等待行政人員確認。";
 
   el("pendingSection")
-    .classList.remove("hidden");
+    .classList.remove(
+      "hidden"
+    );
 }
 
 async function showUnboundState(){
@@ -511,22 +745,26 @@ async function showUnboundState(){
       "首次使用請完成 LINE 身分綁定。<br>送出後需由行政人員確認才會正式啟用。";
 
   el("bindSection")
-    .classList.remove("hidden");
+    .classList.remove(
+      "hidden"
+    );
 
   await loadStaff();
 }
 
 async function init(){
-  try {
+  try{
     await liff.init({
       liffId:
-        LIFF_ID,
+        LIFF_ID
     });
 
-    if (!liff.isLoggedIn()) {
+    if(
+      !liff.isLoggedIn()
+    ){
       liff.login({
         redirectUri:
-          window.location.href,
+          window.location.href
       });
 
       return;
@@ -538,9 +776,9 @@ async function init(){
     idToken =
       liff.getIDToken();
 
-    if (!idToken) {
+    if(!idToken){
       throw new Error(
-        "無法取得 LINE 登入驗證資料，請重新開啟老師平台。",
+        "無法取得 LINE 登入驗證資料，請重新開啟老師平台。"
       );
     }
 
@@ -549,12 +787,13 @@ async function init(){
         profile?.displayName ||
         "LINE 使用者";
 
-    if (
+    if(
       profile?.pictureUrl
-    ) {
+    ){
       el("avatar").src =
         profile.pictureUrl;
-    } else {
+    }
+    else{
       el("avatar")
         .style.display =
           "none";
@@ -566,34 +805,37 @@ async function init(){
 
     el("content")
       .classList.remove(
-        "hidden",
+        "hidden"
       );
 
     const statusData =
-      await callTeacherFunction({
-        action:
-          "status",
+      await callFunction(
+        BIND_FUNCTION_URL,
+        {
+          action:
+            "status",
 
-        idToken,
-      });
+          idToken
+        }
+      );
 
-    if (
+    if(
       statusData.status ===
       "bound"
-    ) {
-      showBoundState(
-        statusData,
+    ){
+      await showBoundState(
+        statusData
       );
 
       return;
     }
 
-    if (
+    if(
       statusData.status ===
       "pending"
-    ) {
+    ){
       showPendingState(
-        statusData,
+        statusData
       );
 
       return;
@@ -601,7 +843,8 @@ async function init(){
 
     await showUnboundState();
 
-  } catch (err) {
+  }
+  catch(err){
     console.error(err);
 
     el("loading")
@@ -610,25 +853,25 @@ async function init(){
 
     el("content")
       .classList.remove(
-        "hidden",
+        "hidden"
       );
 
     hideAllStateSections();
 
-    el("reloadBtn")
-      .classList.remove(
-        "hidden",
-      );
-
     el("bindSection")
       .classList.remove(
-        "hidden",
+        "hidden"
+      );
+
+    el("reloadBtn")
+      .classList.remove(
+        "hidden"
       );
 
     showStatus(
       err?.message ||
       "老師平台載入失敗，請重新開啟。",
-      "error",
+      "error"
     );
   }
 }
@@ -641,7 +884,7 @@ el("staffSelect")
         .disabled =
           !el("staffSelect")
             .value;
-    },
+    }
   );
 
 el("submitBtn")
@@ -659,52 +902,55 @@ el("submitBtn")
           ?.textContent ||
         "";
 
-      if (!staffId) {
+      if(!staffId){
         return;
       }
 
       const ok =
         confirm(
-          `請確認：\n\nLINE：${profile?.displayName || "LINE 使用者"}\n老師姓名：${staffName}\n\n確定送出綁定申請嗎？`,
+          `請確認：\n\nLINE：${profile?.displayName || "LINE 使用者"}\n老師姓名：${staffName}\n\n確定送出綁定申請嗎？`
         );
 
-      if (!ok) {
+      if(!ok){
         return;
       }
 
-      try {
+      try{
         setBusy(true);
 
         showStatus(
           "正在送出綁定申請…",
-          "info",
+          "info"
         );
 
         const data =
-          await callTeacherFunction({
-            action:
-              "bind",
+          await callFunction(
+            BIND_FUNCTION_URL,
+            {
+              action:
+                "bind",
 
-            idToken,
+              idToken,
 
-            staffId,
-          });
+              staffId
+            }
+          );
 
-        if (
+        if(
           data.status ===
           "already_bound"
-        ) {
-          showBoundState({
+        ){
+          await showBoundState({
             status:
               "bound",
 
             lineDisplayName:
               data.lineDisplayName,
 
-            staff: {
+            staff:{
               name:
-                data.staffName,
-            },
+                data.staffName
+            }
           });
 
           return;
@@ -717,32 +963,33 @@ el("submitBtn")
           lineDisplayName:
             data.lineDisplayName,
 
-          staff: {
+          staff:{
             name:
-              data.staffName,
-          },
+              data.staffName
+          }
         });
 
-      } catch (err) {
+      }
+      catch(err){
         console.error(err);
 
         showStatus(
           err?.message ||
           "送出失敗，請稍後再試。",
-          "error",
+          "error"
         );
-
-      } finally {
+      }
+      finally{
         setBusy(false);
       }
-    },
+    }
   );
 
 el("reloadBtn")
   .addEventListener(
     "click",
     () =>
-      location.reload(),
+      location.reload()
   );
 
 init();
