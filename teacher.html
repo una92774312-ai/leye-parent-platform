@@ -151,6 +151,38 @@
       color:#415046;
     }
 
+    .scopeGrid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .scopeCard{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:13px;
+      background:#fafcf9;
+    }
+
+    .scopeLabel{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom:6px;
+    }
+
+    .scopeValue{
+      font-size:15px;
+      font-weight:700;
+      line-height:1.65;
+    }
+
+    .emptyText{
+      color:var(--muted);
+      font-weight:500;
+    }
+
     label{
       display:block;
       font-weight:700;
@@ -295,12 +327,30 @@
             </div>
 
             <div class="workSub">
-              系統已建立您的老師專用登入 Session。
-              下一階段會依您的身分與排班，只顯示您有權限查看的學生與工作事項。
+              以下是系統依照您的教職員身分與今日排班判定的可查看範圍。
             </div>
 
-            <div id="roleBadge" class="roleBadge">
-              —
+            <div id="roleBadge" class="roleBadge">—</div>
+
+            <div class="scopeGrid">
+              <div class="scopeCard">
+                <div class="scopeLabel">原班可查看範圍</div>
+                <div id="morningScope" class="scopeValue">讀取中…</div>
+              </div>
+
+              <div class="scopeCard">
+                <div class="scopeLabel">今日課後班</div>
+                <div id="aftercareScope" class="scopeValue">讀取中…</div>
+              </div>
+
+              <div class="scopeCard">
+                <div class="scopeLabel">額外授權班級</div>
+                <div id="specialScope" class="scopeValue">讀取中…</div>
+              </div>
+            </div>
+
+            <div id="scopeStatus" class="status show info">
+              正在讀取老師可查看範圍…
             </div>
           </div>
 
@@ -559,6 +609,50 @@ async function loadStaff(){
   }
 }
 
+function classNamesText(list){
+  if(!Array.isArray(list) || list.length === 0){
+    return "目前沒有";
+  }
+
+  return list
+    .map(item => item?.name || item?.id || "")
+    .filter(Boolean)
+    .join("、");
+}
+
+async function loadTeacherScope(){
+  const scopeBox = el("scopeStatus");
+
+  scopeBox.className = "status show info";
+  scopeBox.textContent = "正在讀取老師可查看範圍…";
+
+  const { data, error } =
+    await teacherSupabase.rpc(
+      "get_teacher_scope"
+    );
+
+  if(error){
+    console.error("get_teacher_scope error:", error);
+    throw new Error(
+      "老師權限範圍讀取失敗。"
+    );
+  }
+
+  const morning = data?.morning_classes || [];
+  const aftercare = data?.aftercare_classes || [];
+  const special = data?.special_classes || [];
+
+  el("morningScope").textContent = classNamesText(morning);
+  el("aftercareScope").textContent = classNamesText(aftercare);
+  el("specialScope").textContent = classNamesText(special);
+
+  scopeBox.className = "status show ok";
+  scopeBox.textContent =
+    "✓ 老師可查看範圍讀取完成";
+
+  return data;
+}
+
 async function establishTeacherSession(
   statusData
 ){
@@ -663,9 +757,11 @@ async function establishTeacherSession(
         "hidden"
       );
 
+    await loadTeacherScope();
+
     el("pageIntro")
       .innerHTML =
-        "LINE 與教職員身分已確認。<br>老師系統登入完成。";
+        "LINE 與教職員身分已確認。<br>老師權限範圍已載入。";
 
   }
   catch(err){
