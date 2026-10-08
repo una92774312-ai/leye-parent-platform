@@ -6,7 +6,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
-  <title>樂業附幼｜教職員平台 V7</title>
+  <title>樂業附幼｜教職員平台 V9</title>
 
   <script
     charset="utf-8"
@@ -147,8 +147,7 @@
       border-radius:999px;
       background:#eef1ee;
       font-size:12px;
-      font-weight:700;
-      color:#415046;
+      font-weight:700;      color:#415046;
     }
 
     .adminPortalBtn{
@@ -244,7 +243,7 @@
 
     .todayCounts{
       display:grid;
-      grid-template-columns:repeat(3,1fr);
+      grid-template-columns:repeat(4,1fr);
       gap:8px;
       margin-bottom:14px;
     }
@@ -297,8 +296,7 @@
     }
 
     .itemList{
-      display:grid;
-      gap:8px;
+      display:grid;      gap:8px;
     }
 
     .studentItem{
@@ -339,6 +337,11 @@
     .itemBadge.leave{
       background:#f3edff;
       color:#6941a5;
+    }
+
+    .itemBadge.early{
+      background:#fff0e8;
+      color:#a44f25;
     }
 
     .itemBadge.late{
@@ -424,7 +427,7 @@
 
     @media (max-width:480px){
       .todayCounts{
-        grid-template-columns:1fr 1fr 1fr;
+        grid-template-columns:1fr 1fr;
       }
 
       .countNum{
@@ -447,8 +450,7 @@
       height:48px;
       border:1px solid #cfd9d1;
       border-radius:12px;
-      padding:0 12px;
-      font-size:16px;
+      padding:0 12px;      font-size:16px;
       background:#fff;
     }
 
@@ -597,8 +599,7 @@
             <div class="scopeGrid">
               <div class="scopeCard">
                 <div class="scopeLabel">原班可查看範圍</div>
-                <div id="morningScope" class="scopeValue">讀取中…</div>
-              </div>
+                <div id="morningScope" class="scopeValue">讀取中…</div>              </div>
 
               <div class="scopeCard">
                 <div class="scopeLabel">今日課後班</div>
@@ -632,6 +633,11 @@
                 </div>
 
                 <div class="countCard">
+                  <div id="earlyPickupCount" class="countNum">0</div>
+                  <div class="countLabel">提早接送</div>
+                </div>
+
+                <div class="countCard">
                   <div id="lateCount" class="countNum">0</div>
                   <div class="countLabel">延遲通知</div>
                 </div>
@@ -653,6 +659,14 @@
                     <span id="leaveGroupCount" class="groupCount">0</span>
                   </div>
                   <div id="leaveItems" class="itemList"></div>
+                </div>
+
+                <div class="itemGroup">
+                  <div class="itemGroupHeader">
+                    <span>🟡 提早接送</span>
+                    <span id="earlyPickupGroupCount" class="groupCount">0</span>
+                  </div>
+                  <div id="earlyPickupItems" class="itemList"></div>
                 </div>
 
                 <div class="itemGroup">
@@ -747,8 +761,7 @@
           重新登入 LINE
         </button>
 
-      </div>
-    </section>
+      </div>    </section>
   </main>
 
 <script>
@@ -897,7 +910,6 @@ async function forceLineRelogin(){
       "LINE relogin error:",
       err
     );
-
     el("lineReloginBtn")
       .disabled = false;
 
@@ -1048,7 +1060,6 @@ async function loadTeacherScope(){
   return data;
 }
 
-
 function formatClock(value){
   if(!value){
     return "—";
@@ -1197,8 +1208,7 @@ async function actOnTeacherItem(
 function appendTeacherActionControls(
   card,
   item
-){
-  const status =
+){  const status =
     item?.teacher_action_status || "";
 
   const state =
@@ -1352,6 +1362,11 @@ function makeStudentItem(
         ? "已核准"
         : "請假";
   }
+  else if(type === "early"){
+    badge.classList.add("early");
+    badge.textContent =
+      "提早";
+  }
   else if(type === "late"){
     badge.classList.add("late");
     badge.textContent =
@@ -1399,6 +1414,39 @@ function makeStudentItem(
       rows.length
         ? rows.join("\n")
         : "今日請假";
+  }
+  else if(type === "early"){
+    const rows = [
+      `預計接送：${formatClock(
+        item?.requested_start_time ||
+        item?.pickup_time
+      )}`
+    ];
+
+    if(item?.reason){
+      rows.push(
+        `原因：${item.reason}`
+      );
+    }
+
+    if(item?.note){
+      rows.push(
+        `備註：${item.note}`
+      );
+    }
+
+    if(
+      item?.status === "submitted"
+      ||
+      item?.status === "pending"
+    ){
+      rows.push(
+        "狀態：待確認"
+      );
+    }
+
+    detail.textContent =
+      rows.join("\n");
   }
   else if(type === "late"){
     const rows = [
@@ -1497,8 +1545,7 @@ async function loadTeacherTodayItems(){
   const statusBox =
     el("todayItemsStatus");
 
-  statusBox.className =
-    "status show info";
+  statusBox.className =    "status show info";
 
   statusBox.textContent =
     "正在讀取今日學生事項…";
@@ -1530,6 +1577,11 @@ async function loadTeacherTodayItems(){
       ? data.leave
       : [];
 
+  const earlyPickup =
+    Array.isArray(data?.early_pickup)
+      ? data.early_pickup
+      : [];
+
   const late =
     Array.isArray(data?.late_notice)
       ? data.late_notice
@@ -1556,6 +1608,11 @@ async function loadTeacherTodayItems(){
   );
 
   setText(
+    "earlyPickupCount",
+    counts.early_pickup ?? earlyPickup.length
+  );
+
+  setText(
     "lateCount",
     counts.late_notice ?? late.length
   );
@@ -1568,6 +1625,11 @@ async function loadTeacherTodayItems(){
   setText(
     "leaveGroupCount",
     counts.leave ?? leave.length
+  );
+
+  setText(
+    "earlyPickupGroupCount",
+    counts.early_pickup ?? earlyPickup.length
   );
 
   setText(
@@ -1584,6 +1646,12 @@ async function loadTeacherTodayItems(){
     "leaveItems",
     leave,
     "leave"
+  );
+
+  renderItemList(
+    "earlyPickupItems",
+    earlyPickup,
+    "early"
   );
 
   renderItemList(
@@ -1648,7 +1716,6 @@ async function establishTeacherSession(
           idToken
         }
       );
-
     if(
       !authData?.session?.access_token
       ||
@@ -1797,7 +1864,6 @@ async function showBoundState(
     data
   );
 }
-
 function showPendingState(
   data
 ){
@@ -1947,8 +2013,7 @@ async function init(){
 
     el("bindSection")
       .classList.remove(
-        "hidden"
-      );
+        "hidden"      );
 
     if(
       isLineTokenExpiredError(err)
@@ -2097,8 +2162,7 @@ el("submitBtn")
     }
   );
 
-el("reloadBtn")
-  .addEventListener(
+el("reloadBtn")  .addEventListener(
     "click",
     () =>
       location.reload()
