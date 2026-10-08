@@ -362,6 +362,56 @@
       font-weight:800;
     }
 
+    .itemActionState{
+      margin-top:10px;
+      padding:10px 11px;
+      border-radius:10px;
+      font-size:12px;
+      line-height:1.65;
+      background:#f5f7f4;
+      color:#526056;
+      white-space:pre-line;
+    }
+
+    .itemActionState.confirmed{
+      background:#eef4ff;
+      color:#315278;
+    }
+
+    .itemActionState.handled{
+      background:#eaf6ed;
+      color:#236238;
+    }
+
+    .itemActionButtons{
+      display:flex;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .itemActionButtons button{
+      width:auto;
+      flex:1;
+      margin-top:0;
+      padding:10px 12px;
+      font-size:13px;
+    }
+
+    .confirmBtn{
+      background:#315f91;
+      color:#fff;
+    }
+
+    .handledBtn{
+      background:var(--green);
+      color:#fff;
+    }
+
+    .actionBusy{
+      opacity:.55;
+      pointer-events:none;
+    }
+
     .todayEmpty{
       border:1px dashed #cfd9d1;
       border-radius:12px;
@@ -1040,6 +1090,211 @@ function setText(id, value){
   }
 }
 
+function formatDateTime(value){
+  if(!value){
+    return "—";
+  }
+
+  const date = new Date(value);
+
+  if(Number.isNaN(date.getTime())){
+    return String(value);
+  }
+
+  return new Intl.DateTimeFormat(
+    "zh-TW",
+    {
+      timeZone:"Asia/Taipei",
+      month:"numeric",
+      day:"numeric",
+      hour:"2-digit",
+      minute:"2-digit",
+      hour12:false
+    }
+  ).format(date);
+}
+
+async function actOnTeacherItem(
+  item,
+  actionType,
+  card
+){
+  const sourceType =
+    item?.source_type;
+
+  const sourceId =
+    item?.source_id;
+
+  if(!sourceType || !sourceId){
+    alert("這筆事項缺少來源資料，請重新整理後再試。");
+    return;
+  }
+
+  const actionText =
+    actionType === "handled"
+      ? "標記已處理"
+      : "確認收到";
+
+  const ok = confirm(
+    `${item?.child_name || "這位學生"}：確定要${actionText}嗎？`
+  );
+
+  if(!ok){
+    return;
+  }
+
+  if(card){
+    card.classList.add("actionBusy");
+  }
+
+  try{
+    const {
+      data,
+      error
+    } = await teacherSupabase.rpc(
+      "teacher_act_on_item",
+      {
+        p_source_type:sourceType,
+        p_source_id:sourceId,
+        p_action_type:actionType,
+        p_note:null
+      }
+    );
+
+    if(error){
+      console.error(
+        "teacher_act_on_item error:",
+        error
+      );
+
+      if(
+        String(error.message || "").includes("MUST_CONFIRM_FIRST")
+      ){
+        throw new Error("請先按「確認收到」，再標記已處理。");
+      }
+
+      throw new Error("事項狀態更新失敗，請稍後再試。");
+    }
+
+    await loadTeacherTodayItems();
+
+    return data;
+  }
+  catch(err){
+    console.error(err);
+    alert(
+      err?.message ||
+      "事項狀態更新失敗，請稍後再試。"
+    );
+  }
+  finally{
+    if(card){
+      card.classList.remove("actionBusy");
+    }
+  }
+}
+
+function appendTeacherActionControls(
+  card,
+  item
+){
+  const status =
+    item?.teacher_action_status || "";
+
+  const state =
+    document.createElement("div");
+
+  state.className =
+    "itemActionState";
+
+  if(status === "handled"){
+    state.classList.add("handled");
+
+    const confirmedLine =
+      item?.confirmed_by_staff_name
+        ? `✓ ${item.confirmed_by_staff_name} ${formatDateTime(item.confirmed_at)} 已確認`
+        : "✓ 已確認";
+
+    const handledLine =
+      item?.handled_by_staff_name
+        ? `✓ ${item.handled_by_staff_name} ${formatDateTime(item.handled_at)} 已處理`
+        : "✓ 已處理";
+
+    state.textContent =
+      `${confirmedLine}\n${handledLine}`;
+
+    card.appendChild(state);
+    return;
+  }
+
+  if(status === "confirmed"){
+    state.classList.add("confirmed");
+
+    state.textContent =
+      item?.confirmed_by_staff_name
+        ? `✓ ${item.confirmed_by_staff_name} ${formatDateTime(item.confirmed_at)} 已確認`
+        : "✓ 已確認";
+
+    card.appendChild(state);
+
+    const actions =
+      document.createElement("div");
+
+    actions.className =
+      "itemActionButtons";
+
+    const handledBtn =
+      document.createElement("button");
+
+    handledBtn.type = "button";
+    handledBtn.className = "handledBtn";
+    handledBtn.textContent = "標記已處理";
+
+    handledBtn.addEventListener(
+      "click",
+      () => actOnTeacherItem(
+        item,
+        "handled",
+        card
+      )
+    );
+
+    actions.appendChild(handledBtn);
+    card.appendChild(actions);
+    return;
+  }
+
+  state.textContent =
+    "尚未確認";
+
+  card.appendChild(state);
+
+  const actions =
+    document.createElement("div");
+
+  actions.className =
+    "itemActionButtons";
+
+  const confirmBtn =
+    document.createElement("button");
+
+  confirmBtn.type = "button";
+  confirmBtn.className = "confirmBtn";
+  confirmBtn.textContent = "確認收到";
+
+  confirmBtn.addEventListener(
+    "click",
+    () => actOnTeacherItem(
+      item,
+      "confirmed",
+      card
+    )
+  );
+
+  actions.appendChild(confirmBtn);
+  card.appendChild(actions);
+}
+
 function makeStudentItem(
   item,
   type
@@ -1186,6 +1441,11 @@ function makeStudentItem(
 
   card.appendChild(top);
   card.appendChild(detail);
+
+  appendTeacherActionControls(
+    card,
+    item
+  );
 
   return card;
 }
