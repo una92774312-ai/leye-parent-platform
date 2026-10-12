@@ -3815,7 +3815,6 @@ async function submitPickup(){
 }
 async function submitLeave(){
 
-
   const list =
     requireChildren(
       "leave"
@@ -3827,8 +3826,10 @@ async function submitLeave(){
     return;
   }
 
+
   const date =
     $("leaveDate").value;
+
 
   if(
     !date
@@ -3841,6 +3842,7 @@ async function submitLeave(){
     return;
 
   }
+
 
   if(
     isSchoolClosedDate(
@@ -3856,49 +3858,46 @@ async function submitLeave(){
 
   }
 
+
   const reason =
     $("leaveReason").value;
+
 
   const note =
     $("leaveNote")
       .value
       .trim();
 
-  if(
-    !confirm(
-
-`確認送出請假？
-
-幼兒：${childrenText(list)}
-日期：${date}
-原因：${reason}`
-
-    )
-  ){
-
-    return;
-
-  }
 
   const btn =
     $("leaveSubmitBtn");
 
+
   btn.disabled =
     true;
+
 
   btn.textContent =
     "送出中...";
 
+
   try{
+
+
+    /*
+    ==========================================
+    1. 每次送出前重新確認目前登入的 Supabase 使用者
+    ==========================================
+    */
 
     const {
       data:userData,
       error:userError
     } =
-
       await supabaseClient
         .auth
         .getUser();
+
 
     if(
       userError
@@ -3909,13 +3908,21 @@ async function submitLeave(){
     ){
 
       throw new Error(
-        "目前沒有有效的家長登入狀態，請重新登入測試帳號。"
+        "目前沒有有效的家長登入狀態，請重新登入後再試。"
       );
 
     }
 
+
     const authUser =
       userData.user;
+
+
+    /*
+    ==========================================
+    2. 重新取得登入者真正對應的 guardian_id
+    ==========================================
+    */
 
     const {
       data:identityData,
@@ -3934,6 +3941,7 @@ async function submitLeave(){
         )
         .maybeSingle();
 
+
     if(
       identityError
     ){
@@ -3944,6 +3952,7 @@ async function submitLeave(){
       );
 
     }
+
 
     if(
       !identityData
@@ -3957,14 +3966,23 @@ async function submitLeave(){
 
     }
 
+
     const verifiedGuardianId =
       identityData.guardian_id;
+
+
+    /*
+    ==========================================
+    3. 再確認畫面上的孩子確實是這個家長可看到的孩子
+    ==========================================
+    */
 
     const selectedIds =
       list.map(
         child =>
         child.id
       );
+
 
     const {
       data:verifiedChildren,
@@ -3976,12 +3994,12 @@ async function submitLeave(){
         )
         .select(
           "id,school_code,name,morning_class_id,care_group"
-
         )
         .in(
           "id",
           selectedIds
         );
+
 
     if(
       childError
@@ -3993,6 +4011,7 @@ async function submitLeave(){
       );
 
     }
+
 
     if(
       !verifiedChildren
@@ -4006,6 +4025,143 @@ async function submitLeave(){
       );
 
     }
+
+
+    /*
+    ==========================================
+    4. 送出前先檢查同一天是否已有有效請假
+       submitted / pending / approved 都算有效
+    ==========================================
+    */
+
+    const {
+      data:existingLeaves,
+      error:existingLeaveError
+    } =
+      await supabaseClient
+        .from(
+          "requests"
+        )
+        .select(
+          "id,child_id,status"
+        )
+        .eq(
+          "request_type",
+          "leave"
+        )
+        .eq(
+          "request_date",
+          date
+        )
+        .in(
+          "status",
+          [
+            "submitted",
+            "pending",
+            "approved"
+          ]
+        )
+        .in(
+          "child_id",
+          selectedIds
+        );
+
+
+    if(
+      existingLeaveError
+    ){
+
+      throw new Error(
+        "檢查既有請假紀錄失敗：" +
+        existingLeaveError.message
+      );
+
+    }
+
+
+    const duplicateChildIds =
+      new Set(
+        (
+          existingLeaves
+          ||
+          []
+        )
+        .map(
+          row =>
+          row.child_id
+        )
+      );
+
+
+    if(
+      duplicateChildIds.size
+      >
+      0
+    ){
+
+      const duplicateNames =
+        verifiedChildren
+          .filter(
+            child =>
+            duplicateChildIds.has(
+              child.id
+            )
+          )
+          .map(
+            child =>
+            child.name
+          );
+
+
+      alert(
+
+        duplicateNames.join("、")
+        +
+        ` 在 ${date} 已有請假紀錄，請勿重複送出。`
+        +
+        "\n\n如需修改或取消，請至「我的申請」查看。"
+
+      );
+
+
+      return;
+
+    }
+
+
+    /*
+    ==========================================
+    5. 確認送出
+    ==========================================
+    */
+
+    if(
+      !confirm(
+
+`確認送出請假？
+
+幼兒：${childrenText(list)}
+日期：${date}
+原因：${reason}`
+
+      )
+    ){
+
+      return;
+
+    }
+
+
+    /*
+    ==========================================
+    6. 組合 requests
+    ==========================================
+    */
+
+    const submittedAt =
+      new Date()
+        .toISOString();
+
 
     const rows =
       verifiedChildren.map(
@@ -4033,6 +4189,9 @@ async function submitLeave(){
           requested_end_time:
             null,
 
+          notice_time:
+            submittedAt,
+
           reason:
             note
             ?
@@ -4049,6 +4208,14 @@ async function submitLeave(){
 
       );
 
+
+    /*
+    ==========================================
+    7. 寫入 Supabase
+       資料庫仍有 unique index 作第二層保護
+    ==========================================
+    */
+
     const {
       data:insertedData,
       error:insertError
@@ -4057,13 +4224,13 @@ async function submitLeave(){
         .from(
           "requests"
         )
-
         .insert(
           rows
         )
         .select(
           "id,request_date,request_type,status"
         );
+
 
     if(
       insertError
@@ -4074,34 +4241,59 @@ async function submitLeave(){
         insertError
       );
 
-      console.error(
-        "auth user:",
-        authUser.id
-      );
 
-      console.error(
-        "guardian id:",
-        verifiedGuardianId
-      );
+      /*
+      即使剛才查詢時沒有重複，
+      若另一個操作同時送出，
+      資料庫 unique index 還是會擋住。
+      對家長改顯示友善文字。
+      */
 
-      console.error(
-        "rows:",
-        rows
-      );
+      if(
+        insertError.code ===
+        "23505"
+        ||
+        String(
+          insertError.message
+          ||
+          ""
+        )
+        .includes(
+          "requests_one_active_leave_per_child_date"
+        )
+      ){
+
+        alert(
+          "這一天已有請假紀錄，請勿重複送出。\n\n"
+          +
+          "如需修改或取消，請至「我的申請」查看。"
+        );
+
+        return;
+
+      }
+
 
       throw insertError;
 
     }
 
+
+    /*
+    更新全域 guardian_id
+    */
+
     currentGuardianId =
       verifiedGuardianId;
+
 
     $("leaveNote").value =
       "";
 
+
     showStatus(
 
-      "✅ 請假已成功寫入 Supabase。\n"
+      "✅ 請假已成功送出。\n"
       +
       "幼兒："
       +
@@ -4111,14 +4303,16 @@ async function submitLeave(){
       +
       date
       +
-      "\n目前狀態：pending"
+      "\n目前狀態：待處理"
 
     );
+
 
     console.log(
       "請假寫入成功：",
       insertedData
     );
+
 
   }
   catch(e){
@@ -4127,24 +4321,21 @@ async function submitLeave(){
       e
     );
 
+
     alert(
 
-      "請假送出失敗。\n\n"
+      "請假送出失敗，請稍後再試。"
       +
-      (
-        e.message
-        ||
-        String(e)
-      )
+      "\n\n如持續發生，請聯繫本園。"
 
     );
-
 
   }
   finally{
 
     btn.disabled =
       false;
+
 
     btn.textContent =
       "❌ 確認送出請假";
@@ -4153,8 +4344,6 @@ async function submitLeave(){
 
 }
 
-
-async function submitExtended(){
 
   const list =
     requireChildren(
