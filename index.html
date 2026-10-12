@@ -1679,7 +1679,9 @@ details.rules summary{
 
         <br>
 
-        16:10 過後完成接送，列為「延遲接回」，依本園規定收取 50 元。
+        16:11－17:05 完成接送：50 元。<br>
+        17:06－18:05 完成接送：100 元。<br>
+        18:06 起完成接送：130 元。
 
         <br><br>
 
@@ -1700,7 +1702,8 @@ details.rules summary{
 
         <br>
 
-        17:05 過後完成接送，列為「逾時接送」，依本園規定收取 35 元。
+        17:06－18:05 完成接送：35 元。<br>
+        18:06 起完成接送：65 元。
 
       </div>
 
@@ -2614,6 +2617,199 @@ function timeToMinutes(time){
 }
 
 
+function estimatedLateFee(
+  original,
+  arrival
+){
+
+  const m =
+    timeToMinutes(
+      arrival
+    );
+
+  if(
+    !m
+  ){
+    return 0;
+  }
+
+  if(
+    original === "16:00"
+  ){
+
+    if(
+      m >
+      timeToMinutes(
+        "18:05"
+      )
+    ){
+      return 130;
+    }
+
+    if(
+      m >
+      timeToMinutes(
+        "17:05"
+      )
+    ){
+      return 100;
+    }
+
+    if(
+      m >
+      timeToMinutes(
+        "16:10"
+      )
+    ){
+      return 50;
+    }
+
+    return 0;
+
+  }
+
+  if(
+    original === "17:00"
+  ){
+
+    if(
+      m >
+      timeToMinutes(
+        "18:05"
+      )
+    ){
+      return 65;
+    }
+
+    if(
+      m >
+      timeToMinutes(
+        "17:05"
+      )
+    ){
+      return 35;
+    }
+
+    return 0;
+
+  }
+
+  if(
+    original === "18:00"
+  ){
+
+    return (
+      m >
+      timeToMinutes(
+        "18:05"
+      )
+    )
+      ?
+      30
+      :
+      0;
+
+  }
+
+  return 0;
+
+}
+
+
+async function loadSchoolClosedDates(){
+
+  try{
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from(
+          "school_closed_dates"
+        )
+        .select(
+          "closed_date"
+        )
+        .order(
+          "closed_date",
+          {
+            ascending:true
+          }
+        );
+
+    if(
+      error
+    ){
+      throw error;
+    }
+
+    SCHOOL_CLOSED_DATES.splice(
+      0,
+      SCHOOL_CLOSED_DATES.length,
+      ...(
+        data
+        ||
+        []
+      )
+      .map(
+        row =>
+        row.closed_date
+      )
+      .filter(
+        Boolean
+      )
+    );
+
+    const next =
+      defaultSchoolDate();
+
+    [
+      "leaveDate",
+      "extendedDate",
+      "temporaryDate"
+    ]
+    .forEach(
+      id => {
+
+        const input =
+          $(id);
+
+        if(
+          !input
+        ){
+          return;
+        }
+
+        if(
+          !input.value
+          ||
+          isSchoolClosedDate(
+            input.value
+          )
+        ){
+
+          input.value =
+            next;
+
+        }
+
+      }
+    );
+
+  }
+  catch(e){
+
+    console.warn(
+      "讀取本園休園日失敗，改用內建國定假日資料：",
+      e
+    );
+
+  }
+
+}
+
+
 async function loadGuardianAndChildren(){
 
   $("boundSummary").textContent =
@@ -3262,7 +3458,7 @@ function refreshLateNotice(){
       </div>
 
       <div class="ruleLine">
-        💰 費用：${rule.fee} 元
+        💰 16:11－17:05：50 元／17:06－18:05：100 元／18:06 起：130 元
       </div>
 
       <div class="ruleLine">
@@ -3277,12 +3473,18 @@ function refreshLateNotice(){
   }
   else{
 
+    const feeText =
+      original === "17:00"
+      ?
+      "17:06－18:05：35 元／18:06 起：65 元"
+      :
+      "18:06 起：30 元";
+
     html +=
 
     `
       <div class="ruleLine">
         📢 最晚通知時間：${rule.noticeDeadline}
-
       </div>
 
       <div class="ruleLine">
@@ -3290,7 +3492,7 @@ function refreshLateNotice(){
       </div>
 
       <div class="ruleLine">
-        💰 費用：${rule.fee} 元
+        💰 ${feeText}
       </div>
 
       <div class="ruleLine">
@@ -3300,16 +3502,15 @@ function refreshLateNotice(){
 
   }
 
-  if(
-    arrival
-    &&
-    timeToMinutes(
+  const estimatedFee =
+    estimatedLateFee(
+      original,
       arrival
-    )
-    >
-    timeToMinutes(
-      rule.lateAfter
-    )
+    );
+
+  if(
+    estimatedFee >
+    0
   ){
 
     html +=
@@ -3322,12 +3523,12 @@ function refreshLateNotice(){
           font-weight:900;
         "
       >
-        ⚠️ 您填寫的預計抵達時間已超過 ${rule.lateAfter}，
-        可能產生 ${rule.fee} 元 ${rule.statusName}費用。
+        ⚠️ 依您填寫的預計抵達時間，
+        目前預估可能產生 ${estimatedFee} 元 ${rule.statusName}費用。
 
         <br>
 
-        請準備剛好的現金。
+        最終仍以本園實際完成接送時間為準。
       </div>
     `;
 
@@ -3363,7 +3564,6 @@ function refreshLateNotice(){
 
     timeToMinutes(
       rule.noticeDeadline
-
     );
 
   if(
@@ -3399,7 +3599,6 @@ function refreshLateNotice(){
   }
 
 }
-
 
 function pickerChange(){
 
@@ -5394,7 +5593,10 @@ async function loginSupabaseWithLine(){
 
 
   await loadGuardianAndChildren();
-$("supabaseState").textContent =
+
+  await loadSchoolClosedDates();
+
+  $("supabaseState").textContent =
     "✅ 家長身分已驗證";
 
 }
