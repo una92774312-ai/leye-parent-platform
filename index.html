@@ -1329,6 +1329,67 @@ details.rules summary{
 }
 
 /* ==================================================
+   第一次使用：家庭綁定
+   ================================================== */
+
+.bindingPanel{
+
+  padding:
+    20px
+    18px
+    26px;
+
+}
+
+.bindingCodeInput{
+
+  width:100%;
+
+  margin-top:8px;
+
+  padding:
+    15px
+    14px;
+
+  border:
+    1px solid
+    #d9ddd4;
+
+  border-radius:14px;
+
+  background:#fff;
+
+  color:#3f4d40;
+
+  text-align:center;
+
+  text-transform:uppercase;
+
+  letter-spacing:.16em;
+
+  font-size:1.15rem;
+
+  font-weight:900;
+
+  box-sizing:border-box;
+
+}
+
+.bindingCodeInput:focus{
+
+  outline:none;
+
+  border-color:
+    var(--sage);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(129,155,115,.14);
+
+}
+
+
+/* ==================================================
    我的申請
    ================================================== */
 .quickTabs{grid-template-columns:repeat(4,1fr);}
@@ -1439,6 +1500,71 @@ details.rules summary{
   </div>
 
 </div>
+
+<!-- ====================================== -->
+<!-- 第一次使用：家庭綁定 -->
+<!-- ====================================== -->
+
+<div
+  id="bindingPanel"
+  class="bindingPanel hidden"
+>
+
+  <div class="pageTitle">
+    🔐 第一次使用
+  </div>
+
+  <div class="pageDesc">
+    請輸入本園提供的家庭綁定碼，完成一次性 LINE 家長身分綁定。
+  </div>
+
+  <div class="notice noticeGreen">
+    🌱 目前為櫻桃班、蘋果班小規模試行。
+  </div>
+
+  <div class="group">
+
+    <label class="title">
+      家庭綁定碼
+    </label>
+
+    <input
+      id="familyBindingCode"
+      class="bindingCodeInput"
+      type="text"
+      inputmode="text"
+      autocomplete="one-time-code"
+      maxlength="12"
+      placeholder="例如 A1B2C3D4"
+      oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
+    >
+
+    <div class="helper">
+      每組綁定碼僅供指定家長使用，完成綁定後即失效。
+    </div>
+
+  </div>
+
+  <button
+    id="bindParentBtn"
+    class="btn btnPrimary"
+    type="button"
+    onclick="bindParentLine()"
+  >
+    🔗 綁定並進入家長平台
+  </button>
+
+  <div
+    id="bindingMessage"
+    class="helper"
+    style="
+      margin-top:12px;
+      text-align:center;
+    "
+  ></div>
+
+</div>
+
 
 <!-- ====================================== -->
 <!-- 接孩子 -->
@@ -5455,6 +5581,350 @@ LINE → 家長帳號自動登入
 ==================================================
 */
 
+function setPortalNavigationVisible(
+  visible
+){
+
+  const tabs =
+    document.querySelector(
+      ".quickTabs"
+    );
+
+  if(
+    tabs
+  ){
+
+    tabs.style.display =
+      visible
+      ?
+      "grid"
+      :
+      "none";
+
+  }
+
+  const requestsBtn =
+    $("headerRequestsBtn");
+
+  if(
+    requestsBtn
+  ){
+
+    requestsBtn.style.display =
+      visible
+      ?
+      ""
+      :
+      "none";
+
+  }
+
+}
+
+
+function showBindingPanel(){
+
+  [
+    "pickupPage",
+    "leavePage",
+    "extendedPage",
+    "temporaryPage",
+    "requestsPage"
+  ]
+  .forEach(
+    id => {
+
+      const el =
+        $(id);
+
+      if(
+        el
+      ){
+        el.classList.add(
+          "hidden"
+        );
+      }
+
+    }
+  );
+
+  const panel =
+    $("bindingPanel");
+
+  if(
+    panel
+  ){
+
+    panel.classList.remove(
+      "hidden"
+    );
+
+  }
+
+  setPortalNavigationVisible(
+    false
+  );
+
+  setTimeout(
+    () => {
+
+      const input =
+        $("familyBindingCode");
+
+      if(
+        input
+      ){
+        input.focus();
+      }
+
+    },
+    100
+  );
+
+}
+
+
+function showPilotUnavailable(
+  message
+){
+
+  [
+    "pickupPage",
+    "leavePage",
+    "extendedPage",
+    "temporaryPage",
+    "requestsPage",
+    "bindingPanel"
+  ]
+  .forEach(
+    id => {
+
+      const el =
+        $(id);
+
+      if(
+        el
+      ){
+        el.classList.add(
+          "hidden"
+        );
+      }
+
+    }
+  );
+
+  setPortalNavigationVisible(
+    false
+  );
+
+  showStatus(
+    message
+    ||
+    "目前家長平台試行僅開放櫻桃班與蘋果班。"
+  );
+
+}
+
+
+async function bindParentLine(){
+
+  const input =
+    $("familyBindingCode");
+
+  const btn =
+    $("bindParentBtn");
+
+  const messageBox =
+    $("bindingMessage");
+
+  const bindingCode =
+    (
+      input
+      ?
+      input.value
+      :
+      ""
+    )
+    .toUpperCase()
+    .replace(
+      /[^A-Z0-9]/g,
+      ""
+    );
+
+
+  if(
+    bindingCode.length <
+    6
+  ){
+
+    alert(
+      "請輸入本園提供的家庭綁定碼。"
+    );
+
+    return;
+
+  }
+
+
+  const idToken =
+    liff.getIDToken();
+
+
+  if(
+    !idToken
+  ){
+
+    alert(
+      "目前無法取得 LINE 身分資料，請重新開啟家長平台。"
+    );
+
+    return;
+
+  }
+
+
+  if(
+    btn
+  ){
+
+    btn.disabled =
+      true;
+
+    btn.textContent =
+      "綁定中...";
+
+  }
+
+
+  if(
+    messageBox
+  ){
+
+    messageBox.textContent =
+      "正在確認家庭資料與 LINE 身分...";
+
+  }
+
+
+  try{
+
+    const response =
+      await fetch(
+        SUPABASE_URL
+        +
+        "/functions/v1/line-parent-bind",
+        {
+          method:
+            "POST",
+
+          headers:{
+            "Content-Type":
+              "application/json",
+
+            "apikey":
+              SUPABASE_PUBLISHABLE_KEY
+          },
+
+          body:
+            JSON.stringify(
+              {
+                idToken,
+                bindingCode
+              }
+            )
+        }
+      );
+
+
+    const result =
+      await response
+        .json()
+        .catch(
+          () => ({})
+        );
+
+
+    if(
+      !response.ok
+    ){
+
+      throw new Error(
+        result.message
+        ||
+        result.error
+        ||
+        "家庭綁定失敗。"
+      );
+
+    }
+
+
+    if(
+      messageBox
+    ){
+
+      messageBox.textContent =
+        "✅ 綁定完成，正在進入家長平台...";
+
+    }
+
+
+    alert(
+      "✅ 家庭綁定完成。\n\n之後從 LINE 開啟家長平台即可直接使用。"
+    );
+
+
+    window.location.reload();
+
+  }
+  catch(e){
+
+    console.error(
+      "家庭綁定失敗：",
+      e
+    );
+
+    if(
+      messageBox
+    ){
+
+      messageBox.textContent =
+        "";
+
+    }
+
+    alert(
+      (
+        e
+        &&
+        e.message
+      )
+      ?
+      e.message
+      :
+      String(e)
+    );
+
+  }
+  finally{
+
+    if(
+      btn
+    ){
+
+      btn.disabled =
+        false;
+
+      btn.textContent =
+        "🔗 綁定並進入家長平台";
+
+    }
+
+  }
+
+}
+
+
 async function loginSupabaseWithLine(){
 
   $("supabaseState").textContent =
@@ -5526,13 +5996,21 @@ async function loginSupabaseWithLine(){
     !response.ok
   ){
 
-    throw new Error(
-      result.message
-      ||
+    const authError =
+      new Error(
+        result.message
+        ||
+        result.error
+        ||
+        "LINE 家長身分驗證失敗。"
+      );
+
+    authError.code =
       result.error
       ||
-      "LINE 家長身分驗證失敗。"
-    );
+      "LINE_PARENT_AUTH_FAILED";
+
+    throw authError;
 
   }
 
@@ -5595,6 +6073,28 @@ async function loginSupabaseWithLine(){
   await loadGuardianAndChildren();
 
   await loadSchoolClosedDates();
+
+  const bindingPanel =
+    $("bindingPanel");
+
+  if(
+    bindingPanel
+  ){
+
+    bindingPanel.classList.add(
+      "hidden"
+    );
+
+  }
+
+  setPortalNavigationVisible(
+    true
+  );
+
+  showPage(
+    resolvePageFromUrl(),
+    false
+  );
 
   $("supabaseState").textContent =
     "✅ 家長身分已驗證";
@@ -5773,7 +6273,57 @@ async function main(){
       "LINE 自動登入失敗：",
       e
     );
-$("supabaseState").textContent =
+
+
+    if(
+      e
+      &&
+      e.code ===
+      "LINE_NOT_BOUND"
+    ){
+
+      $("lineStatus").innerHTML =
+        `<b>${escapeHtml(lineDisplayName)}</b>（尚未綁定家長資料）`;
+
+      $("boundSummary").textContent =
+        "第一次使用請先完成家庭綁定";
+
+      $("supabaseState").textContent =
+        "請輸入家庭綁定碼";
+
+      showBindingPanel();
+
+      return;
+
+    }
+
+
+    if(
+      e
+      &&
+      e.code ===
+      "PILOT_NOT_ENABLED"
+    ){
+
+      $("lineStatus").innerHTML =
+        `<b>${escapeHtml(lineDisplayName)}</b>（LINE 身分已驗證）`;
+
+      $("boundSummary").textContent =
+        "目前尚未開放此班級";
+
+      $("supabaseState").textContent =
+        "櫻桃班、蘋果班試行中";
+
+      showPilotUnavailable(
+        "🌱 目前家長平台先由櫻桃班、蘋果班進行試行。\n\n其他班級將視試行情況再逐步開放。"
+      );
+
+      return;
+
+    }
+
+
+    $("supabaseState").textContent =
       "⚠️ LINE 自動登入尚未完成";
 
     $("lineStatus").innerHTML =
