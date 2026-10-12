@@ -84,7 +84,7 @@ body{
     16px
     14px
     calc(
-      30px +
+      104px +
       env(safe-area-inset-bottom)
     );
 
@@ -196,8 +196,56 @@ textarea{
 .brandRow{
 
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   gap:13px;
+
+}
+
+.headerRequestsBtn{
+
+  flex:0 0 auto;
+
+  border:
+    1px solid
+    #d5e0cf;
+
+  border-radius:999px;
+
+  padding:
+    9px
+    11px;
+
+  background:
+    rgba(255,255,255,.82);
+
+  color:
+    var(--sage-dark);
+
+  cursor:pointer;
+
+  white-space:nowrap;
+
+  font-size:.75rem;
+
+  line-height:1.2;
+
+  font-weight:900;
+
+  box-shadow:
+    0 4px 12px
+    rgba(76,86,68,.07);
+
+}
+
+.headerRequestsBtn.active{
+
+  background:
+    var(--sage);
+
+  color:#fff;
+
+  border-color:
+    var(--sage);
 
 }
 
@@ -1056,16 +1104,25 @@ details.rules summary{
 
 
 /* ==================================================
-   底部五功能
+   固定底部功能列
    ================================================== */
 
 .quickTabs{
 
-  position:sticky;
+  position:fixed;
 
+  left:50%;
   bottom:0;
 
-  z-index:10;
+  transform:
+    translateX(-50%);
+
+  z-index:1000;
+
+  width:
+    calc(100% - 28px);
+
+  max-width:500px;
 
   display:grid;
 
@@ -1075,24 +1132,36 @@ details.rules summary{
   gap:7px;
 
   padding:
-    11px
+    10px
     12px
     calc(
-      11px +
+      10px +
       env(safe-area-inset-bottom)
     );
 
-  border-top:
+  border:
     1px solid
-    #ece9df;
+    #e8e4d9;
+
+  border-bottom:0;
+
+  border-radius:
+    18px
+    18px
+    0
+    0;
 
   background:
-    rgba(255,254,250,.96);
+    rgba(255,254,250,.97);
 
-  backdrop-filter:blur(12px);
+  box-shadow:
+    0 -8px 24px
+    rgba(76,86,68,.10);
+
+  backdrop-filter:blur(14px);
 
   -webkit-backdrop-filter:
-    blur(12px);
+    blur(14px);
 
 }
 
@@ -1261,6 +1330,16 @@ details.rules summary{
     font-size:.68rem;
   }
 
+  .headerRequestsBtn{
+
+    padding:
+      8px
+      9px;
+
+    font-size:.70rem;
+
+  }
+
 }
 /* ==================================================
    iPhone / LINE 日期欄位修正
@@ -1298,7 +1377,7 @@ details.rules summary{
 /* ==================================================
    我的申請
    ================================================== */
-.quickTabs{grid-template-columns:repeat(5,1fr);}
+.quickTabs{grid-template-columns:repeat(4,1fr);}
 .quickTab{min-width:0;font-size:.68rem;}
 .requestToolbar{display:flex;justify-content:flex-end;margin-bottom:14px;}
 .refreshRequestsBtn{width:auto;border:1px solid #d5e0cf;border-radius:999px;padding:9px 14px;background:#eef4ea;color:#52644e;font-size:.82rem;font-weight:850;cursor:pointer;}
@@ -1353,6 +1432,15 @@ details.rules summary{
       </div>
 
     </div>
+
+    <button
+      id="headerRequestsBtn"
+      class="headerRequestsBtn"
+      type="button"
+      onclick="showPage('requests')"
+    >
+      📋 我的申請
+    </button>
 
   </div>
 
@@ -2106,17 +2194,17 @@ details.rules summary{
   <div id="myRequestsList" class="requestList"><div class="empty">正在載入申請紀錄...</div></div>
 </div>
 
+</div>
+
 <!-- ====================================== -->
-<!-- 底部功能 -->
+<!-- 固定底部功能 -->
 <!-- ====================================== -->
 <div class="quickTabs">
   <button id="tabPickup" class="quickTab" onclick="showPage('pickup')">🚗<br>接孩子</button>
   <button id="tabLeave" class="quickTab" onclick="showPage('leave')">❌<br>請假</button>
-  <button id="tabExtended" class="quickTab" onclick="showPage('extended')">⏰<br>延長</button>
+  <button id="tabExtended" class="quickTab" onclick="showPage('extended')">⏰<br>延托</button>
   <button id="tabTemporary" class="quickTab" onclick="showPage('temporary')">🧸<br>臨托</button>
-
-  <button id="tabRequests" class="quickTab" onclick="showPage('requests')">📋<br>我的申請</button>
-</div></div>
+</div>
 
 <div
   id="statusBox"
@@ -3226,7 +3314,7 @@ async function loadMyRequests(){
   }
 
 }
-function showPage(page,updateUrl=true){const valid=["pickup","leave","extended","temporary","requests"];if(!valid.includes(page))page="pickup";currentPage=page;valid.forEach(p=>{const pageEl=$(p+"Page");if(pageEl)pageEl.classList.toggle("hidden",p!==page);const tabEl=$("tab"+p[0].toUpperCase()+p.slice(1));if(tabEl)tabEl.classList.toggle("active",p===page);});if(page==="requests")loadMyRequests();if(updateUrl){const u=new URL(window.location.href);u.searchParams.set("page",page);u.searchParams.delete("code");u.searchParams.delete("state");u.searchParams.delete("liffClientId");u.searchParams.delete("liffRedirectUri");history.replaceState(null,"",u.toString());}window.scrollTo({top:0,behavior:"smooth"});}
+function showPage(page,updateUrl=true){const valid=["pickup","leave","extended","temporary","requests"];if(!valid.includes(page))page="pickup";currentPage=page;valid.forEach(p=>{const pageEl=$(p+"Page");if(pageEl)pageEl.classList.toggle("hidden",p!==page);const tabEl=$("tab"+p[0].toUpperCase()+p.slice(1));if(tabEl)tabEl.classList.toggle("active",p===page);});const headerRequestsBtn=$("headerRequestsBtn");if(headerRequestsBtn)headerRequestsBtn.classList.toggle("active",page==="requests");if(page==="requests")loadMyRequests();if(updateUrl){const u=new URL(window.location.href);u.searchParams.set("page",page);u.searchParams.delete("code");u.searchParams.delete("state");u.searchParams.delete("liffClientId");u.searchParams.delete("liffRedirectUri");history.replaceState(null,"",u.toString());}window.scrollTo({top:0,behavior:"smooth"});}
 
 function setPickupMode(
   el,
