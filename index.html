@@ -1207,52 +1207,6 @@ details.rules summary{
 
 
 /* ==================================================
-   測試登入
-   ================================================== */
-
-.testLogin{
-
-  margin:
-    16px
-    18px
-    0;
-
-  padding:15px;
-
-  border:
-    1px solid
-    #eadfbf;
-
-  border-radius:16px;
-
-  background:#fff9e9;
-
-}
-
-.testLoginTitle{
-
-  margin-bottom:7px;
-
-  color:#816d3c;
-
-  font-weight:900;
-
-}
-
-.testLogin .helper{
-
-  margin-bottom:11px;
-
-  color:#8a7b56;
-
-}
-
-.testLogin input{
-  margin-bottom:9px;
-}
-
-
-/* ==================================================
    空資料
    ================================================== */
 
@@ -1477,7 +1431,7 @@ details.rules summary{
         id="supabaseState"
         class="supabaseState"
       >
-        Supabase：檢查登入狀態中...
+        系統：檢查家長身分中...
       </div>
 
     </div>
@@ -1826,11 +1780,11 @@ details.rules summary{
   </div>
 
   <div class="pageDesc">
-    孩子整天不到園時使用。此版本已連接 Supabase 資料庫。
+    孩子整天不到園時使用。送出後可在「我的申請」查看處理狀態。
   </div>
 
   <div class="notice noticeGreen">
-    ✅ 此功能已接上 Supabase。送出後會建立正式測試申請紀錄。
+    ✅ 送出後會建立請假申請紀錄，並由本園依流程處理。
   </div>
 
   <div class="notice noticeBlue">
@@ -2008,7 +1962,7 @@ details.rules summary{
   </div>
 
   <div class="notice noticeGreen">
-    ✅ 此功能已接上 Supabase。送出後會建立延長托育申請紀錄，狀態為待處理。
+    ✅ 送出後會建立延長托育申請紀錄，並顯示為待本園確認。
   </div>
 
   <button
@@ -2660,108 +2614,6 @@ function timeToMinutes(time){
 }
 
 
-async function supabaseTestLogin(){
-
-  const email =
-    $("testEmail")
-      .value
-      .trim();
-
-  const password =
-    $("testPassword")
-      .value;
-
-  if(
-    !email
-    ||
-    !password
-  ){
-
-    alert(
-      "請輸入測試帳號與密碼。"
-    );
-
-    return;
-
-  }
-
-  $("supabaseState").textContent =
-
-    "Supabase：登入中...";
-
-  await supabaseClient.auth.signOut();
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.auth.signInWithPassword(
-      {
-        email,
-        password
-      }
-    );
-
-  if(
-    error
-  ){
-
-    $("supabaseState").textContent =
-      "Supabase：登入失敗";
-
-    alert(
-      "登入失敗：\n" +
-      error.message
-    );
-
-    return;
-
-  }
-
-  supabaseUser =
-    data.user;
-
-  $("supabaseState").textContent =
-    "Supabase：已登入 " +
-    (
-      supabaseUser.email
-      ||
-      ""
-    );
-
-  await loadGuardianAndChildren();
-
-}
-
-
-async function supabaseLogout(){
-
-  await supabaseClient.auth.signOut();
-
-  supabaseUser =
-    null;
-
-  currentGuardianId =
-    null;
-
-  children =
-    [];
-
-  $("testPassword").value =
-    "";
-
-  $("supabaseState").textContent =
-    "Supabase：已登出";
-
-  renderChildrenEverywhere();
-
-  showStatus(
-    "已登出 Supabase 測試帳號。"
-  );
-
-}
-
-
 async function loadGuardianAndChildren(){
 
   $("boundSummary").textContent =
@@ -2791,7 +2643,7 @@ async function loadGuardianAndChildren(){
       [];
 
     $("supabaseState").textContent =
-      "Supabase：尚未登入";
+      "系統：尚未登入";
 
     renderChildrenEverywhere();
 
@@ -2803,12 +2655,7 @@ async function loadGuardianAndChildren(){
     userData.user;
 
   $("supabaseState").textContent =
-    "Supabase：已登入 " +
-    (
-      supabaseUser.email
-      ||
-      ""
-    );
+    "系統：家長帳號已登入";
 
   const {
     data:identityData,
@@ -3055,7 +2902,7 @@ function renderPickerList(
 
     `
       <div class="empty">
-        尚未登入 Supabase 測試帳號。
+        尚未登入家長帳號。
       </div>
     `;
 
@@ -3157,7 +3004,7 @@ function requireChildren(prefix){
   ){
 
     alert(
-      "目前尚未登入 Supabase 測試帳號。"
+      "目前尚未登入家長帳號。"
     );
 
     return null;
@@ -3568,51 +3415,6 @@ function pickerChange(){
     :
 
     "none";
-
-}
-
-
-async function sendLine(message){
-
-  if(
-    !window.liff
-  ){
-
-    throw new Error(
-      "LIFF SDK 尚未載入"
-    );
-
-  }
-
-  if(
-    !liff.isLoggedIn()
-  ){
-
-    throw new Error(
-      "LINE 尚未登入"
-    );
-
-  }
-
-  if(
-    !liff.isInClient()
-  ){
-
-
-    throw new Error(
-      "目前不是從 LINE App 開啟"
-    );
-
-  }
-
-  await liff.sendMessages(
-    [
-      {
-        type:"text",
-        text:message
-      }
-    ]
-  );
 
 }
 
@@ -4112,7 +3914,7 @@ async function submitLeave(){
 
     /*
     ==========================================
-    1. 每次送出前重新確認目前登入的 Supabase 使用者
+    1. 每次送出前重新確認目前登入的家長帳號
     ==========================================
     */
 
@@ -4437,7 +4239,7 @@ async function submitLeave(){
 
     /*
     ==========================================
-    7. 寫入 Supabase
+    7. 寫入申請資料
        資料庫仍有 unique index 作第二層保護
     ==========================================
     */
@@ -5448,50 +5250,9 @@ function resolvePageFromUrl(){
 }
 
 
-async function restoreSupabaseSession(){
-
-  const {
-    data
-  } =
-    await supabaseClient.auth.getSession();
-
-  if(
-    data
-    &&
-    data.session
-    &&
-    data.session.user
-  ){
-
-    supabaseUser =
-      data.session.user;
-
-    await loadGuardianAndChildren();
-
-  }
-  else{
-
-    supabaseUser =
-      null;
-
-    currentGuardianId =
-      null;
-
-    children =
-      [];
-
-    $("supabaseState").textContent =
-      "Supabase：尚未登入";
-
-    renderChildrenEverywhere();
-
-  }
-
-}
-
 /*
 ==================================================
-LINE → Supabase 自動登入
+LINE → 家長帳號自動登入
 ==================================================
 */
 
@@ -5633,27 +5394,7 @@ async function loginSupabaseWithLine(){
 
 
   await loadGuardianAndChildren();
-
-
-  /*
-  LINE 自動登入成功後，
-  暫時把測試登入區隱藏。
-  */
-  const testBox =
-    $("testLoginBox");
-
-
-  if(
-    testBox
-  ){
-
-    testBox.style.display =
-      "none";
-
-  }
-
-
-  $("supabaseState").textContent =
+$("supabaseState").textContent =
     "✅ 家長身分已驗證";
 
 }
@@ -5802,7 +5543,7 @@ async function main(){
 
     /*
     ================================================
-    6. 清掉舊 Supabase 測試 Session
+    6. 清掉舊登入 Session
     ================================================
     */
 
@@ -5813,7 +5554,7 @@ async function main(){
 
     /*
     ================================================
-    7. LINE → Supabase 自動登入
+    7. LINE → 家長帳號自動登入
     ================================================
     */
 
@@ -5830,20 +5571,7 @@ async function main(){
       "LINE 自動登入失敗：",
       e
     );
-
-    const testBox =
-      $("testLoginBox");
-
-    if(
-      testBox
-    ){
-
-      testBox.style.display =
-        "";
-
-    }
-
-    $("supabaseState").textContent =
+$("supabaseState").textContent =
       "⚠️ LINE 自動登入尚未完成";
 
     $("lineStatus").innerHTML =
