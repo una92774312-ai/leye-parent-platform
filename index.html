@@ -3823,6 +3823,22 @@ async function submitPickup(){
   }
 
 
+  const btn =
+    $("pickupSubmitBtn");
+
+  if(
+    btn
+  ){
+
+    btn.disabled =
+      true;
+
+    btn.textContent =
+      "送出中...";
+
+  }
+
+
   try{
 
 
@@ -3916,6 +3932,21 @@ async function submitPickup(){
       )
 
     );
+
+  }
+  finally{
+
+    if(
+      btn
+    ){
+
+      btn.disabled =
+        false;
+
+      btn.textContent =
+        "📢 確認通知老師";
+
+    }
 
   }
 
