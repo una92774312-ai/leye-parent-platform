@@ -1610,6 +1610,7 @@ details.rules summary{
   </div>
 
   <button
+    id="pickupSubmitBtn"
     class="btn btnPrimary"
     type="button"
     onclick="submitPickup()"
@@ -1923,6 +1924,7 @@ details.rules summary{
   </div>
 
   <button
+    id="extendedSubmitBtn"
     class="btn btnBlue"
     type="button"
     onclick="submitExtended()"
@@ -2081,6 +2083,7 @@ details.rules summary{
   </div>
 
   <button
+    id="temporarySubmitBtn"
     class="btn btnPurple"
     type="button"
     onclick="submitTemporary()"
@@ -3110,7 +3113,7 @@ function childrenText(list){
 
 const AFTERCARE_CLASS_MAP = {AC01:"蝴蝶班",AC02:"白兔班",AC03:"蜜蜂班",AC04:"陽光書屋",AC05:"櫻桃班",AC06:"蘋果班"};
 function requestTypeLabel(type){return ({leave:"❌ 請假",extended:"⏰ 延長托育",temporary:"🧸 臨時托育"})[type]||"📋 申請";}
-function requestStatusInfo(status){const map={pending:{text:"待本園確認",icon:"🟡",className:"statusPending"},approved:{text:"已核准",icon:"✅",className:"statusApproved"},waitlist:{text:"候補",icon:"🟠",className:"statusWaitlist"},rejected:{text:"無法安排",icon:"❌",className:"statusRejected"},cancelled:{text:"已取消",icon:"⚪",className:"statusCancelled"}};return map[status]||{text:status||"未知狀態",icon:"📋",className:"statusCancelled"};}
+function requestStatusInfo(status){const map={submitted:{text:"待本園確認",icon:"🟡",className:"statusPending"},pending:{text:"待本園確認",icon:"🟡",className:"statusPending"},approved:{text:"已核准",icon:"✅",className:"statusApproved"},waitlist:{text:"候補",icon:"🟠",className:"statusWaitlist"},rejected:{text:"無法安排",icon:"❌",className:"statusRejected"},cancelled:{text:"已取消",icon:"⚪",className:"statusCancelled"}};return map[status]||{text:status||"未知狀態",icon:"📋",className:"statusCancelled"};}
 function requestDateText(value){if(!value)return "-";const parts=String(value).split("-");return parts.length===3?parts.join(" / "):String(value);}
 function requestShortTime(value){return value?String(value).slice(0,5):"";}
 function requestTimeText(row){const start=requestShortTime(row.requested_start_time),end=requestShortTime(row.requested_end_time);if(!start&&!end)return row.request_type==="leave"?"整日":"-";return (start||"-")+"－"+(end||"-");}
@@ -3118,7 +3121,111 @@ function requestChildName(childId){const child=children.find(item=>item.id===chi
 function requestAftercareName(code){return code?(AFTERCARE_CLASS_MAP[code]||code):"";}
 function requestCreatedText(value){if(!value)return "";const d=new Date(value);if(Number.isNaN(d.getTime()))return "";return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0")+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
 function renderRequestCard(row){const status=requestStatusInfo(row.status),className=requestAftercareName(row.assigned_aftercare_class_code),reason=row.reason?String(row.reason).trim():"",adminNote=row.admin_note?String(row.admin_note).trim():"";const classHtml=(row.status==="approved"&&className)?`<div class="requestClassBox">🏫 今日課後班：${escapeHtml(className)}</div>`:"";const noteHtml=adminNote?`<div class="requestNote">🌼 <b>本園備註</b><br>${escapeHtml(adminNote)}</div>`:"";return `<div class="requestCard"><div class="requestCardTop"><div class="requestType">${requestTypeLabel(row.request_type)}</div><div class="requestStatus ${status.className}">${status.icon} ${escapeHtml(status.text)}</div></div><div class="requestCardBody"><div class="requestChild">👶 ${escapeHtml(requestChildName(row.child_id))}</div><div class="requestMetaGrid"><div class="requestMeta"><div class="requestLabel">📅 日期</div><div class="requestValue">${escapeHtml(requestDateText(row.request_date))}</div></div><div class="requestMeta"><div class="requestLabel">⏰ 時段</div><div class="requestValue">${escapeHtml(requestTimeText(row))}</div></div>${reason?`<div class="requestMeta requestMetaFull"><div class="requestLabel">📝 申請內容</div><div class="requestValue">${escapeHtml(reason)}</div></div>`:""}</div>${classHtml}${noteHtml}</div>${row.created_at?`<div class="requestFoot">送出時間：${escapeHtml(requestCreatedText(row.created_at))}</div>`:""}</div>`;}
-async function loadMyRequests(){const box=$("myRequestsList");if(!box)return;if(!supabaseUser){box.innerHTML='<div class="empty">尚未登入家長測試帳號。<br><br>登入後即可查看申請紀錄。</div>';return;}box.innerHTML='<div class="empty">🌷 正在更新申請紀錄...</div>';try{const {data,error}=await supabaseClient.from("requests").select(`id,request_date,child_id,request_type,status,requested_start_time,requested_end_time,reason,assigned_aftercare_class_code,admin_note,created_at`).order("request_date",{ascending:false}).order("created_at",{ascending:false}).limit(50);if(error)throw error;const rows=data||[];if(!rows.length){box.innerHTML='<div class="empty">🌷 目前還沒有申請紀錄。<br><br>送出請假、延長托育或臨時托育後，就會顯示在這裡。</div>';return;}box.innerHTML=rows.map(renderRequestCard).join("");}catch(e){console.error("讀取申請紀錄失敗：",e);box.innerHTML=`<div class="notice noticeRed">⚠️ 目前無法讀取申請紀錄。<br><br>${escapeHtml(e.message||String(e))}</div>`;}}
+async function loadMyRequests(){
+
+  const box =
+    $("myRequestsList");
+
+  if(
+    !box
+  ){
+    return;
+  }
+
+  if(
+    !supabaseUser
+    ||
+    !currentGuardianId
+  ){
+
+    box.innerHTML =
+      '<div class="empty">尚未完成家長身分驗證。<br><br>請重新開啟家長服務平台。</div>';
+
+    return;
+
+  }
+
+  box.innerHTML =
+    '<div class="empty">🌷 正在更新申請紀錄...</div>';
+
+  try{
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from(
+          "requests"
+        )
+        .select(
+          "id,request_date,child_id,request_type,status,requested_start_time,requested_end_time,reason,assigned_aftercare_class_code,admin_note,created_at"
+        )
+        .eq(
+          "guardian_id",
+          currentGuardianId
+        )
+        .order(
+          "request_date",
+          {
+            ascending:false
+          }
+        )
+        .order(
+          "created_at",
+          {
+            ascending:false
+          }
+        )
+        .limit(
+          50
+        );
+
+    if(
+      error
+    ){
+
+      throw error;
+
+    }
+
+    const rows =
+      data
+      ||
+      [];
+
+    if(
+      !rows.length
+    ){
+
+      box.innerHTML =
+        '<div class="empty">🌷 目前還沒有申請紀錄。<br><br>送出請假、延長托育或臨時托育後，就會顯示在這裡。</div>';
+
+      return;
+
+    }
+
+    box.innerHTML =
+      rows
+        .map(
+          renderRequestCard
+        )
+        .join("");
+
+  }
+  catch(e){
+
+    console.error(
+      "讀取申請紀錄失敗：",
+      e
+    );
+
+    box.innerHTML =
+      `<div class="notice noticeRed">⚠️ 目前無法讀取申請紀錄。<br><br>${escapeHtml(e.message||String(e))}</div>`;
+
+  }
+
+}
 function showPage(page,updateUrl=true){const valid=["pickup","leave","extended","temporary","requests"];if(!valid.includes(page))page="pickup";currentPage=page;valid.forEach(p=>{const pageEl=$(p+"Page");if(pageEl)pageEl.classList.toggle("hidden",p!==page);const tabEl=$("tab"+p[0].toUpperCase()+p.slice(1));if(tabEl)tabEl.classList.toggle("active",p===page);});if(page==="requests")loadMyRequests();if(updateUrl){const u=new URL(window.location.href);u.searchParams.set("page",page);u.searchParams.delete("code");u.searchParams.delete("state");u.searchParams.delete("liffClientId");u.searchParams.delete("liffRedirectUri");history.replaceState(null,"",u.toString());}window.scrollTo({top:0,behavior:"smooth"});}
 
 function setPickupMode(
@@ -4345,6 +4452,7 @@ async function submitLeave(){
 }
 
 
+
 async function submitExtended(){
 
   const list =
@@ -4392,19 +4500,18 @@ async function submitExtended(){
       .value
       .trim();
 
+  const btn =
+    $("extendedSubmitBtn");
+
   if(
-    !confirm(
-
-`確認送出延長托育申請？
-
-幼兒：${childrenText(list)}
-日期：${date}
-時段：17:00 → 18:00`
-
-    )
+    btn
   ){
 
-    return;
+    btn.disabled =
+      true;
+
+    btn.textContent =
+      "檢查中...";
 
   }
 
@@ -4466,6 +4573,134 @@ async function submitExtended(){
     const guardianId =
       identityData.guardian_id;
 
+    const selectedIds =
+      list.map(
+        child =>
+        child.id
+      );
+
+    const {
+      data:existingRequests,
+      error:existingError
+    } =
+      await supabaseClient
+        .from(
+          "requests"
+        )
+        .select(
+          "id,child_id,status"
+        )
+        .eq(
+          "guardian_id",
+          guardianId
+        )
+        .eq(
+          "request_type",
+          "extended"
+        )
+        .eq(
+          "request_date",
+          date
+        )
+        .in(
+          "status",
+          [
+            "submitted",
+            "pending",
+            "approved",
+            "waitlist"
+          ]
+        )
+        .in(
+          "child_id",
+          selectedIds
+        );
+
+    if(
+      existingError
+    ){
+
+      throw new Error(
+        "檢查既有延長托育申請失敗："
+        +
+        existingError.message
+      );
+
+    }
+
+    const duplicateIds =
+      new Set(
+        (
+          existingRequests
+          ||
+          []
+        )
+        .map(
+          row =>
+          row.child_id
+        )
+      );
+
+    if(
+      duplicateIds.size
+      >
+      0
+    ){
+
+      const duplicateNames =
+        list
+          .filter(
+            child =>
+            duplicateIds.has(
+              child.id
+            )
+          )
+          .map(
+            child =>
+            child.name
+          );
+
+      alert(
+        duplicateNames.join("、")
+        +
+        ` 在 ${date} 已有延長托育申請，請勿重複送出。`
+        +
+        "\n\n請至「我的申請」查看目前狀態。"
+      );
+
+      return;
+
+    }
+
+    if(
+      !confirm(
+
+`確認送出延長托育申請？
+
+幼兒：${childrenText(list)}
+日期：${date}
+時段：17:00 → 18:00`
+
+      )
+    ){
+
+      return;
+
+    }
+
+    if(
+      btn
+    ){
+
+      btn.textContent =
+        "送出中...";
+
+    }
+
+    const submittedAt =
+      new Date()
+        .toISOString();
+
     const rows =
       list.map(
 
@@ -4490,8 +4725,10 @@ async function submitExtended(){
             "17:00",
 
           requested_end_time:
-
             "18:00",
+
+          notice_time:
+            submittedAt,
 
           reason:
             note
@@ -4522,6 +4759,21 @@ async function submitExtended(){
       error
     ){
 
+      if(
+        error.code ===
+        "23505"
+      ){
+
+        alert(
+          "這一天已有有效的延長托育申請，請勿重複送出。\n\n"
+          +
+          "請至「我的申請」查看目前狀態。"
+        );
+
+        return;
+
+      }
+
       throw error;
 
     }
@@ -4534,7 +4786,7 @@ async function submitExtended(){
 
     showStatus(
 
-      "✅ 延長托育申請已成功寫入 Supabase。\n"
+      "✅ 延長托育申請已送出。\n"
       +
       "幼兒："
       +
@@ -4546,7 +4798,7 @@ async function submitExtended(){
       +
       "\n時段：17:00 → 18:00"
       +
-      "\n目前狀態：pending"
+      "\n目前狀態：待本園確認"
 
     );
 
@@ -4568,6 +4820,21 @@ async function submitExtended(){
       )
 
     );
+
+  }
+  finally{
+
+    if(
+      btn
+    ){
+
+      btn.disabled =
+        false;
+
+      btn.textContent =
+        "⏰ 申請延長至 18:00";
+
+    }
 
   }
 
@@ -4651,20 +4918,18 @@ async function submitTemporary(){
 
   }
 
+  const btn =
+    $("temporarySubmitBtn");
+
   if(
-    !confirm(
-
-`確認送出臨時托育申請？
-
-幼兒：${childrenText(list)}
-日期：${date}
-時段：${time}
-原因：${reason}`
-
-    )
+    btn
   ){
 
-    return;
+    btn.disabled =
+      true;
+
+    btn.textContent =
+      "檢查中...";
 
   }
 
@@ -4726,6 +4991,135 @@ async function submitTemporary(){
     const guardianId =
       identityData.guardian_id;
 
+    const selectedIds =
+      list.map(
+        child =>
+        child.id
+      );
+
+    const {
+      data:existingRequests,
+      error:existingError
+    } =
+      await supabaseClient
+        .from(
+          "requests"
+        )
+        .select(
+          "id,child_id,status"
+        )
+        .eq(
+          "guardian_id",
+          guardianId
+        )
+        .eq(
+          "request_type",
+          "temporary"
+        )
+        .eq(
+          "request_date",
+          date
+        )
+        .in(
+          "status",
+          [
+            "submitted",
+            "pending",
+            "approved",
+            "waitlist"
+          ]
+        )
+        .in(
+          "child_id",
+          selectedIds
+        );
+
+    if(
+      existingError
+    ){
+
+      throw new Error(
+        "檢查既有臨時托育申請失敗："
+        +
+        existingError.message
+      );
+
+    }
+
+    const duplicateIds =
+      new Set(
+        (
+          existingRequests
+          ||
+          []
+        )
+        .map(
+          row =>
+          row.child_id
+        )
+      );
+
+    if(
+      duplicateIds.size
+      >
+      0
+    ){
+
+      const duplicateNames =
+        list
+          .filter(
+            child =>
+            duplicateIds.has(
+              child.id
+            )
+          )
+          .map(
+            child =>
+            child.name
+          );
+
+      alert(
+        duplicateNames.join("、")
+        +
+        ` 在 ${date} 已有臨時托育申請，請勿重複送出。`
+        +
+        "\n\n請至「我的申請」查看目前狀態。"
+      );
+
+      return;
+
+    }
+
+    if(
+      !confirm(
+
+`確認送出臨時托育申請？
+
+幼兒：${childrenText(list)}
+日期：${date}
+時段：${time}
+原因：${reason}`
+
+      )
+    ){
+
+      return;
+
+    }
+
+    if(
+      btn
+    ){
+
+      btn.textContent =
+        "送出中...";
+
+    }
+
+    const submittedAt =
+      new Date()
+        .toISOString();
+
     const rows =
       list.map(
 
@@ -4751,6 +5145,9 @@ async function submitTemporary(){
 
           requested_end_time:
             endTime,
+
+          notice_time:
+            submittedAt,
 
           reason:
             reason,
@@ -4779,6 +5176,21 @@ async function submitTemporary(){
       error
     ){
 
+      if(
+        error.code ===
+        "23505"
+      ){
+
+        alert(
+          "這一天已有有效的臨時托育申請，請勿重複送出。\n\n"
+          +
+          "請至「我的申請」查看目前狀態。"
+        );
+
+        return;
+
+      }
+
       throw error;
 
     }
@@ -4791,7 +5203,7 @@ async function submitTemporary(){
 
     showStatus(
 
-      "✅ 臨時托育申請已成功寫入 Supabase。\n"
+      "✅ 臨時托育申請已送出。\n"
       +
       "幼兒："
       +
@@ -4805,13 +5217,12 @@ async function submitTemporary(){
       +
       time
       +
-      "\n目前狀態：pending，待本園確認"
+      "\n目前狀態：待本園確認"
 
     );
 
   }
   catch(e){
-
 
     console.error(
       e
@@ -4830,9 +5241,23 @@ async function submitTemporary(){
     );
 
   }
+  finally{
+
+    if(
+      btn
+    ){
+
+      btn.disabled =
+        false;
+
+      btn.textContent =
+        "🧸 送出臨時托育申請";
+
+    }
+
+  }
 
 }
-
 
 function showStatus(text){
 
