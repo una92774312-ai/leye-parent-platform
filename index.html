@@ -5563,13 +5563,37 @@ function resolvePageFromUrl(){
   const params =
     new URLSearchParams(
       window.location.search
-
     );
 
   return (
     params.get("page")
     ||
     "pickup"
+  );
+
+}
+
+
+function resolveBindingCodeFromUrl(){
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  return String(
+    params.get("bind")
+    ||
+    ""
+  )
+  .toUpperCase()
+  .replace(
+    /[^A-Z0-9]/g,
+    ""
+  )
+  .slice(
+    0,
+    12
   );
 
 }
@@ -5622,7 +5646,9 @@ function setPortalNavigationVisible(
 }
 
 
-function showBindingPanel(){
+function showBindingPanel(
+  bindingCode = ""
+){
 
   [
     "pickupPage",
@@ -5665,24 +5691,125 @@ function showBindingPanel(){
     false
   );
 
-  setTimeout(
-    () => {
+  const input =
+    $("familyBindingCode");
 
-      const input =
-        $("familyBindingCode");
+  const btn =
+    $("bindParentBtn");
+
+  const messageBox =
+    $("bindingMessage");
+
+  const normalizedCode =
+    String(
+      bindingCode
+      ||
+      ""
+    )
+    .toUpperCase()
+    .replace(
+      /[^A-Z0-9]/g,
+      ""
+    )
+    .slice(
+      0,
+      12
+    );
+
+
+  if(
+    input
+  ){
+
+    const inputGroup =
+      input.closest(
+        ".group"
+      );
+
+    if(
+      normalizedCode
+    ){
+
+      input.value =
+        normalizedCode;
+
+      input.readOnly =
+        true;
 
       if(
-        input
+        inputGroup
       ){
-        input.focus();
+
+        inputGroup.style.display =
+          "none";
+
       }
 
-    },
-    100
-  );
+      if(
+        btn
+      ){
+
+        btn.textContent =
+          "✅ 確認綁定此 LINE";
+
+      }
+
+      if(
+        messageBox
+      ){
+
+        messageBox.textContent =
+          "已載入您的專屬綁定資料，不需要再輸入綁定碼。";
+
+      }
+
+    }
+    else{
+
+      input.readOnly =
+        false;
+
+      if(
+        inputGroup
+      ){
+
+        inputGroup.style.display =
+          "";
+
+      }
+
+      if(
+        btn
+      ){
+
+        btn.textContent =
+          "🔗 綁定並進入家長平台";
+
+      }
+
+      if(
+        messageBox
+      ){
+
+        messageBox.textContent =
+          "";
+
+      }
+
+      setTimeout(
+        () => {
+
+          input.focus();
+
+        },
+        100
+      );
+
+    }
+
+  }
 
 }
-
 
 function showPilotUnavailable(
   message
@@ -5871,6 +5998,22 @@ async function bindParentLine(){
 
     alert(
       "✅ 家庭綁定完成。\n\n之後從 LINE 開啟家長平台即可直接使用。"
+    );
+
+
+    const cleanUrl =
+      new URL(
+        window.location.href
+      );
+
+    cleanUrl.searchParams.delete(
+      "bind"
+    );
+
+    history.replaceState(
+      null,
+      "",
+      cleanUrl.toString()
     );
 
 
@@ -6096,6 +6239,29 @@ async function loginSupabaseWithLine(){
     false
   );
 
+  const cleanUrl =
+    new URL(
+      window.location.href
+    );
+
+  if(
+    cleanUrl.searchParams.has(
+      "bind"
+    )
+  ){
+
+    cleanUrl.searchParams.delete(
+      "bind"
+    );
+
+    history.replaceState(
+      null,
+      "",
+      cleanUrl.toString()
+    );
+
+  }
+
   $("supabaseState").textContent =
     "✅ 家長身分已驗證";
 
@@ -6291,7 +6457,9 @@ async function main(){
       $("supabaseState").textContent =
         "請輸入家庭綁定碼";
 
-      showBindingPanel();
+      showBindingPanel(
+        resolveBindingCodeFromUrl()
+      );
 
       return;
 
