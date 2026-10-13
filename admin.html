@@ -759,7 +759,7 @@ button{
 .staffStatLabel{font-size:.76rem;color:var(--muted);font-weight:800}
 .staffStatNum{font-size:1.25rem;font-weight:900;margin-top:2px}
 .staffCompactTable{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
-.staffCompactHead,.staffCompactRow{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr auto;gap:10px;align-items:center;padding:11px 12px}
+.staffCompactHead,.staffCompactRow{display:grid;grid-template-columns:1.05fr .9fr .9fr 1fr 1fr auto;gap:10px;align-items:center;padding:11px 12px}
 .staffCompactHead{background:#f7f9f9;color:#607d8b;font-size:.78rem;font-weight:900}
 .staffCompactRow{border-top:1px solid #edf1f2;font-size:.88rem}
 .staffCompactName{font-weight:900}
@@ -1068,6 +1068,7 @@ button{
         <div><div class="helper">姓名</div><input id="newStaffName" placeholder="例：王小美"></div>
         <div><div class="helper">主要身分</div><select id="newStaffRole"><option value="class_teacher">原班導師</option><option value="aftercare_teacher">支援／外聘</option><option value="admin">行政老師</option></select></div>
         <div><div class="helper">固定原班</div><select id="newStaffHomeroom"><option value="">無</option><option value="C01">櫻桃班</option><option value="C02">蘋果班</option><option value="C03">蝴蝶班</option><option value="C04">白兔班</option><option value="C05">蜜蜂班</option><option value="C06">袋鼠班</option><option value="C07">綿羊班</option><option value="C08">企鵝班</option></select></div>
+        <div><div class="helper">固定課後班</div><select id="newStaffAftercare"><option value="">無</option><option value="AC01">蝴蝶班｜18:00</option><option value="AC02">白兔班｜17:00</option><option value="AC03">蜜蜂班｜18:00</option><option value="AC04">陽光書屋班｜17:00</option><option value="AC05">櫻桃班｜幼幼</option><option value="AC06">蘋果班｜幼幼</option></select></div>
         <div><div class="helper">Excel 別名（選填）</div><input id="newStaffAliases" placeholder="例：小美, 美美"></div>
       </div>
       <div class="actionButtons"><button class="btn btnGreen" type="button" onclick="addStaffMember()">儲存新增</button><button class="btn btnGray" type="button" onclick="toggleAddStaffBox(false)">取消</button></div>
@@ -1116,6 +1117,7 @@ button{
       <div><div class="helper">姓名</div><input id="staffEditName"></div>
       <div><div class="helper">主要身分</div><select id="staffEditRole"><option value="admin">行政老師</option><option value="class_teacher">原班導師</option><option value="aftercare_teacher">支援／外聘</option></select></div>
       <div><div class="helper">固定原班</div><select id="staffEditHomeroom"></select></div>
+      <div><div class="helper">固定課後班</div><select id="staffEditAftercare"></select></div>
       <div><div class="helper">LINE 狀態</div><div id="staffEditLineState" style="padding:11px 0;font-weight:900"></div></div>
     </div>
     <details class="staffAdvanced"><summary>進階設定</summary><div style="margin-top:10px"><div class="helper">Excel 別名（逗號分隔）</div><input id="staffEditAliases"></div></details>
@@ -1443,6 +1445,9 @@ let staffAliases =
 
 
 let fixedHomeroomMap =
+  {};
+
+let fixedAftercareMap =
   {};
 
 
@@ -4816,8 +4821,12 @@ async function refreshStaffManagement(){
   staffAliases=aliasResult.error?[]:(aliasResult.data||[]);
   teacherBindingRequests=bindingResult.error?[]:(bindingResult.data||[]);
   fixedHomeroomMap={};
+  fixedAftercareMap={};
   if(!assignmentResult.error){
-    (assignmentResult.data||[]).forEach(row=>{if(row.morning_class_id) fixedHomeroomMap[row.staff_id]=row.morning_class_id;});
+    (assignmentResult.data||[]).forEach(row=>{
+      if(row.morning_class_id) fixedHomeroomMap[row.staff_id]=row.morning_class_id;
+      if(row.aftercare_class_id) fixedAftercareMap[row.staff_id]=row.aftercare_class_id;
+    });
   }
   renderStaffManagement();
   renderLineBindingManagement();
@@ -4835,6 +4844,15 @@ function getStaffAliasText(staffId){
 function homeroomOptions(selectedValue){
   let html='<option value="">無</option>';
   Object.entries(CLASS_MAP).forEach(([code,name])=>{html+=`<option value="${code}" ${selectedValue===code?"selected":""}>${code} ${escapeHtml(name)}</option>`;});
+  return html;
+}
+
+function aftercareOptions(selectedValue){
+  let html='<option value="">無</option>';
+  Object.entries(AFTERCARE_CLASSES).forEach(([code,item])=>{
+    const suffix=item.endTime?("｜"+item.endTime):(item.group==="toddler"?"｜幼幼":"");
+    html+=`<option value="${code}" ${selectedValue===code?"selected":""}>${code} ${escapeHtml(item.name)}${escapeHtml(suffix)}</option>`;
+  });
   return html;
 }
 
@@ -4858,6 +4876,7 @@ function renderStaffManagement(){
 
   const rows=filtered.map(staff=>{
     const homeroom=fixedHomeroomMap[staff.id]||"";
+    const fixedAftercare=fixedAftercareMap[staff.id]||"";
     const hasPending=teacherBindingRequests.some(r=>r.staff_id===staff.id&&r.status==="pending");
     const bindButton=(!staff.line_user_id&&!hasPending)
       ? `<button class="staffMiniBtn staffMiniGreen" type="button" onclick="issueStaffBindingCode('${escapeJs(staff.id)}')">產生綁定碼</button>`
@@ -4866,14 +4885,15 @@ function renderStaffManagement(){
       <div class="staffCompactName">${escapeHtml(staff.display_name)}</div>
       <div>${escapeHtml(staffRoleText(staff.role))}</div>
       <div>${escapeHtml(homeroom?(CLASS_MAP[homeroom]||homeroom):"—")}</div>
+      <div>${escapeHtml(fixedAftercare?(AFTERCARE_CLASSES[fixedAftercare]?.name||fixedAftercare):"—")}</div>
       <div class="staffStatusDot ${staff.line_user_id?"staffLineOk":"staffLineNone"}">${staff.line_user_id?"✅ 已綁定":"⚪ 尚未綁定"}</div>
       <div class="staffToolbarActions">${bindButton}<button class="staffMiniBtn staffMiniEdit" type="button" onclick="openStaffEditor('${escapeJs(staff.id)}')">編輯</button></div>
     </div>`;
   }).join("");
 
-  target.innerHTML=`<div class="staffCompactTable"><div class="staffCompactHead"><div>姓名</div><div>身分</div><div>原班</div><div>LINE</div><div>操作</div></div>${rows||'<div class="empty">沒有符合條件的老師。</div>'}</div>
+  target.innerHTML=`<div class="staffCompactTable"><div class="staffCompactHead"><div>姓名</div><div>身分</div><div>原班</div><div>固定課後班</div><div>LINE</div><div>操作</div></div>${rows||'<div class="empty">沒有符合條件的老師。</div>'}</div>
     <details class="staffInactiveWrap"><summary class="staffInactiveSummary">顯示停用老師（${inactive.length}）</summary>
-      <div class="staffCompactTable">${inactive.length?inactive.map(staff=>`<div class="staffCompactRow"><div class="staffCompactName">${escapeHtml(staff.display_name)}</div><div>${escapeHtml(staffRoleText(staff.role))}</div><div>${escapeHtml(fixedHomeroomMap[staff.id]?(CLASS_MAP[fixedHomeroomMap[staff.id]]||fixedHomeroomMap[staff.id]):"—")}</div><div class="staffLineNone">⛔ 已停用</div><div class="staffToolbarActions"><button class="staffMiniBtn staffMiniGreen" type="button" onclick="openStaffEditor('${escapeJs(staff.id)}')">查看／啟用</button></div></div>`).join(""):'<div class="empty">沒有停用資料。</div>'}</div>
+      <div class="staffCompactTable">${inactive.length?inactive.map(staff=>`<div class="staffCompactRow"><div class="staffCompactName">${escapeHtml(staff.display_name)}</div><div>${escapeHtml(staffRoleText(staff.role))}</div><div>${escapeHtml(fixedHomeroomMap[staff.id]?(CLASS_MAP[fixedHomeroomMap[staff.id]]||fixedHomeroomMap[staff.id]):"—")}</div><div>${escapeHtml(fixedAftercareMap[staff.id]?(AFTERCARE_CLASSES[fixedAftercareMap[staff.id]]?.name||fixedAftercareMap[staff.id]):"—")}</div><div class="staffLineNone">⛔ 已停用</div><div class="staffToolbarActions"><button class="staffMiniBtn staffMiniGreen" type="button" onclick="openStaffEditor('${escapeJs(staff.id)}')">查看／啟用</button></div></div>`).join(""):'<div class="empty">沒有停用資料。</div>'}</div>
     </details>`;
 }
 
@@ -4885,6 +4905,7 @@ function openStaffEditor(staffId){
   $("staffEditName").value=staff.display_name||"";
   $("staffEditRole").value=staff.role||"class_teacher";
   $("staffEditHomeroom").innerHTML=homeroomOptions(fixedHomeroomMap[staff.id]||"");
+  $("staffEditAftercare").innerHTML=aftercareOptions(fixedAftercareMap[staff.id]||"");
   $("staffEditAliases").value=getStaffAliasText(staff.id)==="無"?"":getStaffAliasText(staff.id);
   $("staffEditLineState").innerHTML=staff.line_user_id?'<span class="staffLineOk">✅ 已綁定 LINE</span>':'<span class="staffLineNone">⚪ 尚未綁定 LINE</span>';
   $("staffEditUnbindBtn").style.display=staff.line_user_id?"inline-block":"none";
@@ -4898,7 +4919,7 @@ function closeStaffEditor(){ $("staffEditDialog")?.close(); currentEditingStaffI
 async function saveStaffFromDialog(){
   if(!currentEditingStaffId) return;
   const staffId=currentEditingStaffId;
-  const name=$("staffEditName").value.trim(),role=$("staffEditRole").value,homeroom=$("staffEditHomeroom").value,aliasText=$("staffEditAliases").value.trim();
+  const name=$("staffEditName").value.trim(),role=$("staffEditRole").value,homeroom=$("staffEditHomeroom").value,fixedAftercare=$("staffEditAftercare").value,aliasText=$("staffEditAliases").value.trim();
   if(!name){alert("老師姓名不能留空。");return;}
   const {error:staffError}=await supabaseClient.from("staff").update({display_name:name,role,updated_at:new Date().toISOString()}).eq("id",staffId);
   if(staffError){alert("老師資料更新失敗：\n"+staffError.message);return;}
@@ -4910,19 +4931,33 @@ async function saveStaffFromDialog(){
     if(existing?.length){const {error}=await supabaseClient.from("staff_assignments").update({active:true}).eq("id",existing[0].id);if(error){alert("固定原班更新失敗：\n"+error.message);return;}}
     else{const {error}=await supabaseClient.from("staff_assignments").insert({staff_id:staffId,assignment_date:null,morning_class_id:homeroom,aftercare_class_id:null,active:true});if(error){alert("固定原班建立失敗：\n"+error.message);return;}}
   }
-  const ok=await replaceStaffAliases(staffId,aliasText); if(ok!==true) return;
+  const {error:disableAftercareError}=await supabaseClient.from("staff_assignments").update({active:false}).eq("staff_id",staffId).is("assignment_date",null).not("aftercare_class_id","is",null);
+  if(disableAftercareError){alert("固定課後班更新失敗：\n"+disableAftercareError.message);return;}
+  if(fixedAftercare){
+    const {data:existingAftercare,error:findAftercareError}=await supabaseClient.from("staff_assignments").select("id").eq("staff_id",staffId).is("assignment_date",null).eq("aftercare_class_id",fixedAftercare).limit(1);
+    if(findAftercareError){alert("固定課後班檢查失敗：\n"+findAftercareError.message);return;}
+    if(existingAftercare?.length){
+      const {error}=await supabaseClient.from("staff_assignments").update({active:true}).eq("id",existingAftercare[0].id);
+      if(error){alert("固定課後班更新失敗：\n"+error.message);return;}
+    }else{
+      const {error}=await supabaseClient.from("staff_assignments").insert({staff_id:staffId,assignment_date:null,morning_class_id:null,aftercare_class_id:fixedAftercare,active:true});
+      if(error){alert("固定課後班建立失敗：\n"+error.message);return;}
+    }
+  }
+    const ok=await replaceStaffAliases(staffId,aliasText); if(ok!==true) return;
   alert("✅ 老師資料已儲存。"); closeStaffEditor(); await refreshStaffManagement();
 }
 
 async function addStaffMember(){
-  const name=$("newStaffName").value.trim(),role=$("newStaffRole").value,homeroom=$("newStaffHomeroom").value,aliasText=$("newStaffAliases").value.trim();
+  const name=$("newStaffName").value.trim(),role=$("newStaffRole").value,homeroom=$("newStaffHomeroom").value,fixedAftercare=$("newStaffAftercare").value,aliasText=$("newStaffAliases").value.trim();
   if(!name){alert("請輸入老師姓名。");return;}
   if(staffList.some(s=>s.display_name.trim()===name)){alert("這個老師姓名已經存在。");return;}
   const {data:newStaff,error}=await supabaseClient.from("staff").insert({display_name:name,role,active:true}).select("id").single();
   if(error){alert("新增老師失敗：\n"+error.message);return;}
   if(homeroom){const {error:e}=await supabaseClient.from("staff_assignments").insert({staff_id:newStaff.id,assignment_date:null,morning_class_id:homeroom,aftercare_class_id:null,active:true});if(e){alert("老師已新增，但固定原班建立失敗：\n"+e.message);}}
+  if(fixedAftercare){const {error:e}=await supabaseClient.from("staff_assignments").insert({staff_id:newStaff.id,assignment_date:null,morning_class_id:null,aftercare_class_id:fixedAftercare,active:true});if(e){alert("老師已新增，但固定課後班建立失敗：\n"+e.message);}}
   await replaceStaffAliases(newStaff.id,aliasText);
-  $("newStaffName").value=""; $("newStaffHomeroom").value=""; $("newStaffAliases").value=""; toggleAddStaffBox(false);
+  $("newStaffName").value=""; $("newStaffHomeroom").value=""; $("newStaffAftercare").value=""; $("newStaffAliases").value=""; toggleAddStaffBox(false);
   alert("✅ 老師資料已新增。"); await refreshStaffManagement();
 }
 
