@@ -5285,6 +5285,44 @@ function staffLookupMaps(){
 }
 
 
+function inferScheduleYearMonthFromSheetName(sheetName){
+  const text=cleanExcelName(sheetName);
+
+  let match=
+    text.match(/(20\d{2}|1\d{2})\s*(?:年|[-_ ]+)\s*(\d{1,2})\s*月?/);
+
+  if(!match){
+    match=
+      text.match(/(20\d{2}|1\d{2})[^0-9]+(\d{1,2})/);
+  }
+
+  if(!match){
+    return null;
+  }
+
+  let year=Number(match[1]);
+  const month=Number(match[2]);
+
+  if(year<1911){
+    year+=1911;
+  }
+
+  if(
+    year<2000
+    ||
+    year>2100
+    ||
+    month<1
+    ||
+    month>12
+  ){
+    return null;
+  }
+
+  return {year,month};
+}
+
+
 function parseExcelDate(value){
 
   if(value instanceof Date && !isNaN(value)){
@@ -5506,9 +5544,22 @@ async function parseSelectedScheduleSheet(){
   parsedScheduleYear = null;
   parsedScheduleMonth = null;
 
+  const sheetPeriod=
+    inferScheduleYearMonthFromSheetName(
+      sheetName
+    );
+
+  if(sheetPeriod){
+    parsedScheduleYear=
+      sheetPeriod.year;
+    parsedScheduleMonth=
+      sheetPeriod.month;
+  }
+
 
   /*
-  先從日期欄找出年月
+  優先從日期欄確認年月；
+  若日期只有月/日，則沿用工作表名稱（例如 115年10月）。
   */
   for(let r = headerRow + 1; r < rows.length; r++){
 
@@ -5538,11 +5589,23 @@ async function parseSelectedScheduleSheet(){
       break;
     }
 
+    if(
+      sheetPeriod
+      &&
+      cleanExcelName(raw).match(/\d{1,2}[\/\-.]\d{1,2}/)
+    ){
+      break;
+    }
+
   }
 
 
   if(!parsedScheduleYear || !parsedScheduleMonth){
-    alert("無法從班表日期判斷年份與月份。");
+    alert(
+      "無法判斷班表年月。\n\n"+
+      "請確認工作表名稱包含年月（例如「115年10月」），"+
+      "或日期欄使用完整日期。"
+    );
     return;
   }
 
