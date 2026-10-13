@@ -1082,7 +1082,7 @@ button{
 
 <div id="staff-management" class="panel adminManagePanel" style="display:none">
   <div class="panelTitle">👩‍🏫 老師與課後班管理</div>
-  <div class="helper">正式啟用名單以 27 位人員為主；停用舊資料收在下方，不再佔滿畫面。</div>
+  <div class="helper">正式啟用名單以 27 位人員為主；此處只顯示目前啟用中的教職員。</div>
 
   <div class="manageTabs">
     <button id="manageTabStaff" class="manageTab active" type="button" onclick="setManageTab('staff')">👩‍🏫 老師名單</button>
@@ -1138,7 +1138,23 @@ button{
       <div class="actionButtons"><button id="scheduleImportBtn" class="btn btnGreen" type="button" onclick="confirmScheduleImport()" disabled>✅ 確認匯入本月班表</button></div>
       <div class="helper">匯入前不會修改資料庫；有未辨識姓名或排班衝突時會先阻止匯入。</div>
     </div>
-    <div id="currentScheduleBox" class="manageCard" style="margin-top:12px"><div class="manageCardTitle">目前資料庫月排班</div><div id="currentScheduleList" class="empty">解析 Excel 後會顯示差異。</div></div>
+    <div id="currentScheduleBox" class="manageCard" style="margin-top:12px">
+      <div class="manageCardTitle">目前資料庫月排班</div>
+      <div class="scheduleToolbar" style="margin-top:10px">
+        <div>
+          <div class="helper">年份</div>
+          <input id="dbScheduleYear" type="number" min="2025" max="2100">
+        </div>
+        <div>
+          <div class="helper">月份</div>
+          <select id="dbScheduleMonth">
+            <option value="1">1 月</option><option value="2">2 月</option><option value="3">3 月</option><option value="4">4 月</option><option value="5">5 月</option><option value="6">6 月</option><option value="7">7 月</option><option value="8">8 月</option><option value="9">9 月</option><option value="10">10 月</option><option value="11">11 月</option><option value="12">12 月</option>
+          </select>
+        </div>
+        <button class="btn btnBlue" type="button" onclick="loadDatabaseScheduleView()">📋 查看資料庫班表</button>
+      </div>
+      <div id="currentScheduleList" class="empty">可直接選擇月份查看已匯入資料，不必先上傳 Excel。</div>
+    </div>
   </div>
 
   <div id="manageLineSection" class="manageSection">
@@ -4834,6 +4850,7 @@ function setManageTab(tab){
     $(ids[1])?.classList.toggle("active",key===tab);
   });
   if(tab==="line") renderLineBindingManagement();
+  if(tab==="schedule") loadDatabaseScheduleView();
 }
 
 function toggleAddStaffBox(force){
@@ -4907,14 +4924,12 @@ function renderStaffManagement(){
   const roleFilter=$("staffRoleFilter")?.value||"all";
   const officialActive=staffList.filter(s=>s.active===true&&!isTestStaff(s));
   const filtered=officialActive.filter(s=>(!search||s.display_name.toLowerCase().includes(search))&&(roleFilter==="all"||s.role===roleFilter));
-  const inactive=staffList.filter(s=>s.active!==true&&!isTestStaff(s));
   const bound=officialActive.filter(s=>!!s.line_user_id).length;
 
   if($("staffStats")) $("staffStats").innerHTML=`
     <div class="staffStatBox"><div class="staffStatLabel">啟用老師</div><div class="staffStatNum">${officialActive.length}</div></div>
     <div class="staffStatBox"><div class="staffStatLabel">LINE 已綁</div><div class="staffStatNum green">${bound}</div></div>
-    <div class="staffStatBox"><div class="staffStatLabel">LINE 未綁</div><div class="staffStatNum">${officialActive.length-bound}</div></div>
-    <div class="staffStatBox"><div class="staffStatLabel">停用舊資料</div><div class="staffStatNum">${inactive.length}</div></div>`;
+    <div class="staffStatBox"><div class="staffStatLabel">LINE 未綁</div><div class="staffStatNum">${officialActive.length-bound}</div></div>`;
 
   const rows=filtered.map(staff=>{
     const homeroom=fixedHomeroomMap[staff.id]||"";
@@ -4933,10 +4948,7 @@ function renderStaffManagement(){
     </div>`;
   }).join("");
 
-  target.innerHTML=`<div class="staffCompactTable"><div class="staffCompactHead"><div>姓名</div><div>身分</div><div>原班</div><div>固定課後班</div><div>LINE</div><div>操作</div></div>${rows||'<div class="empty">沒有符合條件的老師。</div>'}</div>
-    <details class="staffInactiveWrap"><summary class="staffInactiveSummary">顯示停用老師（${inactive.length}）</summary>
-      <div class="staffCompactTable">${inactive.length?inactive.map(staff=>`<div class="staffCompactRow"><div class="staffCompactName">${escapeHtml(staff.display_name)}</div><div>${escapeHtml(staffRoleText(staff.role))}</div><div>${escapeHtml(fixedHomeroomMap[staff.id]?(CLASS_MAP[fixedHomeroomMap[staff.id]]||fixedHomeroomMap[staff.id]):"—")}</div><div>${escapeHtml(fixedAftercareMap[staff.id]?(AFTERCARE_CLASSES[fixedAftercareMap[staff.id]]?.name||fixedAftercareMap[staff.id]):"—")}</div><div class="staffLineNone">⛔ 已停用</div><div class="staffToolbarActions"><button class="staffMiniBtn staffMiniGreen" type="button" onclick="openStaffEditor('${escapeJs(staff.id)}')">查看／啟用</button></div></div>`).join(""):'<div class="empty">沒有停用資料。</div>'}</div>
-    </details>`;
+  target.innerHTML=`<div class="staffCompactTable"><div class="staffCompactHead"><div>姓名</div><div>身分</div><div>原班</div><div>固定課後班</div><div>LINE</div><div>操作</div></div>${rows||'<div class="empty">沒有符合條件的老師。</div>'}</div>`;
 }
 
 function openStaffEditor(staffId){
@@ -5632,6 +5644,7 @@ async function parseSelectedScheduleSheet(){
 
           parsedScheduleRows.push({
             kind:"support",
+            record_type:"support",
             assignment_date:dateKey,
             date:dateKey,
             aftercare_class_id:group.id,
@@ -5743,6 +5756,7 @@ async function parseSelectedScheduleSheet(){
         parsedScheduleRows.push({
           kind:"staff",
           type:"staff",
+          record_type:"staff",
           assignment_date:dateKey,
           date:dateKey,
           aftercare_class_id:group.id,
@@ -5801,6 +5815,180 @@ async function parseSelectedScheduleSheet(){
 
   await renderSchedulePreview();
 
+}
+
+
+/*
+==================================================
+直接查看資料庫已匯入月班表
+==================================================
+*/
+
+async function loadDatabaseScheduleView(yearArg,monthArg){
+
+  const target=$("currentScheduleList");
+  if(!target||!currentUser||!currentStaff) return;
+
+  const nowTw =
+    new Date(
+      new Date().toLocaleString(
+        "en-US",
+        {timeZone:"Asia/Taipei"}
+      )
+    );
+
+  const year=
+    Number(
+      yearArg
+      ||
+      $("dbScheduleYear")?.value
+      ||
+      nowTw.getFullYear()
+    );
+
+  const month=
+    Number(
+      monthArg
+      ||
+      $("dbScheduleMonth")?.value
+      ||
+      nowTw.getMonth()+1
+    );
+
+  if(!year||month<1||month>12){
+    target.innerHTML='<div class="empty">請選擇正確的年月。</div>';
+    return;
+  }
+
+  if($("dbScheduleYear")) $("dbScheduleYear").value=String(year);
+  if($("dbScheduleMonth")) $("dbScheduleMonth").value=String(month);
+
+  const start=
+    year+"-"+String(month).padStart(2,"0")+"-01";
+
+  const next=
+    month===12
+      ? (year+1)+"-01-01"
+      : year+"-"+String(month+1).padStart(2,"0")+"-01";
+
+  target.innerHTML='<div class="loading">正在讀取資料庫月班表...</div>';
+
+  const [formalResult,supportResult]=
+    await Promise.all([
+      supabaseClient
+        .from("staff_assignments")
+        .select("staff_id,assignment_date,aftercare_class_id,start_time,end_time,active")
+        .gte("assignment_date",start)
+        .lt("assignment_date",next)
+        .not("aftercare_class_id","is",null)
+        .eq("active",true)
+        .order("assignment_date",{ascending:true})
+        .order("aftercare_class_id",{ascending:true}),
+
+      supabaseClient
+        .from("aftercare_support_assignments")
+        .select("assignment_date,aftercare_class_id,support_name,support_type,start_time,end_time,active")
+        .gte("assignment_date",start)
+        .lt("assignment_date",next)
+        .eq("active",true)
+        .order("assignment_date",{ascending:true})
+        .order("aftercare_class_id",{ascending:true})
+    ]);
+
+  if(formalResult.error||supportResult.error){
+    target.innerHTML=
+      '<div class="empty">⚠️ 班表讀取失敗<br><br>'+
+      escapeHtml(
+        formalResult.error?.message
+        ||
+        supportResult.error?.message
+        ||
+        "未知錯誤"
+      )+
+      '</div>';
+    return;
+  }
+
+  const rows=[];
+
+  (formalResult.data||[]).forEach(row=>{
+    const staff=staffList.find(s=>s.id===row.staff_id);
+    rows.push({
+      date:row.assignment_date,
+      classId:row.aftercare_class_id,
+      name:staff?.display_name||"未知老師",
+      type:"正式老師"
+    });
+  });
+
+  (supportResult.data||[]).forEach(row=>{
+    rows.push({
+      date:row.assignment_date,
+      classId:row.aftercare_class_id,
+      name:row.support_name||"未命名支援",
+      type:row.support_type||"支援"
+    });
+  });
+
+  rows.sort((a,b)=>
+    a.date.localeCompare(b.date)
+    ||
+    a.classId.localeCompare(b.classId)
+    ||
+    a.name.localeCompare(b.name)
+  );
+
+  if(!rows.length){
+    target.innerHTML=
+      '<div class="empty">'+
+      escapeHtml(year+"/"+String(month).padStart(2,"0"))+
+      ' 目前尚未匯入月班表。</div>';
+    return;
+  }
+
+  const grouped={};
+
+  rows.forEach(row=>{
+    const key=row.date+"|"+row.classId;
+    if(!grouped[key]) grouped[key]=[];
+    grouped[key].push(row);
+  });
+
+  const html=
+    Object.entries(grouped)
+      .map(([key,items])=>{
+        const [date,classId]=key.split("|");
+        const names=items
+          .map(item=>
+            '<span class="badge badgeOther" style="margin:2px 4px 2px 0">'+
+            escapeHtml(item.name)+
+            (item.type!=="正式老師"
+              ? "（"+escapeHtml(item.type)+"）"
+              : "")+
+            '</span>'
+          )
+          .join("");
+
+        return `
+          <div class="previewRow">
+            <div>${escapeHtml(date)}</div>
+            <div>${escapeHtml(AFTERCARE_CLASSES[classId]?.name||classId)}</div>
+            <div>${names}</div>
+          </div>
+        `;
+      })
+      .join("");
+
+  target.innerHTML=`
+    <div class="helper" style="margin-bottom:8px">
+      ${escapeHtml(year+"/"+String(month).padStart(2,"0"))}
+      ｜共 ${rows.length} 筆已匯入排班
+    </div>
+    <div class="previewBox" style="display:block">
+      <div class="previewHeader">日期｜課後班｜老師／支援</div>
+      <div class="previewBody">${html}</div>
+    </div>
+  `;
 }
 
 
@@ -6442,6 +6630,10 @@ async function renderSchedulePreview(){
 
 
   await renderSchedulePreview();
+  await loadDatabaseScheduleView(
+    parsedScheduleYear,
+    parsedScheduleMonth
+  );
 
 }
 
@@ -7088,6 +7280,16 @@ async function main(){
 
   if($("monthlyReportMonth")){
     $("monthlyReportMonth").value =
+      String(taiwanToday.getMonth()+1);
+  }
+
+  if($("dbScheduleYear")){
+    $("dbScheduleYear").value =
+      String(taiwanToday.getFullYear());
+  }
+
+  if($("dbScheduleMonth")){
+    $("dbScheduleMonth").value =
       String(taiwanToday.getMonth()+1);
   }
 
