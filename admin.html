@@ -207,6 +207,44 @@ button{
   border-radius:16px;
   padding:16px;
   box-shadow:0 6px 18px rgba(0,0,0,.05);
+  position:relative;
+}
+
+.summaryCard.summaryAction{
+  cursor:pointer;
+  border:1px solid transparent;
+  transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.summaryCard.summaryAction:active{
+  transform:scale(.985);
+}
+
+.summaryCard.summaryAction::after{
+  content:"查看 ›";
+  position:absolute;
+  right:14px;
+  bottom:12px;
+  color:#90a4ae;
+  font-size:.72rem;
+  font-weight:900;
+}
+
+.summaryOwner{
+  margin-top:5px;
+  padding-right:44px;
+  color:#90a4ae;
+  font-size:.7rem;
+  font-weight:800;
+}
+
+.dashboardHint{
+  margin:-6px 0 16px;
+  color:#78909c;
+  font-size:.76rem;
+  text-align:center;
+  font-weight:700;
 }
 
 .summaryLabel{
@@ -253,6 +291,9 @@ button{
   display:flex;
   align-items:center;
   gap:10px;
+  cursor:pointer;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
 }
 
 .panelCollapseBtn{
@@ -926,61 +967,42 @@ button{
 
 <div class="summaryGrid">
 
-  <div class="summaryCard">
-    <div class="summaryLabel">
-      待處理申請
-    </div>
-
-    <div
-      id="pendingCount"
-      class="summaryNumber red"
-    >
-      0
-    </div>
+  <div class="summaryCard summaryAction" role="button" tabindex="0"
+       onclick="openRequestView('pending')"
+       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('pending')}">
+    <div class="summaryLabel">待行政處理</div>
+    <div id="pendingCount" class="summaryNumber red">0</div>
+    <div class="summaryOwner">臨托／延托｜行政老師</div>
   </div>
 
-
-  <div class="summaryCard">
-    <div class="summaryLabel">
-      今日請假
-    </div>
-
-    <div
-      id="leaveCount"
-      class="summaryNumber blue"
-    >
-      0
-    </div>
+  <div class="summaryCard summaryAction" role="button" tabindex="0"
+       onclick="openRequestView('temporary')"
+       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('temporary')}">
+    <div class="summaryLabel">今日臨托</div>
+    <div id="temporaryCount" class="summaryNumber purple">0</div>
+    <div class="summaryOwner">行政老師處理</div>
   </div>
 
-
-  <div class="summaryCard">
-    <div class="summaryLabel">
-      今日臨托
-    </div>
-
-    <div
-      id="temporaryCount"
-      class="summaryNumber purple"
-    >
-      0
-    </div>
+  <div class="summaryCard summaryAction" role="button" tabindex="0"
+       onclick="openRequestView('extended')"
+       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('extended')}">
+    <div class="summaryLabel">今日延托</div>
+    <div id="extendedCount" class="summaryNumber green">0</div>
+    <div class="summaryOwner">行政老師處理</div>
   </div>
 
-
-  <div class="summaryCard">
-    <div class="summaryLabel">
-      全部申請
-    </div>
-
-    <div
-      id="allCount"
-      class="summaryNumber green"
-    >
-      0
-    </div>
+  <div class="summaryCard summaryAction" role="button" tabindex="0"
+       onclick="openRequestView('leave')"
+       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('leave')}">
+    <div class="summaryLabel">今日請假</div>
+    <div id="leaveCount" class="summaryNumber blue">0</div>
+    <div class="summaryOwner">原班導師處理</div>
   </div>
 
+</div>
+
+<div class="dashboardHint">
+  點上方卡片會直接開啟對應資料，不需要再往下找。
 </div>
 
 
@@ -1266,10 +1288,10 @@ button{
 <!-- 家長申請 -->
 <!-- ====================================== -->
 
-<div class="panel">
+<div id="request-management" class="panel">
 
   <div class="panelTitle">
-    📋 家長申請紀錄
+    📋 申請與行政處理
   </div>
 
 
@@ -1303,7 +1325,7 @@ button{
       class="tab"
       onclick="setFilter('pending')"
     >
-      待處理
+      待行政處理
     </button>
 
 
@@ -3368,6 +3390,12 @@ function updateCounts(){
       .filter(
         r =>
         r.status === "pending"
+        &&
+        (
+          r.request_type === "temporary"
+          ||
+          r.request_type === "extended"
+        )
       )
       .length;
 
@@ -3393,9 +3421,17 @@ function updateCounts(){
       )
       .length;
 
-
-  $("allCount").textContent =
-    requests.length;
+  if($("extendedCount")){
+    $("extendedCount").textContent =
+      requests
+        .filter(
+          r =>
+          r.request_type === "extended"
+          &&
+          r.request_date === today
+        )
+        .length;
+  }
 
 }
 
@@ -3411,12 +3447,55 @@ function resetCounts(){
   $("temporaryCount").textContent =
     "0";
 
-  $("allCount").textContent =
-    "0";
+  if($("extendedCount")){
+    $("extendedCount").textContent =
+      "0";
+  }
 
   $("lastUpdated").textContent =
     "尚未載入";
 
+}
+
+
+/*
+==================================================
+上方摘要卡片：直接開啟對應申請
+==================================================
+*/
+
+function openRequestView(filter){
+  const panel=$("request-management");
+  if(!panel) return;
+
+  setFilter(filter);
+
+  const panels=
+    [...document.querySelectorAll(".panel")]
+      .filter(
+        item =>
+          item.tagName !== "DETAILS"
+          &&
+          item.querySelector(":scope > .panelTitle")
+      );
+
+  panels.forEach((item,index)=>{
+    setPanelCollapsed(
+      item,
+      item !== panel,
+      index
+    );
+  });
+
+  setTimeout(
+    ()=>{
+      panel.scrollIntoView({
+        behavior:"smooth",
+        block:"start"
+      });
+    },
+    40
+  );
 }
 
 
@@ -3514,6 +3593,12 @@ function renderRequests(){
       list.filter(
         r =>
         r.status === "pending"
+        &&
+        (
+          r.request_type === "temporary"
+          ||
+          r.request_type === "extended"
+        )
       );
 
   }
@@ -3900,25 +3985,11 @@ function requestCardHtml(
     return `
 
       <div class="actionBox">
-
-        <b>
-          行政處理
-        </b>
-
-        <div class="actionButtons">
-
-          <button
-            class="btn btnGreen"
-            onclick="updateRequestStatus(
-              '${r.id}',
-              'approved'
-            )"
-          >
-            ✅ 確認收到請假
-          </button>
-
+        <b>👩‍🏫 原班導師處理</b>
+        <div class="helper" style="margin-top:6px">
+          請假由幼兒原班導師（含正式代課授權老師）確認。
+          行政端保留查看權限，但不在這裡核准請假。
         </div>
-
       </div>
     `;
 
@@ -7262,6 +7333,49 @@ function setPanelCollapsed(panel,collapsed,index){
   );
 }
 
+function togglePanelAndFocus(panel,index){
+  const willOpen=
+    panel.classList.contains(
+      "panelAutoCollapsed"
+    );
+
+  const panels=
+    [...document.querySelectorAll(".panel")]
+      .filter(
+        item =>
+          item.tagName !== "DETAILS"
+          &&
+          item.querySelector(":scope > .panelTitle")
+      );
+
+  if(willOpen){
+    panels.forEach((item,itemIndex)=>{
+      setPanelCollapsed(
+        item,
+        item !== panel,
+        itemIndex
+      );
+    });
+
+    setTimeout(
+      ()=>{
+        panel.scrollIntoView({
+          behavior:"smooth",
+          block:"start"
+        });
+      },
+      40
+    );
+  }
+  else{
+    setPanelCollapsed(
+      panel,
+      true,
+      index
+    );
+  }
+}
+
 function installPanelCollapsers(){
   const panels=
     [...document.querySelectorAll(".panel")]
@@ -7302,12 +7416,18 @@ function installPanelCollapsers(){
       "click",
       event => {
         event.stopPropagation();
-
-        setPanelCollapsed(
+        togglePanelAndFocus(
           panel,
-          !panel.classList.contains(
-            "panelAutoCollapsed"
-          ),
+          index
+        );
+      }
+    );
+
+    title.addEventListener(
+      "click",
+      ()=>{
+        togglePanelAndFocus(
+          panel,
           index
         );
       }
@@ -7320,14 +7440,11 @@ function installPanelCollapsers(){
         panelStorageKey(panel,index)
       );
 
-    const defaultCollapsed=
-      panel.id === "staff-management";
-
     setPanelCollapsed(
       panel,
-      saved === null
-        ? defaultCollapsed
-        : saved === "1",
+      saved === "0"
+        ? false
+        : true,
       index
     );
   });
