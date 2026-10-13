@@ -249,6 +249,69 @@ button{
   font-weight:900;
 }
 
+.compactHolidayPanel{
+  padding:0;
+  overflow:hidden;
+}
+
+.compactHolidaySummary{
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:18px;
+  cursor:pointer;
+  user-select:none;
+}
+
+.compactHolidaySummary::-webkit-details-marker{
+  display:none;
+}
+
+.compactHolidaySummary::after{
+  content:"＋";
+  flex:0 0 auto;
+  width:30px;
+  height:30px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#eef4ea;
+  color:var(--green-dark);
+  font-size:1.15rem;
+  font-weight:900;
+}
+
+.compactHolidayPanel[open] .compactHolidaySummary::after{
+  content:"－";
+}
+
+.compactHolidayHint{
+  margin-left:auto;
+  color:var(--muted);
+  font-size:.78rem;
+  font-weight:700;
+}
+
+.compactHolidayBody{
+  padding:0 18px 18px;
+  border-top:1px solid var(--line);
+}
+
+.compactHolidayList{
+  max-height:220px;
+  overflow-y:auto;
+  padding-right:4px;
+}
+
+@media(max-width:760px){
+  .compactHolidayHint{
+    display:none;
+  }
+}
+
 .tabs{
   display:flex;
   gap:7px;
@@ -917,31 +980,37 @@ button{
 <!-- 休園日 / 特殊停止服務日 -->
 <!-- ====================================== -->
 
-<div class="panel">
-  <div class="panelTitle">📅 休園日與特殊停止服務日</div>
-  <div class="helper">
-    國定假日已依 115、116 年政府辦公日曆預載。
-    如有本園自訂停止服務日、補休、消毒日或其他特殊休園日，請在這裡新增。
-  </div>
+<details class="panel compactHolidayPanel" id="schoolClosedPanel">
+  <summary class="compactHolidaySummary">
+    <span class="panelTitle">📅 休園日與特殊停止服務日</span>
+    <span class="compactHolidayHint">點一下展開／收合</span>
+  </summary>
 
-  <div class="pickupToolbar">
-    <div class="pickupToolbarField">
-      <div class="helper">日期</div>
-      <input id="schoolClosedDateInput" type="date">
+  <div class="compactHolidayBody">
+    <div class="helper">
+      國定假日已依 115、116 年政府辦公日曆預載。
+      如有本園自訂停止服務日、補休、消毒日或其他特殊休園日，請在這裡新增。
     </div>
-    <div class="pickupToolbarField">
-      <div class="helper">名稱</div>
-      <input id="schoolClosedNameInput" placeholder="例：園內消毒停止服務">
-    </div>
-    <button class="btn btnGreen" type="button" onclick="saveSchoolClosedDate()">
-      ＋ 新增／更新
-    </button>
-  </div>
 
-  <div id="schoolClosedList" class="helper">
-    尚未載入休園日。
+    <div class="pickupToolbar">
+      <div class="pickupToolbarField">
+        <div class="helper">日期</div>
+        <input id="schoolClosedDateInput" type="date">
+      </div>
+      <div class="pickupToolbarField">
+        <div class="helper">名稱</div>
+        <input id="schoolClosedNameInput" placeholder="例：園內消毒停止服務">
+      </div>
+      <button class="btn btnGreen" type="button" onclick="saveSchoolClosedDate()">
+        ＋ 新增／更新
+      </button>
+    </div>
+
+    <div id="schoolClosedList" class="helper compactHolidayList">
+      尚未載入休園日。
+    </div>
   </div>
-</div>
+</details>
 
 
 <!-- ====================================== -->
