@@ -8,7 +8,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
-  <title>樂業附幼｜教職員平台 V12</title>
+  <title>樂業附幼｜教職員平台 V13</title>
 
   <script
     charset="utf-8"
@@ -1203,7 +1203,7 @@
 
             <details id="rosterDetails" class="rosterDetails">
               <summary>
-                <span>👥 我的班級幼兒</span>
+                <span id="rosterTitle">👥 我的班級幼兒</span>
                 <span id="rosterSummary" class="rosterSummaryText">讀取中…</span>
               </summary>
 
@@ -2028,14 +2028,27 @@ function renderTeacherRoster(data){
       : [];
 
   if(role==="admin"){
+    el("rosterTitle").textContent=
+      "👥 全園班級幼兒";
+
     summary.textContent=
       `原班 ${morning.length} 班｜課後 ${aftercare.length} 班`;
+  }
+  else if(role==="aftercare_teacher" && morning.length===0){
+    el("rosterTitle").textContent=
+      "👥 今日課後班幼兒";
+
+    summary.textContent=
+      `今日課後 ${aftercare.length} 班`;
   }
   else if(aftercare.length){
     summary.textContent=
       `原班 ${morning.length} 班｜今日課後 ${aftercare.length} 班`;
   }
   else{
+    el("rosterTitle").textContent=
+      "👥 我的班級幼兒";
+
     summary.textContent=
       `原班 ${morning.length} 班`;
   }
