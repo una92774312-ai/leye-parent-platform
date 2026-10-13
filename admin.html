@@ -249,6 +249,48 @@ button{
   font-weight:900;
 }
 
+.panelCollapsibleTitle{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.panelCollapseBtn{
+  margin-left:auto;
+  border:0;
+  width:32px;
+  height:32px;
+  border-radius:999px;
+  background:#eef4ea;
+  color:var(--green-dark);
+  font-size:1.1rem;
+  font-weight:900;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.panelCollapseBtn:hover{
+  filter:brightness(.97);
+}
+
+.panelAutoCollapsed > :not(.panelTitle){
+  display:none !important;
+}
+
+.panelAutoCollapsed{
+  padding-bottom:16px;
+}
+
+.panelAutoCollapsed .panelCollapseBtn::before{
+  content:"＋";
+}
+
+.panel:not(.panelAutoCollapsed) .panelCollapseBtn::before{
+  content:"－";
+}
+
 .compactHolidayPanel{
   padding:0;
   overflow:hidden;
@@ -6913,7 +6955,120 @@ async function restoreSession(){
 ==================================================
 */
 
+function panelStorageKey(panel,index){
+  const title=
+    panel
+      .querySelector(":scope > .panelTitle")
+      ?.textContent
+      ?.replace(/[＋－]/g,"")
+      ?.trim()
+    || ("panel-"+index);
+
+  return "leye-admin-panel-"+title;
+}
+
+function setPanelCollapsed(panel,collapsed,index){
+  const key=panelStorageKey(panel,index);
+  const btn=
+    panel.querySelector(
+      ":scope > .panelTitle .panelCollapseBtn"
+    );
+
+  panel.classList.toggle(
+    "panelAutoCollapsed",
+    collapsed
+  );
+
+  if(btn){
+    btn.setAttribute(
+      "aria-expanded",
+      collapsed ? "false" : "true"
+    );
+    btn.title=
+      collapsed ? "展開" : "收起";
+  }
+
+  sessionStorage.setItem(
+    key,
+    collapsed ? "1" : "0"
+  );
+}
+
+function installPanelCollapsers(){
+  const panels=
+    [...document.querySelectorAll(".panel")]
+      .filter(
+        panel =>
+          panel.tagName !== "DETAILS"
+          &&
+          panel.querySelector(":scope > .panelTitle")
+      );
+
+  panels.forEach((panel,index)=>{
+    const title=
+      panel.querySelector(":scope > .panelTitle");
+
+    if(
+      !title
+      ||
+      title.querySelector(".panelCollapseBtn")
+    ){
+      return;
+    }
+
+    title.classList.add(
+      "panelCollapsibleTitle"
+    );
+
+    const btn=
+      document.createElement("button");
+
+    btn.type="button";
+    btn.className="panelCollapseBtn";
+    btn.setAttribute(
+      "aria-label",
+      "展開或收起區塊"
+    );
+
+    btn.addEventListener(
+      "click",
+      event => {
+        event.stopPropagation();
+
+        setPanelCollapsed(
+          panel,
+          !panel.classList.contains(
+            "panelAutoCollapsed"
+          ),
+          index
+        );
+      }
+    );
+
+    title.appendChild(btn);
+
+    const saved=
+      sessionStorage.getItem(
+        panelStorageKey(panel,index)
+      );
+
+    const defaultCollapsed=
+      panel.id === "staff-management";
+
+    setPanelCollapsed(
+      panel,
+      saved === null
+        ? defaultCollapsed
+        : saved === "1",
+      index
+    );
+  });
+}
+
+
 async function main(){
+
+  installPanelCollapsers();
 
   $("pickupDateFilter").value =
     getTaiwanDateString();
