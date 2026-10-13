@@ -9,7 +9,7 @@
 <title>樂業附幼｜家長服務平台</title>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
 
 <style>
 
@@ -1816,9 +1816,9 @@ details.rules summary{
 
         <br>
 
-        16:11－17:05 完成接送：50 元。<br>
-        17:06－18:05 完成接送：100 元。<br>
-        18:06 起完成接送：130 元。
+        16:11－17:05 完成接送：臨時延長照顧 1 小時，系統試算 50 元。<br>
+        17:06－18:05 完成接送：臨時延長照顧 2 小時，系統試算 100 元。<br>
+        18:06 起：系統試算為臨時延長照顧 100 元＋逾時照顧半小時 30 元（合計 130 元）。
 
         <br><br>
 
@@ -1839,8 +1839,8 @@ details.rules summary{
 
         <br>
 
-        17:06－18:05 完成接送：35 元。<br>
-        18:06 起完成接送：65 元。
+        17:06－18:05 完成接送：延長照顧 1 小時，系統試算 35 元。<br>
+        18:06 起：系統試算為延長照顧 35 元＋逾時照顧半小時 30 元（合計 65 元）。
 
       </div>
 
@@ -1862,7 +1862,7 @@ details.rules summary{
 
       <div class="ruleCard">
 
-        <b>💵 延遲／逾時費用</b>
+        <b>💵 延長照顧／臨時照顧／逾時照顧試算</b>
 
         <br>
 
@@ -1896,7 +1896,7 @@ details.rules summary{
       </div>
 
       <div class="helper">
-        是否延遲、逾時及系統試算金額，以本園記錄的實際完成接送時間為準；正式收費與繳費方式仍依本園核定之收費及會計程序辦理。
+        是否延遲、逾時及系統試算金額，以本園記錄的實際完成接送時間為準；正式收費依臺中市公立幼兒園延長照顧服務現行規定、本園核定收費標準及會計程序辦理。
       </div>
 
     </div>
@@ -3607,7 +3607,7 @@ function refreshLateNotice(){
       </div>
 
       <div class="ruleLine">
-        💰 16:11－17:05：50 元／17:06－18:05：100 元／18:06 起：130 元
+        💰 16:11－17:05：臨時延長照顧 50 元／17:06－18:05：100 元／18:06 起：100 元＋逾時照顧 30 元
       </div>
 
       <div class="ruleLine">
@@ -3625,9 +3625,9 @@ function refreshLateNotice(){
     const feeText =
       original === "17:00"
       ?
-      "17:06－18:05：35 元／18:06 起：65 元"
+      "17:06－18:05：延長照顧 35 元／18:06 起：35 元＋逾時照顧 30 元"
       :
-      "18:06 起：30 元";
+      "18:06 起：逾時照顧 30 元";
 
     html +=
 
