@@ -3174,44 +3174,86 @@ function historyCardHtml(item){
     ||
     item?.request_type==="extended"
   ){
-    if(
+    if(item?.is_leave===true){
+      feeHtml=`
+        <div class="feeCollectBox warning">
+          ⛔ 當日請假｜系統鎖定收費
+        </div>
+      `;
+    }
+    else if(item?.fee_status==="refund_required"){
+      feeHtml=`
+        <div class="feeCollectBox warning">
+          ⚠️ 已收費後又取消／請假｜請交行政老師處理退款
+        </div>
+      `;
+    }
+    else if(
       item?.fee_status==="collected"
       ||
       item?.fee_collected_at
     ){
       feeHtml=`
         <div class="feeCollectBox collected">
-          ✅ 已收費 NT${Number(item?.fee_collected_amount||feeAmount)}
+          ✅ 已收費 NT$${Number(item?.fee_collected_amount||feeAmount)}
           ${item?.fee_collected_at
             ? "｜"+escapeHtmlText(formatDateTime(item.fee_collected_at))
+            : ""}
+          ${item?.can_correct_fee===true
+            ? `
+              <button
+                class="feeCorrectionBtn"
+                type="button"
+                onclick="correctCareFeeCollection('${escapeHtmlText(item.request_id)}',this)"
+              >
+                ↩ 誤觸？10 分鐘內撤銷
+              </button>
+            `
             : ""}
         </div>
       `;
     }
-    else if(
-      item?.can_collect_fee===true
-      &&
-      feeAmount>0
-    ){
-      feeHtml=`
-        <div class="feeCollectBox">
-          應收 NT${feeAmount}｜由本課後班老師收費
-          <button
-            class="feeCollectBtn"
-            type="button"
-            onclick="markCareFeeCollected('${escapeHtmlText(item.request_id)}',this)"
-          >
-            💰 確認已收費 NT${feeAmount}
-          </button>
-        </div>
-      `;
-    }
-    else if(feeAmount>0){
-      feeHtml=`
-        <div class="feeCollectBox">
-          應收 NT${feeAmount}｜由實際課後班老師記錄收費
-        </div>
-      `;
+    else{
+      const corrected=
+        item?.fee_status==="voided"
+          ? `↩ 上次收費已撤銷${item?.fee_void_reason?"："+escapeHtmlText(item.fee_void_reason):""}<br>`
+          : "";
+
+      if(
+        item?.can_collect_fee===true
+        &&
+        feeAmount>0
+      ){
+        feeHtml=`
+          <div class="feeCollectBox">
+            ${corrected}
+            應收 NT$${feeAmount}｜由本課後班老師收費
+            <button
+              class="feeCollectBtn"
+              type="button"
+              onclick="markCareFeeCollected(
+                '${escapeHtmlText(item.request_id)}',
+                this,
+                {
+                  amount:${feeAmount},
+                  date:'${escapeHtmlText(item.request_date||"")}',
+                  type:'${escapeHtmlText(type)}'
+                }
+              )"
+            >
+              💰 已實際收款，確認 NT$${feeAmount}
+            </button>
+          </div>
+        `;
+      }
+      else if(feeAmount>0){
+        feeHtml=`
+          <div class="feeCollectBox">
+            ${corrected}
+            應收 NT$${feeAmount}｜目前不可由此帳號記錄收費
+          </div>
+        `;
+      }
     }
   }
 
