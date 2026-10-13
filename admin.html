@@ -879,6 +879,374 @@ button{
   .lineBindingRow{align-items:flex-start;flex-direction:column}
 }
 
+
+/* ====================================== */
+/* Mobile-first polish for LINE in-app browser */
+/* ====================================== */
+html,
+body{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+*{
+  min-width:0;
+}
+
+.loginState,
+.helper,
+.subtitle,
+.infoValue,
+.reasonBox,
+.pickupResult,
+.lineBindingMeta,
+.staffCompactRow{
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+
+input,
+select,
+textarea,
+button,
+.btn{
+  max-width:100%;
+}
+
+@media(max-width:760px){
+  .app{
+    width:100%;
+    max-width:100%;
+    padding:
+      max(10px,env(safe-area-inset-top))
+      max(10px,env(safe-area-inset-right))
+      max(24px,env(safe-area-inset-bottom))
+      max(10px,env(safe-area-inset-left));
+  }
+
+  .header{
+    padding:14px;
+    border-radius:16px;
+    margin-bottom:12px;
+  }
+
+  .headerTop{
+    gap:12px;
+  }
+
+  .headerTop > div:first-child{
+    width:100%;
+  }
+
+  .headerTop > div:last-child{
+    display:grid !important;
+    grid-template-columns:1fr 1fr;
+    gap:8px !important;
+    width:100%;
+  }
+
+  .headerTop > div:last-child > *{
+    width:100%;
+    min-height:44px;
+    justify-content:center;
+    text-align:center;
+    padding:10px 8px;
+    white-space:normal;
+    line-height:1.25;
+  }
+
+  .headerTop > div:last-child > :last-child{
+    grid-column:1 / -1;
+  }
+
+  .brand{
+    font-size:1.18rem;
+    line-height:1.35;
+  }
+
+  .subtitle{
+    font-size:.8rem;
+  }
+
+  .loginState{
+    padding:11px;
+    font-size:.82rem;
+  }
+
+  input,
+  select,
+  textarea{
+    font-size:16px;
+  }
+
+  .summaryGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    margin-bottom:12px;
+  }
+
+  .summaryCard{
+    min-height:104px;
+    padding:14px 12px;
+    border-radius:15px;
+  }
+
+  .summaryLabel{
+    font-size:.78rem;
+    line-height:1.3;
+  }
+
+  .summaryNumber{
+    font-size:1.55rem;
+  }
+
+  .summaryOwner{
+    padding-right:34px;
+    font-size:.66rem;
+    line-height:1.35;
+  }
+
+  .dashboardHint{
+    margin:-2px 0 12px;
+    font-size:.72rem;
+  }
+
+  .panel{
+    width:100%;
+    max-width:100%;
+    padding:14px;
+    border-radius:16px;
+    margin-bottom:12px;
+    overflow:hidden;
+  }
+
+  .panelAutoCollapsed{
+    padding-bottom:14px;
+  }
+
+  .panelTitle{
+    font-size:1.02rem;
+    line-height:1.35;
+  }
+
+  .panelCollapsibleTitle{
+    min-height:40px;
+  }
+
+  .panelCollapseBtn{
+    width:38px;
+    height:38px;
+    flex:0 0 38px;
+    margin-left:8px;
+  }
+
+  .compactHolidaySummary{
+    min-height:58px;
+    padding:12px 14px;
+  }
+
+  .compactHolidayBody{
+    padding:0 14px 14px;
+  }
+
+  .pickupToolbar{
+    display:grid;
+    grid-template-columns:1fr;
+    align-items:stretch;
+    gap:9px;
+    margin:12px 0;
+  }
+
+  .pickupToolbarField{
+    width:100%;
+    min-width:0;
+  }
+
+  .pickupToolbar .btn,
+  .pickupAction .btn,
+  .actionButtons .btn{
+    width:100%;
+    min-height:44px;
+  }
+
+  .pickupStats{
+    gap:7px;
+  }
+
+  .pickupStat{
+    font-size:.76rem;
+  }
+
+  .tabs,
+  .manageTabs{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    padding-bottom:4px;
+  }
+
+  .tabs::-webkit-scrollbar,
+  .manageTabs::-webkit-scrollbar{
+    display:none;
+  }
+
+  .tab,
+  .manageTab{
+    flex:0 0 auto;
+    white-space:nowrap;
+  }
+
+  .requestCard,
+  .pickupCard,
+  .manageCard{
+    padding:12px;
+    border-radius:13px;
+  }
+
+  .requestTop{
+    align-items:flex-start;
+  }
+
+  .requestTop > div:first-child{
+    flex:1 1 auto;
+    min-width:0;
+  }
+
+  .requestChild{
+    overflow-wrap:anywhere;
+  }
+
+  .badge{
+    flex:0 0 auto;
+    max-width:42%;
+    white-space:normal;
+    text-align:center;
+    line-height:1.3;
+  }
+
+  .requestBody,
+  .actionGrid{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+
+  .actionButtons,
+  .pickupAction{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+
+  .manageGrid{
+    grid-template-columns:1fr;
+  }
+
+  .scheduleToolbar{
+    grid-template-columns:1fr;
+    gap:9px;
+  }
+
+  .scheduleToolbar .btn{
+    width:100%;
+    min-height:44px;
+  }
+
+  .scheduleSummary{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+
+  .previewRow{
+    grid-template-columns:1fr;
+    gap:4px;
+  }
+
+  .staffTopBar{
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+  }
+
+  .staffSearch,
+  .staffFilter{
+    width:100%;
+    min-width:0;
+  }
+
+  .staffStats{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+
+  .staffCompactRow{
+    padding:12px;
+    gap:6px;
+  }
+
+  .staffToolbarActions,
+  .lineBindingActions{
+    display:grid;
+    grid-template-columns:1fr;
+    width:100%;
+    gap:7px;
+  }
+
+  .staffMiniBtn,
+  .lineBindingActions .btn{
+    width:100%;
+    min-height:42px;
+    white-space:normal;
+  }
+
+  .staffEditDialog{
+    width:calc(100vw - 16px);
+    max-height:calc(100dvh - 20px);
+    overflow:auto;
+    border-radius:16px;
+  }
+
+  .staffEditBody{
+    padding:14px;
+  }
+
+  .staffEditHeader{
+    align-items:flex-start;
+  }
+
+  .lineBindingRow{
+    padding:12px;
+  }
+}
+
+@media(max-width:380px){
+  .headerTop > div:last-child{
+    grid-template-columns:1fr;
+  }
+
+  .headerTop > div:last-child > :last-child{
+    grid-column:auto;
+  }
+
+  .summaryGrid{
+    gap:8px;
+  }
+
+  .summaryCard{
+    min-height:100px;
+    padding:12px 10px;
+  }
+
+  .panel{
+    padding:12px;
+  }
+
+  .scheduleSummary{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
 </style>
 </head>
 
