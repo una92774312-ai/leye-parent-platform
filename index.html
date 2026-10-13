@@ -1534,15 +1534,26 @@ details.rules summary{
       type="text"
       inputmode="text"
       autocomplete="one-time-code"
-      maxlength="12"
-      placeholder="例如 A1B2C3D4"
-      oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
+      maxlength="16"
+      placeholder="請輸入 16 碼綁定碼"
+      oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,16)"
     >
 
     <div class="helper">
       每組綁定碼僅供指定家長使用，完成綁定後即失效。
     </div>
 
+  </div>
+
+  <div class="notice noticeBlue">
+    <label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer">
+      <input id="privacyAck" type="checkbox" style="width:auto;margin-top:4px">
+      <span>
+        我已閱讀
+        <a href="privacy.html" target="_blank" rel="noopener">個人資料蒐集告知暨隱私權說明</a>，
+        並了解本平台僅用於幼兒接送、請假與托育行政。
+      </span>
+    </label>
   </div>
 
   <button
@@ -1976,8 +1987,12 @@ details.rules summary{
     <textarea
       id="leaveNote"
       rows="3"
+      maxlength="200"
       placeholder="例：預計明日返園"
     ></textarea>
+    <div class="helper">
+      請勿填寫診斷名稱、病歷、身分證字號或其他不必要的敏感資料。
+    </div>
 
   </div>
 
@@ -2203,9 +2218,12 @@ details.rules summary{
     <textarea
       id="temporaryReason"
       rows="3"
-
+      maxlength="200"
       placeholder="例：臨時加班、家庭臨時有事"
     ></textarea>
+    <div class="helper">
+      請只填寫安排托育所需資訊，避免輸入不必要的健康、證件或其他敏感資料。
+    </div>
 
   </div>
 
@@ -2279,6 +2297,10 @@ details.rules summary{
 
 </div>
 
+<div style="text-align:center;margin:18px 0 82px;font-size:12px;color:#8b9087">
+  <a href="privacy.html" target="_blank" rel="noopener" style="color:#52644e">個人資料蒐集告知暨隱私權說明</a>
+</div>
+
 <!-- ====================================== -->
 <!-- 固定底部功能 -->
 <!-- ====================================== -->
@@ -2312,6 +2334,7 @@ const supabaseClient =
     {
      auth:{
   storageKey:"leye-parent-auth",
+  storage:window.sessionStorage,
   persistSession:true,
   autoRefreshToken:true,
   detectSessionInUrl:false
@@ -5576,9 +5599,15 @@ function resolvePageFromUrl(){
 
 function resolveBindingCodeFromUrl(){
 
+  const hashText =
+    String(
+      window.location.hash || ""
+    )
+    .replace(/^#/,"");
+
   const params =
     new URLSearchParams(
-      window.location.search
+      hashText
     );
 
   return String(
@@ -5593,7 +5622,7 @@ function resolveBindingCodeFromUrl(){
   )
   .slice(
     0,
-    12
+    16
   );
 
 }
@@ -5713,7 +5742,7 @@ function showBindingPanel(
     )
     .slice(
       0,
-      12
+      16
     );
 
 
@@ -5880,12 +5909,24 @@ async function bindParentLine(){
 
 
   if(
-    bindingCode.length <
-    6
+    bindingCode.length !==
+    16
   ){
 
     alert(
-      "請輸入本園提供的家庭綁定碼。"
+      "請輸入完整的 16 碼家庭綁定碼。"
+    );
+
+    return;
+
+  }
+
+  if(
+    !$("privacyAck")?.checked
+  ){
+
+    alert(
+      "請先閱讀並勾選個人資料蒐集告知暨隱私權說明。"
     );
 
     return;
@@ -6006,9 +6047,7 @@ async function bindParentLine(){
         window.location.href
       );
 
-    cleanUrl.searchParams.delete(
-      "bind"
-    );
+    cleanUrl.hash = "";
 
     history.replaceState(
       null,
@@ -6245,14 +6284,10 @@ async function loginSupabaseWithLine(){
     );
 
   if(
-    cleanUrl.searchParams.has(
-      "bind"
-    )
+    cleanUrl.hash
   ){
 
-    cleanUrl.searchParams.delete(
-      "bind"
-    );
+    cleanUrl.hash = "";
 
     history.replaceState(
       null,
