@@ -911,6 +911,27 @@ button{
 
 
 <!-- ====================================== -->
+<!-- 試行家長 LINE 綁定碼 -->
+<!-- ====================================== -->
+
+<div class="panel">
+  <div class="panelTitle">🔗 試行家長 LINE 綁定碼</div>
+  <div class="helper">
+    僅行政人員可產生。每次重新產生都會讓先前「尚未使用」的家長綁定碼立即失效。
+    下載後請逐一私訊對應家長，不可貼在班級群組。
+  </div>
+  <button
+    class="btn btnGreen"
+    type="button"
+    onclick="downloadPilotParentBindingCodes()"
+    style="margin-top:12px"
+  >
+    ⬇️ 重新產生並下載家長綁定清單
+  </button>
+</div>
+
+
+<!-- ====================================== -->
 <!-- 老師與課後班排班管理 V16 -->
 <!-- ====================================== -->
 
@@ -4896,6 +4917,98 @@ async function updateRequestStatus(
 
 }
 
+
+
+function csvCell(value){
+  const text=String(value??"");
+  if(
+    text.includes(",")
+    || text.includes('"')
+    || text.includes("\n")
+  ){
+    return '"' + text.replaceAll('"','""') + '"';
+  }
+  return text;
+}
+
+async function downloadPilotParentBindingCodes(){
+  if(
+    !confirm(
+      "確定重新產生櫻桃班、蘋果班家長綁定碼？\n\n先前尚未使用的綁定碼會立即失效。"
+    )
+  ){
+    return;
+  }
+
+  try{
+    const {data,error}=await supabaseClient.rpc(
+      "admin_regenerate_pilot_guardian_codes",
+      {p_valid_days:14}
+    );
+
+    if(error) throw error;
+
+    const rows=
+      Array.isArray(data?.rows)
+        ? data.rows
+        : [];
+
+    if(!rows.length){
+      throw new Error("沒有可匯出的試行家長資料。");
+    }
+
+    const lines=[
+      [
+        "班級",
+        "座號",
+        "幼兒姓名",
+        "家長姓名",
+        "16碼一次性綁定碼",
+        "專屬綁定連結",
+        "有效期限",
+        "發送狀態"
+      ].map(csvCell).join(",")
+    ];
+
+    rows.forEach(row=>{
+      lines.push(
+        [
+          row.class_name,
+          row.seat_no,
+          row.child_name,
+          row.guardian_name,
+          row.binding_code,
+          row.binding_link,
+          formatDateTime(row.expires_at),
+          "尚未發送"
+        ]
+        .map(csvCell)
+        .join(",")
+      );
+    });
+
+    const csv="\uFEFF"+lines.join("\r\n");
+    const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="樂業附幼_櫻桃蘋果班_家長LINE綁定清單.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+
+    alert(
+      "✅ 新的家長綁定碼已產生並下載。\n\n請只把每位家長自己的專屬連結私訊給本人。"
+    );
+  }
+  catch(err){
+    alert(
+      "家長綁定碼產生失敗：\n"+
+      (err?.message||String(err))
+    );
+  }
+}
 
 
 async function exportMonthlyCareReport(){
