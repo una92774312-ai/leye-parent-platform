@@ -912,6 +912,37 @@ button{
 
 
 <!-- ====================================== -->
+<!-- 休園日 / 特殊停止服務日 -->
+<!-- ====================================== -->
+
+<div class="panel">
+  <div class="panelTitle">📅 休園日與特殊停止服務日</div>
+  <div class="helper">
+    國定假日已依 115、116 年政府辦公日曆預載。
+    如有本園自訂停止服務日、補休、消毒日或其他特殊休園日，請在這裡新增。
+  </div>
+
+  <div class="pickupToolbar">
+    <div class="pickupToolbarField">
+      <div class="helper">日期</div>
+      <input id="schoolClosedDateInput" type="date">
+    </div>
+    <div class="pickupToolbarField">
+      <div class="helper">名稱</div>
+      <input id="schoolClosedNameInput" placeholder="例：園內消毒停止服務">
+    </div>
+    <button class="btn btnGreen" type="button" onclick="saveSchoolClosedDate()">
+      ＋ 新增／更新
+    </button>
+  </div>
+
+  <div id="schoolClosedList" class="helper">
+    尚未載入休園日。
+  </div>
+</div>
+
+
+<!-- ====================================== -->
 <!-- 試行家長 LINE 綁定碼 -->
 <!-- ====================================== -->
 
@@ -1788,7 +1819,8 @@ async function refreshAll(){
   await Promise.all([
     refreshPickupRecords(),
     refreshRequests(),
-    refreshStaffManagement()
+    refreshStaffManagement(),
+    loadSchoolClosedAdmin()
   ]);
 
 }
@@ -4918,6 +4950,106 @@ async function updateRequestStatus(
 
 }
 
+
+
+async function loadSchoolClosedAdmin(){
+  const target=$("schoolClosedList");
+  if(!target||!currentUser||!currentStaff) return;
+
+  const today=getTaiwanDateString();
+  const endYear=Number(today.slice(0,4))+1;
+  const endDate=`${endYear}-12-31`;
+
+  const {data,error}=await supabaseClient
+    .from("school_closed_dates")
+    .select("closed_date,name,closed_type,note")
+    .gte("closed_date",today)
+    .lte("closed_date",endDate)
+    .order("closed_date",{ascending:true});
+
+  if(error){
+    target.innerHTML=
+      '<div class="empty">休園日讀取失敗：'+
+      escapeHtml(error.message)+
+      '</div>';
+    return;
+  }
+
+  const rows=data||[];
+  if(!rows.length){
+    target.innerHTML='<div class="empty">目前沒有設定休園日。</div>';
+    return;
+  }
+
+  target.innerHTML=rows.map(row=>{
+    const canDelete=
+      row.closed_type==="school_closed"||
+      row.closed_type==="special";
+
+    return `
+      <div class="staffRow" style="margin-top:8px">
+        <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+          <div>
+            <b>${escapeHtml(row.closed_date)}</b>
+            ｜ ${escapeHtml(row.name)}
+            <div class="helper">
+              ${row.closed_type==="national_holiday"?"國定假日":"本園設定"}
+              ${row.note?"｜"+escapeHtml(row.note):""}
+            </div>
+          </div>
+          ${canDelete
+            ? `<button class="btn btnRed" type="button" onclick="deleteSchoolClosedDate('${escapeJs(row.closed_date)}')">刪除</button>`
+            : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function saveSchoolClosedDate(){
+  const date=$("schoolClosedDateInput")?.value||"";
+  const name=$("schoolClosedNameInput")?.value.trim()||"";
+
+  if(!date||name.length<2){
+    alert("請輸入日期與休園名稱。");
+    return;
+  }
+
+  const {error}=await supabaseClient.rpc(
+    "admin_upsert_school_closed_date",
+    {
+      p_closed_date:date,
+      p_name:name,
+      p_closed_type:"school_closed",
+      p_note:"行政平台設定"
+    }
+  );
+
+  if(error){
+    alert("休園日儲存失敗：\n"+error.message);
+    return;
+  }
+
+  $("schoolClosedNameInput").value="";
+  alert("✅ 休園日已儲存。");
+  await loadSchoolClosedAdmin();
+}
+
+async function deleteSchoolClosedDate(date){
+  if(!confirm(`確定刪除 ${date} 的本園休園設定？`)) return;
+
+  const {error}=await supabaseClient.rpc(
+    "admin_delete_school_closed_date",
+    {p_closed_date:date}
+  );
+
+  if(error){
+    alert("刪除失敗：\n"+error.message);
+    return;
+  }
+
+  await loadSchoolClosedAdmin();
+}
 
 
 function csvCell(value){
