@@ -730,6 +730,15 @@
             oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,16)"
           >
 
+          <label style="display:flex;gap:8px;align-items:flex-start;margin:12px 0;cursor:pointer;font-size:.86rem;line-height:1.5">
+            <input id="teacherPrivacyAck" type="checkbox" style="width:auto;margin-top:4px">
+            <span>
+              我已閱讀
+              <a href="privacy.html" target="_blank" rel="noopener">個人資料蒐集告知暨隱私權說明</a>，
+              並了解本平台僅供教職員職務使用。
+            </span>
+          </label>
+
           <button
             id="submitBtn"
             class="primary"
@@ -796,6 +805,9 @@ const teacherSupabase =
         storageKey:
           "leye-teacher-auth",
 
+        storage:
+          window.sessionStorage,
+
         persistSession:
           true,
 
@@ -841,7 +853,8 @@ function hideAllStateSections(){
 function setBusy(busy){
   el("submitBtn").disabled =
     busy ||
-    el("staffBindingCode").value.length !== 16;
+    el("staffBindingCode").value.length !== 16 ||
+    !el("teacherPrivacyAck").checked;
 
   el("submitBtn").textContent =
     busy
@@ -2014,13 +2027,22 @@ async function init(){
   }
 }
 
+function refreshTeacherBindButton(){
+  el("submitBtn").disabled =
+    el("staffBindingCode").value.length !== 16 ||
+    !el("teacherPrivacyAck").checked;
+}
+
 el("staffBindingCode")
   .addEventListener(
     "input",
-    () => {
-      el("submitBtn").disabled =
-        el("staffBindingCode").value.length !== 16;
-    }
+    refreshTeacherBindButton
+  );
+
+el("teacherPrivacyAck")
+  .addEventListener(
+    "change",
+    refreshTeacherBindButton
   );
 
 el("submitBtn")
@@ -2037,6 +2059,14 @@ el("submitBtn")
       if(bindingCode.length !== 16){
         showStatus(
           "請輸入完整的 16 碼教職員綁定碼。",
+          "warn"
+        );
+        return;
+      }
+
+      if(!el("teacherPrivacyAck").checked){
+        showStatus(
+          "請先閱讀並勾選個人資料蒐集告知暨隱私權說明。",
           "warn"
         );
         return;
