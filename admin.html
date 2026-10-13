@@ -759,7 +759,7 @@ button{
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a
         class="btn btnGray"
-        href="teacher.html?v=7"
+        href="teacher.html?v=11"
         style="text-decoration:none;display:inline-flex;align-items:center"
       >
         ← 教職員平台
@@ -795,49 +795,22 @@ button{
   <div id="adminLoginBox" class="testBox">
 
     <div class="testTitle">
-      🧪 行政測試登入
+      🔐 行政登入
     </div>
 
     <div class="helper">
-      正式版之後會改由 LINE 自動驗證老師身分。
+      正式環境不提供測試帳號密碼登入。
+      請先從「樂業附幼｜教職員」LINE 官方帳號進入教職員平台，
+      完成行政身分驗證後再開啟本頁。
     </div>
 
-
-    <div class="loginGrid">
-
-      <input
-        id="email"
-        type="email"
-        value="admin-test-0923@example.com"
-        placeholder="Email"
-      >
-
-
-      <input
-        id="password"
-        type="password"
-        placeholder="測試密碼"
-      >
-
-
-      <button
-        id="loginBtn"
-        class="btn btnGreen"
-        onclick="login()"
-      >
-        登入
-      </button>
-
-    </div>
-
-
-    <button
-      class="btn btnGray"
-      style="width:100%;margin-top:8px"
-      onclick="logout()"
+    <a
+      class="btn btnGreen"
+      href="https://liff.line.me/2011987947-mIbgSMNU"
+      style="width:100%;margin-top:10px;text-decoration:none;display:flex;justify-content:center;align-items:center"
     >
-      登出測試帳號
-    </button>
+      開啟教職員平台
+    </a>
 
   </div>
 
@@ -903,6 +876,38 @@ button{
 
 </div>
 
+
+
+<!-- ====================================== -->
+<!-- 每月延托 / 臨托 / 逾時統計 -->
+<!-- ====================================== -->
+
+<div class="panel">
+  <div class="panelTitle">📊 每月托育與逾時收費統計</div>
+  <div class="helper">
+    僅行政人員可匯出。資料依「延托／臨托／逾時」三類統計，
+    並依原班級、同一幼兒、日期集中排列。
+  </div>
+  <div class="pickupToolbar">
+    <div class="pickupToolbarField">
+      <div class="helper">年份</div>
+      <input id="monthlyReportYear" type="number" min="2025" max="2100">
+    </div>
+    <div class="pickupToolbarField">
+      <div class="helper">月份</div>
+      <select id="monthlyReportMonth">
+        <option value="1">1 月</option><option value="2">2 月</option><option value="3">3 月</option><option value="4">4 月</option><option value="5">5 月</option><option value="6">6 月</option><option value="7">7 月</option><option value="8">8 月</option><option value="9">9 月</option><option value="10">10 月</option><option value="11">11 月</option><option value="12">12 月</option>
+      </select>
+    </div>
+    <button class="btn btnGreen" type="button" onclick="exportMonthlyCareReport()">
+      ⬇️ 匯出月結 CSV
+    </button>
+  </div>
+  <div class="helper">
+    收費：延托 17:00–18:00＝35 元；臨托 16:00–17:00＝50 元；
+    臨托 16:00–18:00＝100 元；18:05 後逾時＝30 元。
+  </div>
+</div>
 
 
 <!-- ====================================== -->
@@ -1161,6 +1166,11 @@ button{
 
 </div>
 
+<div style="text-align:center;margin:0 auto 24px;font-size:12px;color:#78909c">
+  <a href="privacy.html" target="_blank" rel="noopener">個人資料蒐集告知暨隱私權說明</a>
+  ｜ <a href="terms.html" target="_blank" rel="noopener">平台使用說明</a>
+</div>
+
 
 <script>
     const SUPABASE_URL =
@@ -1179,6 +1189,9 @@ const supabaseClient =
       auth:{
         storageKey:
           "leye-admin-auth",
+
+        storage:
+          window.sessionStorage,
 
         persistSession:
           true,
@@ -1201,6 +1214,9 @@ const teacherSessionClient =
       auth:{
         storageKey:
           "leye-teacher-auth",
+
+        storage:
+          window.sessionStorage,
 
         persistSession:
           true,
@@ -4856,6 +4872,58 @@ async function updateRequestStatus(
 
 
 
+async function exportMonthlyCareReport(){
+  const year=Number($("monthlyReportYear")?.value);
+  const month=Number($("monthlyReportMonth")?.value);
+
+  if(!year||month<1||month>12){
+    alert("請選擇正確的年月。");
+    return;
+  }
+
+  const {data:{session}}=await supabaseClient.auth.getSession();
+
+  if(!session?.access_token){
+    alert("行政登入狀態已失效，請從教職員平台重新進入。");
+    return;
+  }
+
+  try{
+    const res=await fetch(
+      SUPABASE_URL+
+      "/functions/v1/admin-monthly-care-export?year="+
+      encodeURIComponent(year)+
+      "&month="+
+      encodeURIComponent(month),
+      {
+        headers:{
+          Authorization:"Bearer "+session.access_token,
+          apikey:SUPABASE_PUBLISHABLE_KEY
+        }
+      }
+    );
+
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      throw new Error(err.message||err.error||"月結匯出失敗");
+    }
+
+    const blob=await res.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download=`樂業附幼_${year}年${String(month).padStart(2,"0")}月_延托臨托逾時統計.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  catch(err){
+    alert("月結匯出失敗：\n"+(err?.message||String(err)));
+  }
+}
+
+
 /*
 ==================================================
 老師管理分頁 V16
@@ -4943,12 +5011,16 @@ function renderStaffManagement(){
 
   const rows=filtered.map(staff=>{
     const homeroom=fixedHomeroomMap[staff.id]||"";
+    const hasPending=teacherBindingRequests.some(r=>r.staff_id===staff.id&&r.status==="pending");
+    const bindButton=(!staff.line_user_id&&!hasPending)
+      ? `<button class="staffMiniBtn staffMiniGreen" type="button" onclick="issueStaffBindingCode('${escapeJs(staff.id)}')">產生綁定碼</button>`
+      : "";
     return `<div class="staffCompactRow">
       <div class="staffCompactName">${escapeHtml(staff.display_name)}</div>
       <div>${escapeHtml(staffRoleText(staff.role))}</div>
       <div>${escapeHtml(homeroom?(CLASS_MAP[homeroom]||homeroom):"—")}</div>
       <div class="staffStatusDot ${staff.line_user_id?"staffLineOk":"staffLineNone"}">${staff.line_user_id?"✅ 已綁定":"⚪ 尚未綁定"}</div>
-      <div class="staffToolbarActions"><button class="staffMiniBtn staffMiniEdit" type="button" onclick="openStaffEditor('${escapeJs(staff.id)}')">編輯</button></div>
+      <div class="staffToolbarActions">${bindButton}<button class="staffMiniBtn staffMiniEdit" type="button" onclick="openStaffEditor('${escapeJs(staff.id)}')">編輯</button></div>
     </div>`;
   }).join("");
 
@@ -5038,6 +5110,48 @@ async function unbindCurrentStaffLine(){
   const {error}=await supabaseClient.rpc("admin_unbind_teacher_line",{p_staff_id:staff.id});
   if(error){alert("解除 LINE 綁定失敗：\n"+error.message);return;}
   alert("✅ LINE 綁定已解除。"); closeStaffEditor(); await refreshStaffManagement();
+}
+
+async function issueStaffBindingCode(staffId){
+  const staff=staffList.find(s=>s.id===staffId);
+  if(!staff) return;
+
+  if(staff.line_user_id){
+    alert("這位教職員已完成 LINE 綁定。");
+    return;
+  }
+
+  if(!confirm(`確定要為「${staff.display_name}」產生新的 16 碼一次性綁定碼嗎？\n\n產生新碼後，舊的未使用綁定碼會立即失效。`)){
+    return;
+  }
+
+  const {data,error}=await supabaseClient.rpc(
+    "admin_issue_staff_binding_code",
+    {
+      p_staff_id:staffId,
+      p_valid_days:14
+    }
+  );
+
+  if(error){
+    alert("產生教職員綁定碼失敗：\n"+error.message);
+    return;
+  }
+
+  const code=data?.binding_code||"";
+  const expires=data?.expires_at
+    ? formatDateTime(data.expires_at)
+    : "14 日內";
+
+  if(!code){
+    alert("綁定碼產生失敗，請重新操作。");
+    return;
+  }
+
+  window.prompt(
+    `請複製並私下交給「${staff.display_name}」。\n有效期限：${expires}\n\n請勿張貼在群組或公開畫面。`,
+    code
+  );
 }
 
 function renderLineBindingManagement(){
@@ -6921,6 +7035,24 @@ async function main(){
 
   $("pickupDateFilter").value =
     getTaiwanDateString();
+
+  const taiwanToday =
+    new Date(
+      new Date().toLocaleString(
+        "en-US",
+        {timeZone:"Asia/Taipei"}
+      )
+    );
+
+  if($("monthlyReportYear")){
+    $("monthlyReportYear").value =
+      taiwanToday.getFullYear();
+  }
+
+  if($("monthlyReportMonth")){
+    $("monthlyReportMonth").value =
+      String(taiwanToday.getMonth()+1);
+  }
 
 
   await restoreSession();
