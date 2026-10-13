@@ -5092,9 +5092,7 @@ async function downloadPilotParentBindingCodes(){
 
     const lines=[
       [
-        "班級",
-        "座號",
-        "幼兒姓名",
+        "幼兒",
         "家長姓名",
         "16碼一次性綁定碼",
         "專屬綁定連結",
@@ -5106,9 +5104,7 @@ async function downloadPilotParentBindingCodes(){
     rows.forEach(row=>{
       lines.push(
         [
-          row.class_name,
-          row.seat_no,
-          row.child_name,
+          row.child_summary,
           row.guardian_name,
           row.binding_code,
           row.binding_link,
