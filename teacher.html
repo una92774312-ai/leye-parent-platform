@@ -33,7 +33,17 @@
       --errorSoft:#fff0f0;
     }
 
-    *{box-sizing:border-box}
+    *{
+      box-sizing:border-box;
+      min-width:0;
+    }
+
+    html,
+    body{
+      width:100%;
+      max-width:100%;
+      overflow-x:hidden;
+    }
 
     body{
       margin:0;
@@ -48,9 +58,14 @@
     }
 
     .wrap{
-      width:min(620px,100%);
+      width:100%;
+      max-width:620px;
       margin:0 auto;
-      padding:24px 16px 40px;
+      padding:
+        max(14px,env(safe-area-inset-top))
+        max(12px,env(safe-area-inset-right))
+        max(28px,env(safe-area-inset-bottom))
+        max(12px,env(safe-area-inset-left));
     }
 
     .brand{
@@ -71,11 +86,14 @@
     }
 
     .card{
+      width:100%;
+      max-width:100%;
       background:var(--card);
       border:1px solid var(--line);
       border-radius:18px;
-      padding:20px;
+      padding:18px;
       box-shadow:0 8px 24px rgba(35,55,40,.06);
+      overflow:hidden;
     }
 
     .profile{
@@ -298,7 +316,8 @@
     }
 
     .itemList{
-      display:grid;      gap:8px;
+      display:grid;
+      gap:10px;
     }
 
     .studentItem{
@@ -318,6 +337,7 @@
     .studentName{
       font-size:16px;
       font-weight:800;
+      overflow-wrap:anywhere;
     }
 
     .studentClass{
@@ -356,11 +376,190 @@
       color:#315f91;
     }
 
+    .itemBadge.temporary{
+      background:#f4edff;
+      color:#6941a5;
+    }
+
+    .itemBadge.extended{
+      background:#eaf6ed;
+      color:#236238;
+    }
+
+    .itemBadge.done{
+      background:#eef1ee;
+      color:#526056;
+    }
+
+    .weekUtilityBtn{
+      width:100%;
+      min-height:46px;
+      margin:0 0 14px;
+      border:1px solid #cad8cc;
+      border-radius:12px;
+      background:#f7faf7;
+      color:#31533a;
+      font-size:14px;
+      font-weight:800;
+    }
+
+    .historyOverlay{
+      position:fixed;
+      inset:0;
+      z-index:9999;
+      background:rgba(26,39,30,.34);
+      padding:
+        max(10px,env(safe-area-inset-top))
+        max(8px,env(safe-area-inset-right))
+        max(10px,env(safe-area-inset-bottom))
+        max(8px,env(safe-area-inset-left));
+      display:flex;
+      align-items:stretch;
+      justify-content:center;
+    }
+
+    .historySheet{
+      width:min(620px,100%);
+      height:100%;
+      max-height:100dvh;
+      background:#f7f9f6;
+      border-radius:18px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      box-shadow:0 18px 60px rgba(0,0,0,.24);
+    }
+
+    .historyHeader{
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      background:#fff;
+      border-bottom:1px solid var(--line);
+    }
+
+    .historyTitle{
+      font-size:17px;
+      font-weight:900;
+    }
+
+    .historyCloseBtn{
+      width:40px;
+      height:40px;
+      flex:0 0 40px;
+      margin:0;
+      padding:0;
+      border-radius:999px;
+      background:#eef1ee;
+      color:#344438;
+      font-size:20px;
+    }
+
+    .historyBody{
+      flex:1 1 auto;
+      min-height:0;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      padding:14px;
+    }
+
+    .historyForm{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      padding:14px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+    }
+
+    .historyField.full{
+      grid-column:1 / -1;
+    }
+
+    .historyField label{
+      margin-bottom:6px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .historyField input,
+    .historyField select{
+      width:100%;
+      min-width:0;
+      height:46px;
+      border:1px solid #cfd9d1;
+      border-radius:11px;
+      padding:0 11px;
+      background:#fff;
+      font-size:16px;
+    }
+
+    .historySearchBtn{
+      grid-column:1 / -1;
+      min-height:46px;
+      margin:0;
+      background:var(--green);
+      color:#fff;
+    }
+
+    .historyResults{
+      display:grid;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .historyMeta{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+      margin:0 2px 10px;
+    }
+
+    .historyCard{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:13px;
+    }
+
+    .historyCardTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .historyCardName{
+      font-weight:900;
+      overflow-wrap:anywhere;
+    }
+
+    .historyCardSub{
+      margin-top:3px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .historyCardDetail{
+      margin-top:9px;
+      display:grid;
+      gap:5px;
+      color:#3d4b40;
+      font-size:13px;
+      line-height:1.55;
+      overflow-wrap:anywhere;
+    }
+
     .itemDetail{
       margin-top:8px;
       font-size:13px;
       line-height:1.65;
       color:#3d4b40;
+      overflow-wrap:anywhere;
     }
 
     .itemDetail strong{
@@ -428,16 +627,130 @@
     }
 
     @media (max-width:480px){
+      .wrap{
+        padding-left:10px;
+        padding-right:10px;
+      }
+
+      .brand{
+        margin-bottom:12px;
+      }
+
+      .brand h1{
+        font-size:21px;
+      }
+
+      .brand p{
+        font-size:12px;
+      }
+
+      .card{
+        padding:13px;
+        border-radius:16px;
+      }
+
+      .profile{
+        padding:10px;
+        margin-bottom:12px;
+      }
+
+      .identityBox,
+      .workBox{
+        padding:12px;
+        border-radius:12px;
+      }
+
+      .scopeGrid{
+        gap:8px;
+      }
+
+      .scopeCard{
+        padding:11px;
+      }
+
+      .todayBox{
+        margin-top:14px;
+        padding-top:14px;
+      }
+
+      .todayHeader{
+        gap:8px;
+      }
+
+      .todayTitle{
+        font-size:17px;
+      }
+
       .todayCounts{
-        grid-template-columns:1fr 1fr;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:8px;
+      }
+
+      .countCard{
+        min-height:72px;
+        padding:10px 6px;
       }
 
       .countNum{
-        font-size:18px;
+        font-size:19px;
       }
 
       .countLabel{
         font-size:11px;
+        line-height:1.35;
+      }
+
+      .studentItem{
+        padding:11px;
+      }
+
+      .studentTop{
+        gap:8px;
+      }
+
+      .itemBadge{
+        max-width:42%;
+        white-space:normal;
+        text-align:center;
+        line-height:1.25;
+      }
+
+      .itemActionButtons{
+        gap:7px;
+      }
+
+      .itemActionButtons button{
+        min-height:42px;
+        padding:9px 8px;
+        font-size:12px;
+      }
+
+      .historyForm{
+        grid-template-columns:1fr;
+        padding:12px;
+      }
+
+      .historyField.full,
+      .historySearchBtn{
+        grid-column:auto;
+      }
+
+      .historyBody{
+        padding:10px;
+      }
+    }
+
+    @media (max-width:360px){
+      .itemActionButtons{
+        flex-direction:column;
+      }
+
+      .itemActionButtons button{
+        width:100%;
+      }
+
+      .todayCounts{
+        grid-template-columns:1fr 1fr;
       }
     }
 
@@ -447,8 +760,11 @@
       margin:0 0 8px;
     }
 
+    input,
     select{
       width:100%;
+      max-width:100%;
+      min-width:0;
       height:48px;
       border:1px solid #cfd9d1;
       border-radius:12px;
@@ -584,7 +900,7 @@
             </div>
 
             <div class="workSub">
-              以下是系統依照您的教職員身分與今日排班判定的可查看範圍。
+              系統依教職員身分與排班顯示本週事項；超過本週的紀錄請使用「查詢過去紀錄」。
             </div>
 
             <div id="roleBadge" class="roleBadge">—</div>
@@ -621,43 +937,51 @@
             <div id="todayItemsSection" class="todayBox">
               <div class="todayHeader">
                 <div>
-                  <div class="todayTitle">今日學生事項</div>
+                  <div class="todayTitle">本週學生事項</div>
                   <div id="todayItemsDate" class="todayDate">讀取中…</div>
                 </div>
 
                 <div id="todayTotalBadge" class="totalBadge">0</div>
               </div>
 
+              <button
+                class="weekUtilityBtn"
+                type="button"
+                onclick="openTeacherHistory()"
+              >
+                🔎 查詢過去請假／延托／臨托紀錄
+              </button>
+
               <div class="todayCounts">
                 <div class="countCard">
                   <div id="leaveCount" class="countNum">0</div>
-                  <div class="countLabel">今日請假</div>
+                  <div class="countLabel">本週請假</div>
                 </div>
 
                 <div class="countCard">
-                  <div id="earlyPickupCount" class="countNum">0</div>
-                  <div class="countLabel">提早接送</div>
+                  <div id="temporaryCount" class="countNum">0</div>
+                  <div class="countLabel">本週臨托</div>
                 </div>
 
                 <div class="countCard">
-                  <div id="lateCount" class="countNum">0</div>
-                  <div class="countLabel">延遲通知</div>
+                  <div id="extendedCount" class="countNum">0</div>
+                  <div class="countLabel">本週延托</div>
                 </div>
 
                 <div class="countCard">
-                  <div id="waitingCount" class="countNum">0</div>
-                  <div class="countLabel">等待接送</div>
+                  <div id="pickupCount" class="countNum">0</div>
+                  <div class="countLabel">本週接送</div>
                 </div>
               </div>
 
               <div id="todayItemsStatus" class="status show info">
-                正在讀取今日學生事項…
+                正在讀取本週學生事項…
               </div>
 
               <div id="todayItemsContent" class="hidden">
                 <div class="itemGroup">
                   <div class="itemGroupHeader">
-                    <span>🟣 今日請假</span>
+                    <span>🟣 本週請假</span>
                     <span id="leaveGroupCount" class="groupCount">0</span>
                   </div>
                   <div id="leaveItems" class="itemList"></div>
@@ -665,26 +989,84 @@
 
                 <div class="itemGroup">
                   <div class="itemGroupHeader">
-                    <span>🟡 提早接送</span>
-                    <span id="earlyPickupGroupCount" class="groupCount">0</span>
+                    <span>🟢 本週延托／臨托</span>
+                    <span id="careGroupCount" class="groupCount">0</span>
                   </div>
-                  <div id="earlyPickupItems" class="itemList"></div>
+                  <div id="careItems" class="itemList"></div>
                 </div>
 
                 <div class="itemGroup">
                   <div class="itemGroupHeader">
-                    <span>🟠 延遲接送通知</span>
-                    <span id="lateGroupCount" class="groupCount">0</span>
+                    <span>🚗 本週接送事項</span>
+                    <span id="pickupGroupCount" class="groupCount">0</span>
                   </div>
-                  <div id="lateItems" class="itemList"></div>
+                  <div id="pickupItems" class="itemList"></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="historyPanel" class="historyOverlay hidden" aria-hidden="true">
+              <div class="historySheet">
+                <div class="historyHeader">
+                  <div>
+                    <div class="historyTitle">🔎 查詢過去紀錄</div>
+                    <div class="todayDate">僅顯示您有權限查看的幼兒資料</div>
+                  </div>
+                  <button
+                    class="historyCloseBtn"
+                    type="button"
+                    aria-label="關閉"
+                    onclick="closeTeacherHistory()"
+                  >×</button>
                 </div>
 
-                <div class="itemGroup">
-                  <div class="itemGroupHeader">
-                    <span>🔵 等待接送</span>
-                    <span id="waitingGroupCount" class="groupCount">0</span>
+                <div class="historyBody">
+                  <div class="historyForm">
+                    <div class="historyField full">
+                      <label for="historyKeyword">幼兒姓名</label>
+                      <input
+                        id="historyKeyword"
+                        type="search"
+                        maxlength="50"
+                        placeholder="輸入姓名搜尋；留白則顯示全部"
+                      >
+                    </div>
+
+                    <div class="historyField">
+                      <label for="historyStart">開始日期</label>
+                      <input id="historyStart" type="date">
+                    </div>
+
+                    <div class="historyField">
+                      <label for="historyEnd">結束日期</label>
+                      <input id="historyEnd" type="date">
+                    </div>
+
+                    <div class="historyField full">
+                      <label for="historyType">類型</label>
+                      <select id="historyType">
+                        <option value="all">全部</option>
+                        <option value="leave">請假</option>
+                        <option value="extended">延托</option>
+                        <option value="temporary">臨托</option>
+                      </select>
+                    </div>
+
+                    <button
+                      class="historySearchBtn"
+                      type="button"
+                      onclick="searchTeacherHistory()"
+                    >
+                      查詢紀錄
+                    </button>
                   </div>
-                  <div id="waitingItems" class="itemList"></div>
+
+                  <div id="historyStatus" class="status show info">
+                    可依姓名、日期與類型查詢。
+                  </div>
+
+                  <div id="historyMeta" class="historyMeta"></div>
+                  <div id="historyResults" class="historyResults"></div>
                 </div>
               </div>
             </div>
@@ -1160,7 +1542,7 @@ async function actOnTeacherItem(
       throw new Error("事項狀態更新失敗，請稍後再試。");
     }
 
-    await loadTeacherTodayItems();
+    await loadTeacherWeekItems();
 
     return data;
   }
@@ -1181,8 +1563,39 @@ async function actOnTeacherItem(
 function appendTeacherActionControls(
   card,
   item
-){  const status =
+){
+  const status =
     item?.teacher_action_status || "";
+
+  if(item?.can_act === false){
+    const info =
+      document.createElement("div");
+
+    info.className =
+      "itemActionState";
+
+    if(
+      item?.item_type === "temporary"
+      ||
+      item?.item_type === "extended"
+    ){
+      info.textContent =
+        "資訊同步：此筆由行政老師審核安排，請留意幼兒托育動向。";
+    }
+    else if(
+      item?.item_type === "leave"
+    ){
+      info.textContent =
+        "資訊同步：請假由原班導師確認；課後班老師可同步掌握未到園資訊。";
+    }
+    else{
+      info.textContent =
+        "此筆已完成或目前僅供查看。";
+    }
+
+    card.appendChild(info);
+    return;
+  }
 
   const state =
     document.createElement("div");
@@ -1278,6 +1691,26 @@ function appendTeacherActionControls(
   card.appendChild(actions);
 }
 
+function requestTypeLabel(type){
+  if(type === "leave") return "請假";
+  if(type === "temporary") return "臨托";
+  if(type === "extended") return "延托";
+  if(type === "early_pickup") return "提早接送";
+  if(type === "late_notice") return "延遲接送";
+  return "接送";
+}
+
+function requestStatusLabel(status){
+  if(status === "approved") return "已核准";
+  if(status === "pending") return "待處理";
+  if(status === "submitted") return "已送出";
+  if(status === "waitlist") return "候補";
+  if(status === "rejected") return "無法安排";
+  if(status === "cancelled") return "已取消";
+  if(status === "completed") return "已完成";
+  return status || "—";
+}
+
 function makeStudentItem(
   item,
   type
@@ -1297,6 +1730,8 @@ function makeStudentItem(
   const left =
     document.createElement("div");
 
+  left.style.flex = "1";
+
   const name =
     document.createElement("div");
 
@@ -1305,7 +1740,7 @@ function makeStudentItem(
 
   name.textContent =
     item?.child_name ||
-    "未命名學生";
+    "未命名幼兒";
 
   const className =
     document.createElement("div");
@@ -1313,10 +1748,21 @@ function makeStudentItem(
   className.className =
     "studentClass";
 
+  const dateText =
+    formatDateText(
+      item?.request_date
+      || item?.pickup_date
+    );
+
   className.textContent =
-    item?.morning_class_name ||
-    item?.morning_class_id ||
-    "原班未設定";
+    [
+      item?.morning_class_name
+      || item?.morning_class_id
+      || "原班未設定",
+      dateText
+    ]
+      .filter(Boolean)
+      .join("｜");
 
   left.appendChild(name);
   left.appendChild(className);
@@ -1329,26 +1775,41 @@ function makeStudentItem(
 
   if(type === "leave"){
     badge.classList.add("leave");
+    badge.textContent =
+      requestStatusLabel(item?.status);
+  }
+  else if(type === "care"){
+    const careType =
+      item?.item_type === "temporary"
+        ? "temporary"
+        : "extended";
 
+    badge.classList.add(careType);
     badge.textContent =
-      item?.status === "approved"
-        ? "已核准"
-        : "請假";
-  }
-  else if(type === "early"){
-    badge.classList.add("early");
-    badge.textContent =
-      "提早";
-  }
-  else if(type === "late"){
-    badge.classList.add("late");
-    badge.textContent =
-      "延遲";
+      requestTypeLabel(item?.item_type)
+      + "｜"
+      + requestStatusLabel(item?.status);
   }
   else{
-    badge.classList.add("waiting");
+    const pickupType =
+      item?.item_type || "pickup";
+
+    if(pickupType === "early_pickup"){
+      badge.classList.add("early");
+    }
+    else if(pickupType === "late_notice"){
+      badge.classList.add("late");
+    }
+    else{
+      badge.classList.add(
+        item?.actual_pickup_at
+          ? "done"
+          : "waiting"
+      );
+    }
+
     badge.textContent =
-      "等待";
+      requestTypeLabel(pickupType);
   }
 
   top.appendChild(left);
@@ -1360,9 +1821,9 @@ function makeStudentItem(
   detail.className =
     "itemDetail";
 
+  const rows = [];
+
   if(type === "leave"){
-    const rows = [];
-
     if(item?.reason){
       rows.push(
         `原因：${item.reason}`
@@ -1374,27 +1835,36 @@ function makeStudentItem(
         `備註：${item.note}`
       );
     }
+  }
+  else if(type === "care"){
+    const start =
+      formatClock(
+        item?.requested_start_time
+      );
 
-    if(
-      item?.status === "pending"
-    ){
+    const end =
+      formatClock(
+        item?.requested_end_time
+      );
+
+    if(start !== "—" || end !== "—"){
       rows.push(
-        "狀態：待處理"
+        `時段：${start} ～ ${end}`
       );
     }
 
-    detail.textContent =
-      rows.length
-        ? rows.join("\n")
-        : "今日請假";
-  }
-  else if(type === "early"){
-    const rows = [
-      `預計接送：${formatClock(
-        item?.requested_start_time ||
-        item?.pickup_time
-      )}`
-    ];
+    if(
+      item?.assigned_aftercare_class_name
+      || item?.assigned_aftercare_class_code
+    ){
+      rows.push(
+        "安排課後班："
+        + (
+          item?.assigned_aftercare_class_name
+          || item?.assigned_aftercare_class_code
+        )
+      );
+    }
 
     if(item?.reason){
       rows.push(
@@ -1402,30 +1872,24 @@ function makeStudentItem(
       );
     }
 
-    if(item?.note){
+    if(item?.admin_note){
       rows.push(
-        `備註：${item.note}`
+        `行政備註：${item.admin_note}`
       );
     }
-
-    if(
-      item?.status === "submitted"
-      ||
-      item?.status === "pending"
-    ){
-      rows.push(
-        "狀態：待確認"
-      );
-    }
-
-    detail.textContent =
-      rows.join("\n");
   }
-  else if(type === "late"){
-    const rows = [
-      `原訂接送：${formatClock(item?.scheduled_pickup_time)}`,
-      `預計抵達：${formatClock(item?.expected_arrival_time)}`
-    ];
+  else{
+    if(item?.scheduled_pickup_time){
+      rows.push(
+        `原訂接送：${formatClock(item.scheduled_pickup_time)}`
+      );
+    }
+
+    if(item?.expected_arrival_time){
+      rows.push(
+        `預計抵達：${formatClock(item.expected_arrival_time)}`
+      );
+    }
 
     if(item?.pickup_person){
       rows.push(
@@ -1439,23 +1903,17 @@ function makeStudentItem(
       );
     }
 
-    detail.textContent =
-      rows.join("\n");
-  }
-  else{
-    const rows = [
-      `原訂接送：${formatClock(item?.scheduled_pickup_time)}`
-    ];
-
-    if(item?.pickup_person){
+    if(item?.actual_pickup_at){
       rows.push(
-        `接送者：${item.pickup_person}`
+        `完成：${formatDateTime(item.actual_pickup_at)}`
       );
     }
-
-    detail.textContent =
-      rows.join("\n");
   }
+
+  detail.textContent =
+    rows.length
+      ? rows.join("\n")
+      : "本週事項";
 
   detail.style.whiteSpace =
     "pre-line";
@@ -1514,31 +1972,32 @@ function renderItemList(
   }
 }
 
-async function loadTeacherTodayItems(){
+async function loadTeacherWeekItems(){
   const statusBox =
     el("todayItemsStatus");
 
-  statusBox.className =    "status show info";
+  statusBox.className =
+    "status show info";
 
   statusBox.textContent =
-    "正在讀取今日學生事項…";
+    "正在讀取本週學生事項…";
 
   const {
     data,
     error
   } =
     await teacherSupabase.rpc(
-      "get_teacher_today_items"
+      "get_teacher_week_items"
     );
 
   if(error){
     console.error(
-      "get_teacher_today_items error:",
+      "get_teacher_week_items error:",
       error
     );
 
     throw new Error(
-      "今日學生事項讀取失敗。"
+      "本週學生事項讀取失敗。"
     );
   }
 
@@ -1550,24 +2009,19 @@ async function loadTeacherTodayItems(){
       ? data.leave
       : [];
 
-  const earlyPickup =
-    Array.isArray(data?.early_pickup)
-      ? data.early_pickup
+  const care =
+    Array.isArray(data?.care)
+      ? data.care
       : [];
 
-  const late =
-    Array.isArray(data?.late_notice)
-      ? data.late_notice
-      : [];
-
-  const waiting =
-    Array.isArray(data?.pickup_waiting)
-      ? data.pickup_waiting
+  const pickup =
+    Array.isArray(data?.pickup)
+      ? data.pickup
       : [];
 
   setText(
     "todayItemsDate",
-    `${formatDateText(data?.date)} 今日`
+    `${formatDateText(data?.week_start)} ～ ${formatDateText(data?.week_end)}`
   );
 
   setText(
@@ -1581,18 +2035,18 @@ async function loadTeacherTodayItems(){
   );
 
   setText(
-    "earlyPickupCount",
-    counts.early_pickup ?? earlyPickup.length
+    "temporaryCount",
+    counts.temporary ?? 0
   );
 
   setText(
-    "lateCount",
-    counts.late_notice ?? late.length
+    "extendedCount",
+    counts.extended ?? 0
   );
 
   setText(
-    "waitingCount",
-    counts.pickup_waiting ?? waiting.length
+    "pickupCount",
+    counts.pickup ?? pickup.length
   );
 
   setText(
@@ -1601,18 +2055,15 @@ async function loadTeacherTodayItems(){
   );
 
   setText(
-    "earlyPickupGroupCount",
-    counts.early_pickup ?? earlyPickup.length
+    "careGroupCount",
+    (counts.temporary ?? 0)
+    +
+    (counts.extended ?? 0)
   );
 
   setText(
-    "lateGroupCount",
-    counts.late_notice ?? late.length
-  );
-
-  setText(
-    "waitingGroupCount",
-    counts.pickup_waiting ?? waiting.length
+    "pickupGroupCount",
+    counts.pickup ?? pickup.length
   );
 
   renderItemList(
@@ -1622,21 +2073,15 @@ async function loadTeacherTodayItems(){
   );
 
   renderItemList(
-    "earlyPickupItems",
-    earlyPickup,
-    "early"
+    "careItems",
+    care,
+    "care"
   );
 
   renderItemList(
-    "lateItems",
-    late,
-    "late"
-  );
-
-  renderItemList(
-    "waitingItems",
-    waiting,
-    "waiting"
+    "pickupItems",
+    pickup,
+    "pickup"
   );
 
   el("todayItemsContent")
@@ -1648,11 +2093,259 @@ async function loadTeacherTodayItems(){
     "status show ok";
 
   statusBox.textContent =
-    counts.total > 0
-      ? `✓ 今日共有 ${counts.total} 筆學生事項`
-      : "✓ 今日目前沒有待顯示的學生事項";
+    (counts.total ?? 0) > 0
+      ? `✓ 本週共有 ${counts.total} 筆可查看事項；下週會自動從首頁隱藏。`
+      : "✓ 本週目前沒有學生事項";
 
   return data;
+}
+
+function toDateInputValue(date){
+  const y=date.getFullYear();
+  const m=String(date.getMonth()+1).padStart(2,"0");
+  const d=String(date.getDate()).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
+
+function openTeacherHistory(){
+  const panel=el("historyPanel");
+
+  const now=
+    new Date(
+      new Date().toLocaleString(
+        "en-US",
+        {timeZone:"Asia/Taipei"}
+      )
+    );
+
+  const end=
+    toDateInputValue(now);
+
+  const startDate=
+    new Date(now);
+
+  startDate.setDate(
+    startDate.getDate()-89
+  );
+
+  if(!el("historyStart").value){
+    el("historyStart").value=
+      toDateInputValue(startDate);
+  }
+
+  if(!el("historyEnd").value){
+    el("historyEnd").value=end;
+  }
+
+  panel.classList.remove("hidden");
+  panel.setAttribute("aria-hidden","false");
+
+  document.body.style.overflow="hidden";
+
+  setTimeout(
+    ()=>el("historyKeyword")?.focus(),
+    80
+  );
+}
+
+function closeTeacherHistory(){
+  const panel=el("historyPanel");
+
+  panel.classList.add("hidden");
+  panel.setAttribute("aria-hidden","true");
+  document.body.style.overflow="";
+}
+
+function historyCardHtml(item){
+  const type=
+    requestTypeLabel(
+      item?.request_type
+    );
+
+  const status=
+    requestStatusLabel(
+      item?.status
+    );
+
+  const period=
+    item?.request_type === "leave"
+      ? ""
+      : [
+          formatClock(
+            item?.requested_start_time
+          ),
+          formatClock(
+            item?.requested_end_time
+          )
+        ]
+          .filter(v=>v && v!=="—")
+          .join(" ～ ");
+
+  const assigned=
+    item?.assigned_aftercare_class_name
+    || item?.assigned_aftercare_class_code
+    || "";
+
+  const details=[];
+
+  if(period){
+    details.push(
+      `時段：${period}`
+    );
+  }
+
+  if(assigned){
+    details.push(
+      `安排課後班：${assigned}`
+    );
+  }
+
+  if(item?.reason){
+    details.push(
+      `原因：${item.reason}`
+    );
+  }
+
+  if(item?.admin_note){
+    details.push(
+      `行政備註：${item.admin_note}`
+    );
+  }
+
+  return `
+    <div class="historyCard">
+      <div class="historyCardTop">
+        <div>
+          <div class="historyCardName">
+            ${escapeHtmlText(item?.child_name || "未命名幼兒")}
+          </div>
+          <div class="historyCardSub">
+            ${escapeHtmlText(item?.morning_class_name || item?.morning_class_id || "")}
+            ｜${escapeHtmlText(item?.request_date || "")}
+          </div>
+        </div>
+        <span class="itemBadge ${item?.request_type || "done"}">
+          ${escapeHtmlText(type+"｜"+status)}
+        </span>
+      </div>
+      <div class="historyCardDetail">
+        ${details.length
+          ? details.map(v=>`<div>${escapeHtmlText(v)}</div>`).join("")
+          : "<div>無其他備註</div>"}
+      </div>
+    </div>
+  `;
+}
+
+function escapeHtmlText(value){
+  return String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+async function searchTeacherHistory(){
+  const status=el("historyStatus");
+  const results=el("historyResults");
+  const meta=el("historyMeta");
+
+  const keyword=
+    el("historyKeyword").value.trim();
+
+  const start=
+    el("historyStart").value;
+
+  const end=
+    el("historyEnd").value;
+
+  const type=
+    el("historyType").value;
+
+  if(!start||!end){
+    alert("請選擇開始與結束日期。");
+    return;
+  }
+
+  if(start>end){
+    alert("開始日期不能晚於結束日期。");
+    return;
+  }
+
+  status.className=
+    "status show info";
+
+  status.textContent=
+    "正在查詢過去紀錄…";
+
+  results.innerHTML="";
+  meta.textContent="";
+
+  const {
+    data,
+    error
+  } =
+    await teacherSupabase.rpc(
+      "search_teacher_request_history",
+      {
+        p_keyword:keyword || null,
+        p_start_date:start,
+        p_end_date:end,
+        p_type:type
+      }
+    );
+
+  if(error){
+    console.error(
+      "search_teacher_request_history error:",
+      error
+    );
+
+    status.className=
+      "status show error";
+
+    status.textContent=
+      String(error.message || "").includes(
+        "DATE_RANGE_TOO_LARGE"
+      )
+        ? "一次最多查詢 1 年，請縮小日期範圍。"
+        : "過去紀錄查詢失敗，請稍後再試。";
+
+    return;
+  }
+
+  const items=
+    Array.isArray(data?.items)
+      ? data.items
+      : [];
+
+  meta.textContent=
+    `${formatDateText(data?.start_date)} ～ ${formatDateText(data?.end_date)}｜共 ${items.length} 筆`;
+
+  if(!items.length){
+    results.innerHTML=
+      '<div class="todayEmpty">找不到符合條件的紀錄。</div>';
+
+    status.className=
+      "status show ok";
+
+    status.textContent=
+      "✓ 查詢完成";
+
+    return;
+  }
+
+  results.innerHTML=
+    items
+      .map(historyCardHtml)
+      .join("");
+
+  status.className=
+    "status show ok";
+
+  status.textContent=
+    "✓ 查詢完成";
 }
 
 
@@ -1788,11 +2481,11 @@ async function establishTeacherSession(
       );
 
     await loadTeacherScope();
-    await loadTeacherTodayItems();
+    await loadTeacherWeekItems();
 
     el("pageIntro")
       .innerHTML =
-        "LINE 與教職員身分已確認。<br>老師權限與今日學生事項已載入。";
+        "LINE 與教職員身分已確認。<br>老師權限與本週學生事項已載入。";
 
   }
   catch(err){
