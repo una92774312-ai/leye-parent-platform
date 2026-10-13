@@ -8,7 +8,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
-  <title>樂業附幼｜教職員平台 V11</title>
+  <title>樂業附幼｜教職員平台 V12</title>
 
   <script
     charset="utf-8"
@@ -857,7 +857,247 @@
     .hidden{
       display:none !important;
     }
-  </style>
+  
+    .rosterDetails{
+      margin-top:16px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .rosterDetails > summary{
+      list-style:none;
+      min-height:54px;
+      padding:13px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      cursor:pointer;
+      font-weight:900;
+      color:#344438;
+      user-select:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .rosterDetails > summary::-webkit-details-marker{
+      display:none;
+    }
+
+    .rosterDetails > summary::after{
+      content:"＋";
+      width:30px;
+      height:30px;
+      flex:0 0 30px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#eef4ea;
+      color:#31533a;
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .rosterDetails[open] > summary::after{
+      content:"－";
+    }
+
+    .rosterSummaryText{
+      margin-left:auto;
+      color:var(--muted);
+      font-size:11px;
+      font-weight:700;
+      text-align:right;
+    }
+
+    .rosterBody{
+      border-top:1px solid var(--line);
+      padding:12px;
+      background:#fafcf9;
+    }
+
+    .rosterSectionTitle{
+      margin:12px 0 7px;
+      font-size:13px;
+      font-weight:900;
+      color:#40513d;
+    }
+
+    .rosterClassDetails{
+      margin-bottom:9px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .rosterClassDetails > summary{
+      list-style:none;
+      min-height:46px;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      cursor:pointer;
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .rosterClassDetails > summary::-webkit-details-marker{
+      display:none;
+    }
+
+    .rosterClassCount{
+      color:var(--muted);
+      font-size:11px;
+      font-weight:700;
+    }
+
+    .rosterClassBody{
+      padding:0 10px 10px;
+      border-top:1px solid #edf1ed;
+    }
+
+    .rosterSubTitle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin:10px 0 6px;
+      font-size:12px;
+      font-weight:900;
+      color:#526056;
+    }
+
+    .rosterChildList{
+      display:grid;
+      gap:6px;
+    }
+
+    .rosterChildRow{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      align-items:center;
+      gap:8px;
+      padding:9px 10px;
+      border-radius:10px;
+      background:#f7f9f6;
+      border:1px solid #edf1ed;
+    }
+
+    .rosterChildRow.leavePriority{
+      order:-10;
+      background:#fff0f0;
+      border-color:#f4caca;
+    }
+
+    .rosterChildName{
+      min-width:0;
+      font-size:13px;
+      font-weight:900;
+      overflow-wrap:anywhere;
+    }
+
+    .rosterChildMeta{
+      margin-top:2px;
+      color:var(--muted);
+      font-size:10px;
+      line-height:1.4;
+      overflow-wrap:anywhere;
+    }
+
+    .rosterBadges{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      gap:4px;
+      max-width:48%;
+    }
+
+    .rosterBadge{
+      display:inline-flex;
+      align-items:center;
+      min-height:24px;
+      padding:3px 7px;
+      border-radius:999px;
+      background:#eef1ee;
+      color:#526056;
+      font-size:10px;
+      font-weight:900;
+      line-height:1.2;
+      text-align:center;
+    }
+
+    .rosterBadge.leave{
+      background:#ffe5e5;
+      color:#a32929;
+    }
+
+    .rosterBadge.extended{
+      background:#e7f5eb;
+      color:#236238;
+    }
+
+    .rosterBadge.temporary{
+      background:#f1e8ff;
+      color:#6941a5;
+    }
+
+    .rosterBadge.paid{
+      background:#e7f5eb;
+      color:#236238;
+    }
+
+    .rosterEmpty{
+      padding:10px;
+      color:var(--muted);
+      font-size:12px;
+      text-align:center;
+    }
+
+    .feeCollectBox.warning{
+      background:#fff0f0;
+      color:#9a2f2f;
+    }
+
+    .feeCorrectionBtn{
+      width:100%;
+      min-height:38px;
+      margin:7px 0 0;
+      border:1px solid #d2b57a;
+      border-radius:9px;
+      background:#fff;
+      color:#795514;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    @media(max-width:480px){
+      .rosterDetails > summary{
+        padding:12px;
+      }
+
+      .rosterSummaryText{
+        display:none;
+      }
+
+      .rosterBody{
+        padding:9px;
+      }
+
+      .rosterChildRow{
+        padding:9px;
+      }
+
+      .rosterBadges{
+        max-width:44%;
+      }
+    }
+
+</style>
 </head>
 
 <body>
@@ -960,6 +1200,20 @@
             <div id="scopeStatus" class="status show info">
               正在讀取老師可查看範圍…
             </div>
+
+            <details id="rosterDetails" class="rosterDetails">
+              <summary>
+                <span>👥 我的班級幼兒</span>
+                <span id="rosterSummary" class="rosterSummaryText">讀取中…</span>
+              </summary>
+
+              <div class="rosterBody">
+                <div id="rosterStatus" class="status show info">
+                  正在讀取班級名冊…
+                </div>
+                <div id="rosterContent"></div>
+              </div>
+            </details>
 
             <div id="todayItemsSection" class="todayBox">
               <div class="todayHeader">
@@ -1587,13 +1841,428 @@ async function actOnTeacherItem(
   }
 }
 
-async function markCareFeeCollected(
+function rosterBadgeHtml(
+  text,
+  className=""
+){
+  return `<span class="rosterBadge ${className}">${escapeHtmlText(text)}</span>`;
+}
+
+function rosterChildHtml(
+  child,
+  mode
+){
+  const isLeave=
+    child?.is_leave===true;
+
+  const badges=[];
+
+  if(isLeave){
+    badges.push(
+      rosterBadgeHtml(
+        mode==="temporary"
+          ? "請假｜臨托不執行"
+          : "請假",
+        "leave"
+      )
+    );
+  }
+  else if(
+    mode==="temporary"
+  ){
+    const period=[
+      formatClock(child?.requested_start_time),
+      formatClock(child?.requested_end_time)
+    ]
+      .filter(v=>v && v!=="—")
+      .join("～");
+
+    badges.push(
+      rosterBadgeHtml(
+        period
+          ? `臨托 ${period}`
+          : "臨托",
+        "temporary"
+      )
+    );
+  }
+  else if(
+    child?.is_extended===true
+    || child?.extended_status
+  ){
+    badges.push(
+      rosterBadgeHtml(
+        "延托",
+        "extended"
+      )
+    );
+  }
+  else if(
+    mode==="morning"
+    && child?.temporary_status
+  ){
+    badges.push(
+      rosterBadgeHtml(
+        "臨托",
+        "temporary"
+      )
+    );
+  }
+  else if(
+    mode==="morning"
+    && child?.extended_status
+  ){
+    badges.push(
+      rosterBadgeHtml(
+        "延托",
+        "extended"
+      )
+    );
+  }
+  else if(
+    mode==="regular"
+  ){
+    badges.push(
+      rosterBadgeHtml(
+        child?.scheduled_pickup_time
+          ? `課後至 ${formatClock(child.scheduled_pickup_time)}`
+          : "課後"
+      )
+    );
+  }
+  else if(
+    mode==="morning"
+    && child?.aftercare_class_id
+  ){
+    badges.push(
+      rosterBadgeHtml(
+        child?.scheduled_pickup_time
+          ? `課後 ${formatClock(child.scheduled_pickup_time)}`
+          : "有課後"
+      )
+    );
+  }
+
+  if(
+    mode==="temporary"
+    && child?.fee_status==="collected"
+  ){
+    badges.push(
+      rosterBadgeHtml(
+        "已收費",
+        "paid"
+      )
+    );
+  }
+
+  const seat=
+    child?.seat_no!=null
+      ? `${child.seat_no}號 `
+      : "";
+
+  const meta=[];
+
+  if(child?.morning_class_name){
+    meta.push(child.morning_class_name);
+  }
+
+  if(
+    mode==="temporary"
+    && child?.request_status
+  ){
+    meta.push(
+      requestStatusLabel(
+        child.request_status
+      )
+    );
+  }
+
+  return `
+    <div class="rosterChildRow ${isLeave?"leavePriority":""}">
+      <div>
+        <div class="rosterChildName">
+          ${escapeHtmlText(seat+(child?.name||"未命名幼兒"))}
+        </div>
+        <div class="rosterChildMeta">
+          ${escapeHtmlText(meta.join("｜"))}
+        </div>
+      </div>
+      <div class="rosterBadges">
+        ${badges.join("")}
+      </div>
+    </div>
+  `;
+}
+
+function rosterListHtml(
+  children,
+  mode
+){
+  if(
+    !Array.isArray(children)
+    || children.length===0
+  ){
+    return '<div class="rosterEmpty">目前沒有幼兒</div>';
+  }
+
+  return `
+    <div class="rosterChildList">
+      ${children.map(child=>rosterChildHtml(child,mode)).join("")}
+    </div>
+  `;
+}
+
+function renderTeacherRoster(data){
+  const content=el("rosterContent");
+  const summary=el("rosterSummary");
+
+  const role=data?.staff?.role || "";
+  const morning=
+    Array.isArray(data?.morning_groups)
+      ? data.morning_groups
+      : [];
+
+  const aftercare=
+    Array.isArray(data?.aftercare_groups)
+      ? data.aftercare_groups
+      : [];
+
+  if(role==="admin"){
+    summary.textContent=
+      `原班 ${morning.length} 班｜課後 ${aftercare.length} 班`;
+  }
+  else if(aftercare.length){
+    summary.textContent=
+      `原班 ${morning.length} 班｜今日課後 ${aftercare.length} 班`;
+  }
+  else{
+    summary.textContent=
+      `原班 ${morning.length} 班`;
+  }
+
+  const parts=[];
+
+  if(morning.length){
+    parts.push(
+      '<div class="rosterSectionTitle">🏫 原班幼兒</div>'
+    );
+
+    parts.push(
+      morning.map((group,index)=>`
+        <details class="rosterClassDetails" ${morning.length===1?"open":""}>
+          <summary>
+            <span>${escapeHtmlText(group.class_name||group.class_id)}</span>
+            <span class="rosterClassCount">${Number(group.child_count||0)} 人</span>
+          </summary>
+          <div class="rosterClassBody">
+            ${rosterListHtml(group.children,"morning")}
+          </div>
+        </details>
+      `).join("")
+    );
+  }
+
+  if(aftercare.length){
+    parts.push(
+      '<div class="rosterSectionTitle">🌙 今日課後班幼兒</div>'
+    );
+
+    parts.push(
+      aftercare.map((group,index)=>`
+        <details class="rosterClassDetails" ${aftercare.length===1?"open":""}>
+          <summary>
+            <span>${escapeHtmlText(group.aftercare_class_name||group.aftercare_class_id)}</span>
+            <span class="rosterClassCount">
+              課後 ${Number(group.regular_count||0)}｜臨托 ${Number(group.temporary_count||0)}
+            </span>
+          </summary>
+
+          <div class="rosterClassBody">
+            <div class="rosterSubTitle">
+              <span>① 該班級課後幼兒</span>
+              <span>${Number(group.regular_count||0)} 人</span>
+            </div>
+
+            ${rosterListHtml(group.regular_children,"regular")}
+
+            <div class="rosterSubTitle">
+              <span>② 今日臨托</span>
+              <span>${Number(group.temporary_count||0)} 人</span>
+            </div>
+
+            ${rosterListHtml(group.temporary_children,"temporary")}
+          </div>
+        </details>
+      `).join("")
+    );
+  }
+
+  if(!parts.length){
+    parts.push(
+      '<div class="rosterEmpty">目前沒有可查看的班級名冊。</div>'
+    );
+  }
+
+  content.innerHTML=parts.join("");
+}
+
+async function loadTeacherRoster(){
+  const status=el("rosterStatus");
+
+  status.className="status show info";
+  status.textContent="正在讀取班級名冊…";
+
+  const {data,error}=
+    await teacherSupabase.rpc(
+      "get_teacher_roster_overview",
+      {p_date:null}
+    );
+
+  if(error){
+    console.error(
+      "get_teacher_roster_overview error:",
+      error
+    );
+
+    status.className="status show error";
+    status.textContent="班級名冊讀取失敗，請重新整理。";
+    return;
+  }
+
+  renderTeacherRoster(data||{});
+
+  status.className="status show ok";
+  status.textContent=
+    `✓ ${formatDateText(data?.date)} 班級名冊已更新`;
+}
+
+async function correctCareFeeCollection(
   requestId,
   button
 ){
+  const reason=
+    window.prompt(
+      "請輸入撤銷原因（例如：老師誤觸）。",
+      "老師誤觸"
+    );
+
+  if(reason===null) return;
+
+  const cleanReason=
+    String(reason).trim();
+
+  if(cleanReason.length<2){
+    alert("請輸入撤銷原因。");
+    return;
+  }
+
   const ok=
     window.confirm(
-      "確定已向家長收取這筆費用嗎？\n\n確認後會記錄收費老師與時間。"
+      "確定要撤銷這筆「已收費」紀錄嗎？\n\n"+
+      "僅限誤觸修正；若已實際收款後幼兒取消或請假，請交由行政處理退款。"
+    );
+
+  if(!ok) return;
+
+  if(button){
+    button.disabled=true;
+    button.textContent="撤銷中…";
+  }
+
+  try{
+    const {data,error}=
+      await teacherSupabase.rpc(
+        "teacher_correct_care_fee_collection",
+        {
+          p_request_id:requestId,
+          p_reason:cleanReason
+        }
+      );
+
+    if(error){
+      const msg=String(error.message||"");
+
+      if(msg.includes("CORRECTION_WINDOW_EXPIRED")){
+        throw new Error(
+          "已超過 10 分鐘誤觸修正時間，請由行政老師處理。"
+        );
+      }
+
+      if(msg.includes("ONLY_COLLECTOR_CAN_CORRECT")){
+        throw new Error(
+          "只有原本記錄收費的老師可以在 10 分鐘內撤銷。"
+        );
+      }
+
+      throw new Error(
+        "撤銷收費紀錄失敗，請聯絡行政老師。"
+      );
+    }
+
+    alert("已撤銷這筆收費紀錄。");
+
+    await Promise.all([
+      loadTeacherWeekItems(),
+      loadTeacherRoster()
+    ]);
+
+    const panel=el("historyPanel");
+    if(
+      panel
+      && !panel.classList.contains("hidden")
+    ){
+      await searchTeacherHistory();
+    }
+
+    return data;
+  }
+  catch(err){
+    console.error(err);
+    alert(
+      err?.message
+      || "撤銷收費紀錄失敗。"
+    );
+  }
+  finally{
+    if(button){
+      button.disabled=false;
+    }
+  }
+}
+
+async function markCareFeeCollected(
+  requestId,
+  button,
+  detail={}
+){
+  const childName=
+    detail?.childName || "這位幼兒";
+
+  const date=
+    detail?.date || "今日";
+
+  const amount=
+    Number(detail?.amount||0);
+
+  const type=
+    detail?.type || "課後照顧";
+
+  const aftercareClass=
+    detail?.aftercareClass || "";
+
+  const ok=
+    window.confirm(
+      "請確認「已實際收到費用」後再按確定。\n\n"+
+      `幼兒：${childName}\n`+
+      `日期：${date}\n`+
+      `項目：${type}\n`+
+      (aftercareClass
+        ? `課後班：${aftercareClass}\n`
+        : "")+
+      (amount
+        ? `金額：NT$${amount}\n\n`
+        : "\n")+
+      "如果尚未實際收款，請按取消。"
     );
 
   if(!ok) return;
@@ -1620,6 +2289,30 @@ async function markCareFeeCollected(
 
       const msg=String(error.message||"");
 
+      if(msg.includes("CHILD_ABSENT")){
+        throw new Error(
+          "這位幼兒今日已請假，系統已鎖定收費，不能標記已收費。"
+        );
+      }
+
+      if(msg.includes("TEACHER_COLLECTION_TODAY_ONLY")){
+        throw new Error(
+          "課後老師只能在服務當日記錄收費；過去資料請交由行政處理。"
+        );
+      }
+
+      if(msg.includes("REFUND_REQUIRED")){
+        throw new Error(
+          "這筆資料已有取消／請假後的退款待處理狀態，請交由行政老師處理。"
+        );
+      }
+
+      if(msg.includes("REQUEST_NOT_APPROVED")){
+        throw new Error(
+          "這筆臨托／延托尚未核准或已取消，不能收費。"
+        );
+      }
+
       if(msg.includes("ACCESS_DENIED")){
         throw new Error(
           "這筆費用只能由該課後班當日負責老師記錄。"
@@ -1627,26 +2320,28 @@ async function markCareFeeCollected(
       }
 
       throw new Error(
-        "收費狀態更新失敗，請稍後再試。"
+        "收費狀態沒有成功寫入，請重新整理後再試；若仍失敗請通知行政。"
       );
     }
 
-    const amount=
-      Number(data?.amount||0);
+    const savedAmount=
+      Number(data?.amount||amount||0);
 
     alert(
       data?.result==="already_collected"
-        ? `這筆費用已經記錄為已收費 NT${amount}。`
-        : `已記錄收費 NT${amount}。`
+        ? `這筆費用已經記錄為已收費 NT$${savedAmount}。`
+        : `已成功記錄收費 NT$${savedAmount}。\n10 分鐘內若為誤觸，可由原收費老師撤銷。`
     );
 
-    await loadTeacherWeekItems();
+    await Promise.all([
+      loadTeacherWeekItems(),
+      loadTeacherRoster()
+    ]);
 
     const panel=el("historyPanel");
     if(
       panel
-      &&
-      !panel.classList.contains("hidden")
+      && !panel.classList.contains("hidden")
     ){
       await searchTeacherHistory();
     }
@@ -1655,8 +2350,7 @@ async function markCareFeeCollected(
     console.error(err);
     alert(
       err?.message
-      ||
-      "收費狀態更新失敗。"
+      || "收費狀態更新失敗。"
     );
   }
   finally{
@@ -1682,14 +2376,33 @@ function appendCareFeeControls(
 
   box.className="feeCollectBox";
 
+  if(item?.is_leave===true){
+    box.classList.add("warning");
+    box.textContent=
+      "⛔ 今日已請假｜系統已鎖定收費，不可標記已收費";
+    card.appendChild(box);
+    return;
+  }
+
+  if(item?.fee_status==="refund_required"){
+    box.classList.add("warning");
+    box.textContent=
+      "⚠️ 已收費後又取消／請假｜請交行政老師處理退款，不可重複收費";
+    card.appendChild(box);
+    return;
+  }
+
   if(
     item?.fee_status==="collected"
-    ||
-    item?.fee_collected_at
+    || item?.fee_collected_at
   ){
     box.classList.add("collected");
-    box.textContent=
-      `✅ 已收費 NT${Number(item?.fee_collected_amount||amount)}`
+
+    const collectedText=
+      document.createElement("div");
+
+    collectedText.textContent=
+      `✅ 已收費 NT$${Number(item?.fee_collected_amount||amount)}`
       +
       (
         item?.fee_collected_at
@@ -1697,13 +2410,54 @@ function appendCareFeeControls(
           : ""
       );
 
+    box.appendChild(collectedText);
+
+    if(item?.can_correct_fee===true){
+      const btn=
+        document.createElement("button");
+
+      btn.type="button";
+      btn.className="feeCorrectionBtn";
+      btn.textContent="↩ 誤觸？10 分鐘內撤銷收費紀錄";
+
+      btn.addEventListener(
+        "click",
+        ()=>correctCareFeeCollection(
+          item?.request_id
+          || item?.source_id,
+          btn
+        )
+      );
+
+      box.appendChild(btn);
+    }
+
     card.appendChild(box);
     return;
   }
 
+  if(item?.fee_status==="voided"){
+    const corrected=
+      document.createElement("div");
+
+    corrected.textContent=
+      "↩ 上一次收費紀錄已撤銷"
+      +
+      (
+        item?.fee_void_reason
+          ? `：${item.fee_void_reason}`
+          : ""
+      );
+
+    box.appendChild(corrected);
+  }
+
   if(item?.can_collect_fee===true){
-    box.textContent=
-      `應收 NT${amount}｜由本課後班老師收費`;
+    const info=
+      document.createElement("div");
+
+    info.textContent=
+      `應收 NT$${amount}｜由本課後班老師收費`;
 
     const btn=
       document.createElement("button");
@@ -1711,22 +2465,41 @@ function appendCareFeeControls(
     btn.type="button";
     btn.className="feeCollectBtn";
     btn.textContent=
-      `💰 確認已收費 NT${amount}`;
+      `💰 已實際收款，確認 NT$${amount}`;
 
     btn.addEventListener(
       "click",
       ()=>markCareFeeCollected(
         item?.request_id
         || item?.source_id,
-        btn
+        btn,
+        {
+          childName:
+            item?.child_raw_name
+            || item?.child_name
+            || "幼兒",
+          date:item?.request_date || "",
+          amount,
+          type:requestTypeLabel(item?.item_type),
+          aftercareClass:
+            item?.assigned_aftercare_class_name
+            || item?.assigned_aftercare_class_code
+            || ""
+        }
       )
     );
 
+    box.appendChild(info);
     box.appendChild(btn);
   }
   else{
-    box.textContent=
-      `應收 NT${amount}｜由實際課後班老師記錄收費`;
+    const info=
+      document.createElement("div");
+
+    info.textContent=
+      `應收 NT$${amount}｜目前不可由此帳號記錄收費`;
+
+    box.appendChild(info);
   }
 
   card.appendChild(box);
@@ -2712,11 +3485,14 @@ async function establishTeacherSession(
       );
 
     await loadTeacherScope();
-    await loadTeacherWeekItems();
+    await Promise.all([
+      loadTeacherRoster(),
+      loadTeacherWeekItems()
+    ]);
 
     el("pageIntro")
       .innerHTML =
-        "LINE 與教職員身分已確認。<br>老師權限與本週學生事項已載入。";
+        "LINE 與教職員身分已確認。<br>老師權限、班級名冊與本週學生事項已載入。";
 
   }
   catch(err){
