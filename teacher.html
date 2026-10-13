@@ -716,15 +716,19 @@
 
         <div id="bindSection" class="hidden">
 
-          <label for="staffSelect">
-            請選擇您的姓名
+          <label for="staffBindingCode">
+            教職員綁定碼
           </label>
 
-          <select id="staffSelect">
-            <option value="">
-              載入老師名單中…
-            </option>
-          </select>
+          <input
+            id="staffBindingCode"
+            type="text"
+            inputmode="text"
+            autocomplete="one-time-code"
+            maxlength="16"
+            placeholder="請輸入 16 碼綁定碼"
+            oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,16)"
+          >
 
           <button
             id="submitBtn"
@@ -738,9 +742,9 @@
           <div id="status" class="status"></div>
 
           <div class="note">
-            為避免綁錯帳號，送出申請後不會立即完成綁定。
-            行政人員確認您的姓名與 LINE 帳號後，
-            才會正式啟用教職員平台。
+            為保護教職員個資，本平台不公開教職員名單。
+            請輸入行政人員提供的一次性綁定碼。
+            綁定碼驗證後仍需由行政人員確認，才會正式啟用。
           </div>
 
         </div>
@@ -762,6 +766,9 @@
         </button>
 
       </div>    </section>
+    <div style="text-align:center;margin:18px 0 0;font-size:12px;color:#7d847c">
+      <a href="privacy.html" target="_blank" rel="noopener" style="color:#52644e">個人資料蒐集告知暨隱私權說明</a>
+    </div>
   </main>
 
 <script>
@@ -834,7 +841,7 @@ function hideAllStateSections(){
 function setBusy(busy){
   el("submitBtn").disabled =
     busy ||
-    !el("staffSelect").value;
+    el("staffBindingCode").value.length !== 16;
 
   el("submitBtn").textContent =
     busy
@@ -965,55 +972,6 @@ async function callFunction(
   }
 
   return data;
-}
-
-async function loadStaff(){
-  const data =
-    await callFunction(
-      BIND_FUNCTION_URL,
-      {
-        action:
-          "list_staff",
-
-        idToken
-      }
-    );
-
-  const list =
-    Array.isArray(data.staff)
-      ? data.staff
-      : [];
-
-  const select =
-    el("staffSelect");
-
-  select.innerHTML =
-    '<option value="">請選擇您的姓名</option>';
-
-  for(const item of list){
-    const opt =
-      document.createElement(
-        "option"
-      );
-
-    opt.value =
-      item.id;
-
-    opt.textContent =
-      item.name;
-
-    select.appendChild(opt);
-  }
-
-  if(!list.length){
-    select.innerHTML =
-      '<option value="">目前沒有可綁定的老師</option>';
-
-    showStatus(
-      "目前讀不到正式老師名單，請聯絡行政人員。",
-      "warn"
-    );
-  }
 }
 
 function classNamesText(list){
@@ -1895,14 +1853,17 @@ async function showUnboundState(){
 
   el("pageIntro")
     .innerHTML =
-      "首次使用請完成 LINE 身分綁定。<br>送出後需由行政人員確認才會正式啟用。";
+      "首次使用請輸入教職員綁定碼。<br>送出後仍需由行政人員確認才會正式啟用。";
 
   el("bindSection")
     .classList.remove(
       "hidden"
     );
 
-  await loadStaff();
+  setTimeout(
+    () => el("staffBindingCode")?.focus(),
+    100
+  );
 }
 
 async function init(){
@@ -2053,14 +2014,12 @@ async function init(){
   }
 }
 
-el("staffSelect")
+el("staffBindingCode")
   .addEventListener(
-    "change",
+    "input",
     () => {
-      el("submitBtn")
-        .disabled =
-          !el("staffSelect")
-            .value;
+      el("submitBtn").disabled =
+        el("staffBindingCode").value.length !== 16;
     }
   );
 
@@ -2069,23 +2028,23 @@ el("submitBtn")
     "click",
     async () => {
 
-      const staffId =
-        el("staffSelect")
-          .value;
+      const bindingCode =
+        el("staffBindingCode")
+          .value
+          .trim()
+          .toUpperCase();
 
-      const staffName =
-        el("staffSelect")
-          .selectedOptions[0]
-          ?.textContent ||
-        "";
-
-      if(!staffId){
+      if(bindingCode.length !== 16){
+        showStatus(
+          "請輸入完整的 16 碼教職員綁定碼。",
+          "warn"
+        );
         return;
       }
 
       const ok =
         confirm(
-          `請確認：\n\nLINE：${profile?.displayName || "LINE 使用者"}\n老師姓名：${staffName}\n\n確定送出綁定申請嗎？`
+          `請確認使用目前 LINE「${profile?.displayName || "LINE 使用者"}」送出教職員綁定申請？`
         );
 
       if(!ok){
@@ -2096,7 +2055,7 @@ el("submitBtn")
         setBusy(true);
 
         showStatus(
-          "正在送出綁定申請…",
+          "正在驗證綁定碼並送出申請…",
           "info"
         );
 
@@ -2104,12 +2063,9 @@ el("submitBtn")
           await callFunction(
             BIND_FUNCTION_URL,
             {
-              action:
-                "bind",
-
+              action:"bind",
               idToken,
-
-              staffId
+              bindingCode
             }
           );
 
@@ -2118,12 +2074,9 @@ el("submitBtn")
           "already_bound"
         ){
           await showBoundState({
-            status:
-              "bound",
-
+            status:"bound",
             lineDisplayName:
               data.lineDisplayName,
-
             staff:{
               name:
                 data.staffName
@@ -2134,12 +2087,9 @@ el("submitBtn")
         }
 
         showPendingState({
-          status:
-            "pending",
-
+          status:"pending",
           lineDisplayName:
             data.lineDisplayName,
-
           staff:{
             name:
               data.staffName
