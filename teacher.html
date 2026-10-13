@@ -8,7 +8,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
-  <title>樂業附幼｜教職員平台 V10</title>
+  <title>樂業附幼｜教職員平台 V11</title>
 
   <script
     charset="utf-8"
@@ -599,6 +599,33 @@
       margin-top:0;
       padding:10px 12px;
       font-size:13px;
+    }
+
+    .feeCollectBox{
+      margin-top:10px;
+      padding:10px 11px;
+      border-radius:10px;
+      background:#fff8e8;
+      color:#74510c;
+      font-size:12px;
+      line-height:1.55;
+    }
+
+    .feeCollectBox.collected{
+      background:#eaf6ed;
+      color:#236238;
+    }
+
+    .feeCollectBtn{
+      width:100%;
+      min-height:44px;
+      margin:8px 0 0;
+      padding:10px 12px;
+      border-radius:10px;
+      background:#a36a00;
+      color:#fff;
+      font-size:13px;
+      font-weight:900;
     }
 
     .confirmBtn{
@@ -1560,6 +1587,151 @@ async function actOnTeacherItem(
   }
 }
 
+async function markCareFeeCollected(
+  requestId,
+  button
+){
+  const ok=
+    window.confirm(
+      "確定已向家長收取這筆費用嗎？\n\n確認後會記錄收費老師與時間。"
+    );
+
+  if(!ok) return;
+
+  if(button){
+    button.disabled=true;
+    button.textContent="記錄中…";
+  }
+
+  try{
+    const {data,error}=
+      await teacherSupabase.rpc(
+        "teacher_mark_care_fee_collected",
+        {
+          p_request_id:requestId
+        }
+      );
+
+    if(error){
+      console.error(
+        "teacher_mark_care_fee_collected error:",
+        error
+      );
+
+      const msg=String(error.message||"");
+
+      if(msg.includes("ACCESS_DENIED")){
+        throw new Error(
+          "這筆費用只能由該課後班當日負責老師記錄。"
+        );
+      }
+
+      throw new Error(
+        "收費狀態更新失敗，請稍後再試。"
+      );
+    }
+
+    const amount=
+      Number(data?.amount||0);
+
+    alert(
+      data?.result==="already_collected"
+        ? `這筆費用已經記錄為已收費 NT${amount}。`
+        : `已記錄收費 NT${amount}。`
+    );
+
+    await loadTeacherWeekItems();
+
+    const panel=el("historyPanel");
+    if(
+      panel
+      &&
+      !panel.classList.contains("hidden")
+    ){
+      await searchTeacherHistory();
+    }
+  }
+  catch(err){
+    console.error(err);
+    alert(
+      err?.message
+      ||
+      "收費狀態更新失敗。"
+    );
+  }
+  finally{
+    if(button){
+      button.disabled=false;
+    }
+  }
+}
+
+function appendCareFeeControls(
+  card,
+  item
+){
+  const amount=
+    Number(item?.fee_amount||0);
+
+  if(!amount){
+    return;
+  }
+
+  const box=
+    document.createElement("div");
+
+  box.className="feeCollectBox";
+
+  if(
+    item?.fee_status==="collected"
+    ||
+    item?.fee_collected_at
+  ){
+    box.classList.add("collected");
+    box.textContent=
+      `✅ 已收費 NT${Number(item?.fee_collected_amount||amount)}`
+      +
+      (
+        item?.fee_collected_at
+          ? `｜${formatDateTime(item.fee_collected_at)}`
+          : ""
+      );
+
+    card.appendChild(box);
+    return;
+  }
+
+  if(item?.can_collect_fee===true){
+    box.textContent=
+      `應收 NT${amount}｜由本課後班老師收費`;
+
+    const btn=
+      document.createElement("button");
+
+    btn.type="button";
+    btn.className="feeCollectBtn";
+    btn.textContent=
+      `💰 確認已收費 NT${amount}`;
+
+    btn.addEventListener(
+      "click",
+      ()=>markCareFeeCollected(
+        item?.request_id
+        || item?.source_id,
+        btn
+      )
+    );
+
+    box.appendChild(btn);
+  }
+  else{
+    box.textContent=
+      `應收 NT${amount}｜由實際課後班老師記錄收費`;
+  }
+
+  card.appendChild(box);
+}
+
 function appendTeacherActionControls(
   card,
   item
@@ -1921,6 +2093,13 @@ function makeStudentItem(
   card.appendChild(top);
   card.appendChild(detail);
 
+  if(type === "care"){
+    appendCareFeeControls(
+      card,
+      item
+    );
+  }
+
   appendTeacherActionControls(
     card,
     item
@@ -2212,6 +2391,57 @@ function historyCardHtml(item){
     );
   }
 
+  const feeAmount=
+    Number(item?.fee_amount||0);
+
+  let feeHtml="";
+
+  if(
+    item?.request_type==="temporary"
+    ||
+    item?.request_type==="extended"
+  ){
+    if(
+      item?.fee_status==="collected"
+      ||
+      item?.fee_collected_at
+    ){
+      feeHtml=`
+        <div class="feeCollectBox collected">
+          ✅ 已收費 NT${Number(item?.fee_collected_amount||feeAmount)}
+          ${item?.fee_collected_at
+            ? "｜"+escapeHtmlText(formatDateTime(item.fee_collected_at))
+            : ""}
+        </div>
+      `;
+    }
+    else if(
+      item?.can_collect_fee===true
+      &&
+      feeAmount>0
+    ){
+      feeHtml=`
+        <div class="feeCollectBox">
+          應收 NT${feeAmount}｜由本課後班老師收費
+          <button
+            class="feeCollectBtn"
+            type="button"
+            onclick="markCareFeeCollected('${escapeHtmlText(item.request_id)}',this)"
+          >
+            💰 確認已收費 NT${feeAmount}
+          </button>
+        </div>
+      `;
+    }
+    else if(feeAmount>0){
+      feeHtml=`
+        <div class="feeCollectBox">
+          應收 NT${feeAmount}｜由實際課後班老師記錄收費
+        </div>
+      `;
+    }
+  }
+
   return `
     <div class="historyCard">
       <div class="historyCardTop">
@@ -2233,6 +2463,7 @@ function historyCardHtml(item){
           ? details.map(v=>`<div>${escapeHtmlText(v)}</div>`).join("")
           : "<div>無其他備註</div>"}
       </div>
+      ${feeHtml}
     </div>
   `;
 }
