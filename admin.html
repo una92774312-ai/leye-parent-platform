@@ -1710,8 +1710,33 @@ async function validateAdmin(){
 
   hideError();
 
+  document
+    .querySelectorAll(".adminManagePanel")
+    .forEach(
+      panel => {
+        panel.style.display = "block";
+      }
+    );
+
 
   await refreshAll();
+
+  if(
+    window.location.hash ===
+    "#staff-management"
+  ){
+    setTimeout(
+      () => {
+        document
+          .getElementById("staff-management")
+          ?.scrollIntoView({
+            behavior:"smooth",
+            block:"start"
+          });
+      },
+      100
+    );
+  }
 
 
   return true;
@@ -1740,7 +1765,8 @@ async function refreshAll(){
 
   await Promise.all([
     refreshPickupRecords(),
-    refreshRequests()
+    refreshRequests(),
+    refreshStaffManagement()
   ]);
 
 }
