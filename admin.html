@@ -5285,29 +5285,64 @@ function staffLookupMaps(){
 }
 
 
-function inferScheduleYearMonthFromSheetName(sheetName){
-  const text=cleanExcelName(sheetName);
+function inferScheduleYearMonth(sheetName,rows){
+  const topText=
+    (rows||[])
+      .slice(0,6)
+      .flat()
+      .map(cleanExcelName)
+      .filter(Boolean)
+      .join(" ");
 
-  let match=
-    text.match(/(20\d{2}|1\d{2})\s*(?:年|[-_ ]+)\s*(\d{1,2})\s*月?/);
+  const text=
+    cleanExcelName(sheetName)
+    +" "
+    +topText;
 
-  if(!match){
-    match=
-      text.match(/(20\d{2}|1\d{2})[^0-9]+(\d{1,2})/);
+  let year=null;
+  let month=null;
+
+  const paired=
+    text.match(
+      /(20\d{2}|1\d{2})\s*(?:年|[-_ ]+)\s*(\d{1,2})\s*月?/
+    );
+
+  if(paired){
+    year=Number(paired[1]);
+    month=Number(paired[2]);
   }
 
-  if(!match){
-    return null;
+  if(!year){
+    const yearMatch=
+      text.match(
+        /(20\d{2}|1\d{2})\s*(?:學年度|年)/
+      );
+
+    if(yearMatch){
+      year=Number(yearMatch[1]);
+    }
   }
 
-  let year=Number(match[1]);
-  const month=Number(match[2]);
+  if(!month){
+    const monthMatch=
+      text.match(
+        /(?:^|[^0-9])(1[0-2]|0?[1-9])\s*月份?/
+      );
 
-  if(year<1911){
+    if(monthMatch){
+      month=Number(monthMatch[1]);
+    }
+  }
+
+  if(year && year<1911){
     year+=1911;
   }
 
   if(
+    !year
+    ||
+    !month
+    ||
     year<2000
     ||
     year>2100
@@ -5545,8 +5580,9 @@ async function parseSelectedScheduleSheet(){
   parsedScheduleMonth = null;
 
   const sheetPeriod=
-    inferScheduleYearMonthFromSheetName(
-      sheetName
+    inferScheduleYearMonth(
+      sheetName,
+      rows
     );
 
   if(sheetPeriod){
@@ -5565,35 +5601,12 @@ async function parseSelectedScheduleSheet(){
 
     const raw = rows[r]?.[0];
 
-    let date = null;
-
-    if(raw instanceof Date && !isNaN(raw)){
-      date = raw;
-    }
-    else{
-      const text = cleanExcelName(raw);
-      const m = text.match(/(20\d{2})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
-
-      if(m){
-        date = new Date(
-          Number(m[1]),
-          Number(m[2]) - 1,
-          Number(m[3])
-        );
-      }
-    }
+    const date =
+      parseExcelDate(raw);
 
     if(date){
       parsedScheduleYear = date.getFullYear();
       parsedScheduleMonth = date.getMonth() + 1;
-      break;
-    }
-
-    if(
-      sheetPeriod
-      &&
-      cleanExcelName(raw).match(/\d{1,2}[\/\-.]\d{1,2}/)
-    ){
       break;
     }
 
