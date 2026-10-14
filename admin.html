@@ -91,6 +91,16 @@ body{
   color:var(--green-dark);
 }
 
+.brandHomeLink{
+  display:inline-block;
+  text-decoration:none;
+  color:var(--green-dark);
+}
+
+.brandHomeLink:active{
+  opacity:.72;
+}
+
 .subtitle{
   margin-top:5px;
   color:var(--muted);
@@ -1251,9 +1261,9 @@ button,
 .adminSecondaryPanel{display:none !important}
 .adminHeaderActions{
   display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-columns:auto minmax(220px,1fr) auto;
   gap:8px;
-  width:min(680px,100%);
+  width:min(650px,100%);
 }
 .adminHeaderActions .btn,
 .adminHeaderLink{
@@ -1293,9 +1303,9 @@ button,
 
     <div>
 
-      <div class="brand">
+      <a class="brand brandHomeLink" href="admin.html">
         樂業附幼｜行政管理平台
-      </div>
+      </a>
 
       <div class="subtitle">
         家長申請審核｜Supabase 第二版
@@ -1306,10 +1316,7 @@ button,
 
     <div class="adminHeaderActions">
       <a class="btn btnGray adminHeaderLink" href="teacher.html?v=13">← 教職員平台</a>
-      <a class="btn btnGreen adminHeaderLink" href="admin-manage.html#fees">📊 托育統計</a>
-      <a class="btn btnGreen adminHeaderLink" href="admin-manage.html#schoolClosedPanel">📅 服務日</a>
-      <a class="btn btnGreen adminHeaderLink" href="admin-manage.html#parent-binding">🔗 綁定碼</a>
-      <a class="btn btnGreen adminHeaderLink" href="admin-manage.html#staff-management">👩‍🏫 老師與排班</a>
+      <a class="btn btnGreen adminHeaderLink" href="admin-manage.html">⚙️ 延長照顧後台資料設定</a>
       <button class="btn btnBlue" type="button" onclick="refreshAll()">↻ 重新整理</button>
     </div>
 
@@ -1431,7 +1438,6 @@ button,
 <details class="panel compactHolidayPanel adminSecondaryPanel" id="schoolClosedPanel">
   <summary class="compactHolidaySummary">
     <span class="panelTitle">📅 休園日與特殊停止服務日</span>
-    <span class="compactHolidayHint">點一下展開／收合</span>
   </summary>
 
   <div class="compactHolidayBody">
@@ -7819,16 +7825,9 @@ function installPanelCollapsers(){
 
     title.appendChild(btn);
 
-    const saved=
-      sessionStorage.getItem(
-        panelStorageKey(panel,index)
-      );
-
     setPanelCollapsed(
       panel,
-      saved === "0"
-        ? false
-        : true,
+      true,
       index
     );
   });
@@ -7838,6 +7837,11 @@ function installPanelCollapsers(){
 async function main(){
 
   installPanelCollapsers();
+
+  const closedPanel=$("schoolClosedPanel");
+  if(closedPanel){
+    closedPanel.open=false;
+  }
 
   $("pickupDateFilter").value =
     getTaiwanDateString();
