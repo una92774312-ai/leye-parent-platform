@@ -381,13 +381,6 @@ button{
   content:"－";
 }
 
-.compactHolidayHint{
-  margin-left:auto;
-  color:var(--muted);
-  font-size:.78rem;
-  font-weight:700;
-}
-
 .compactHolidayBody{
   padding:0 18px 18px;
   border-top:1px solid var(--line);
@@ -397,12 +390,6 @@ button{
   max-height:220px;
   overflow-y:auto;
   padding-right:4px;
-}
-
-@media(max-width:760px){
-  .compactHolidayHint{
-    display:none;
-  }
 }
 
 .tabs{
@@ -1266,7 +1253,7 @@ button,
 details.adminSecondaryPanel{display:block}
 .adminHeaderActions{
   display:grid;
-  grid-template-columns:auto minmax(220px,1fr) auto;
+  grid-template-columns:minmax(220px,1fr) auto;
   gap:8px;
   width:min(650px,100%);
 }
@@ -1317,14 +1304,13 @@ details.adminSecondaryPanel{display:block}
       </a>
 
       <div class="subtitle">
-        低頻設定與資料管理
+        延長照顧後台資料設定
       </div>
 
     </div>
 
 
     <div class="adminHeaderActions">
-      <a class="btn btnGray adminHeaderLink" href="admin.html">← 行政首頁</a>
       <a class="btn btnGreen adminHeaderLink" href="admin-manage.html">⚙️ 延長照顧後台資料設定</a>
       <button class="btn btnBlue" type="button" onclick="refreshAll()">↻ 更新資料</button>
     </div>
