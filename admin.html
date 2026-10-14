@@ -590,6 +590,24 @@ button{
 .pickupToolbarField{
   min-width:180px;
   flex:1;
+  max-width:100%;
+}
+
+.pickupToolbarField input,
+.pickupToolbarField select{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  display:block;
+  box-sizing:border-box;
+}
+
+#pickupDateFilter{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  display:block;
+  box-sizing:border-box;
 }
 
 .pickupStats{
@@ -653,6 +671,46 @@ button{
   background:#f7f9f9;
   font-size:.86rem;
   line-height:1.6;
+}
+
+@media(max-width:560px){
+  .pickupPanel{
+    overflow:hidden;
+  }
+
+  .pickupPanel .pickupToolbar{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:9px;
+    width:100%;
+  }
+
+  .pickupPanel .pickupToolbarField{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+  }
+
+  .pickupPanel #pickupDateFilter{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    font-size:16px;
+  }
+
+  .pickupPanel .pickupToolbar > .btn{
+    width:100%;
+    min-width:0;
+  }
+
+  .pickupPanel .pickupStats{
+    gap:6px;
+  }
+
+  .pickupPanel .pickupStat{
+    flex:1 1 auto;
+    text-align:center;
+  }
 }
 
 
