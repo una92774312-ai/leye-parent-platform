@@ -91,6 +91,16 @@ body{
   color:var(--green-dark);
 }
 
+.brandHomeLink{
+  display:inline-block;
+  text-decoration:none;
+  color:var(--green-dark);
+}
+
+.brandHomeLink:active{
+  opacity:.72;
+}
+
 .subtitle{
   margin-top:5px;
   color:var(--muted);
@@ -1256,9 +1266,9 @@ button,
 details.adminSecondaryPanel{display:block}
 .adminHeaderActions{
   display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-columns:auto minmax(220px,1fr) auto;
   gap:8px;
-  width:min(680px,100%);
+  width:min(650px,100%);
 }
 .adminHeaderActions .btn,
 .adminHeaderLink{
@@ -1298,9 +1308,13 @@ details.adminSecondaryPanel{display:block}
 
     <div>
 
-      <div class="brand">
+      <a
+        class="brand brandHomeLink"
+        href="admin.html"
+        title="回到幼生請假、臨托、延托與接送處理頁"
+      >
         樂業附幼｜行政管理平台
-      </div>
+      </a>
 
       <div class="subtitle">
         低頻設定與資料管理
@@ -1311,10 +1325,7 @@ details.adminSecondaryPanel{display:block}
 
     <div class="adminHeaderActions">
       <a class="btn btnGray adminHeaderLink" href="admin.html">← 行政首頁</a>
-      <a class="btn btnGreen adminHeaderLink" href="#fees">📊 托育統計</a>
-      <a class="btn btnGreen adminHeaderLink" href="#schoolClosedPanel">📅 服務日</a>
-      <a class="btn btnGreen adminHeaderLink" href="#parent-binding">🔗 綁定碼</a>
-      <a class="btn btnGreen adminHeaderLink" href="#staff-management">👩‍🏫 老師與排班</a>
+      <a class="btn btnGreen adminHeaderLink" href="admin-manage.html">⚙️ 延長照顧後台資料設定</a>
       <button class="btn btnBlue" type="button" onclick="refreshAll()">↻ 更新資料</button>
     </div>
 
@@ -1436,7 +1447,6 @@ details.adminSecondaryPanel{display:block}
 <details class="panel compactHolidayPanel adminSecondaryPanel" id="schoolClosedPanel">
   <summary class="compactHolidaySummary">
     <span class="panelTitle">📅 休園日與特殊停止服務日</span>
-    <span class="compactHolidayHint">點一下展開／收合</span>
   </summary>
 
   <div class="compactHolidayBody">
@@ -7824,16 +7834,9 @@ function installPanelCollapsers(){
 
     title.appendChild(btn);
 
-    const saved=
-      sessionStorage.getItem(
-        panelStorageKey(panel,index)
-      );
-
     setPanelCollapsed(
       panel,
-      saved === "0"
-        ? false
-        : true,
+      true,
       index
     );
   });
@@ -7843,6 +7846,11 @@ function installPanelCollapsers(){
 async function main(){
 
   installPanelCollapsers();
+
+  const closedPanel=$("schoolClosedPanel");
+  if(closedPanel){
+    closedPanel.open=false;
+  }
 
   $("pickupDateFilter").value =
     getTaiwanDateString();
@@ -7885,19 +7893,5 @@ main();
 
 </script>
 
-<script>
-function openAdminManageTarget(){
-  const id=(location.hash||"#fees").slice(1);
-  const target=document.getElementById(id);
-  if(!target) return;
-  if(target.tagName==="DETAILS") target.open=true;
-  target.classList.remove("panelAutoCollapsed");
-  const btn=target.querySelector(":scope > .panelTitle .panelCollapseBtn");
-  if(btn) btn.setAttribute("aria-expanded","true");
-  setTimeout(()=>target.scrollIntoView({behavior:"smooth",block:"start"}),80);
-}
-window.addEventListener("hashchange",openAdminManageTarget);
-window.addEventListener("load",()=>setTimeout(openAdminManageTarget,450));
-</script>
 </body>
 </html>
