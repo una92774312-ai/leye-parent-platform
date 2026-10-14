@@ -1,0 +1,7903 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+<meta name="referrer" content="no-referrer">
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+>
+
+<title>樂業附幼｜行政管理設定</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+<style>
+
+:root{
+  --green:#2e7d32;
+  --green-dark:#1b5e20;
+  --green-light:#e8f5e9;
+
+  --blue:#1976d2;
+  --blue-light:#e3f2fd;
+
+  --orange:#ef6c00;
+  --orange-light:#fff3e0;
+
+  --purple:#7b1fa2;
+  --purple-light:#f3e5f5;
+
+  --red:#d32f2f;
+  --red-light:#ffebee;
+
+  --yellow:#f9a825;
+  --yellow-light:#fff8e1;
+
+  --gray:#607d8b;
+
+  --text:#263238;
+  --muted:#78909c;
+  --line:#dfe7e9;
+  --bg:#f3f6f5;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Noto Sans TC",
+    Roboto,
+    sans-serif;
+}
+
+.app{
+  max-width:1200px;
+  margin:auto;
+  padding:18px;
+}
+
+.header{
+  background:#fff;
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 8px 24px rgba(0,0,0,.06);
+  margin-bottom:16px;
+}
+
+.headerTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+}
+
+.brand{
+  font-size:1.35rem;
+  font-weight:900;
+  color:var(--green-dark);
+}
+
+.subtitle{
+  margin-top:5px;
+  color:var(--muted);
+  font-size:.9rem;
+  line-height:1.55;
+}
+
+.loginState{
+  margin-top:14px;
+  padding:12px;
+  background:var(--green-light);
+  border-radius:12px;
+  color:var(--green-dark);
+  font-size:.9rem;
+  line-height:1.6;
+}
+
+.testBox{
+  margin-top:14px;
+  padding:14px;
+  background:var(--yellow-light);
+  border:1px solid #ffe0b2;
+  border-radius:13px;
+}
+
+.testTitle{
+  font-weight:900;
+  color:#8d6e00;
+  margin-bottom:8px;
+}
+
+.helper{
+  font-size:.8rem;
+  color:var(--muted);
+  line-height:1.55;
+  margin-top:6px;
+}
+
+input,
+select,
+textarea{
+  width:100%;
+  padding:11px;
+  border:1.5px solid #cfd8dc;
+  border-radius:10px;
+  font-size:15px;
+  font-family:inherit;
+  background:#fff;
+}
+
+textarea{
+  resize:vertical;
+}
+
+.loginGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr auto;
+  gap:8px;
+  margin-top:10px;
+}
+
+button{
+  font-family:inherit;
+}
+
+.btn{
+  border:0;
+  border-radius:10px;
+  padding:11px 14px;
+  font-weight:900;
+  cursor:pointer;
+  font-size:.88rem;
+}
+
+.btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.btnGreen{
+  background:var(--green);
+  color:#fff;
+}
+
+.btnBlue{
+  background:var(--blue);
+  color:#fff;
+}
+
+.btnOrange{
+  background:var(--orange);
+  color:#fff;
+}
+
+.btnRed{
+  background:var(--red);
+  color:#fff;
+}
+
+.btnGray{
+  background:var(--gray);
+  color:#fff;
+}
+
+.summaryGrid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-bottom:16px;
+}
+
+.summaryCard{
+  background:#fff;
+  border-radius:16px;
+  padding:16px;
+  box-shadow:0 6px 18px rgba(0,0,0,.05);
+  position:relative;
+}
+
+.summaryCard.summaryAction{
+  cursor:pointer;
+  border:1px solid transparent;
+  transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.summaryCard.summaryAction:active{
+  transform:scale(.985);
+}
+
+.summaryCard.summaryAction::after{
+  content:"查看 ›";
+  position:absolute;
+  right:14px;
+  bottom:12px;
+  color:#90a4ae;
+  font-size:.72rem;
+  font-weight:900;
+}
+
+.summaryOwner{
+  margin-top:5px;
+  padding-right:44px;
+  color:#90a4ae;
+  font-size:.7rem;
+  font-weight:800;
+}
+
+.dashboardHint{
+  margin:-6px 0 16px;
+  color:#78909c;
+  font-size:.76rem;
+  text-align:center;
+  font-weight:700;
+}
+
+.summaryLabel{
+  color:var(--muted);
+  font-size:.82rem;
+  font-weight:700;
+}
+
+.summaryNumber{
+  margin-top:5px;
+  font-size:1.7rem;
+  font-weight:900;
+}
+
+.red{
+  color:var(--red);
+}
+
+.blue{
+  color:var(--blue);
+}
+
+.purple{
+  color:var(--purple);
+}
+
+.green{
+  color:var(--green);
+}
+
+.panel{
+  background:#fff;
+  border-radius:20px;
+  padding:18px;
+  box-shadow:0 8px 24px rgba(0,0,0,.05);
+}
+
+.panelTitle{
+  font-size:1.1rem;
+  font-weight:900;
+}
+
+.panelCollapsibleTitle{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.panelCollapseBtn{
+  margin-left:auto;
+  border:0;
+  width:32px;
+  height:32px;
+  border-radius:999px;
+  background:#eef4ea;
+  color:var(--green-dark);
+  font-size:1.1rem;
+  font-weight:900;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.panelCollapseBtn:hover{
+  filter:brightness(.97);
+}
+
+.panelAutoCollapsed > :not(.panelTitle){
+  display:none !important;
+}
+
+.panelAutoCollapsed{
+  padding-bottom:16px;
+}
+
+.panelAutoCollapsed .panelCollapseBtn::before{
+  content:"＋";
+}
+
+.panel:not(.panelAutoCollapsed) .panelCollapseBtn::before{
+  content:"－";
+}
+
+.compactHolidayPanel{
+  padding:0;
+  overflow:hidden;
+}
+
+.compactHolidaySummary{
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:18px;
+  cursor:pointer;
+  user-select:none;
+}
+
+.compactHolidaySummary::-webkit-details-marker{
+  display:none;
+}
+
+.compactHolidaySummary::after{
+  content:"＋";
+  flex:0 0 auto;
+  width:30px;
+  height:30px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#eef4ea;
+  color:var(--green-dark);
+  font-size:1.15rem;
+  font-weight:900;
+}
+
+.compactHolidayPanel[open] .compactHolidaySummary::after{
+  content:"－";
+}
+
+.compactHolidayHint{
+  margin-left:auto;
+  color:var(--muted);
+  font-size:.78rem;
+  font-weight:700;
+}
+
+.compactHolidayBody{
+  padding:0 18px 18px;
+  border-top:1px solid var(--line);
+}
+
+.compactHolidayList{
+  max-height:220px;
+  overflow-y:auto;
+  padding-right:4px;
+}
+
+@media(max-width:760px){
+  .compactHolidayHint{
+    display:none;
+  }
+}
+
+.tabs{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin:14px 0 16px;
+}
+
+.tab{
+  border:0;
+  background:#f1f4f4;
+  color:#546e7a;
+  padding:9px 12px;
+  border-radius:999px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.tab.active{
+  background:var(--green-light);
+  color:var(--green-dark);
+}
+
+.requestList{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.requestCard{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  background:#fff;
+}
+
+.requestTop{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.requestChild{
+  font-size:1.02rem;
+  font-weight:900;
+}
+
+.requestClass{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:.82rem;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:.76rem;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.badgePending{
+  background:var(--yellow-light);
+  color:#8d6e00;
+}
+
+.badgeApproved{
+  background:var(--green-light);
+  color:var(--green-dark);
+}
+
+.badgeRejected{
+  background:var(--red-light);
+  color:var(--red);
+}
+
+.badgeWaitlist{
+  background:var(--orange-light);
+  color:var(--orange);
+}
+
+.badgeOther{
+  background:#eceff1;
+  color:#546e7a;
+}
+
+.requestBody{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px 16px;
+  margin-top:12px;
+}
+
+.info{
+  font-size:.86rem;
+  line-height:1.5;
+}
+
+.infoLabel{
+  color:var(--muted);
+  font-size:.76rem;
+  margin-bottom:2px;
+}
+
+.infoValue{
+  font-weight:700;
+}
+
+.reasonBox{
+  margin-top:11px;
+  padding:10px;
+  border-radius:10px;
+  background:#f7f9f9;
+  line-height:1.55;
+  font-size:.86rem;
+}
+
+.actionBox{
+  margin-top:12px;
+  padding:12px;
+  border-radius:12px;
+  background:#fafcfc;
+  border:1px solid #e5ebed;
+}
+
+.actionGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:8px;
+}
+
+.actionButtons{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+
+.empty{
+  padding:28px;
+  text-align:center;
+  color:var(--muted);
+  border:1.5px dashed #b0bec5;
+  border-radius:14px;
+  background:#fafcfc;
+  line-height:1.7;
+}
+
+.loading{
+  padding:24px;
+  text-align:center;
+  color:var(--muted);
+}
+
+.errorBox{
+  padding:14px;
+  border-radius:12px;
+  background:var(--red-light);
+  color:#b71c1c;
+  margin-bottom:14px;
+  line-height:1.6;
+  display:none;
+}
+
+
+/* ====================================== */
+/* 今日接送 */
+/* ====================================== */
+
+.pickupPanel{
+  margin-bottom:16px;
+}
+
+.pickupToolbar{
+  display:flex;
+  align-items:end;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:14px 0;
+}
+
+.pickupToolbarField{
+  min-width:180px;
+  flex:1;
+}
+
+.pickupStats{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+
+.pickupStat{
+  padding:8px 11px;
+  border-radius:999px;
+  font-size:.82rem;
+  font-weight:900;
+  background:#f1f4f4;
+  color:#546e7a;
+}
+
+.pickupStat.waiting{
+  background:var(--yellow-light);
+  color:#8d6e00;
+}
+
+.pickupStat.done{
+  background:var(--green-light);
+  color:var(--green-dark);
+}
+
+.pickupList{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.pickupCard{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  background:#fff;
+}
+
+.pickupCard.waiting{
+  border-left:5px solid var(--yellow);
+}
+
+.pickupCard.done{
+  border-left:5px solid var(--green);
+}
+
+.pickupAction{
+  margin-top:12px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.pickupResult{
+  margin-top:10px;
+  padding:10px;
+  border-radius:10px;
+  background:#f7f9f9;
+  font-size:.86rem;
+  line-height:1.6;
+}
+
+
+/* ====================================== */
+/* 老師管理 / Excel 月排班 */
+/* ====================================== */
+
+.adminManagePanel{
+  margin-bottom:16px;
+}
+
+.manageTabs{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:14px 0;
+}
+
+.manageTab{
+  border:0;
+  padding:9px 13px;
+  border-radius:999px;
+  background:#f1f4f4;
+  color:#546e7a;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.manageTab.active{
+  background:var(--blue-light);
+  color:var(--blue);
+}
+
+.manageSection{
+  display:none;
+}
+
+.manageSection.active{
+  display:block;
+}
+
+.manageGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+.manageCard{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  background:#fafcfc;
+}
+
+.manageCardTitle{
+  font-weight:900;
+  margin-bottom:10px;
+}
+
+.staffList{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:12px;
+}
+
+.staffRow{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+  background:#fff;
+}
+
+.staffRowGrid{
+  display:grid;
+  grid-template-columns:1.2fr 1fr 1fr 1.4fr auto;
+  gap:8px;
+  align-items:end;
+}
+
+.aliasText{
+  margin-top:7px;
+  color:var(--muted);
+  font-size:.78rem;
+  line-height:1.5;
+}
+
+.scheduleToolbar{
+  display:grid;
+  grid-template-columns:1fr 1fr auto;
+  gap:10px;
+  align-items:end;
+  margin-top:12px;
+}
+
+.scheduleSummary{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-top:12px;
+}
+
+.scheduleSummaryItem{
+  border-radius:12px;
+  padding:11px;
+  background:#f7f9f9;
+  text-align:center;
+}
+
+.scheduleSummaryNumber{
+  font-size:1.25rem;
+  font-weight:900;
+}
+
+.previewBox{
+  margin-top:12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden;
+  background:#fff;
+}
+
+.previewHeader{
+  padding:11px 12px;
+  background:#f7f9f9;
+  font-weight:900;
+}
+
+.previewBody{
+  max-height:420px;
+  overflow:auto;
+}
+
+.previewRow{
+  display:grid;
+  grid-template-columns:105px 130px 1fr;
+  gap:10px;
+  padding:9px 12px;
+  border-top:1px solid #edf1f2;
+  font-size:.84rem;
+  line-height:1.45;
+}
+
+.previewProblem{
+  background:#fff8e1;
+}
+
+.diffAdd{ color:var(--green-dark); }
+.diffRemove{ color:var(--red); }
+
+@media(max-width:760px){
+  .manageGrid,
+  .scheduleToolbar,
+  .scheduleSummary,
+  .staffRowGrid,
+  .previewRow{
+    grid-template-columns:1fr;
+  }
+}
+
+
+@media(max-width:760px){
+
+  .app{
+    padding:12px;
+  }
+
+  .headerTop{
+    flex-direction:column;
+  }
+
+  .summaryGrid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .loginGrid{
+    grid-template-columns:1fr;
+  }
+
+  .requestBody,
+  .actionGrid{
+    grid-template-columns:1fr;
+  }
+
+}
+
+
+
+/* ====================================== */
+/* V16 精簡老師管理 */
+/* ====================================== */
+.staffTopBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.staffSearch{flex:1;min-width:220px}
+.staffFilter{width:auto;min-width:150px}
+.staffStats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0 14px}
+.staffStatBox{background:#f7f9f9;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.staffStatLabel{font-size:.76rem;color:var(--muted);font-weight:800}
+.staffStatNum{font-size:1.25rem;font-weight:900;margin-top:2px}
+.staffCompactTable{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+.staffCompactHead,.staffCompactRow{display:grid;grid-template-columns:1.05fr .9fr .9fr 1fr 1fr auto;gap:10px;align-items:center;padding:11px 12px}
+.staffCompactHead{background:#f7f9f9;color:#607d8b;font-size:.78rem;font-weight:900}
+.staffCompactRow{border-top:1px solid #edf1f2;font-size:.88rem}
+.staffCompactName{font-weight:900}
+.staffStatusDot{display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:.8rem}
+.staffLineOk{color:var(--green-dark)}
+.staffLineNone{color:#78909c}
+.staffToolbarActions{display:flex;gap:6px;justify-content:flex-end}
+.staffMiniBtn{border:0;border-radius:9px;padding:8px 10px;font-weight:900;cursor:pointer;white-space:nowrap}
+.staffMiniEdit{background:var(--blue-light);color:var(--blue)}
+.staffMiniDanger{background:var(--red-light);color:var(--red)}
+.staffMiniGreen{background:var(--green-light);color:var(--green-dark)}
+.staffInactiveWrap{margin-top:12px}
+.staffInactiveSummary{cursor:pointer;font-weight:900;color:#607d8b;padding:9px 0}
+.staffAddBox{display:none;margin:10px 0 14px;padding:14px;border:1px solid var(--line);border-radius:14px;background:#fafcfc}
+.staffAddBox.show{display:block}
+.staffEditDialog{width:min(680px,calc(100vw - 28px));border:0;border-radius:18px;padding:0;box-shadow:0 24px 70px rgba(0,0,0,.25)}
+.staffEditDialog::backdrop{background:rgba(38,50,56,.45)}
+.staffEditBody{padding:18px}
+.staffEditHeader{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.staffEditTitle{font-size:1.1rem;font-weight:900}
+.staffEditGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.staffAdvanced{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.staffAdvanced summary{cursor:pointer;font-weight:900;color:#607d8b}
+.lineBindingList{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.lineBindingRow{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.lineBindingMeta{font-size:.82rem;color:var(--muted);line-height:1.6}
+.lineBindingActions{display:flex;gap:7px;flex-wrap:wrap}
+@media(max-width:760px){
+  .staffStats{grid-template-columns:repeat(2,1fr)}
+  .staffCompactHead{display:none}
+  .staffCompactRow{grid-template-columns:1fr;gap:5px}
+  .staffToolbarActions{justify-content:flex-start}
+  .staffEditGrid{grid-template-columns:1fr}
+  .lineBindingRow{align-items:flex-start;flex-direction:column}
+}
+
+
+/* ====================================== */
+/* Mobile-first polish for LINE in-app browser */
+/* ====================================== */
+html,
+body{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+*{
+  min-width:0;
+}
+
+.loginState,
+.helper,
+.subtitle,
+.infoValue,
+.reasonBox,
+.pickupResult,
+.lineBindingMeta,
+.staffCompactRow{
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+
+input,
+select,
+textarea,
+button,
+.btn{
+  max-width:100%;
+}
+
+@media(max-width:760px){
+  .app{
+    width:100%;
+    max-width:100%;
+    padding:
+      max(10px,env(safe-area-inset-top))
+      max(10px,env(safe-area-inset-right))
+      max(24px,env(safe-area-inset-bottom))
+      max(10px,env(safe-area-inset-left));
+  }
+
+  .header{
+    padding:14px;
+    border-radius:16px;
+    margin-bottom:12px;
+  }
+
+  .headerTop{
+    gap:12px;
+  }
+
+  .headerTop > div:first-child{
+    width:100%;
+  }
+
+  .headerTop > div:last-child{
+    display:grid !important;
+    grid-template-columns:1fr 1fr;
+    gap:8px !important;
+    width:100%;
+  }
+
+  .headerTop > div:last-child > *{
+    width:100%;
+    min-height:44px;
+    justify-content:center;
+    text-align:center;
+    padding:10px 8px;
+    white-space:normal;
+    line-height:1.25;
+  }
+
+  .headerTop > div:last-child > :last-child{
+    grid-column:1 / -1;
+  }
+
+  .brand{
+    font-size:1.18rem;
+    line-height:1.35;
+  }
+
+  .subtitle{
+    font-size:.8rem;
+  }
+
+  .loginState{
+    padding:11px;
+    font-size:.82rem;
+  }
+
+  input,
+  select,
+  textarea{
+    font-size:16px;
+  }
+
+  .summaryGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    margin-bottom:12px;
+  }
+
+  .summaryCard{
+    min-height:104px;
+    padding:14px 12px;
+    border-radius:15px;
+  }
+
+  .summaryLabel{
+    font-size:.78rem;
+    line-height:1.3;
+  }
+
+  .summaryNumber{
+    font-size:1.55rem;
+  }
+
+  .summaryOwner{
+    padding-right:34px;
+    font-size:.66rem;
+    line-height:1.35;
+  }
+
+  .dashboardHint{
+    margin:-2px 0 12px;
+    font-size:.72rem;
+  }
+
+  .panel{
+    width:100%;
+    max-width:100%;
+    padding:14px;
+    border-radius:16px;
+    margin-bottom:12px;
+    overflow:hidden;
+  }
+
+  .panelAutoCollapsed{
+    padding-bottom:14px;
+  }
+
+  .panelTitle{
+    font-size:1.02rem;
+    line-height:1.35;
+  }
+
+  .panelCollapsibleTitle{
+    min-height:40px;
+  }
+
+  .panelCollapseBtn{
+    width:38px;
+    height:38px;
+    flex:0 0 38px;
+    margin-left:8px;
+  }
+
+  .compactHolidaySummary{
+    min-height:58px;
+    padding:12px 14px;
+  }
+
+  .compactHolidayBody{
+    padding:0 14px 14px;
+  }
+
+  .pickupToolbar{
+    display:grid;
+    grid-template-columns:1fr;
+    align-items:stretch;
+    gap:9px;
+    margin:12px 0;
+  }
+
+  .pickupToolbarField{
+    width:100%;
+    min-width:0;
+  }
+
+  .pickupToolbar .btn,
+  .pickupAction .btn,
+  .actionButtons .btn{
+    width:100%;
+    min-height:44px;
+  }
+
+  .pickupStats{
+    gap:7px;
+  }
+
+  .pickupStat{
+    font-size:.76rem;
+  }
+
+  .tabs,
+  .manageTabs{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    padding-bottom:4px;
+  }
+
+  .tabs::-webkit-scrollbar,
+  .manageTabs::-webkit-scrollbar{
+    display:none;
+  }
+
+  .tab,
+  .manageTab{
+    flex:0 0 auto;
+    white-space:nowrap;
+  }
+
+  .requestCard,
+  .pickupCard,
+  .manageCard{
+    padding:12px;
+    border-radius:13px;
+  }
+
+  .requestTop{
+    align-items:flex-start;
+  }
+
+  .requestTop > div:first-child{
+    flex:1 1 auto;
+    min-width:0;
+  }
+
+  .requestChild{
+    overflow-wrap:anywhere;
+  }
+
+  .badge{
+    flex:0 0 auto;
+    max-width:42%;
+    white-space:normal;
+    text-align:center;
+    line-height:1.3;
+  }
+
+  .requestBody,
+  .actionGrid{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+
+  .actionButtons,
+  .pickupAction{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+
+  .manageGrid{
+    grid-template-columns:1fr;
+  }
+
+  .scheduleToolbar{
+    grid-template-columns:1fr;
+    gap:9px;
+  }
+
+  .scheduleToolbar .btn{
+    width:100%;
+    min-height:44px;
+  }
+
+  .scheduleSummary{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+
+  .previewRow{
+    grid-template-columns:1fr;
+    gap:4px;
+  }
+
+  .staffTopBar{
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+  }
+
+  .staffSearch,
+  .staffFilter{
+    width:100%;
+    min-width:0;
+  }
+
+  .staffStats{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+
+  .staffCompactRow{
+    padding:12px;
+    gap:6px;
+  }
+
+  .staffToolbarActions,
+  .lineBindingActions{
+    display:grid;
+    grid-template-columns:1fr;
+    width:100%;
+    gap:7px;
+  }
+
+  .staffMiniBtn,
+  .lineBindingActions .btn{
+    width:100%;
+    min-height:42px;
+    white-space:normal;
+  }
+
+  .staffEditDialog{
+    width:calc(100vw - 16px);
+    max-height:calc(100dvh - 20px);
+    overflow:auto;
+    border-radius:16px;
+  }
+
+  .staffEditBody{
+    padding:14px;
+  }
+
+  .staffEditHeader{
+    align-items:flex-start;
+  }
+
+  .lineBindingRow{
+    padding:12px;
+  }
+}
+
+@media(max-width:380px){
+  .headerTop > div:last-child{
+    grid-template-columns:1fr;
+  }
+
+  .headerTop > div:last-child > :last-child{
+    grid-column:auto;
+  }
+
+  .summaryGrid{
+    gap:8px;
+  }
+
+  .summaryCard{
+    min-height:100px;
+    padding:12px 10px;
+  }
+
+  .panel{
+    padding:12px;
+  }
+
+  .scheduleSummary{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+
+.summaryGrid,
+.dashboardHint,
+.pickupPanel,
+#request-management{display:none !important}
+.adminSecondaryPanel{display:block !important}
+details.adminSecondaryPanel{display:block !important}
+.adminHeaderActions{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  width:min(680px,100%);
+}
+.adminHeaderActions .btn,
+.adminHeaderLink{
+  width:100%;
+  min-height:42px;
+  padding:9px 10px;
+  text-decoration:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  white-space:normal;
+  line-height:1.25;
+}
+@media(max-width:760px){
+  .adminHeaderActions{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    width:100%;
+  }
+}
+@media(max-width:380px){
+  .adminHeaderActions{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+
+<div class="header">
+
+  <div class="headerTop">
+
+    <div>
+
+      <div class="brand">
+        樂業附幼｜行政管理平台
+      </div>
+
+      <div class="subtitle">
+        低頻設定與資料管理
+      </div>
+
+    </div>
+
+
+    <div class="adminHeaderActions">
+      <a class="btn btnGray adminHeaderLink" href="admin.html">← 行政首頁</a>
+      <a class="btn btnGreen adminHeaderLink" href="#fees">📊 托育統計</a>
+      <a class="btn btnGreen adminHeaderLink" href="#schoolClosedPanel">📅 服務日</a>
+      <a class="btn btnGreen adminHeaderLink" href="#parent-binding">🔗 綁定碼</a>
+      <a class="btn btnGreen adminHeaderLink" href="#staff-management">👩‍🏫 老師與排班</a>
+      <button class="btn btnBlue" type="button" onclick="refreshAll()">↻ 更新資料</button>
+    </div>
+
+  </div>
+
+
+  <div
+    id="loginState"
+    class="loginState"
+  >
+    Supabase：檢查登入狀態中...
+  </div>
+
+
+  <div id="adminLoginBox" class="testBox">
+
+    <div class="testTitle">
+      🔐 行政登入
+    </div>
+
+    <div class="helper">
+      正式環境不提供測試帳號密碼登入。
+      請先從「樂業附幼｜教職員」LINE 官方帳號進入教職員平台，
+      完成行政身分驗證後再開啟本頁。
+    </div>
+
+    <a
+      class="btn btnGreen"
+      href="https://liff.line.me/2011987947-mIbgSMNU"
+      style="width:100%;margin-top:10px;text-decoration:none;display:flex;justify-content:center;align-items:center"
+    >
+      開啟教職員平台
+    </a>
+
+  </div>
+
+</div>
+
+
+<div class="summaryGrid">
+
+  <div class="summaryCard summaryAction" role="button" tabindex="0"
+       onclick="openRequestView('pending')"
+       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('pending')}">
+    <div class="summaryLabel">待行政處理</div>
+    <div id="pendingCount" class="summaryNumber red">0</div>
+    <div class="summaryOwner">臨托／延托｜行政老師</div>
+  </div>
+
+  <div class="summaryCard summaryAction" role="button" tabindex="0"
+       onclick="openRequestView('temporary')"
+       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('temporary')}">
+    <div class="summaryLabel">今日臨托</div>
+    <div id="temporaryCount" class="summaryNumber purple">0</div>
+    <div class="summaryOwner">行政老師處理</div>
+  </div>
+
+  <div class="summaryCard summaryAction" role="button" tabindex="0"
+       onclick="openRequestView('extended')"
+       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('extended')}">
+    <div class="summaryLabel">今日延托</div>
+    <div id="extendedCount" class="summaryNumber green">0</div>
+    <div class="summaryOwner">行政老師處理</div>
+  </div>
+
+  <div class="summaryCard summaryAction" role="button" tabindex="0"
+       onclick="openRequestView('leave')"
+       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('leave')}">
+    <div class="summaryLabel">今日請假</div>
+    <div id="leaveCount" class="summaryNumber blue">0</div>
+    <div class="summaryOwner">原班導師處理</div>
+  </div>
+
+</div>
+
+<div class="dashboardHint">
+  點上方卡片會直接開啟對應資料，不需要再往下找。
+</div>
+
+
+
+<!-- ====================================== -->
+<!-- 每月延托 / 臨托 / 逾時統計 -->
+<!-- ====================================== -->
+
+<div id="fees" class="panel adminSecondaryPanel">
+  <div class="panelTitle">📊 每月托育與逾時收費統計</div>
+  <div class="helper">
+    僅行政人員可匯出。資料依「延托／臨托／逾時」三類統計，
+    並依原班級、同一幼兒、日期集中排列。
+  </div>
+  <div class="pickupToolbar">
+    <div class="pickupToolbarField">
+      <div class="helper">年份</div>
+      <input id="monthlyReportYear" type="number" min="2025" max="2100">
+    </div>
+    <div class="pickupToolbarField">
+      <div class="helper">月份</div>
+      <select id="monthlyReportMonth">
+        <option value="1">1 月</option><option value="2">2 月</option><option value="3">3 月</option><option value="4">4 月</option><option value="5">5 月</option><option value="6">6 月</option><option value="7">7 月</option><option value="8">8 月</option><option value="9">9 月</option><option value="10">10 月</option><option value="11">11 月</option><option value="12">12 月</option>
+      </select>
+    </div>
+    <button class="btn btnGreen" type="button" onclick="exportMonthlyCareReport()">
+      ⬇️ 匯出月結 CSV
+    </button>
+  </div>
+  <div class="helper">
+    收費試算：延托 17:00–18:00＝35 元；臨托 16:00–17:00＝50 元；
+    臨托 16:00–18:00＝100 元。18:05 後逾時＝30 元目前先作系統紀錄，
+    正式收取須以本園核定並公告之規範及會計程序為準。
+  </div>
+</div>
+
+
+<!-- ====================================== -->
+<!-- 休園日 / 特殊停止服務日 -->
+<!-- ====================================== -->
+
+<details class="panel compactHolidayPanel adminSecondaryPanel" id="schoolClosedPanel">
+  <summary class="compactHolidaySummary">
+    <span class="panelTitle">📅 休園日與特殊停止服務日</span>
+    <span class="compactHolidayHint">點一下展開／收合</span>
+  </summary>
+
+  <div class="compactHolidayBody">
+    <div class="helper">
+      國定假日已依 115、116 年政府辦公日曆預載。
+      如有本園自訂停止服務日、補休、消毒日或其他特殊休園日，請在這裡新增。
+    </div>
+
+    <div class="pickupToolbar">
+      <div class="pickupToolbarField">
+        <div class="helper">日期</div>
+        <input id="schoolClosedDateInput" type="date">
+      </div>
+      <div class="pickupToolbarField">
+        <div class="helper">名稱</div>
+        <input id="schoolClosedNameInput" placeholder="例：園內消毒停止服務">
+      </div>
+      <button class="btn btnGreen" type="button" onclick="saveSchoolClosedDate()">
+        ＋ 新增／更新
+      </button>
+    </div>
+
+    <div id="schoolClosedList" class="helper compactHolidayList">
+      尚未載入休園日。
+    </div>
+  </div>
+</details>
+
+
+<!-- ====================================== -->
+<!-- 試行家長 LINE 綁定碼 -->
+<!-- ====================================== -->
+
+<div id="parent-binding" class="panel adminSecondaryPanel">
+  <div class="panelTitle">🔗 試行家長 LINE 綁定碼</div>
+  <div class="helper">
+    僅行政人員可產生。每次重新產生都會讓先前「尚未使用」的家長綁定碼立即失效。
+    下載後請逐一私訊對應家長，不可貼在班級群組。
+  </div>
+  <button
+    class="btn btnGreen"
+    type="button"
+    onclick="downloadPilotParentBindingCodes()"
+    style="margin-top:12px"
+  >
+    ⬇️ 重新產生並下載家長綁定清單
+  </button>
+</div>
+
+
+<!-- ====================================== -->
+<!-- 老師與課後班排班管理 V16 -->
+<!-- ====================================== -->
+
+<div id="staff-management" class="panel adminManagePanel adminSecondaryPanel" style="display:none">
+  <div class="panelTitle">👩‍🏫 老師與課後班管理</div>
+  <div class="helper">正式啟用名單以 27 位人員為主；此處只顯示目前啟用中的教職員。</div>
+
+  <div class="manageTabs">
+    <button id="manageTabStaff" class="manageTab active" type="button" onclick="setManageTab('staff')">👩‍🏫 老師名單</button>
+    <button id="manageTabSchedule" class="manageTab" type="button" onclick="setManageTab('schedule')">📅 月排班匯入</button>
+    <button id="manageTabLine" class="manageTab" type="button" onclick="setManageTab('line')">🔗 LINE 綁定</button>
+  </div>
+
+  <div id="manageStaffSection" class="manageSection active">
+    <div class="staffTopBar">
+      <input id="staffSearch" class="staffSearch" placeholder="搜尋老師姓名" oninput="renderStaffManagement()">
+      <select id="staffRoleFilter" class="staffFilter" onchange="renderStaffManagement()">
+        <option value="all">全部身分</option>
+        <option value="admin">行政老師</option>
+        <option value="class_teacher">原班導師</option>
+        <option value="aftercare_teacher">支援／外聘</option>
+      </select>
+      <button class="btn btnGreen" type="button" onclick="toggleAddStaffBox()">＋ 新增老師</button>
+    </div>
+
+    <div id="staffStats" class="staffStats"></div>
+
+    <div id="staffAddBox" class="staffAddBox">
+      <div class="manageCardTitle">新增老師</div>
+      <div class="staffEditGrid">
+        <div><div class="helper">姓名</div><input id="newStaffName" placeholder="例：王小美"></div>
+        <div><div class="helper">主要身分</div><select id="newStaffRole"><option value="class_teacher">原班導師</option><option value="aftercare_teacher">支援／外聘</option><option value="admin">行政老師</option></select></div>
+        <div><div class="helper">固定原班</div><select id="newStaffHomeroom"><option value="">無</option><option value="C01">櫻桃班</option><option value="C02">蘋果班</option><option value="C03">蝴蝶班</option><option value="C04">白兔班</option><option value="C05">蜜蜂班</option><option value="C06">袋鼠班</option><option value="C07">綿羊班</option><option value="C08">企鵝班</option></select></div>
+        <div><div class="helper">固定課後班</div><select id="newStaffAftercare"><option value="">無</option><option value="AC01">蝴蝶班｜18:00</option><option value="AC02">白兔班｜17:00</option><option value="AC03">蜜蜂班｜18:00</option><option value="AC04">綿羊班｜17:00</option><option value="AC05">櫻桃班｜幼幼</option><option value="AC06">蘋果班｜幼幼</option></select></div>
+        <div><div class="helper">Excel 別名（選填）</div><input id="newStaffAliases" placeholder="例：小美, 美美"></div>
+      </div>
+      <div class="actionButtons"><button class="btn btnGreen" type="button" onclick="addStaffMember()">儲存新增</button><button class="btn btnGray" type="button" onclick="toggleAddStaffBox(false)">取消</button></div>
+    </div>
+
+    <div id="staffManageList"><div class="empty">請先登入行政帳號。</div></div>
+  </div>
+
+  <div id="manageScheduleSection" class="manageSection">
+    <div class="manageCard">
+      <div class="manageCardTitle">上傳每月 Excel 班表</div>
+      <div class="scheduleToolbar">
+        <div><div class="helper">Excel 檔案</div><input id="scheduleExcelFile" type="file" accept=".xlsx,.xls" onchange="loadScheduleExcel(event)"></div>
+        <div><div class="helper">工作表</div><select id="scheduleSheetSelect" onchange="parseSelectedScheduleSheet()"><option value="">請先選擇 Excel</option></select></div>
+        <button class="btn btnBlue" type="button" onclick="parseSelectedScheduleSheet()">🔎 解析班表</button>
+      </div>
+      <div id="scheduleFileState" class="helper">尚未選擇 Excel。</div>
+      <div class="scheduleSummary">
+        <div class="scheduleSummaryItem"><div class="helper">月份</div><div id="scheduleMonthSummary" class="scheduleSummaryNumber">—</div></div>
+        <div class="scheduleSummaryItem"><div class="helper">正式老師排班</div><div id="scheduleStaffCount" class="scheduleSummaryNumber">0</div></div>
+        <div class="scheduleSummaryItem"><div class="helper">支援人員</div><div id="scheduleSupportCount" class="scheduleSummaryNumber">0</div></div>
+        <div class="scheduleSummaryItem"><div class="helper">未辨識／錯誤</div><div id="scheduleProblemCount" class="scheduleSummaryNumber red">0</div></div>
+      </div>
+      <div id="schedulePreview" class="previewBox" style="display:none"><div class="previewHeader">班表預覽與檢查</div><div id="schedulePreviewBody" class="previewBody"></div></div>
+      <div class="actionButtons"><button id="scheduleImportBtn" class="btn btnGreen" type="button" onclick="confirmScheduleImport()" disabled>✅ 確認匯入本月班表</button></div>
+      <div class="helper">匯入前不會修改資料庫；有未辨識姓名或排班衝突時會先阻止匯入。</div>
+    </div>
+    <div id="currentScheduleBox" class="manageCard" style="margin-top:12px">
+      <div class="manageCardTitle">目前資料庫月排班</div>
+      <div class="scheduleToolbar" style="margin-top:10px">
+        <div>
+          <div class="helper">年份</div>
+          <input id="dbScheduleYear" type="number" min="2025" max="2100">
+        </div>
+        <div>
+          <div class="helper">月份</div>
+          <select id="dbScheduleMonth">
+            <option value="1">1 月</option><option value="2">2 月</option><option value="3">3 月</option><option value="4">4 月</option><option value="5">5 月</option><option value="6">6 月</option><option value="7">7 月</option><option value="8">8 月</option><option value="9">9 月</option><option value="10">10 月</option><option value="11">11 月</option><option value="12">12 月</option>
+          </select>
+        </div>
+        <button class="btn btnBlue" type="button" onclick="loadDatabaseScheduleView()">📋 查看資料庫班表</button>
+      </div>
+      <div id="currentScheduleList" class="empty">可直接選擇月份查看已匯入資料，不必先上傳 Excel。</div>
+    </div>
+  </div>
+
+  <div id="manageLineSection" class="manageSection">
+    <div class="manageCard">
+      <div class="manageCardTitle">LINE 綁定狀態</div>
+      <div class="helper">老師不需要自行找 LINE User ID；之後由老師平台送出綁定申請，行政只需確認。這裡先管理「已綁定／未綁定」與待審申請。</div>
+      <div id="lineBindingStats" class="staffStats"></div>
+      <div id="lineBindingList" class="lineBindingList"><div class="empty">尚未載入綁定資料。</div></div>
+    </div>
+  </div>
+</div>
+
+<dialog id="staffEditDialog" class="staffEditDialog">
+  <div class="staffEditBody">
+    <div class="staffEditHeader"><div id="staffEditTitle" class="staffEditTitle">編輯老師</div><button class="staffMiniBtn" type="button" onclick="closeStaffEditor()">✕</button></div>
+    <input id="staffEditId" type="hidden">
+    <div class="staffEditGrid">
+      <div><div class="helper">姓名</div><input id="staffEditName"></div>
+      <div><div class="helper">主要身分</div><select id="staffEditRole"><option value="admin">行政老師</option><option value="class_teacher">原班導師</option><option value="aftercare_teacher">支援／外聘</option></select></div>
+      <div><div class="helper">固定原班</div><select id="staffEditHomeroom"></select></div>
+      <div><div class="helper">固定課後班</div><select id="staffEditAftercare"></select></div>
+      <div><div class="helper">LINE 狀態</div><div id="staffEditLineState" style="padding:11px 0;font-weight:900"></div></div>
+    </div>
+    <details class="staffAdvanced"><summary>進階設定</summary><div style="margin-top:10px"><div class="helper">Excel 別名（逗號分隔）</div><input id="staffEditAliases"></div></details>
+    <div class="actionButtons"><button class="btn btnGreen" type="button" onclick="saveStaffFromDialog()">儲存修改</button><button id="staffEditUnbindBtn" class="btn btnOrange" type="button" onclick="unbindCurrentStaffLine()" style="display:none">解除 LINE 綁定</button><button id="staffEditToggleBtn" class="btn btnRed" type="button" onclick="toggleCurrentStaffActive()">停用老師</button><button class="btn btnGray" type="button" onclick="closeStaffEditor()">關閉</button></div>
+  </div>
+</dialog>
+
+<!-- ====================================== -->
+<!-- 今日接送 -->
+<!-- ====================================== -->
+
+<div class="panel pickupPanel">
+
+  <div class="panelTitle">
+    🚗 今日接送
+  </div>
+
+
+  <div class="pickupToolbar">
+
+    <div class="pickupToolbarField">
+
+      <div class="helper">
+        查看日期
+      </div>
+
+      <input
+        id="pickupDateFilter"
+        type="date"
+        onchange="refreshPickupRecords()"
+      >
+
+    </div>
+
+
+    <button
+      class="btn btnBlue"
+      type="button"
+      onclick="refreshPickupRecords()"
+    >
+      ↻ 更新接送資料
+    </button>
+
+  </div>
+
+
+  <div class="pickupStats">
+
+    <div
+      id="pickupWaitingCount"
+      class="pickupStat waiting"
+    >
+      等待接送 0
+    </div>
+
+
+    <div
+      id="pickupDoneCount"
+      class="pickupStat done"
+    >
+      已完成 0
+    </div>
+
+  </div>
+
+
+  <div
+    id="pickupLastUpdated"
+    class="helper"
+  >
+    尚未載入
+  </div>
+
+
+  <div
+    id="pickupList"
+    class="pickupList"
+  >
+    <div class="empty">
+      尚未登入行政帳號。
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ====================================== -->
+<!-- 家長申請 -->
+<!-- ====================================== -->
+
+<div id="request-management" class="panel">
+
+  <div class="panelTitle">
+    📋 申請與行政處理
+  </div>
+
+
+  <div
+    id="lastUpdated"
+    class="helper"
+  >
+    尚未載入
+  </div>
+
+
+  <div
+    id="errorBox"
+    class="errorBox"
+  ></div>
+
+
+  <div class="tabs">
+
+    <button
+      id="tabAll"
+      class="tab active"
+      onclick="setFilter('all')"
+    >
+      全部
+    </button>
+
+
+    <button
+      id="tabPending"
+      class="tab"
+      onclick="setFilter('pending')"
+    >
+      待行政處理
+    </button>
+
+
+    <button
+      id="tabLeave"
+      class="tab"
+      onclick="setFilter('leave')"
+    >
+      請假
+    </button>
+
+
+    <button
+      id="tabTemporary"
+      class="tab"
+      onclick="setFilter('temporary')"
+    >
+      臨時托育
+    </button>
+
+
+    <button
+      id="tabExtended"
+      class="tab"
+      onclick="setFilter('extended')"
+    >
+      延長托育
+    </button>
+
+  </div>
+
+
+  <div
+    id="requestList"
+    class="requestList"
+  >
+    <div class="empty">
+      尚未登入行政帳號。
+    </div>
+  </div>
+
+</div>
+
+
+</div>
+
+<div style="text-align:center;margin:0 auto 24px;font-size:12px;color:#78909c">
+  <a href="privacy.html" target="_blank" rel="noopener">個人資料蒐集告知暨隱私權說明</a>
+  ｜ <a href="terms.html" target="_blank" rel="noopener">平台使用說明</a>
+</div>
+
+
+<script>
+    const SUPABASE_URL =
+  "https://cqtvrpiapssjjctwqivn.supabase.co";
+
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_PTpcF08CriR4_kH9KamB1w_akgHzTYw";
+
+
+const supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth:{
+        storageKey:
+          "leye-admin-auth",
+
+        storage:
+          window.sessionStorage,
+
+        persistSession:
+          true,
+
+        autoRefreshToken:
+          true,
+
+        detectSessionInUrl:
+          false
+      }
+    }
+  );
+
+
+const teacherSessionClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth:{
+        storageKey:
+          "leye-teacher-auth",
+
+        storage:
+          window.sessionStorage,
+
+        persistSession:
+          true,
+
+        autoRefreshToken:
+          true,
+
+        detectSessionInUrl:
+          false
+      }
+    }
+  );
+
+
+const CLASS_MAP = {
+
+  C01:"櫻桃班",
+  C02:"蘋果班",
+  C03:"蝴蝶班",
+  C04:"白兔班",
+  C05:"蜜蜂班",
+  C06:"袋鼠班",
+  C07:"綿羊班",
+  C08:"企鵝班"
+
+};
+
+
+const AFTERCARE_CLASSES = {
+
+  AC01:{
+    name:"蝴蝶班",
+    group:"mixed",
+    endTime:"18:00"
+  },
+
+  AC02:{
+    name:"白兔班",
+    group:"mixed",
+    endTime:"17:00"
+  },
+
+  AC03:{
+    name:"蜜蜂班",
+    group:"mixed",
+    endTime:"18:00"
+  },
+
+  AC04:{
+    name:"綿羊班",
+    group:"mixed",
+    endTime:"17:00"
+  },
+
+  AC05:{
+    name:"櫻桃班",
+    group:"toddler",
+    endTime:""
+  },
+
+  AC06:{
+    name:"蘋果班",
+    group:"toddler",
+    endTime:""
+  }
+
+};
+
+
+let currentUser =
+  null;
+
+
+let currentStaff =
+  null;
+
+
+let requests =
+  [];
+
+
+let childrenMap =
+  {};
+
+
+let currentFilter =
+  "all";
+
+
+let pickupRecords =
+  [];
+
+
+let staffList =
+  [];
+
+
+let staffAliases =
+  [];
+
+
+let fixedHomeroomMap =
+  {};
+
+let fixedAftercareMap =
+  {};
+
+
+let scheduleWorkbook =
+  null;
+
+
+let parsedScheduleRows =
+  [];
+
+
+let parsedScheduleProblems =
+  [];
+
+
+let parsedScheduleYear =
+  null;
+
+
+let parsedScheduleMonth =
+  null;
+
+
+const $ =
+  id =>
+  document.getElementById(id);
+
+
+/*
+==================================================
+登入
+==================================================
+正式環境僅由教職員平台 LINE / Supabase SSO 帶入行政身分。
+*/
+
+
+/*
+==================================================
+驗證行政身分
+==================================================
+*/
+
+async function validateAdmin(){
+
+  if(
+    !currentUser
+  ){
+
+    showError(
+      "目前沒有登入中的 Supabase 使用者。"
+    );
+
+    return false;
+
+  }
+
+
+  $("loginState").textContent =
+    "Supabase：正在驗證行政身分...";
+
+
+  const {
+    data:identity,
+    error:identityError
+  } =
+    await supabaseClient
+      .from("user_identities")
+      .select(
+        "staff_id,guardian_id"
+      )
+      .eq(
+        "auth_user_id",
+        currentUser.id
+      )
+      .maybeSingle();
+
+
+  if(
+    identityError
+  ){
+
+    showError(
+      "讀取身分對應失敗："
+      +
+      identityError.message
+    );
+
+    return false;
+
+  }
+
+
+  if(
+    !identity
+    ||
+    !identity.staff_id
+  ){
+
+    showError(
+      "此帳號沒有綁定 staff 身分。"
+    );
+
+    return false;
+
+  }
+
+
+  const {
+    data:staff,
+    error:staffError
+  } =
+    await supabaseClient
+      .from("staff")
+      .select(
+        "id,display_name,role,active"
+      )
+      .eq(
+        "id",
+        identity.staff_id
+      )
+      .maybeSingle();
+
+
+  if(
+    staffError
+  ){
+
+    showError(
+      "讀取 staff 失敗："
+      +
+      staffError.message
+    );
+
+    return false;
+
+  }
+
+
+  if(
+    !staff
+    ||
+    staff.active !== true
+  ){
+
+    showError(
+      "此行政帳號不存在或已停用。"
+    );
+
+    return false;
+
+  }
+
+
+  if(
+    staff.role !== "admin"
+  ){
+
+    showError(
+      "目前此頁只開放 admin 行政角色。"
+    );
+
+    return false;
+
+  }
+
+
+  currentStaff =
+    staff;
+
+
+  sessionStorage.removeItem(
+    "leye-admin-manual-logout"
+  );
+
+
+  if(
+    $("adminLoginBox")
+  ){
+    $("adminLoginBox")
+      .style.display =
+        "none";
+  }
+
+
+  $("loginState").innerHTML =
+    "✅ Supabase 已登入<br>"
+    +
+    "帳號："
+    +
+    escapeHtml(
+      currentUser.email || ""
+    )
+    +
+    "<br>"
+    +
+    "身分："
+    +
+    escapeHtml(
+      staff.display_name
+    )
+    +
+    "｜"
+    +
+    escapeHtml(
+      staff.role
+    );
+
+
+  hideError();
+
+  document
+    .querySelectorAll(".adminManagePanel")
+    .forEach(
+      panel => {
+        panel.style.display = "block";
+      }
+    );
+
+
+  await refreshAll();
+
+  if(
+    window.location.hash ===
+    "#staff-management"
+  ){
+    setTimeout(
+      () => {
+        document
+          .getElementById("staff-management")
+          ?.scrollIntoView({
+            behavior:"smooth",
+            block:"start"
+          });
+      },
+      100
+    );
+  }
+
+
+  return true;
+
+}
+
+
+/*
+==================================================
+全部重新整理
+==================================================
+*/
+
+async function refreshAll(){
+
+  if(
+    !currentUser
+    ||
+    !currentStaff
+  ){
+
+    return;
+
+  }
+
+
+  await Promise.all([
+    refreshPickupRecords(),
+    refreshRequests(),
+    refreshStaffManagement(),
+    loadSchoolClosedAdmin()
+  ]);
+
+}
+
+
+/*
+==================================================
+取得台灣日期 YYYY-MM-DD
+==================================================
+*/
+
+function getTaiwanDateString(){
+
+  const parts =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:"Asia/Taipei",
+        year:"numeric",
+        month:"2-digit",
+        day:"2-digit"
+      }
+    )
+    .formatToParts(
+      new Date()
+    );
+
+
+  const map =
+    {};
+
+
+  parts.forEach(
+    part => {
+
+      if(
+        part.type !== "literal"
+      ){
+
+        map[
+          part.type
+        ] =
+          part.value;
+
+      }
+
+    }
+  );
+
+
+  return (
+    map.year
+    +
+    "-"
+    +
+    map.month
+    +
+    "-"
+    +
+    map.day
+  );
+
+}
+
+
+/*
+==================================================
+時間格式
+==================================================
+*/
+
+function formatClockTime(
+  value
+){
+
+  if(
+    !value
+  ){
+
+    return "—";
+
+  }
+
+
+  const text =
+    String(value);
+
+
+  if(
+    text.includes("T")
+  ){
+
+    try{
+
+      return new Intl.DateTimeFormat(
+        "zh-TW",
+        {
+          timeZone:"Asia/Taipei",
+          hour:"2-digit",
+          minute:"2-digit",
+          hour12:false
+        }
+      )
+      .format(
+        new Date(text)
+      );
+
+    }
+    catch(e){
+
+      return text;
+
+    }
+
+  }
+
+
+  return text.substring(
+    0,
+    5
+  );
+
+}
+
+
+/*
+==================================================
+日期時間格式
+==================================================
+*/
+
+function formatDateTime(
+  value
+){
+
+  if(
+    !value
+  ){
+
+    return "—";
+
+  }
+
+
+  try{
+
+    return new Intl.DateTimeFormat(
+      "zh-TW",
+      {
+        timeZone:"Asia/Taipei",
+        month:"2-digit",
+        day:"2-digit",
+        hour:"2-digit",
+        minute:"2-digit",
+        hour12:false
+      }
+    )
+    .format(
+      new Date(value)
+    );
+
+  }
+  catch(e){
+
+    return String(value);
+
+  }
+
+}
+
+
+/*
+==================================================
+接送模式中文
+==================================================
+*/
+
+function pickupModeText(
+  mode
+){
+
+  const map = {
+
+    normal_1600:
+      "正常放學 16:00",
+
+    first_1700:
+      "第一梯 17:00",
+
+    second_1800:
+      "第二梯 18:00",
+
+    early:
+      "提早接孩子",
+
+    late_notice:
+      "我會晚到"
+
+  };
+
+
+  return (
+    map[
+      mode
+    ]
+    ||
+    mode
+    ||
+    "—"
+  );
+
+}
+
+
+/*
+==================================================
+接送狀態中文
+==================================================
+*/
+
+function pickupStatusText(
+  status
+){
+
+  const map = {
+
+    waiting:
+      "等待接送",
+
+    on_time:
+      "正常完成",
+
+    delayed_pickup:
+      "延遲接回",
+
+    late_pickup:
+      "逾時接送"
+
+  };
+
+
+  return (
+    map[
+      status
+    ]
+    ||
+    status
+    ||
+    "—"
+  );
+
+}
+
+
+/*
+==================================================
+接送狀態 Badge
+==================================================
+*/
+
+function pickupStatusBadge(
+  status
+){
+
+  if(
+    status === "waiting"
+  ){
+
+    return (
+      '<span class="badge badgePending">'
+      +
+      "等待接送"
+      +
+      "</span>"
+    );
+
+  }
+
+
+  if(
+    status === "on_time"
+  ){
+
+    return (
+      '<span class="badge badgeApproved">'
+      +
+      "正常完成"
+      +
+      "</span>"
+    );
+
+  }
+
+
+  if(
+    status === "delayed_pickup"
+  ){
+
+    return (
+      '<span class="badge badgeWaitlist">'
+      +
+      "延遲接回"
+      +
+      "</span>"
+    );
+
+  }
+
+
+  if(
+    status === "late_pickup"
+  ){
+
+    return (
+      '<span class="badge badgeRejected">'
+      +
+      "逾時接送"
+      +
+      "</span>"
+    );
+
+  }
+
+
+  return (
+    '<span class="badge badgeOther">'
+    +
+    escapeHtml(
+      status || "未知"
+    )
+    +
+    "</span>"
+  );
+
+}
+
+
+/*
+==================================================
+讀取今日接送
+==================================================
+*/
+
+async function refreshPickupRecords(){
+
+  if(
+    !currentUser
+    ||
+    !currentStaff
+  ){
+
+    $("pickupList").innerHTML =
+      `
+        <div class="empty">
+          請先登入行政帳號。
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  let targetDate =
+    $("pickupDateFilter")
+      .value;
+
+
+  if(
+    !targetDate
+  ){
+
+    targetDate =
+      getTaiwanDateString();
+
+
+    $("pickupDateFilter").value =
+      targetDate;
+
+  }
+
+
+  $("pickupList").innerHTML =
+    `
+      <div class="loading">
+        正在讀取接送資料...
+      </div>
+    `;
+
+
+  const {
+    data:records,
+    error:recordError
+  } =
+    await supabaseClient
+      .from("pickup_records")
+      .select(
+        `
+          id,
+          pickup_date,
+          child_id,
+          guardian_id,
+          pickup_person,
+          pickup_mode,
+          scheduled_pickup_time,
+          expected_arrival_time,
+          notice_reason,
+          guardian_notice_at,
+          actual_pickup_at,
+          completed_by,
+          pickup_status,
+          fee_amount,
+          fee_status,
+          unexcused_late,
+          correction_reason,
+          created_at,
+          updated_at
+        `
+      )
+      .eq(
+        "pickup_date",
+        targetDate
+      )
+      .order(
+        "scheduled_pickup_time",
+        {
+          ascending:true
+        }
+      );
+
+
+  if(
+    recordError
+  ){
+
+    $("pickupList").innerHTML =
+      `
+        <div class="empty">
+          ⚠️ 接送資料讀取失敗
+          <br><br>
+          ${escapeHtml(
+            recordError.message
+          )}
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  pickupRecords =
+    records || [];
+
+
+  const childIds =
+    [
+      ...new Set(
+        pickupRecords
+          .map(
+            row =>
+            row.child_id
+          )
+          .filter(Boolean)
+      )
+    ];
+
+
+  const unexcusedCountMap =
+    {};
+
+
+  if(
+    childIds.length
+  ){
+
+    const {
+      data:unexcusedRows,
+      error:unexcusedError
+    } =
+      await supabaseClient
+        .from("pickup_records")
+        .select("child_id")
+        .in(
+          "child_id",
+          childIds
+        )
+        .eq(
+          "unexcused_late",
+          true
+        );
+
+
+    if(
+      !unexcusedError
+    ){
+
+      (
+        unexcusedRows || []
+      )
+      .forEach(
+        row => {
+
+          unexcusedCountMap[
+            row.child_id
+          ] =
+            (
+              unexcusedCountMap[
+                row.child_id
+              ]
+              ||
+              0
+            )
+            +
+            1;
+
+        }
+      );
+
+    }
+
+  }
+
+
+  let pickupChildrenMap =
+    {};
+
+
+  if(
+    childIds.length
+  ){
+
+    const {
+      data:childRows,
+      error:childError
+    } =
+      await supabaseClient
+        .from("children")
+        .select(
+          `
+            id,
+            school_code,
+            name,
+            morning_class_id,
+            care_group
+          `
+        )
+        .in(
+          "id",
+          childIds
+        );
+
+
+    if(
+      !childError
+    ){
+
+      (
+        childRows || []
+      )
+      .forEach(
+        child => {
+
+          pickupChildrenMap[
+            child.id
+          ] =
+            child;
+
+        }
+      );
+
+    }
+
+  }
+
+
+  const classIds =
+    [
+      ...new Set(
+        Object
+          .values(
+            pickupChildrenMap
+          )
+          .map(
+            child =>
+            child.morning_class_id
+          )
+          .filter(Boolean)
+      )
+    ];
+
+
+  let pickupClassMap =
+    {};
+
+
+  if(
+    classIds.length
+  ){
+
+    const {
+      data:classRows
+    } =
+      await supabaseClient
+        .from("classes")
+        .select("*")
+        .in(
+          "id",
+          classIds
+        );
+
+
+    (
+      classRows || []
+    )
+    .forEach(
+      row => {
+
+        pickupClassMap[
+          row.id
+        ] =
+          row;
+
+      }
+    );
+
+  }
+
+
+  const waitingCount =
+    pickupRecords
+      .filter(
+        row =>
+        !row.actual_pickup_at
+      )
+      .length;
+
+
+  const doneCount =
+    pickupRecords
+      .filter(
+        row =>
+        !!row.actual_pickup_at
+      )
+      .length;
+
+
+  $("pickupWaitingCount").textContent =
+    "等待接送 "
+    +
+    waitingCount;
+
+
+  $("pickupDoneCount").textContent =
+    "已完成 "
+    +
+    doneCount;
+
+
+  $("pickupLastUpdated").textContent =
+    "最後更新："
+    +
+    new Intl.DateTimeFormat(
+      "zh-TW",
+      {
+        timeZone:"Asia/Taipei",
+        hour:"2-digit",
+        minute:"2-digit",
+        second:"2-digit",
+        hour12:false
+      }
+    )
+    .format(
+      new Date()
+    );
+
+
+  if(
+    !pickupRecords.length
+  ){
+
+    $("pickupList").innerHTML =
+      `
+        <div class="empty">
+          🌷 ${escapeHtml(
+            targetDate
+          )} 目前沒有接送通知。
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  $("pickupList").innerHTML =
+    pickupRecords
+      .map(
+        row =>
+        renderPickupCard(
+          row,
+          pickupChildrenMap,
+          pickupClassMap,
+          unexcusedCountMap
+        )
+      )
+      .join("");
+
+}
+
+/*
+==================================================
+取得班級名稱
+==================================================
+*/
+
+function getPickupClassName(
+  child,
+  pickupClassMap
+){
+
+  if(
+    !child
+  ){
+
+    return "—";
+
+  }
+
+
+  const classRow =
+    pickupClassMap[
+      child.morning_class_id
+    ];
+
+
+  if(
+    classRow
+  ){
+
+    if(
+      classRow.name
+    ){
+
+      return classRow.name;
+
+    }
+
+
+    if(
+      classRow.class_name
+    ){
+
+      return classRow.class_name;
+
+    }
+
+
+    if(
+      classRow.code
+      &&
+      CLASS_MAP[
+        classRow.code
+      ]
+    ){
+
+      return CLASS_MAP[
+        classRow.code
+      ];
+
+    }
+
+
+    if(
+      classRow.class_code
+      &&
+      CLASS_MAP[
+        classRow.class_code
+      ]
+    ){
+
+      return CLASS_MAP[
+        classRow.class_code
+      ];
+
+    }
+
+  }
+
+
+  return "原班級";
+
+}
+
+
+/*
+==================================================
+建立接送卡片
+==================================================
+*/
+
+function renderPickupCard(
+  row,
+  pickupChildrenMap,
+  pickupClassMap,
+  unexcusedCountMap
+){
+
+  const child =
+    pickupChildrenMap[
+      row.child_id
+    ]
+    ||
+    {};
+
+
+  const childName =
+    child.name
+    ||
+    "未知幼兒";
+
+
+  const className =
+    getPickupClassName(
+      child,
+      pickupClassMap
+    );
+
+
+  const isDone =
+    !!row.actual_pickup_at;
+
+
+  /*
+  ================================================
+  無故延遲累計
+  ================================================
+  */
+
+  const unexcusedCount =
+    unexcusedCountMap[
+      row.child_id
+    ]
+    ||
+    0;
+
+
+  const unexcusedHtml =
+    unexcusedCount >= 3
+    ?
+    `
+      <div
+        style="
+          margin-top:10px;
+          padding:10px;
+          border-radius:10px;
+          background:#ffebee;
+          color:#b71c1c;
+          font-weight:900;
+          line-height:1.6;
+        "
+      >
+        🚨 無故延遲累計：${unexcusedCount} 次
+        <br>
+        已達 3 次，請行政確認延長照顧服務資格。
+      </div>
+    `
+    :
+    `
+      <div
+        style="
+          margin-top:10px;
+          padding:10px;
+          border-radius:10px;
+          background:#fff8e1;
+          color:#8d6e00;
+          font-weight:800;
+        "
+      >
+        ⚠️ 無故延遲累計：${unexcusedCount} / 3 次
+      </div>
+    `;
+
+
+  /*
+  ================================================
+  晚到通知
+  ================================================
+  */
+
+  let lateNoticeHtml =
+    "";
+
+
+  if(
+    row.pickup_mode
+    ===
+    "late_notice"
+  ){
+
+    lateNoticeHtml =
+      `
+        <div class="info">
+
+          <div class="infoLabel">
+            預計抵達
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              formatClockTime(
+                row.expected_arrival_time
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            晚到原因
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              row.notice_reason
+              ||
+              "未填寫"
+            )}
+          </div>
+
+        </div>
+      `;
+
+  }
+
+
+  /*
+  ================================================
+  完成接送結果
+  ================================================
+  */
+
+  let completionHtml =
+    "";
+
+
+  if(
+    isDone
+  ){
+
+    let extra =
+      "";
+
+
+    if(
+      Number(
+        row.fee_amount || 0
+      )
+      >
+      0
+    ){
+
+      extra +=
+        `
+          <br>
+          💰 費用：
+          <b>
+            ${escapeHtml(
+              String(
+                row.fee_amount
+              )
+            )} 元
+          </b>
+        `;
+
+    }
+
+
+    if(
+      row.unexcused_late
+      ===
+      true
+    ){
+
+      extra +=
+        `
+          <br>
+          ⚠️ 本次列入「無故延遲接回」1 次
+        `;
+
+    }
+
+
+    completionHtml =
+      `
+        <div class="pickupResult">
+
+          ✅ 完成時間：
+          <b>
+            ${escapeHtml(
+              formatDateTime(
+                row.actual_pickup_at
+              )
+            )}
+          </b>
+
+          <br>
+
+          接送結果：
+          <b>
+            ${escapeHtml(
+              pickupStatusText(
+                row.pickup_status
+              )
+            )}
+          </b>
+
+          ${extra}
+
+        </div>
+      `;
+
+  }
+  else{
+
+    completionHtml =
+      `
+        <div class="pickupAction">
+
+          <button
+            class="btn btnGreen"
+            id="completePickup_${escapeHtml(
+              row.id
+            )}"
+            onclick="completePickupRecord(
+              '${escapeJs(
+                row.id
+              )}'
+            )"
+          >
+            ✅ 完成接送
+          </button>
+
+        </div>
+      `;
+
+  }
+
+
+  /*
+  ================================================
+  完整接送卡片
+  ================================================
+  */
+
+  return `
+    <div
+      class="pickupCard ${
+        isDone
+        ?
+        "done"
+        :
+        "waiting"
+      }"
+    >
+
+      <div class="requestTop">
+
+        <div>
+
+          <div class="requestChild">
+            ${escapeHtml(
+              childName
+            )}
+          </div>
+
+          <div class="requestClass">
+            原班級：
+            ${escapeHtml(
+              className
+            )}
+          </div>
+
+        </div>
+
+
+        <div>
+          ${pickupStatusBadge(
+            row.pickup_status
+          )}
+        </div>
+
+      </div>
+
+
+      <div class="requestBody">
+
+        <div class="info">
+
+          <div class="infoLabel">
+            原訂接回
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              formatClockTime(
+                row.scheduled_pickup_time
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            接送人員
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              row.pickup_person
+              ||
+              "—"
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            接送方式
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              pickupModeText(
+                row.pickup_mode
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            家長通知時間
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              formatDateTime(
+                row.guardian_notice_at
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        ${lateNoticeHtml}
+
+      </div>
+
+
+      ${unexcusedHtml}
+
+
+      ${completionHtml}
+
+    </div>
+  `;
+
+}
+
+
+/*
+==================================================
+完成接送
+==================================================
+*/
+
+async function completePickupRecord(
+  pickupRecordId
+){
+
+  if(
+    !pickupRecordId
+  ){
+
+    return;
+
+  }
+
+
+  const record =
+    pickupRecords
+      .find(
+        row =>
+        row.id
+        ===
+        pickupRecordId
+      );
+
+
+  if(
+    !record
+  ){
+
+    alert(
+      "找不到這筆接送資料。"
+    );
+
+    return;
+
+  }
+
+
+  if(
+    record.actual_pickup_at
+  ){
+
+    alert(
+      "這筆接送已經完成。"
+    );
+
+    return;
+
+  }
+
+
+  const ok =
+    confirm(
+      "確定孩子已完成接送嗎？\n\n"
+      +
+      "系統將以現在時間作為正式完成接送時間，"
+      +
+      "並自動判斷是否延遲、逾時及相關費用。"
+    );
+
+
+  if(
+    !ok
+  ){
+
+    return;
+
+  }
+
+
+  const button =
+    $(
+      "completePickup_"
+      +
+      pickupRecordId
+    );
+
+
+  if(
+    button
+  ){
+
+    button.disabled =
+      true;
+
+
+    button.textContent =
+      "處理中...";
+
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .rpc(
+        "complete_pickup",
+        {
+          p_pickup_record_id:
+            pickupRecordId
+        }
+      );
+
+
+  if(
+    error
+  ){
+
+    if(
+      button
+    ){
+
+      button.disabled =
+        false;
+
+
+      button.textContent =
+        "✅ 完成接送";
+
+    }
+
+
+    alert(
+      "完成接送失敗：\n"
+      +
+      error.message
+    );
+
+
+    return;
+
+  }
+
+
+  let message =
+    "✅ 已完成接送";
+
+
+  if(
+    data
+  ){
+
+    if(
+      data.pickup_status
+      ===
+      "delayed_pickup"
+    ){
+
+      message +=
+        "\n\n本次為：延遲接回";
+
+    }
+
+
+    if(
+      data.pickup_status
+      ===
+      "late_pickup"
+    ){
+
+      message +=
+        "\n\n本次為：逾時接送";
+
+    }
+
+
+    if(
+      Number(
+        data.fee_amount || 0
+      )
+      >
+      0
+    ){
+
+      message +=
+        "\n費用："
+        +
+        data.fee_amount
+        +
+        " 元";
+
+
+      message +=
+        "\n繳費方式：請準備剛好的現金";
+
+    }
+
+
+    if(
+      data.unexcused_late
+      ===
+      true
+    ){
+
+      message +=
+        "\n⚠️ 本次列入無故延遲接回 1 次";
+
+    }
+
+  }
+
+
+  alert(
+    message
+  );
+
+
+  await refreshPickupRecords();
+
+}
+
+
+/*
+==================================================
+讀取家長申請
+==================================================
+*/
+  async function refreshRequests(){
+
+  if(
+    !currentUser
+    ||
+    !currentStaff
+  ){
+
+    $("requestList").innerHTML =
+      `
+        <div class="empty">
+          請先由教職員平台完成行政身分驗證。
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  $("requestList").innerHTML =
+    `
+      <div class="loading">
+        正在讀取家長申請...
+      </div>
+    `;
+
+
+  hideError();
+
+
+  const {
+    data:requestData,
+    error:requestError
+  } =
+    await supabaseClient
+      .from("requests")
+      .select(
+        `
+          id,
+          request_date,
+          child_id,
+          guardian_id,
+          request_type,
+          status,
+          requested_start_time,
+          requested_end_time,
+          reason,
+          care_group,
+          assigned_aftercare_class_code,
+          admin_note,
+          created_at
+        `
+      )
+      .order(
+        "created_at",
+        {
+          ascending:false
+        }
+      );
+
+
+  if(
+    requestError
+  ){
+
+    showError(
+      "讀取 requests 失敗："
+      +
+      requestError.message
+    );
+
+    return;
+
+  }
+
+
+  requests =
+    requestData || [];
+
+
+  const childIds =
+    [
+      ...new Set(
+        requests
+          .map(
+            r =>
+            r.child_id
+          )
+          .filter(Boolean)
+      )
+    ];
+
+
+  childrenMap =
+    {};
+
+
+  if(
+    childIds.length
+  ){
+
+    const {
+      data:childData,
+      error:childError
+    } =
+      await supabaseClient
+        .from("children")
+        .select(
+          `
+            id,
+            school_code,
+            name,
+            morning_class_id,
+            care_group
+          `
+        )
+        .in(
+          "id",
+          childIds
+        );
+
+
+    if(
+      childError
+    ){
+
+      showError(
+        "幼兒資料讀取失敗："
+        +
+        childError.message
+      );
+
+    }
+    else{
+
+      (
+        childData || []
+      )
+      .forEach(
+        child => {
+
+          childrenMap[
+            child.id
+          ] =
+            child;
+
+        }
+      );
+
+    }
+
+  }
+
+
+  updateCounts();
+
+  renderRequests();
+
+
+  $("lastUpdated").textContent =
+    "最後更新："
+    +
+    formatDateTime(
+      new Date()
+    );
+
+}
+
+
+/*
+==================================================
+統計
+==================================================
+*/
+
+function updateCounts(){
+
+  const today =
+    getTaiwanDateString();
+
+
+  $("pendingCount").textContent =
+    requests
+      .filter(
+        r =>
+        r.status === "pending"
+        &&
+        (
+          r.request_type === "temporary"
+          ||
+          r.request_type === "extended"
+        )
+      )
+      .length;
+
+
+  $("leaveCount").textContent =
+    requests
+      .filter(
+        r =>
+        r.request_type === "leave"
+        &&
+        r.request_date === today
+      )
+      .length;
+
+
+  $("temporaryCount").textContent =
+    requests
+      .filter(
+        r =>
+        r.request_type === "temporary"
+        &&
+        r.request_date === today
+      )
+      .length;
+
+  if($("extendedCount")){
+    $("extendedCount").textContent =
+      requests
+        .filter(
+          r =>
+          r.request_type === "extended"
+          &&
+          r.request_date === today
+        )
+        .length;
+  }
+
+}
+
+
+function resetCounts(){
+
+  $("pendingCount").textContent =
+    "0";
+
+  $("leaveCount").textContent =
+    "0";
+
+  $("temporaryCount").textContent =
+    "0";
+
+  if($("extendedCount")){
+    $("extendedCount").textContent =
+      "0";
+  }
+
+  $("lastUpdated").textContent =
+    "尚未載入";
+
+}
+
+
+/*
+==================================================
+上方摘要卡片：直接開啟對應申請
+==================================================
+*/
+
+function openRequestView(filter){
+  const panel=$("request-management");
+  if(!panel) return;
+
+  setFilter(filter);
+
+  const panels=
+    [...document.querySelectorAll(".panel")]
+      .filter(
+        item =>
+          item.tagName !== "DETAILS"
+          &&
+          item.querySelector(":scope > .panelTitle")
+      );
+
+  panels.forEach((item,index)=>{
+    setPanelCollapsed(
+      item,
+      item !== panel,
+      index
+    );
+  });
+
+  setTimeout(
+    ()=>{
+      panel.scrollIntoView({
+        behavior:"smooth",
+        block:"start"
+      });
+    },
+    40
+  );
+}
+
+
+/*
+==================================================
+申請篩選
+==================================================
+*/
+
+function setFilter(
+  filter
+){
+
+  currentFilter =
+    filter;
+
+
+  [
+    "All",
+    "Pending",
+    "Leave",
+    "Temporary",
+    "Extended"
+  ]
+  .forEach(
+    name => {
+
+      const btn =
+        $(
+          "tab"
+          +
+          name
+        );
+
+
+      if(
+        btn
+      ){
+
+        btn.classList.remove(
+          "active"
+        );
+
+      }
+
+    }
+  );
+
+
+  const selected =
+    $(
+      "tab"
+      +
+      filter[0].toUpperCase()
+      +
+      filter.slice(1)
+    );
+
+
+  if(
+    selected
+  ){
+
+    selected.classList.add(
+      "active"
+    );
+
+  }
+
+
+  renderRequests();
+
+}
+
+
+/*
+==================================================
+顯示申請
+==================================================
+*/
+
+function renderRequests(){
+
+  let list =
+    [
+      ...requests
+    ];
+
+
+  if(
+    currentFilter === "pending"
+  ){
+
+    list =
+      list.filter(
+        r =>
+        r.status === "pending"
+        &&
+        (
+          r.request_type === "temporary"
+          ||
+          r.request_type === "extended"
+        )
+      );
+
+  }
+
+
+  if(
+    currentFilter === "leave"
+  ){
+
+    list =
+      list.filter(
+        r =>
+        r.request_type === "leave"
+      );
+
+  }
+
+
+  if(
+    currentFilter === "temporary"
+  ){
+
+    list =
+      list.filter(
+        r =>
+        r.request_type === "temporary"
+      );
+
+  }
+
+
+  if(
+    currentFilter === "extended"
+  ){
+
+    list =
+      list.filter(
+        r =>
+        r.request_type === "extended"
+      );
+
+  }
+
+
+  if(
+    !list.length
+  ){
+
+    $("requestList").innerHTML =
+      `
+        <div class="empty">
+          目前沒有符合條件的申請。
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  $("requestList").innerHTML =
+    list
+      .map(
+        requestCardHtml
+      )
+      .join("");
+
+}
+
+
+/*
+==================================================
+申請卡片
+==================================================
+*/
+
+function requestCardHtml(
+  r
+){
+
+  const child =
+    childrenMap[
+      r.child_id
+    ]
+    ||
+    null;
+
+
+  const childName =
+    child
+    ?
+    child.name
+    :
+    "未知幼兒";
+
+
+  const className =
+    child
+    ?
+    (
+      CLASS_MAP[
+        child.morning_class_id
+      ]
+      ||
+      child.morning_class_id
+      ||
+      "未設定班級"
+    )
+    :
+    "未設定班級";
+
+
+  const schoolCode =
+    child
+    ?
+    child.school_code
+    :
+    "";
+
+
+  const status =
+    statusText(
+      r.status
+    );
+
+
+  const assignedClass =
+    r.assigned_aftercare_class_code
+    &&
+    AFTERCARE_CLASSES[
+      r.assigned_aftercare_class_code
+    ]
+    ?
+    (
+      r.assigned_aftercare_class_code
+      +
+      " "
+      +
+      AFTERCARE_CLASSES[
+        r.assigned_aftercare_class_code
+      ].name
+    )
+    :
+    "尚未指派";
+
+
+  return `
+
+    <div class="requestCard">
+
+      <div class="requestTop">
+
+        <div>
+
+          <div class="requestChild">
+            ${escapeHtml(
+              childName
+            )}
+          </div>
+
+          <div class="requestClass">
+
+            ${escapeHtml(
+              className
+            )}
+
+            ${
+              schoolCode
+              ?
+              "｜"
+              +
+              escapeHtml(
+                schoolCode
+              )
+              :
+              ""
+            }
+
+          </div>
+
+        </div>
+
+
+        <span
+          class="badge ${
+            statusClass(
+              r.status
+            )
+          }"
+        >
+          ${escapeHtml(
+            status
+          )}
+        </span>
+
+      </div>
+
+
+      <div class="requestBody">
+
+        <div class="info">
+
+          <div class="infoLabel">
+            申請類型
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              requestTypeText(
+                r.request_type
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            日期
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              r.request_date
+              ||
+              "-"
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            申請時段
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              requestTimeText(
+                r
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            托育類別
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              careGroupText(
+                r.care_group
+              )
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            本園安排課後班
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              assignedClass
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div class="infoLabel">
+            建立時間
+          </div>
+
+          <div class="infoValue">
+            ${escapeHtml(
+              formatDateTime(
+                r.created_at
+              )
+            )}
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="reasonBox">
+
+        <b>
+          📝 家長原因／備註
+        </b>
+
+        <br>
+
+        ${escapeHtml(
+          r.reason
+          ||
+          "未填寫"
+        )}
+
+      </div>
+
+
+      ${
+        r.admin_note
+        ?
+        `
+          <div class="reasonBox">
+
+            <b>
+              🏫 本園備註
+            </b>
+
+            <br>
+
+            ${escapeHtml(
+              r.admin_note
+            )}
+
+          </div>
+        `
+        :
+        ""
+      }
+
+
+      ${adminActionHtml(
+        r
+      )}
+
+    </div>
+  `;
+
+}
+
+
+/*
+==================================================
+行政操作區
+==================================================
+*/
+  function adminActionHtml(
+  r
+){
+
+  if(
+    r.status !== "pending"
+    &&
+    r.status !== "waitlist"
+  ){
+
+    return `
+      <div
+        class="helper"
+        style="margin-top:10px"
+      >
+        此申請目前已完成行政處理。
+      </div>
+    `;
+
+  }
+
+
+  if(
+    r.request_type === "leave"
+  ){
+
+    return `
+
+      <div class="actionBox">
+        <b>👩‍🏫 原班導師處理</b>
+        <div class="helper" style="margin-top:6px">
+          請假由幼兒原班導師（含正式代課授權老師）確認。
+          行政端保留查看權限，但不在這裡核准請假。
+        </div>
+      </div>
+    `;
+
+  }
+
+
+  if(
+    r.request_type === "extended"
+    ||
+    r.request_type === "temporary"
+  ){
+
+    return `
+
+      <div class="actionBox">
+
+        <b>
+          行政審核
+        </b>
+
+
+        <div class="actionGrid">
+
+          <div>
+
+            <div class="helper">
+              本園安排課後班
+            </div>
+
+            <select
+              id="class_${r.id}"
+            >
+              ${aftercareOptions(
+                r
+              )}
+            </select>
+
+          </div>
+
+
+          <div>
+
+            <div class="helper">
+              本園備註（選填）
+            </div>
+
+            <input
+              id="note_${r.id}"
+              value="${escapeHtml(
+                r.admin_note
+                ||
+                ""
+              )}"
+              placeholder="例：今日安排至蜜蜂班"
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="actionButtons">
+
+          <button
+            class="btn btnGreen"
+            onclick="approveCareRequest(
+              '${r.id}'
+            )"
+          >
+            ✅ 核准
+          </button>
+
+
+          ${
+            r.request_type
+            ===
+            "temporary"
+            ?
+            `
+              <button
+                class="btn btnOrange"
+                onclick="updateRequestStatus(
+                  '${r.id}',
+                  'waitlist'
+                )"
+              >
+                🟡 候補
+              </button>
+            `
+            :
+            ""
+          }
+
+
+          <button
+            class="btn btnRed"
+            onclick="updateRequestStatus(
+              '${r.id}',
+              'rejected'
+            )"
+          >
+            ❌ 無法安排
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+  }
+
+
+  return "";
+
+}
+
+
+/*
+==================================================
+課後班選單
+==================================================
+*/
+
+function aftercareOptions(
+  r
+){
+
+  const child =
+    childrenMap[
+      r.child_id
+    ];
+
+
+  const careGroup =
+    r.care_group
+    ||
+    child?.care_group
+    ||
+    "mixed";
+
+
+  const needs18 =
+    r.requested_end_time
+    &&
+    String(
+      r.requested_end_time
+    )
+    .startsWith(
+      "18:00"
+    );
+
+
+  const items =
+    Object.entries(
+      AFTERCARE_CLASSES
+    )
+    .filter(
+      ([code,item]) => {
+
+        if(
+          item.group
+          !==
+          careGroup
+        ){
+
+          return false;
+
+        }
+
+
+        if(
+          careGroup === "mixed"
+          &&
+          needs18
+          &&
+          item.endTime
+          !==
+          "18:00"
+        ){
+
+          return false;
+
+        }
+
+
+        return true;
+
+      }
+    );
+
+
+  let html =
+    `
+      <option value="">
+        請選擇課後班
+      </option>
+    `;
+
+
+  items.forEach(
+    ([code,item]) => {
+
+      const selected =
+        r.assigned_aftercare_class_code
+        ===
+        code
+        ?
+        "selected"
+        :
+        "";
+
+
+      html +=
+        `
+          <option
+            value="${code}"
+            ${selected}
+          >
+            ${code}
+            ${escapeHtml(
+              item.name
+            )}
+
+            ${
+              item.endTime
+              ?
+              "｜至 "
+              +
+              item.endTime
+              :
+              ""
+            }
+
+          </option>
+        `;
+
+    }
+  );
+
+
+  return html;
+
+}
+
+
+/*
+==================================================
+發送 LINE 審核通知
+==================================================
+*/
+
+async function notifyRequestResult(
+  requestId
+){
+
+  const {
+    data:sessionData,
+    error:sessionError
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
+
+
+  if(
+    sessionError
+    ||
+    !sessionData
+    ||
+    !sessionData.session
+    ||
+    !sessionData.session.access_token
+  ){
+
+    throw new Error(
+      "目前沒有有效的行政登入狀態，無法發送 LINE 通知。"
+    );
+
+  }
+
+
+  const response =
+    await fetch(
+      SUPABASE_URL
+      +
+      "/functions/v1/line-request-notify",
+      {
+
+        method:
+          "POST",
+
+
+        headers:{
+
+          "Content-Type":
+            "application/json",
+
+          "Authorization":
+            "Bearer "
+            +
+            sessionData.session.access_token,
+
+          "apikey":
+            SUPABASE_PUBLISHABLE_KEY
+
+        },
+
+
+        body:
+          JSON.stringify(
+            {
+              requestId
+            }
+          )
+
+      }
+    );
+
+
+  let result =
+    {};
+
+
+  try{
+
+    result =
+      await response.json();
+
+  }
+  catch(e){
+
+    result = {
+      error:
+        "通知服務回傳了無法解析的內容。"
+    };
+
+  }
+
+
+  if(
+    !response.ok
+  ){
+
+    throw new Error(
+      result.error
+      ||
+      result.message
+      ||
+      "LINE 通知發送失敗。"
+    );
+
+  }
+
+
+  return result;
+
+}
+
+
+/*
+==================================================
+更新後統一處理
+==================================================
+*/
+
+async function finishRequestUpdate(
+  requestId,
+  statusLabel
+){
+
+  let lineText =
+    "LINE 通知已送出。";
+
+
+  try{
+
+    await notifyRequestResult(
+      requestId
+    );
+
+  }
+  catch(e){
+
+    console.error(
+      "LINE 通知失敗：",
+      e
+    );
+
+
+    lineText =
+      "⚠️ 資料已更新，但 LINE 通知失敗："
+      +
+      (
+        e.message
+        ||
+        String(e)
+      );
+
+  }
+
+
+  alert(
+    "✅ 狀態已更新為「"
+    +
+    statusLabel
+    +
+    "」。\n\n"
+    +
+    lineText
+  );
+
+
+  await refreshRequests();
+
+}
+
+
+/*
+==================================================
+核准托育
+==================================================
+*/
+
+async function approveCareRequest(
+  requestId
+){
+
+  const classEl =
+    $(
+      "class_"
+      +
+      requestId
+    );
+
+
+  const noteEl =
+    $(
+      "note_"
+      +
+      requestId
+    );
+
+
+  const classCode =
+    classEl
+    ?
+    classEl.value
+    :
+    "";
+
+
+  const adminNote =
+    noteEl
+    ?
+    noteEl.value.trim()
+    :
+    "";
+
+
+  if(
+    !classCode
+  ){
+
+    alert(
+      "核准前請先選擇本園安排的課後班。"
+    );
+
+    return;
+
+  }
+
+
+  if(
+    !confirm(
+      "確定要核准此申請並發送 LINE 通知給家長嗎？"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("requests")
+      .update(
+        {
+
+          status:
+            "approved",
+
+          assigned_aftercare_class_code:
+            classCode,
+
+          admin_note:
+            adminNote
+
+        }
+      )
+      .eq(
+        "id",
+        requestId
+      );
+
+
+  if(
+    error
+  ){
+
+    alert(
+      "核准失敗：\n\n"
+      +
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  await finishRequestUpdate(
+    requestId,
+    "已核准"
+  );
+
+}
+
+
+/*
+==================================================
+變更申請狀態
+==================================================
+*/
+
+async function updateRequestStatus(
+  requestId,
+  newStatus
+){
+
+  let confirmText =
+    "確定要更新此申請並通知家長嗎？";
+
+
+  if(
+    newStatus === "approved"
+  ){
+
+    confirmText =
+      "確定已收到並確認這筆請假，並發送 LINE 通知給家長嗎？";
+
+  }
+
+
+  if(
+    newStatus === "waitlist"
+  ){
+
+    confirmText =
+      "確定將此申請設為候補，並發送 LINE 通知給家長嗎？";
+
+  }
+
+
+  if(
+    newStatus === "rejected"
+  ){
+
+    confirmText =
+      "確定將此申請設為無法安排，並發送 LINE 通知給家長嗎？";
+
+  }
+
+
+  if(
+    !confirm(
+      confirmText
+    )
+  ){
+
+    return;
+
+  }
+
+
+  const noteEl =
+    $(
+      "note_"
+      +
+      requestId
+    );
+
+
+  const adminNote =
+    noteEl
+    ?
+    noteEl.value.trim()
+    :
+    null;
+
+
+  const payload = {
+
+    status:
+      newStatus
+
+  };
+
+
+  if(
+    adminNote
+    !==
+    null
+  ){
+
+    payload.admin_note =
+      adminNote;
+
+  }
+
+
+  if(
+    newStatus
+    !==
+    "approved"
+  ){
+
+    payload.assigned_aftercare_class_code =
+      null;
+
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("requests")
+      .update(
+        payload
+      )
+      .eq(
+        "id",
+        requestId
+      );
+
+
+  if(
+    error
+  ){
+
+    alert(
+      "狀態更新失敗：\n\n"
+      +
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  await finishRequestUpdate(
+    requestId,
+    statusText(
+      newStatus
+    )
+  );
+
+}
+
+
+
+async function loadSchoolClosedAdmin(){
+  const target=$("schoolClosedList");
+  if(!target||!currentUser||!currentStaff) return;
+
+  const today=getTaiwanDateString();
+  const endYear=Number(today.slice(0,4))+1;
+  const endDate=`${endYear}-12-31`;
+
+  const {data,error}=await supabaseClient
+    .from("school_closed_dates")
+    .select("closed_date,name,closed_type,note")
+    .gte("closed_date",today)
+    .lte("closed_date",endDate)
+    .order("closed_date",{ascending:true});
+
+  if(error){
+    target.innerHTML=
+      '<div class="empty">休園日讀取失敗：'+
+      escapeHtml(error.message)+
+      '</div>';
+    return;
+  }
+
+  const rows=data||[];
+  if(!rows.length){
+    target.innerHTML='<div class="empty">目前沒有設定休園日。</div>';
+    return;
+  }
+
+  target.innerHTML=rows.map(row=>{
+    const canDelete=
+      row.closed_type==="school_closed"||
+      row.closed_type==="special";
+
+    return `
+      <div class="staffRow" style="margin-top:8px">
+        <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+          <div>
+            <b>${escapeHtml(row.closed_date)}</b>
+            ｜ ${escapeHtml(row.name)}
+            <div class="helper">
+              ${row.closed_type==="national_holiday"?"國定假日":"本園設定"}
+              ${row.note?"｜"+escapeHtml(row.note):""}
+            </div>
+          </div>
+          ${canDelete
+            ? `<button class="btn btnRed" type="button" onclick="deleteSchoolClosedDate('${escapeJs(row.closed_date)}')">刪除</button>`
+            : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function saveSchoolClosedDate(){
+  const date=$("schoolClosedDateInput")?.value||"";
+  const name=$("schoolClosedNameInput")?.value.trim()||"";
+
+  if(!date||name.length<2){
+    alert("請輸入日期與休園名稱。");
+    return;
+  }
+
+  const {error}=await supabaseClient.rpc(
+    "admin_upsert_school_closed_date",
+    {
+      p_closed_date:date,
+      p_name:name,
+      p_closed_type:"school_closed",
+      p_note:"行政平台設定"
+    }
+  );
+
+  if(error){
+    alert("休園日儲存失敗：\n"+error.message);
+    return;
+  }
+
+  $("schoolClosedNameInput").value="";
+  alert("✅ 休園日已儲存。");
+  await loadSchoolClosedAdmin();
+}
+
+async function deleteSchoolClosedDate(date){
+  if(!confirm(`確定刪除 ${date} 的本園休園設定？`)) return;
+
+  const {error}=await supabaseClient.rpc(
+    "admin_delete_school_closed_date",
+    {p_closed_date:date}
+  );
+
+  if(error){
+    alert("刪除失敗：\n"+error.message);
+    return;
+  }
+
+  await loadSchoolClosedAdmin();
+}
+
+
+function csvCell(value){
+  const text=String(value??"");
+  if(
+    text.includes(",")
+    || text.includes('"')
+    || text.includes("\n")
+  ){
+    return '"' + text.replaceAll('"','""') + '"';
+  }
+  return text;
+}
+
+async function downloadPilotParentBindingCodes(){
+  if(
+    !confirm(
+      "確定重新產生櫻桃班、蘋果班家長綁定碼？\n\n先前尚未使用的綁定碼會立即失效。"
+    )
+  ){
+    return;
+  }
+
+  try{
+    const {data,error}=await supabaseClient.rpc(
+      "admin_regenerate_pilot_guardian_codes",
+      {p_valid_days:14}
+    );
+
+    if(error) throw error;
+
+    const rows=
+      Array.isArray(data?.rows)
+        ? data.rows
+        : [];
+
+    if(!rows.length){
+      throw new Error("沒有可匯出的試行家長資料。");
+    }
+
+    const lines=[
+      [
+        "幼兒",
+        "家長姓名",
+        "16碼一次性綁定碼",
+        "專屬綁定連結",
+        "有效期限",
+        "發送狀態"
+      ].map(csvCell).join(",")
+    ];
+
+    rows.forEach(row=>{
+      lines.push(
+        [
+          row.child_summary,
+          row.guardian_name,
+          row.binding_code,
+          row.binding_link,
+          formatDateTime(row.expires_at),
+          "尚未發送"
+        ]
+        .map(csvCell)
+        .join(",")
+      );
+    });
+
+    const csv="\uFEFF"+lines.join("\r\n");
+    const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="樂業附幼_櫻桃蘋果班_家長LINE綁定清單.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+
+    alert(
+      "✅ 新的家長綁定碼已產生並下載。\n\n請只把每位家長自己的專屬連結私訊給本人。"
+    );
+  }
+  catch(err){
+    alert(
+      "家長綁定碼產生失敗：\n"+
+      (err?.message||String(err))
+    );
+  }
+}
+
+
+async function exportMonthlyCareReport(){
+  const year=Number($("monthlyReportYear")?.value);
+  const month=Number($("monthlyReportMonth")?.value);
+
+  if(!year||month<1||month>12){
+    alert("請選擇正確的年月。");
+    return;
+  }
+
+  const {data:{session}}=await supabaseClient.auth.getSession();
+
+  if(!session?.access_token){
+    alert("行政登入狀態已失效，請從教職員平台重新進入。");
+    return;
+  }
+
+  try{
+    const res=await fetch(
+      SUPABASE_URL+
+      "/functions/v1/admin-monthly-care-export?year="+
+      encodeURIComponent(year)+
+      "&month="+
+      encodeURIComponent(month),
+      {
+        headers:{
+          Authorization:"Bearer "+session.access_token,
+          apikey:SUPABASE_PUBLISHABLE_KEY
+        }
+      }
+    );
+
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      throw new Error(err.message||err.error||"月結匯出失敗");
+    }
+
+    const blob=await res.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download=`樂業附幼_${year}年${String(month).padStart(2,"0")}月_延托臨托逾時統計.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  catch(err){
+    alert("月結匯出失敗：\n"+(err?.message||String(err)));
+  }
+}
+
+
+/*
+==================================================
+老師管理分頁 V16
+==================================================
+*/
+
+let teacherBindingRequests = [];
+let currentEditingStaffId = null;
+
+function setManageTab(tab){
+  const map={staff:["manageTabStaff","manageStaffSection"],schedule:["manageTabSchedule","manageScheduleSection"],line:["manageTabLine","manageLineSection"]};
+  Object.entries(map).forEach(([key,ids])=>{
+    $(ids[0])?.classList.toggle("active",key===tab);
+    $(ids[1])?.classList.toggle("active",key===tab);
+  });
+  if(tab==="line") renderLineBindingManagement();
+  if(tab==="schedule") loadDatabaseScheduleView();
+}
+
+function toggleAddStaffBox(force){
+  const box=$("staffAddBox");
+  if(!box) return;
+  const show=typeof force==="boolean"?force:!box.classList.contains("show");
+  box.classList.toggle("show",show);
+}
+
+async function refreshStaffManagement(){
+  if(!currentUser||!currentStaff) return;
+  if($("staffManageList")) $("staffManageList").innerHTML='<div class="loading">正在讀取老師資料...</div>';
+
+  const [staffResult,aliasResult,assignmentResult,bindingResult]=await Promise.all([
+    supabaseClient.from("staff").select("id,display_name,role,active,line_user_id").order("display_name",{ascending:true}),
+    supabaseClient.from("staff_aliases").select("id,staff_id,alias_name,active").order("alias_name",{ascending:true}),
+    supabaseClient.from("staff_assignments").select("id,staff_id,assignment_date,morning_class_id,aftercare_class_id,active").is("assignment_date",null).eq("active",true),
+    supabaseClient.from("teacher_line_binding_requests").select("id,staff_id,line_user_id,line_display_name,status,requested_at,reviewed_at,admin_note").order("requested_at",{ascending:false})
+  ]);
+
+  if(staffResult.error){
+    if($("staffManageList")) $("staffManageList").innerHTML=`<div class="empty">⚠️ 老師資料讀取失敗<br><br>${escapeHtml(staffResult.error.message)}</div>`;
+    return;
+  }
+
+  staffList=staffResult.data||[];
+  staffAliases=aliasResult.error?[]:(aliasResult.data||[]);
+  teacherBindingRequests=bindingResult.error?[]:(bindingResult.data||[]);
+  fixedHomeroomMap={};
+  fixedAftercareMap={};
+  if(!assignmentResult.error){
+    (assignmentResult.data||[]).forEach(row=>{
+      if(row.morning_class_id) fixedHomeroomMap[row.staff_id]=row.morning_class_id;
+      if(row.aftercare_class_id) fixedAftercareMap[row.staff_id]=row.aftercare_class_id;
+    });
+  }
+  renderStaffManagement();
+  renderLineBindingManagement();
+}
+
+function staffRoleText(role){
+  return ({admin:"行政老師",class_teacher:"原班導師",aftercare_teacher:"支援／外聘"})[role]||role||"—";
+}
+
+function getStaffAliasText(staffId){
+  const aliases=staffAliases.filter(row=>row.staff_id===staffId&&row.active===true).map(row=>row.alias_name);
+  return aliases.length?aliases.join("、"):"無";
+}
+
+function homeroomOptions(selectedValue){
+  let html='<option value="">無</option>';
+  Object.entries(CLASS_MAP).forEach(([code,name])=>{html+=`<option value="${code}" ${selectedValue===code?"selected":""}>${code} ${escapeHtml(name)}</option>`;});
+  return html;
+}
+
+function aftercareOptions(selectedValue){
+  let html='<option value="">無</option>';
+  Object.entries(AFTERCARE_CLASSES).forEach(([code,item])=>{
+    const suffix=item.endTime?("｜"+item.endTime):(item.group==="toddler"?"｜幼幼":"");
+    html+=`<option value="${code}" ${selectedValue===code?"selected":""}>${code} ${escapeHtml(item.name)}${escapeHtml(suffix)}</option>`;
+  });
+  return html;
+}
+
+function isTestStaff(staff){return staff.display_name==="測試行政老師";}
+
+function renderStaffManagement(){
+  const target=$("staffManageList");
+  if(!target) return;
+  const search=($("staffSearch")?.value||"").trim().toLowerCase();
+  const roleFilter=$("staffRoleFilter")?.value||"all";
+  const officialActive=staffList.filter(s=>s.active===true&&!isTestStaff(s));
+  const filtered=officialActive.filter(s=>(!search||s.display_name.toLowerCase().includes(search))&&(roleFilter==="all"||s.role===roleFilter));
+  const bound=officialActive.filter(s=>!!s.line_user_id).length;
+
+  if($("staffStats")) $("staffStats").innerHTML=`
+    <div class="staffStatBox"><div class="staffStatLabel">啟用老師</div><div class="staffStatNum">${officialActive.length}</div></div>
+    <div class="staffStatBox"><div class="staffStatLabel">LINE 已綁</div><div class="staffStatNum green">${bound}</div></div>
+    <div class="staffStatBox"><div class="staffStatLabel">LINE 未綁</div><div class="staffStatNum">${officialActive.length-bound}</div></div>`;
+
+  const rows=filtered.map(staff=>{
+    const homeroom=fixedHomeroomMap[staff.id]||"";
+    const fixedAftercare=fixedAftercareMap[staff.id]||"";
+    const hasPending=teacherBindingRequests.some(r=>r.staff_id===staff.id&&r.status==="pending");
+    const bindButton=(!staff.line_user_id&&!hasPending)
+      ? `<button class="staffMiniBtn staffMiniGreen" type="button" onclick="issueStaffBindingCode('${escapeJs(staff.id)}')">產生綁定碼</button>`
+      : "";
+    return `<div class="staffCompactRow">
+      <div class="staffCompactName">${escapeHtml(staff.display_name)}</div>
+      <div>${escapeHtml(staffRoleText(staff.role))}</div>
+      <div>${escapeHtml(homeroom?(CLASS_MAP[homeroom]||homeroom):"—")}</div>
+      <div>${escapeHtml(fixedAftercare?(AFTERCARE_CLASSES[fixedAftercare]?.name||fixedAftercare):"—")}</div>
+      <div class="staffStatusDot ${staff.line_user_id?"staffLineOk":"staffLineNone"}">${staff.line_user_id?"✅ 已綁定":"⚪ 尚未綁定"}</div>
+      <div class="staffToolbarActions">${bindButton}<button class="staffMiniBtn staffMiniEdit" type="button" onclick="openStaffEditor('${escapeJs(staff.id)}')">編輯</button></div>
+    </div>`;
+  }).join("");
+
+  target.innerHTML=`<div class="staffCompactTable"><div class="staffCompactHead"><div>姓名</div><div>身分</div><div>原班</div><div>固定課後班</div><div>LINE</div><div>操作</div></div>${rows||'<div class="empty">沒有符合條件的老師。</div>'}</div>`;
+}
+
+function openStaffEditor(staffId){
+  const staff=staffList.find(s=>s.id===staffId); if(!staff) return;
+  currentEditingStaffId=staffId;
+  $("staffEditId").value=staffId;
+  $("staffEditTitle").textContent=`編輯｜${staff.display_name}`;
+  $("staffEditName").value=staff.display_name||"";
+  $("staffEditRole").value=staff.role||"class_teacher";
+  $("staffEditHomeroom").innerHTML=homeroomOptions(fixedHomeroomMap[staff.id]||"");
+  $("staffEditAftercare").innerHTML=aftercareOptions(fixedAftercareMap[staff.id]||"");
+  $("staffEditAliases").value=getStaffAliasText(staff.id)==="無"?"":getStaffAliasText(staff.id);
+  $("staffEditLineState").innerHTML=staff.line_user_id?'<span class="staffLineOk">✅ 已綁定 LINE</span>':'<span class="staffLineNone">⚪ 尚未綁定 LINE</span>';
+  $("staffEditUnbindBtn").style.display=staff.line_user_id?"inline-block":"none";
+  $("staffEditToggleBtn").textContent=staff.active?"停用老師":"重新啟用";
+  $("staffEditToggleBtn").className=`btn ${staff.active?"btnRed":"btnGreen"}`;
+  $("staffEditDialog").showModal();
+}
+
+function closeStaffEditor(){ $("staffEditDialog")?.close(); currentEditingStaffId=null; }
+
+async function saveStaffFromDialog(){
+  if(!currentEditingStaffId) return;
+  const staffId=currentEditingStaffId;
+  const name=$("staffEditName").value.trim(),role=$("staffEditRole").value,homeroom=$("staffEditHomeroom").value,fixedAftercare=$("staffEditAftercare").value,aliasText=$("staffEditAliases").value.trim();
+  if(!name){alert("老師姓名不能留空。");return;}
+  const {error:staffError}=await supabaseClient.from("staff").update({display_name:name,role,updated_at:new Date().toISOString()}).eq("id",staffId);
+  if(staffError){alert("老師資料更新失敗：\n"+staffError.message);return;}
+  const {error:disableError}=await supabaseClient.from("staff_assignments").update({active:false}).eq("staff_id",staffId).is("assignment_date",null).not("morning_class_id","is",null);
+  if(disableError){alert("固定原班更新失敗：\n"+disableError.message);return;}
+  if(homeroom){
+    const {data:existing,error:findError}=await supabaseClient.from("staff_assignments").select("id").eq("staff_id",staffId).is("assignment_date",null).eq("morning_class_id",homeroom).limit(1);
+    if(findError){alert("固定原班檢查失敗：\n"+findError.message);return;}
+    if(existing?.length){const {error}=await supabaseClient.from("staff_assignments").update({active:true}).eq("id",existing[0].id);if(error){alert("固定原班更新失敗：\n"+error.message);return;}}
+    else{const {error}=await supabaseClient.from("staff_assignments").insert({staff_id:staffId,assignment_date:null,morning_class_id:homeroom,aftercare_class_id:null,active:true});if(error){alert("固定原班建立失敗：\n"+error.message);return;}}
+  }
+  const {error:disableAftercareError}=await supabaseClient.from("staff_assignments").update({active:false}).eq("staff_id",staffId).is("assignment_date",null).not("aftercare_class_id","is",null);
+  if(disableAftercareError){alert("固定課後班更新失敗：\n"+disableAftercareError.message);return;}
+  if(fixedAftercare){
+    const {data:existingAftercare,error:findAftercareError}=await supabaseClient.from("staff_assignments").select("id").eq("staff_id",staffId).is("assignment_date",null).eq("aftercare_class_id",fixedAftercare).limit(1);
+    if(findAftercareError){alert("固定課後班檢查失敗：\n"+findAftercareError.message);return;}
+    if(existingAftercare?.length){
+      const {error}=await supabaseClient.from("staff_assignments").update({active:true}).eq("id",existingAftercare[0].id);
+      if(error){alert("固定課後班更新失敗：\n"+error.message);return;}
+    }else{
+      const {error}=await supabaseClient.from("staff_assignments").insert({staff_id:staffId,assignment_date:null,morning_class_id:null,aftercare_class_id:fixedAftercare,active:true});
+      if(error){alert("固定課後班建立失敗：\n"+error.message);return;}
+    }
+  }
+    const ok=await replaceStaffAliases(staffId,aliasText); if(ok!==true) return;
+  alert("✅ 老師資料已儲存。"); closeStaffEditor(); await refreshStaffManagement();
+}
+
+async function addStaffMember(){
+  const name=$("newStaffName").value.trim(),role=$("newStaffRole").value,homeroom=$("newStaffHomeroom").value,fixedAftercare=$("newStaffAftercare").value,aliasText=$("newStaffAliases").value.trim();
+  if(!name){alert("請輸入老師姓名。");return;}
+  if(staffList.some(s=>s.display_name.trim()===name)){alert("這個老師姓名已經存在。");return;}
+  const {data:newStaff,error}=await supabaseClient.from("staff").insert({display_name:name,role,active:true}).select("id").single();
+  if(error){alert("新增老師失敗：\n"+error.message);return;}
+  if(homeroom){const {error:e}=await supabaseClient.from("staff_assignments").insert({staff_id:newStaff.id,assignment_date:null,morning_class_id:homeroom,aftercare_class_id:null,active:true});if(e){alert("老師已新增，但固定原班建立失敗：\n"+e.message);}}
+  if(fixedAftercare){const {error:e}=await supabaseClient.from("staff_assignments").insert({staff_id:newStaff.id,assignment_date:null,morning_class_id:null,aftercare_class_id:fixedAftercare,active:true});if(e){alert("老師已新增，但固定課後班建立失敗：\n"+e.message);}}
+  await replaceStaffAliases(newStaff.id,aliasText);
+  $("newStaffName").value=""; $("newStaffHomeroom").value=""; $("newStaffAftercare").value=""; $("newStaffAliases").value=""; toggleAddStaffBox(false);
+  alert("✅ 老師資料已新增。"); await refreshStaffManagement();
+}
+
+async function replaceStaffAliases(staffId,aliasText){
+  const aliases=[...new Set(String(aliasText||"").split(/[,，]/).map(v=>v.trim()).filter(Boolean))];
+  const {error:disableError}=await supabaseClient.from("staff_aliases").update({active:false}).eq("staff_id",staffId);
+  if(disableError){alert("老師別名更新失敗：\n"+disableError.message);return false;}
+  for(const aliasName of aliases){
+    const {data:existing,error:findError}=await supabaseClient.from("staff_aliases").select("id,staff_id").eq("alias_name",aliasName).maybeSingle();
+    if(findError){alert("老師別名檢查失敗：\n"+findError.message);return false;}
+    if(existing&&existing.staff_id!==staffId){alert(`別名「${aliasName}」已經被其他老師使用，請先確認。`);return false;}
+    if(existing){const {error}=await supabaseClient.from("staff_aliases").update({active:true}).eq("id",existing.id);if(error){alert("老師別名更新失敗：\n"+error.message);return false;}}
+    else{const {error}=await supabaseClient.from("staff_aliases").insert({staff_id:staffId,alias_name:aliasName,active:true});if(error){alert("老師別名新增失敗：\n"+error.message);return false;}}
+  }
+  return true;
+}
+
+async function toggleCurrentStaffActive(){
+  if(!currentEditingStaffId) return;
+  const staff=staffList.find(s=>s.id===currentEditingStaffId); if(!staff) return;
+  const newActive=!staff.active;
+  if(!confirm(`確定要${newActive?"重新啟用":"停用"}「${staff.display_name}」嗎？`)) return;
+  const {error}=await supabaseClient.from("staff").update({active:newActive,updated_at:new Date().toISOString()}).eq("id",staff.id);
+  if(error){alert("更新老師狀態失敗：\n"+error.message);return;}
+  closeStaffEditor(); await refreshStaffManagement();
+}
+
+async function unbindCurrentStaffLine(){
+  if(!currentEditingStaffId) return;
+  const staff=staffList.find(s=>s.id===currentEditingStaffId); if(!staff?.line_user_id) return;
+  if(!confirm(`確定解除「${staff.display_name}」的 LINE 綁定嗎？`)) return;
+  const {error}=await supabaseClient.rpc("admin_unbind_teacher_line",{p_staff_id:staff.id});
+  if(error){alert("解除 LINE 綁定失敗：\n"+error.message);return;}
+  alert("✅ LINE 綁定已解除。"); closeStaffEditor(); await refreshStaffManagement();
+}
+
+async function issueStaffBindingCode(staffId){
+  const staff=staffList.find(s=>s.id===staffId);
+  if(!staff) return;
+
+  if(staff.line_user_id){
+    alert("這位教職員已完成 LINE 綁定。");
+    return;
+  }
+
+  if(!confirm(`確定要為「${staff.display_name}」產生新的 16 碼一次性綁定碼嗎？\n\n產生新碼後，舊的未使用綁定碼會立即失效。`)){
+    return;
+  }
+
+  const {data,error}=await supabaseClient.rpc(
+    "admin_issue_staff_binding_code",
+    {
+      p_staff_id:staffId,
+      p_valid_days:14
+    }
+  );
+
+  if(error){
+    alert("產生教職員綁定碼失敗：\n"+error.message);
+    return;
+  }
+
+  const code=data?.binding_code||"";
+  const expires=data?.expires_at
+    ? formatDateTime(data.expires_at)
+    : "14 日內";
+
+  if(!code){
+    alert("綁定碼產生失敗，請重新操作。");
+    return;
+  }
+
+  window.prompt(
+    `請複製並私下交給「${staff.display_name}」。\n有效期限：${expires}\n\n請勿張貼在群組或公開畫面。`,
+    code
+  );
+}
+
+function renderLineBindingManagement(){
+  const stats=$("lineBindingStats"),list=$("lineBindingList"); if(!stats||!list) return;
+  const active=staffList.filter(s=>s.active===true&&!isTestStaff(s));
+  const bound=active.filter(s=>!!s.line_user_id).length;
+  const pending=teacherBindingRequests.filter(r=>r.status==="pending");
+  stats.innerHTML=`<div class="staffStatBox"><div class="staffStatLabel">正式老師</div><div class="staffStatNum">${active.length}</div></div><div class="staffStatBox"><div class="staffStatLabel">已綁定</div><div class="staffStatNum green">${bound}</div></div><div class="staffStatBox"><div class="staffStatLabel">尚未綁定</div><div class="staffStatNum">${active.length-bound}</div></div><div class="staffStatBox"><div class="staffStatLabel">待確認申請</div><div class="staffStatNum ${pending.length?"red":""}">${pending.length}</div></div>`;
+  if(!pending.length){list.innerHTML='<div class="empty">目前沒有待確認的 LINE 綁定申請。<br><span class="helper">老師端 LIFF 綁定流程完成後，申請會出現在這裡。</span></div>';return;}
+  list.innerHTML=pending.map(req=>{
+    const staff=staffList.find(s=>s.id===req.staff_id);
+    return `<div class="lineBindingRow"><div><div class="staffCompactName">${escapeHtml(staff?.display_name||"未知老師")}</div><div class="lineBindingMeta">LINE 顯示名稱：${escapeHtml(req.line_display_name||"—")}<br>申請時間：${escapeHtml(formatDateTime(req.requested_at))}</div></div><div class="lineBindingActions"><button class="staffMiniBtn staffMiniGreen" type="button" onclick="reviewTeacherLineBinding('${escapeJs(req.id)}','approved')">確認綁定</button><button class="staffMiniBtn staffMiniDanger" type="button" onclick="reviewTeacherLineBinding('${escapeJs(req.id)}','rejected')">拒絕</button></div></div>`;
+  }).join("");
+}
+
+async function reviewTeacherLineBinding(requestId,decision){
+  const label=decision==="approved"?"確認綁定":"拒絕申請";
+  if(!confirm(`確定要${label}嗎？`)) return;
+  const {error}=await supabaseClient.rpc("admin_review_teacher_line_binding",{p_request_id:requestId,p_decision:decision,p_admin_note:null});
+  if(error){alert("LINE 綁定審核失敗：\n"+error.message);return;}
+  alert(`✅ 已${label}。`); await refreshStaffManagement();
+}
+
+/*
+==================================================
+Excel 月排班：讀取檔案
+==================================================
+*/
+
+  function loadScheduleExcel(event){
+
+  const file =
+    event.target.files?.[0];
+
+
+  if(!file){
+    return;
+  }
+
+
+  if(
+    typeof XLSX === "undefined"
+  ){
+    alert("Excel 解析元件載入失敗，請重新整理頁面後再試。");
+    return;
+  }
+
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload = e => {
+
+    try{
+
+      scheduleWorkbook =
+        XLSX.read(
+          e.target.result,
+          {
+            type:"array",
+            cellDates:true
+          }
+        );
+
+
+      $("scheduleSheetSelect").innerHTML =
+        scheduleWorkbook.SheetNames
+          .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`)
+          .join("");
+
+
+      const preferred =
+        scheduleWorkbook.SheetNames
+          .find(name => /115[- ]?\d+月/.test(name))
+        ||
+        scheduleWorkbook.SheetNames[0];
+
+
+      $("scheduleSheetSelect").value =
+        preferred;
+
+
+      $("scheduleFileState").textContent =
+        `已載入：${file.name}｜${scheduleWorkbook.SheetNames.length} 個工作表`;
+
+
+      parseSelectedScheduleSheet();
+
+    }
+    catch(err){
+
+      console.error(err);
+      alert("Excel 讀取失敗：\n" + (err.message || String(err)));
+
+    }
+
+  };
+
+
+  reader.readAsArrayBuffer(file);
+
+}
+
+
+function cleanExcelName(value){
+
+  return String(value ?? "")
+    .replace(/\u3000/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+}
+
+
+function normalizeSupportName(label){
+
+  let name =
+    cleanExcelName(label);
+
+  name = name
+    .replace(/國小師\s*/g,"")
+    .replace(/國小[-－]\s*/g,"")
+    .replace(/\([^)]*\)/g,"")
+    .replace(/（[^）]*）/g,"")
+    .replace(/\s+/g,"")
+    .trim();
+
+  return name;
+
+}
+
+
+function supportTypeFromLabel(label){
+
+  const text =
+    cleanExcelName(label);
+
+  if(text.includes("巡輔")){
+    return "巡輔";
+  }
+
+  if(text.includes("國小")){
+    return "國小支援";
+  }
+
+  return "其他支援";
+
+}
+
+
+function isSupportLabel(label){
+
+  const text =
+    cleanExcelName(label);
+
+  return (
+    text.includes("巡輔")
+    ||
+    text.includes("國小-")
+    ||
+    text.includes("國小－")
+    ||
+    text.includes("國小師")
+  );
+
+}
+
+
+function staffLookupMaps(){
+
+  const exact = {};
+  const alias = {};
+
+
+  staffList
+    .filter(row => row.active === true)
+    .forEach(row => {
+      exact[cleanExcelName(row.display_name)] = row;
+    });
+
+
+  staffAliases
+    .filter(row => row.active === true)
+    .forEach(row => {
+      const staff = staffList.find(s => s.id === row.staff_id);
+      if(staff && staff.active === true){
+        alias[cleanExcelName(row.alias_name)] = staff;
+      }
+    });
+
+
+  return {exact,alias};
+
+}
+
+
+function inferScheduleYearMonth(sheetName,rows){
+  const topText=
+    (rows||[])
+      .slice(0,6)
+      .flat()
+      .map(cleanExcelName)
+      .filter(Boolean)
+      .join(" ");
+
+  const text=
+    cleanExcelName(sheetName)
+    +" "
+    +topText;
+
+  let year=null;
+  let month=null;
+
+  const paired=
+    text.match(
+      /(20\d{2}|1\d{2})\s*(?:年|[-_ ]+)\s*(\d{1,2})\s*月?/
+    );
+
+  if(paired){
+    year=Number(paired[1]);
+    month=Number(paired[2]);
+  }
+
+  if(!year){
+    const yearMatch=
+      text.match(
+        /(20\d{2}|1\d{2})\s*(?:學年度|年)/
+      );
+
+    if(yearMatch){
+      year=Number(yearMatch[1]);
+    }
+  }
+
+  if(!month){
+    const monthMatch=
+      text.match(
+        /(?:^|[^0-9])(1[0-2]|0?[1-9])\s*月份?/
+      );
+
+    if(monthMatch){
+      month=Number(monthMatch[1]);
+    }
+  }
+
+  if(year && year<1911){
+    year+=1911;
+  }
+
+  if(
+    !year
+    ||
+    !month
+    ||
+    year<2000
+    ||
+    year>2100
+    ||
+    month<1
+    ||
+    month>12
+  ){
+    return null;
+  }
+
+  return {year,month};
+}
+
+
+function parseExcelDate(value){
+
+  if(value instanceof Date && !isNaN(value)){
+    return new Date(
+      value.getFullYear(),
+      value.getMonth(),
+      value.getDate()
+    );
+  }
+
+
+  if(typeof value === "number"){
+
+    const parsed =
+      XLSX.SSF.parse_date_code(value);
+
+    if(parsed){
+      return new Date(parsed.y,parsed.m - 1,parsed.d);
+    }
+
+  }
+
+
+  const text =
+    cleanExcelName(value);
+
+
+  let match =
+    text.match(/(20\d{2})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+
+
+  if(match){
+    return new Date(
+      Number(match[1]),
+      Number(match[2]) - 1,
+      Number(match[3])
+    );
+  }
+
+
+  match =
+    text.match(/(\d{1,2})[\/\-.](\d{1,2})/);
+
+
+  if(match && parsedScheduleYear){
+    return new Date(
+      parsedScheduleYear,
+      Number(match[1]) - 1,
+      Number(match[2])
+    );
+  }
+
+
+  return null;
+
+}
+
+
+function localDateKey(date){
+
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2,"0");
+  const d = String(date.getDate()).padStart(2,"0");
+
+  return `${y}-${m}-${d}`;
+
+}
+
+
+function findScheduleHeaderRow(rows){
+
+  for(let r = 0; r < Math.min(rows.length,12); r++){
+
+    const text =
+      rows[r]
+        .map(cleanExcelName)
+        .join("|");
+
+    if(
+      text.includes("蜜蜂班")
+      &&
+      text.includes("白兔班")
+      &&
+      text.includes("蝴蝶班")
+    ){
+      return r;
+    }
+
+  }
+
+  return -1;
+
+}
+
+
+function scheduleClassGroups(rows,headerRow){
+
+  const header =
+    rows[headerRow] || [];
+
+  const classNames = [
+    {needle:"蜜蜂班",id:"AC03",name:"蜜蜂班"},
+    {needle:"白兔班",id:"AC02",name:"白兔班"},
+    {needle:"蝴蝶班",id:"AC01",name:"蝴蝶班"},
+    {needle:"陽光書屋",id:"AC04",name:"陽光書屋"},
+    {needle:"蘋果班",id:"AC06",name:"蘋果班"},
+    {needle:"櫻桃班",id:"AC05",name:"櫻桃班"}
+  ];
+
+
+  const starts = [];
+
+  classNames.forEach(item => {
+
+    const col =
+      header.findIndex(cell => cleanExcelName(cell).includes(item.needle));
+
+    if(col >= 0){
+      starts.push({...item,col});
+    }
+
+  });
+
+
+  starts.sort((a,b) => a.col - b.col);
+
+
+  return starts.map((item,index) => {
+
+    const next = starts[index + 1];
+
+    let endCol =
+      next
+      ? next.col - 1
+      : item.col;
+
+
+    if(item.id === "AC04"){
+      endCol = item.col;
+    }
+
+    if(item.id === "AC06" || item.id === "AC05"){
+      endCol = item.col + 1;
+    }
+
+    if(item.id === "AC03" || item.id === "AC02" || item.id === "AC01"){
+      endCol = item.col + 1;
+    }
+
+    return {
+      ...item,
+      endCol
+    };
+
+  });
+
+}
+
+
+async function parseSelectedScheduleSheet(){
+
+  if(!scheduleWorkbook){
+    return;
+  }
+
+
+  await refreshStaffManagement();
+
+
+  const sheetName =
+    $("scheduleSheetSelect").value;
+
+  const ws =
+    scheduleWorkbook.Sheets[sheetName];
+
+
+  if(!ws){
+    return;
+  }
+
+
+  const rows =
+    XLSX.utils.sheet_to_json(
+      ws,
+      {
+        header:1,
+        raw:true,
+        defval:null
+      }
+    );
+
+
+  const headerRow =
+    findScheduleHeaderRow(rows);
+
+
+  if(headerRow < 0){
+    alert("找不到課後班欄位。請確認選到正確的月班表工作表。");
+    return;
+  }
+
+
+  const groups =
+    scheduleClassGroups(rows,headerRow);
+
+
+  if(groups.length < 6){
+    alert("班表欄位辨識不完整，目前只找到 " + groups.length + " 個課後班。");
+    return;
+  }
+
+
+  const lookup =
+    staffLookupMaps();
+
+
+  parsedScheduleRows = [];
+  parsedScheduleProblems = [];
+  parsedScheduleYear = null;
+  parsedScheduleMonth = null;
+
+  const sheetPeriod=
+    inferScheduleYearMonth(
+      sheetName,
+      rows
+    );
+
+  if(sheetPeriod){
+    parsedScheduleYear=
+      sheetPeriod.year;
+    parsedScheduleMonth=
+      sheetPeriod.month;
+  }
+
+
+  /*
+  優先從日期欄確認年月；
+  若日期只有月/日，則沿用工作表名稱（例如 115年10月）。
+  */
+  for(let r = headerRow + 1; r < rows.length; r++){
+
+    const raw = rows[r]?.[0];
+
+    const date =
+      parseExcelDate(raw);
+
+    if(date){
+      parsedScheduleYear = date.getFullYear();
+      parsedScheduleMonth = date.getMonth() + 1;
+      break;
+    }
+
+  }
+
+
+  if(!parsedScheduleYear || !parsedScheduleMonth){
+    alert(
+      "無法判斷班表年月。\n\n"+
+      "請確認工作表名稱包含年月（例如「115年10月」），"+
+      "或日期欄使用完整日期。"
+    );
+    return;
+  }
+
+
+  const seenStaffDay = {};
+  const formalCountByClassDay = {};
+
+
+  for(let r = headerRow + 1; r < rows.length; r++){
+
+    const row = rows[r] || [];
+
+    const date =
+      parseExcelDate(row[0]);
+
+
+    if(!date){
+      continue;
+    }
+
+
+    if(
+      date.getFullYear() !== parsedScheduleYear
+      ||
+      date.getMonth() + 1 !== parsedScheduleMonth
+    ){
+      continue;
+    }
+
+
+    const dateKey =
+      localDateKey(date);
+
+
+    const wholeRowText =
+      row.map(cleanExcelName).join(" ");
+
+
+    if(
+      wholeRowText.includes("放假")
+      &&
+      groups.every(group => {
+
+        const vals = [];
+
+        for(
+          let c = group.col;
+          c <= group.endCol;
+          c++
+        ){
+          vals.push(
+            cleanExcelName(
+              row[c]
+            )
+          );
+        }
+
+        return vals.filter(Boolean).length <= 1;
+
+      })
+    ){
+      continue;
+    }
+
+
+    for(const group of groups){
+
+      for(
+        let c = group.col;
+        c <= group.endCol;
+        c++
+      ){
+
+        const sourceLabel =
+          cleanExcelName(
+            row[c]
+          );
+
+
+        if(!sourceLabel){
+          continue;
+        }
+
+
+        if(
+          sourceLabel.includes("放假")
+          ||
+          sourceLabel.includes("停課")
+        ){
+          continue;
+        }
+
+
+        if(
+          isSupportLabel(
+            sourceLabel
+          )
+        ){
+
+          parsedScheduleRows.push({
+            kind:"support",
+            record_type:"support",
+            assignment_date:dateKey,
+            date:dateKey,
+            aftercare_class_id:group.id,
+            class_id:group.id,
+            support_name:normalizeSupportName(sourceLabel),
+            support_type:supportTypeFromLabel(sourceLabel),
+            source_label:sourceLabel
+          });
+
+          continue;
+        }
+
+
+        const normalized =
+          cleanExcelName(
+            sourceLabel
+          )
+          .replace(/\([^)]*\)/g,"")
+          .replace(/（[^）]*）/g,"")
+          .trim();
+
+
+        const staff =
+          lookup.exact[
+            normalized
+          ]
+          ||
+          lookup.alias[
+            normalized
+          ];
+
+
+        if(!staff){
+
+          parsedScheduleProblems.push({
+            type:"unresolved",
+            date:dateKey,
+            className:group.name,
+            label:sourceLabel,
+            message:`未辨識老師：${sourceLabel}`
+          });
+
+          continue;
+        }
+
+
+        const staffDayKey =
+          `${dateKey}|${staff.id}`;
+
+
+        if(
+          seenStaffDay[
+            staffDayKey
+          ]
+          &&
+          seenStaffDay[
+            staffDayKey
+          ]
+          !==
+          group.id
+        ){
+
+          parsedScheduleProblems.push({
+            type:"duplicate_staff",
+            date:dateKey,
+            className:group.name,
+            label:staff.display_name,
+            message:
+              `${staff.display_name} 同一天被排到 `
+              +
+              `${AFTERCARE_CLASSES[
+                seenStaffDay[
+                  staffDayKey
+                ]
+              ]?.name || seenStaffDay[staffDayKey]}`
+              +
+              ` 與 ${group.name}`
+          });
+
+        }
+        else{
+
+          seenStaffDay[
+            staffDayKey
+          ] =
+            group.id;
+
+        }
+
+
+        const countKey =
+          `${dateKey}|${group.id}`;
+
+
+        formalCountByClassDay[
+          countKey
+        ] =
+          (
+            formalCountByClassDay[
+              countKey
+            ]
+            ||
+            0
+          )
+          +
+          1;
+
+
+        parsedScheduleRows.push({
+          kind:"staff",
+          type:"staff",
+          record_type:"staff",
+          assignment_date:dateKey,
+          date:dateKey,
+          aftercare_class_id:group.id,
+          class_id:group.id,
+          staff_id:staff.id,
+          staff_name:staff.display_name,
+          source_label:sourceLabel
+        });
+
+      }
+
+    }
+
+  }
+
+
+  Object.entries(
+    formalCountByClassDay
+  )
+  .forEach(
+    ([key,count]) => {
+
+      if(
+        count > 2
+      ){
+
+        const [
+          dateKey,
+          classId
+        ] =
+          key.split("|");
+
+
+        parsedScheduleProblems.push({
+          type:"too_many",
+          date:dateKey,
+          className:
+            AFTERCARE_CLASSES[
+              classId
+            ]?.name
+            ||
+            classId,
+
+          label:
+            String(count),
+
+          message:
+            `正式老師共 ${count} 位，超過每班每日最多 2 位`
+        });
+
+      }
+
+    }
+  );
+
+
+  await renderSchedulePreview();
+
+}
+
+
+/*
+==================================================
+直接查看資料庫已匯入月班表
+==================================================
+*/
+
+async function loadDatabaseScheduleView(yearArg,monthArg){
+
+  const target=$("currentScheduleList");
+  if(!target||!currentUser||!currentStaff) return;
+
+  const nowTw =
+    new Date(
+      new Date().toLocaleString(
+        "en-US",
+        {timeZone:"Asia/Taipei"}
+      )
+    );
+
+  const year=
+    Number(
+      yearArg
+      ||
+      $("dbScheduleYear")?.value
+      ||
+      nowTw.getFullYear()
+    );
+
+  const month=
+    Number(
+      monthArg
+      ||
+      $("dbScheduleMonth")?.value
+      ||
+      nowTw.getMonth()+1
+    );
+
+  if(!year||month<1||month>12){
+    target.innerHTML='<div class="empty">請選擇正確的年月。</div>';
+    return;
+  }
+
+  if($("dbScheduleYear")) $("dbScheduleYear").value=String(year);
+  if($("dbScheduleMonth")) $("dbScheduleMonth").value=String(month);
+
+  const start=
+    year+"-"+String(month).padStart(2,"0")+"-01";
+
+  const next=
+    month===12
+      ? (year+1)+"-01-01"
+      : year+"-"+String(month+1).padStart(2,"0")+"-01";
+
+  target.innerHTML='<div class="loading">正在讀取資料庫月班表...</div>';
+
+  const [formalResult,supportResult]=
+    await Promise.all([
+      supabaseClient
+        .from("staff_assignments")
+        .select("staff_id,assignment_date,aftercare_class_id,start_time,end_time,active")
+        .gte("assignment_date",start)
+        .lt("assignment_date",next)
+        .not("aftercare_class_id","is",null)
+        .eq("active",true)
+        .order("assignment_date",{ascending:true})
+        .order("aftercare_class_id",{ascending:true}),
+
+      supabaseClient
+        .from("aftercare_support_assignments")
+        .select("assignment_date,aftercare_class_id,support_name,support_type,start_time,end_time,active")
+        .gte("assignment_date",start)
+        .lt("assignment_date",next)
+        .eq("active",true)
+        .order("assignment_date",{ascending:true})
+        .order("aftercare_class_id",{ascending:true})
+    ]);
+
+  if(formalResult.error||supportResult.error){
+    target.innerHTML=
+      '<div class="empty">⚠️ 班表讀取失敗<br><br>'+
+      escapeHtml(
+        formalResult.error?.message
+        ||
+        supportResult.error?.message
+        ||
+        "未知錯誤"
+      )+
+      '</div>';
+    return;
+  }
+
+  const rows=[];
+
+  (formalResult.data||[]).forEach(row=>{
+    const staff=staffList.find(s=>s.id===row.staff_id);
+    rows.push({
+      date:row.assignment_date,
+      classId:row.aftercare_class_id,
+      name:staff?.display_name||"未知老師",
+      type:"正式老師"
+    });
+  });
+
+  (supportResult.data||[]).forEach(row=>{
+    rows.push({
+      date:row.assignment_date,
+      classId:row.aftercare_class_id,
+      name:row.support_name||"未命名支援",
+      type:row.support_type||"支援"
+    });
+  });
+
+  rows.sort((a,b)=>
+    a.date.localeCompare(b.date)
+    ||
+    a.classId.localeCompare(b.classId)
+    ||
+    a.name.localeCompare(b.name)
+  );
+
+  if(!rows.length){
+    target.innerHTML=
+      '<div class="empty">'+
+      escapeHtml(year+"/"+String(month).padStart(2,"0"))+
+      ' 目前尚未匯入月班表。</div>';
+    return;
+  }
+
+  const grouped={};
+
+  rows.forEach(row=>{
+    const key=row.date+"|"+row.classId;
+    if(!grouped[key]) grouped[key]=[];
+    grouped[key].push(row);
+  });
+
+  const html=
+    Object.entries(grouped)
+      .map(([key,items])=>{
+        const [date,classId]=key.split("|");
+        const names=items
+          .map(item=>
+            '<span class="badge badgeOther" style="margin:2px 4px 2px 0">'+
+            escapeHtml(item.name)+
+            (item.type!=="正式老師"
+              ? "（"+escapeHtml(item.type)+"）"
+              : "")+
+            '</span>'
+          )
+          .join("");
+
+        return `
+          <div class="previewRow">
+            <div>${escapeHtml(date)}</div>
+            <div>${escapeHtml(AFTERCARE_CLASSES[classId]?.name||classId)}</div>
+            <div>${names}</div>
+          </div>
+        `;
+      })
+      .join("");
+
+  target.innerHTML=`
+    <div class="helper" style="margin-bottom:8px">
+      ${escapeHtml(year+"/"+String(month).padStart(2,"0"))}
+      ｜共 ${rows.length} 筆已匯入排班
+    </div>
+    <div class="previewBox" style="display:block">
+      <div class="previewHeader">日期｜課後班｜老師／支援</div>
+      <div class="previewBody">${html}</div>
+    </div>
+  `;
+}
+
+
+/*
+==================================================
+讀取資料庫目前月份排班
+==================================================
+*/
+
+async function loadExistingMonthSchedule(){
+
+  if(
+    !parsedScheduleYear
+    ||
+    !parsedScheduleMonth
+  ){
+
+    return {
+      formal:[],
+      support:[]
+    };
+
+  }
+
+
+  const start =
+    `${parsedScheduleYear}-${String(
+      parsedScheduleMonth
+    ).padStart(2,"0")}-01`;
+
+
+  const nextMonth =
+    parsedScheduleMonth === 12
+    ?
+    `${parsedScheduleYear + 1}-01-01`
+    :
+    `${parsedScheduleYear}-${String(
+      parsedScheduleMonth + 1
+    ).padStart(2,"0")}-01`;
+
+
+  const [
+    formalResult,
+    supportResult
+  ] =
+    await Promise.all([
+
+      supabaseClient
+        .from(
+          "staff_assignments"
+        )
+        .select(
+          "staff_id,assignment_date,aftercare_class_id,active"
+        )
+        .gte(
+          "assignment_date",
+          start
+        )
+        .lt(
+          "assignment_date",
+          nextMonth
+        )
+        .not(
+          "aftercare_class_id",
+          "is",
+          null
+        )
+        .eq(
+          "active",
+          true
+        ),
+
+      supabaseClient
+        .from(
+          "aftercare_support_assignments"
+        )
+        .select(
+          "assignment_date,aftercare_class_id,support_name,support_type,source_label,active"
+        )
+        .gte(
+          "assignment_date",
+          start
+        )
+        .lt(
+          "assignment_date",
+          nextMonth
+        )
+        .eq(
+          "active",
+          true
+        )
+
+    ]);
+
+
+  return {
+
+    formal:
+      formalResult.error
+      ?
+      []
+      :
+      (
+        formalResult.data || []
+      ),
+
+    support:
+      supportResult.error
+      ?
+      []
+      :
+      (
+        supportResult.data || []
+      )
+
+  };
+
+}
+
+
+/*
+==================================================
+班表列唯一鍵
+==================================================
+*/
+
+function scheduleRowKey(
+  row
+){
+
+  if(
+    row.kind === "support"
+  ){
+
+    return (
+      `support|`
+      +
+      `${row.assignment_date}|`
+      +
+      `${row.aftercare_class_id}|`
+      +
+      `${row.support_name}`
+    );
+
+  }
+
+
+  return (
+    `staff|`
+    +
+    `${row.assignment_date}|`
+    +
+    `${row.aftercare_class_id}|`
+    +
+    `${row.staff_id}`
+  );
+
+}
+
+
+/*
+==================================================
+顯示 Excel 預覽與差異
+==================================================
+*/
+
+async function renderSchedulePreview(){
+
+  const existing =
+    await loadExistingMonthSchedule();
+
+
+  const currentRows =
+    [];
+
+
+  existing.formal
+    .forEach(
+      row => {
+
+        const staff =
+          staffList.find(
+            s =>
+            s.id === row.staff_id
+          );
+
+
+        currentRows.push({
+          kind:"staff",
+          assignment_date:
+            row.assignment_date,
+          aftercare_class_id:
+            row.aftercare_class_id,
+          staff_id:
+            row.staff_id,
+          staff_name:
+            staff?.display_name
+            ||
+            "未知老師"
+        });
+
+      }
+    );
+
+
+  existing.support
+    .forEach(
+      row => {
+
+        currentRows.push({
+          kind:"support",
+          assignment_date:
+            row.assignment_date,
+          aftercare_class_id:
+            row.aftercare_class_id,
+          support_name:
+            row.support_name,
+          support_type:
+            row.support_type,
+          source_label:
+            row.source_label
+        });
+
+      }
+    );
+
+
+  const newKeys =
+    new Set(
+      parsedScheduleRows
+        .map(
+          scheduleRowKey
+        )
+    );
+
+
+  const oldKeys =
+    new Set(
+      currentRows
+        .map(
+          scheduleRowKey
+        )
+    );
+
+
+  const added =
+    parsedScheduleRows
+      .filter(
+        row =>
+        !oldKeys.has(
+          scheduleRowKey(
+            row
+          )
+        )
+      );
+
+
+  const removed =
+    currentRows
+      .filter(
+        row =>
+        !newKeys.has(
+          scheduleRowKey(
+            row
+          )
+        )
+      );
+
+
+  const staffCount =
+    parsedScheduleRows
+      .filter(
+        row =>
+        row.kind === "staff"
+      )
+      .length;
+
+
+  const supportCount =
+    parsedScheduleRows
+      .filter(
+        row =>
+        row.kind === "support"
+      )
+      .length;
+
+
+  $("scheduleMonthSummary").textContent =
+    `${parsedScheduleYear}/${String(
+      parsedScheduleMonth
+    ).padStart(2,"0")}`;
+
+
+  $("scheduleStaffCount").textContent =
+    String(
+      staffCount
+    );
+
+
+  $("scheduleSupportCount").textContent =
+    String(
+      supportCount
+    );
+
+
+  $("scheduleProblemCount").textContent =
+    String(
+      parsedScheduleProblems.length
+    );
+
+
+  const previewRows =
+    [];
+
+
+  parsedScheduleProblems
+    .forEach(
+      item => {
+
+        previewRows.push(`
+          <div class="previewRow previewProblem">
+
+            <div>
+              ${escapeHtml(
+                item.date
+              )}
+            </div>
+
+            <div>
+              ${escapeHtml(
+                item.className
+                ||
+                "—"
+              )}
+            </div>
+
+            <div>
+              ⚠️
+              ${escapeHtml(
+                item.message
+              )}
+            </div>
+
+          </div>
+        `);
+
+      }
+    );
+
+
+  added
+    .slice(
+      0,
+      120
+    )
+    .forEach(
+      row => {
+
+        const name =
+          row.kind === "support"
+          ?
+          `${row.support_name}（${row.support_type || "支援"}）`
+          :
+          row.staff_name;
+
+
+        previewRows.push(`
+          <div class="previewRow">
+
+            <div>
+              ${escapeHtml(
+                row.assignment_date
+              )}
+            </div>
+
+            <div>
+              ${escapeHtml(
+                AFTERCARE_CLASSES[
+                  row.aftercare_class_id
+                ]?.name
+                ||
+                row.aftercare_class_id
+              )}
+            </div>
+
+            <div class="diffAdd">
+              ＋
+              ${escapeHtml(
+                name
+              )}
+            </div>
+
+          </div>
+        `);
+
+      }
+    );
+
+
+  removed
+    .slice(
+      0,
+      120
+    )
+    .forEach(
+      row => {
+
+        const name =
+          row.kind === "support"
+          ?
+          `${row.support_name}（支援）`
+          :
+          row.staff_name;
+
+
+        previewRows.push(`
+          <div class="previewRow">
+
+            <div>
+              ${escapeHtml(
+                row.assignment_date
+              )}
+            </div>
+
+            <div>
+              ${escapeHtml(
+                AFTERCARE_CLASSES[
+                  row.aftercare_class_id
+                ]?.name
+                ||
+                row.aftercare_class_id
+              )}
+            </div>
+
+            <div class="diffRemove">
+              －
+              ${escapeHtml(
+                name
+              )}
+            </div>
+
+          </div>
+        `);
+
+      }
+    );
+
+
+  if(
+    !previewRows.length
+  ){
+
+    previewRows.push(
+      `
+        <div
+          class="empty"
+          style="margin:10px"
+        >
+          Excel 與目前資料庫班表沒有差異。
+        </div>
+      `
+    );
+
+  }
+
+
+  $("schedulePreview").style.display =
+    "block";
+
+
+  $("schedulePreviewBody").innerHTML =
+    previewRows.join("");
+
+
+  $("currentScheduleList").innerHTML =
+    `
+      <div
+        class="helper"
+        style="
+          font-size:.86rem;
+          line-height:1.8
+        "
+      >
+        目前資料庫：
+        ${currentRows.length}
+        筆
+        <br>
+
+        Excel 新班表：
+        ${parsedScheduleRows.length}
+        筆
+        <br>
+
+        <span class="diffAdd">
+          新增／變更：
+          ${added.length}
+          筆
+        </span>
+
+        <br>
+
+        <span class="diffRemove">
+          將被取代：
+          ${removed.length}
+          筆
+        </span>
+      </div>
+    `;
+
+
+  $("scheduleImportBtn").disabled =
+    parsedScheduleProblems.length > 0
+    ||
+    parsedScheduleRows.length === 0;
+
+}
+
+
+/*
+==================================================
+確認匯入 Excel 月班表
+==================================================
+*/
+  async function confirmScheduleImport(){
+
+  if(
+    !parsedScheduleYear
+    ||
+    !parsedScheduleMonth
+    ||
+    !parsedScheduleRows.length
+  ){
+
+    alert(
+      "目前沒有可匯入的班表。"
+    );
+
+    return;
+
+  }
+
+
+  if(
+    parsedScheduleProblems.length
+  ){
+
+    alert(
+      "班表仍有未處理問題，請先修正 Excel 後重新解析。"
+    );
+
+    return;
+
+  }
+
+
+  if(
+    !confirm(
+      `確定要匯入 ${parsedScheduleYear}/${String(
+        parsedScheduleMonth
+      ).padStart(
+        2,
+        "0"
+      )} 課後班表嗎？\n\n系統會以這份 Excel 更新該月份的課後排班。`
+    )
+  ){
+
+    return;
+
+  }
+
+
+  $("scheduleImportBtn").disabled =
+    true;
+
+
+  $("scheduleImportBtn").textContent =
+    "匯入中...";
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .rpc(
+        "admin_import_aftercare_schedule",
+        {
+          p_year:
+            parsedScheduleYear,
+
+          p_month:
+            parsedScheduleMonth,
+
+          p_rows:
+            parsedScheduleRows
+        }
+      );
+
+
+  $("scheduleImportBtn").textContent =
+    "✅ 確認匯入本月班表";
+
+
+  if(
+    error
+  ){
+
+    $("scheduleImportBtn").disabled =
+      false;
+
+
+    alert(
+      "班表匯入失敗：\n\n"
+      +
+      error.message
+    );
+
+
+    return;
+
+  }
+
+
+  alert(
+    "✅ 月班表匯入完成。\n\n"
+    +
+    (
+      data
+      ?
+      JSON.stringify(
+        data,
+        null,
+        2
+      )
+      :
+      ""
+    )
+  );
+
+
+  await renderSchedulePreview();
+  await loadDatabaseScheduleView(
+    parsedScheduleYear,
+    parsedScheduleMonth
+  );
+
+}
+
+
+/*
+==================================================
+工具函式
+==================================================
+*/
+
+function requestTimeText(
+  r
+){
+
+  if(
+    !r.requested_start_time
+    &&
+    !r.requested_end_time
+  ){
+
+    return "-";
+
+  }
+
+
+  return (
+    shortTime(
+      r.requested_start_time
+    )
+    +
+    (
+      r.requested_end_time
+      ?
+      " → "
+      +
+      shortTime(
+        r.requested_end_time
+      )
+      :
+      ""
+    )
+  );
+
+}
+
+
+function shortTime(
+  value
+){
+
+  if(
+    !value
+  ){
+
+    return "";
+
+  }
+
+
+  return String(
+    value
+  )
+  .slice(
+    0,
+    5
+  );
+
+}
+
+
+function requestTypeText(
+  type
+){
+
+  const map = {
+
+    leave:
+      "今日請假",
+
+    temporary:
+      "臨時托育",
+
+    extended:
+      "延長托育",
+
+    pickup:
+      "接送通知",
+
+    late:
+      "晚到通報"
+
+  };
+
+
+  return (
+    map[
+      type
+    ]
+    ||
+    type
+    ||
+    "未知"
+  );
+
+}
+
+
+function statusText(
+  status
+){
+
+  const map = {
+
+    pending:
+      "待處理",
+
+    approved:
+      "已核准",
+
+    rejected:
+      "無法安排",
+
+    waitlist:
+      "候補",
+
+    cancelled:
+      "已取消"
+
+  };
+
+
+  return (
+    map[
+      status
+    ]
+    ||
+    status
+    ||
+    "未知"
+  );
+
+}
+
+
+function statusClass(
+  status
+){
+
+  if(
+    status === "pending"
+  ){
+
+    return "badgePending";
+
+  }
+
+
+  if(
+    status === "approved"
+  ){
+
+    return "badgeApproved";
+
+  }
+
+
+  if(
+    status === "rejected"
+  ){
+
+    return "badgeRejected";
+
+  }
+
+
+  if(
+    status === "waitlist"
+  ){
+
+    return "badgeWaitlist";
+
+  }
+
+
+  return "badgeOther";
+
+}
+
+
+function careGroupText(
+  value
+){
+
+  if(
+    value === "mixed"
+  ){
+
+    return "混齡";
+
+  }
+
+
+  if(
+    value === "toddler"
+  ){
+
+    return "幼幼";
+
+  }
+
+
+  return (
+    value
+    ||
+    "-"
+  );
+
+}
+
+
+/*
+==================================================
+供 onclick 安全使用
+==================================================
+*/
+
+function escapeJs(
+  value
+){
+
+  return String(
+    value ?? ""
+  )
+  .replaceAll(
+    "\\",
+    "\\\\"
+  )
+  .replaceAll(
+    "'",
+    "\\'"
+  )
+  .replaceAll(
+    "\r",
+    "\\r"
+  )
+  .replaceAll(
+    "\n",
+    "\\n"
+  );
+
+}
+
+
+function showError(
+  text
+){
+
+  $("errorBox").textContent =
+    text;
+
+
+  $("errorBox").style.display =
+    "block";
+
+}
+
+
+function hideError(){
+
+  $("errorBox").textContent =
+    "";
+
+
+  $("errorBox").style.display =
+    "none";
+
+}
+
+
+function escapeHtml(
+  value
+){
+
+  return String(
+    value ?? ""
+  )
+  .replaceAll(
+    "&",
+    "&amp;"
+  )
+  .replaceAll(
+    "<",
+    "&lt;"
+  )
+  .replaceAll(
+    ">",
+    "&gt;"
+  )
+  .replaceAll(
+    '"',
+    "&quot;"
+  )
+  .replaceAll(
+    "'",
+    "&#039;"
+  );
+
+}
+
+
+/*
+==================================================
+恢復 Supabase 登入
+==================================================
+*/
+
+async function restoreSession(){
+
+  /*
+  ------------------------------------------------
+  1. 先恢復行政頁自己既有的 Session
+  ------------------------------------------------
+  */
+
+  const {
+    data:adminData,
+    error:adminError
+  } =
+    await supabaseClient
+      .auth
+      .getSession();
+
+
+  if(
+    adminError
+  ){
+
+    console.error(
+      "admin session restore error:",
+      adminError
+    );
+
+  }
+
+
+  if(
+    adminData
+    &&
+    adminData.session
+    &&
+    adminData.session.user
+  ){
+
+    currentUser =
+      adminData.session.user;
+
+
+    const ok =
+      await validateAdmin();
+
+
+    if(
+      ok
+    ){
+      return;
+    }
+
+  }
+
+
+  /*
+  ------------------------------------------------
+  2. 若行政頁沒有有效登入，
+     嘗試沿用教職員平台的老師 Session
+  ------------------------------------------------
+  */
+
+  if(
+    sessionStorage.getItem(
+      "leye-admin-manual-logout"
+    ) === "1"
+  ){
+
+    $("loginState").textContent =
+      "Supabase：尚未登入行政帳號";
+
+    return;
+
+  }
+
+
+  const {
+    data:teacherData,
+    error:teacherError
+  } =
+    await teacherSessionClient
+      .auth
+      .getSession();
+
+
+  if(
+    teacherError
+  ){
+
+    console.error(
+      "teacher session restore error:",
+      teacherError
+    );
+
+  }
+
+
+  if(
+    !teacherData
+    ||
+    !teacherData.session
+    ||
+    !teacherData.session.user
+  ){
+
+    $("loginState").textContent =
+      "Supabase：尚未登入行政帳號";
+
+    return;
+
+  }
+
+
+  $("loginState").textContent =
+    "Supabase：正在從教職員平台確認行政身分...";
+
+
+  const {
+    data:setData,
+    error:setError
+  } =
+    await supabaseClient
+      .auth
+      .setSession(
+        {
+          access_token:
+            teacherData.session.access_token,
+
+          refresh_token:
+            teacherData.session.refresh_token
+        }
+      );
+
+
+  if(
+    setError
+    ||
+    !setData
+    ||
+    !setData.session
+    ||
+    !setData.session.user
+  ){
+
+    console.error(
+      "admin teacher SSO setSession error:",
+      setError
+    );
+
+    $("loginState").textContent =
+      "Supabase：教職員登入狀態轉入失敗";
+
+    return;
+
+  }
+
+
+  currentUser =
+    setData.session.user;
+
+
+  const ok =
+    await validateAdmin();
+
+
+  if(
+    !ok
+  ){
+
+    await supabaseClient
+      .auth
+      .signOut();
+
+    currentUser =
+      null;
+
+    currentStaff =
+      null;
+
+    if(
+      $("adminLoginBox")
+    ){
+      $("adminLoginBox")
+        .style.display =
+          "block";
+    }
+
+  }
+
+}
+
+
+/*
+==================================================
+啟動
+==================================================
+*/
+
+function panelStorageKey(panel,index){
+  const title=
+    panel
+      .querySelector(":scope > .panelTitle")
+      ?.textContent
+      ?.replace(/[＋－]/g,"")
+      ?.trim()
+    || ("panel-"+index);
+
+  return "leye-admin-panel-"+title;
+}
+
+function setPanelCollapsed(panel,collapsed,index){
+  const key=panelStorageKey(panel,index);
+  const btn=
+    panel.querySelector(
+      ":scope > .panelTitle .panelCollapseBtn"
+    );
+
+  panel.classList.toggle(
+    "panelAutoCollapsed",
+    collapsed
+  );
+
+  if(btn){
+    btn.setAttribute(
+      "aria-expanded",
+      collapsed ? "false" : "true"
+    );
+    btn.title=
+      collapsed ? "展開" : "收起";
+  }
+
+  sessionStorage.setItem(
+    key,
+    collapsed ? "1" : "0"
+  );
+}
+
+function togglePanelAndFocus(panel,index){
+  const willOpen=
+    panel.classList.contains(
+      "panelAutoCollapsed"
+    );
+
+  const panels=
+    [...document.querySelectorAll(".panel")]
+      .filter(
+        item =>
+          item.tagName !== "DETAILS"
+          &&
+          item.querySelector(":scope > .panelTitle")
+      );
+
+  if(willOpen){
+    panels.forEach((item,itemIndex)=>{
+      setPanelCollapsed(
+        item,
+        item !== panel,
+        itemIndex
+      );
+    });
+
+    setTimeout(
+      ()=>{
+        panel.scrollIntoView({
+          behavior:"smooth",
+          block:"start"
+        });
+      },
+      40
+    );
+  }
+  else{
+    setPanelCollapsed(
+      panel,
+      true,
+      index
+    );
+  }
+}
+
+function installPanelCollapsers(){
+  const panels=
+    [...document.querySelectorAll(".panel")]
+      .filter(
+        panel =>
+          panel.tagName !== "DETAILS"
+          &&
+          panel.querySelector(":scope > .panelTitle")
+      );
+
+  panels.forEach((panel,index)=>{
+    const title=
+      panel.querySelector(":scope > .panelTitle");
+
+    if(
+      !title
+      ||
+      title.querySelector(".panelCollapseBtn")
+    ){
+      return;
+    }
+
+    title.classList.add(
+      "panelCollapsibleTitle"
+    );
+
+    const btn=
+      document.createElement("button");
+
+    btn.type="button";
+    btn.className="panelCollapseBtn";
+    btn.setAttribute(
+      "aria-label",
+      "展開或收起區塊"
+    );
+
+    btn.addEventListener(
+      "click",
+      event => {
+        event.stopPropagation();
+        togglePanelAndFocus(
+          panel,
+          index
+        );
+      }
+    );
+
+    title.addEventListener(
+      "click",
+      ()=>{
+        togglePanelAndFocus(
+          panel,
+          index
+        );
+      }
+    );
+
+    title.appendChild(btn);
+
+    const saved=
+      sessionStorage.getItem(
+        panelStorageKey(panel,index)
+      );
+
+    setPanelCollapsed(
+      panel,
+      saved === "0"
+        ? false
+        : true,
+      index
+    );
+  });
+}
+
+
+async function main(){
+
+  installPanelCollapsers();
+
+  $("pickupDateFilter").value =
+    getTaiwanDateString();
+
+  const taiwanToday =
+    new Date(
+      new Date().toLocaleString(
+        "en-US",
+        {timeZone:"Asia/Taipei"}
+      )
+    );
+
+  if($("monthlyReportYear")){
+    $("monthlyReportYear").value =
+      taiwanToday.getFullYear();
+  }
+
+  if($("monthlyReportMonth")){
+    $("monthlyReportMonth").value =
+      String(taiwanToday.getMonth()+1);
+  }
+
+  if($("dbScheduleYear")){
+    $("dbScheduleYear").value =
+      String(taiwanToday.getFullYear());
+  }
+
+  if($("dbScheduleMonth")){
+    $("dbScheduleMonth").value =
+      String(taiwanToday.getMonth()+1);
+  }
+
+
+  await restoreSession();
+
+}
+
+
+main();
+
+</script>
+
+<script>
+function openAdminManageTarget(){
+  const id=(location.hash||"#fees").slice(1);
+  const target=document.getElementById(id);
+  if(!target) return;
+  if(target.tagName==="DETAILS") target.open=true;
+  target.classList.remove("panelAutoCollapsed");
+  const btn=target.querySelector(":scope > .panelTitle .panelCollapseBtn");
+  if(btn) btn.setAttribute("aria-expanded","true");
+  setTimeout(()=>target.scrollIntoView({behavior:"smooth",block:"start"}),80);
+}
+window.addEventListener("hashchange",openAdminManageTarget);
+window.addEventListener("load",()=>setTimeout(openAdminManageTarget,450));
+</script>
+</body>
+</html>
