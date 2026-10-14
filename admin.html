@@ -4427,6 +4427,34 @@ function requestCardHtml(
 
 
   if(
+    (
+      r.request_type === "temporary"
+      ||
+      r.request_type === "extended"
+    )
+    &&
+    r.request_date
+    &&
+    r.request_date < getTaiwanDateString()
+  ){
+
+    return `
+      <div
+        class="actionBox"
+        style="background:#fff8e1;border-color:#ffe0b2"
+      >
+        <b>⚠️ 此為過去日期申請</b>
+        <div class="helper" style="margin-top:6px">
+          為避免舊測試或歷史資料誤觸發 LINE 通知，
+          過去日期的臨托／延托不提供即時核准操作。
+        </div>
+      </div>
+    `;
+
+  }
+
+
+  if(
     r.request_type === "leave"
   ){
 
@@ -4814,9 +4842,26 @@ async function finishRequestUpdate(
 
   try{
 
-    await notifyRequestResult(
-      requestId
-    );
+    const notifyResult =
+      await notifyRequestResult(
+        requestId
+      );
+
+
+    if(
+      notifyResult
+      &&
+      notifyResult.skipped === true
+    ){
+
+      lineText =
+        notifyResult.reason === "past_request"
+        ?
+        "ℹ️ 此為過去日期申請，系統未發送 LINE 通知。"
+        :
+        "ℹ️ 此筆資料不需要發送 LINE 通知。";
+
+    }
 
   }
   catch(e){
