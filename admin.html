@@ -1247,6 +1247,38 @@ button,
   }
 }
 
+
+.adminSecondaryPanel{display:none !important}
+.adminHeaderActions{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  width:min(680px,100%);
+}
+.adminHeaderActions .btn,
+.adminHeaderLink{
+  width:100%;
+  min-height:42px;
+  padding:9px 10px;
+  text-decoration:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  white-space:normal;
+  line-height:1.25;
+}
+@media(max-width:760px){
+  .adminHeaderActions{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    width:100%;
+  }
+}
+@media(max-width:380px){
+  .adminHeaderActions{
+    grid-template-columns:1fr;
+  }
+}
 </style>
 </head>
 
@@ -1272,29 +1304,13 @@ button,
     </div>
 
 
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <a
-        class="btn btnGray"
-        href="teacher.html?v=13"
-        style="text-decoration:none;display:inline-flex;align-items:center"
-      >
-        ← 教職員平台
-      </a>
-      <a
-        class="btn btnGreen"
-        href="admin.html#staff-management"
-        style="text-decoration:none;display:inline-flex;align-items:center"
-      >
-        👩‍🏫 老師與排班管理
-      </a>
-
-      <button
-        class="btn btnBlue"
-        type="button"
-        onclick="refreshAll()"
-      >
-        ↻ 重新整理
-      </button>
+    <div class="adminHeaderActions">
+      <a class="btn btnGray adminHeaderLink" href="teacher.html?v=13">← 教職員平台</a>
+      <a class="btn btnGreen adminHeaderLink" href="admin-manage.html#fees">📊 托育統計</a>
+      <a class="btn btnGreen adminHeaderLink" href="admin-manage.html#schoolClosedPanel">📅 服務日</a>
+      <a class="btn btnGreen adminHeaderLink" href="admin-manage.html#parent-binding">🔗 綁定碼</a>
+      <a class="btn btnGreen adminHeaderLink" href="admin-manage.html#staff-management">👩‍🏫 老師與排班</a>
+      <button class="btn btnBlue" type="button" onclick="refreshAll()">↻ 重新整理</button>
     </div>
 
   </div>
@@ -1379,7 +1395,7 @@ button,
 <!-- 每月延托 / 臨托 / 逾時統計 -->
 <!-- ====================================== -->
 
-<div class="panel">
+<div id="fees" class="panel adminSecondaryPanel">
   <div class="panelTitle">📊 每月托育與逾時收費統計</div>
   <div class="helper">
     僅行政人員可匯出。資料依「延托／臨托／逾時」三類統計，
@@ -1412,7 +1428,7 @@ button,
 <!-- 休園日 / 特殊停止服務日 -->
 <!-- ====================================== -->
 
-<details class="panel compactHolidayPanel" id="schoolClosedPanel">
+<details class="panel compactHolidayPanel adminSecondaryPanel" id="schoolClosedPanel">
   <summary class="compactHolidaySummary">
     <span class="panelTitle">📅 休園日與特殊停止服務日</span>
     <span class="compactHolidayHint">點一下展開／收合</span>
@@ -1449,7 +1465,7 @@ button,
 <!-- 試行家長 LINE 綁定碼 -->
 <!-- ====================================== -->
 
-<div class="panel">
+<div id="parent-binding" class="panel adminSecondaryPanel">
   <div class="panelTitle">🔗 試行家長 LINE 綁定碼</div>
   <div class="helper">
     僅行政人員可產生。每次重新產生都會讓先前「尚未使用」的家長綁定碼立即失效。
@@ -1470,7 +1486,7 @@ button,
 <!-- 老師與課後班排班管理 V16 -->
 <!-- ====================================== -->
 
-<div id="staff-management" class="panel adminManagePanel" style="display:none">
+<div id="staff-management" class="panel adminManagePanel adminSecondaryPanel" style="display:none">
   <div class="panelTitle">👩‍🏫 老師與課後班管理</div>
   <div class="helper">正式啟用名單以 27 位人員為主；此處只顯示目前啟用中的教職員。</div>
 
@@ -1500,7 +1516,7 @@ button,
         <div><div class="helper">姓名</div><input id="newStaffName" placeholder="例：王小美"></div>
         <div><div class="helper">主要身分</div><select id="newStaffRole"><option value="class_teacher">原班導師</option><option value="aftercare_teacher">支援／外聘</option><option value="admin">行政老師</option></select></div>
         <div><div class="helper">固定原班</div><select id="newStaffHomeroom"><option value="">無</option><option value="C01">櫻桃班</option><option value="C02">蘋果班</option><option value="C03">蝴蝶班</option><option value="C04">白兔班</option><option value="C05">蜜蜂班</option><option value="C06">袋鼠班</option><option value="C07">綿羊班</option><option value="C08">企鵝班</option></select></div>
-        <div><div class="helper">固定課後班</div><select id="newStaffAftercare"><option value="">無</option><option value="AC01">蝴蝶班｜18:00</option><option value="AC02">白兔班｜17:00</option><option value="AC03">蜜蜂班｜18:00</option><option value="AC04">陽光書屋班｜17:00</option><option value="AC05">櫻桃班｜幼幼</option><option value="AC06">蘋果班｜幼幼</option></select></div>
+        <div><div class="helper">固定課後班</div><select id="newStaffAftercare"><option value="">無</option><option value="AC01">蝴蝶班｜18:00</option><option value="AC02">白兔班｜17:00</option><option value="AC03">蜜蜂班｜18:00</option><option value="AC04">綿羊班｜17:00</option><option value="AC05">櫻桃班｜幼幼</option><option value="AC06">蘋果班｜幼幼</option></select></div>
         <div><div class="helper">Excel 別名（選填）</div><input id="newStaffAliases" placeholder="例：小美, 美美"></div>
       </div>
       <div class="actionButtons"><button class="btn btnGreen" type="button" onclick="addStaffMember()">儲存新增</button><button class="btn btnGray" type="button" onclick="toggleAddStaffBox(false)">取消</button></div>
@@ -1840,7 +1856,7 @@ const AFTERCARE_CLASSES = {
   },
 
   AC04:{
-    name:"陽光書屋班",
+    name:"綿羊班",
     group:"mixed",
     endTime:"17:00"
   },
