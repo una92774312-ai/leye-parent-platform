@@ -172,7 +172,7 @@ function buildTeacherMessage(item:any){
     },
     {
       type:"text",
-      text:adminReview ? `📋 待審核｜${typeLabel}` : `${emoji} ${typeLabel}`,
+      text:adminReview ? `📋 待審核｜${typeLabel}` : item.notificationType==="leave"&&item.status==="cancelled" ? "↩ 請假已取消" : `${emoji} ${typeLabel}`,
       weight:"bold",
       size:"xl",
       color:"#40513D",
@@ -186,7 +186,7 @@ function buildTeacherMessage(item:any){
               ? "行政已完成安排，請留意今日幼兒托育動向。"
               : "家長已送出托育申請，原班老師可先掌握資訊。"
           )
-        : "家長有新的幼兒事項，請開啟教職員平台確認。",
+        : item.notificationType==="leave"&&item.status==="cancelled" ? "家長已取消該日請假，請留意幼兒當日出缺席與課後安排。" : "家長有新的幼兒事項，請開啟教職員平台確認。",
       size:"sm",
       color:"#6B7168",
       wrap:true,
@@ -387,9 +387,7 @@ async function getSourceItem(
       }
     }
     else if(
-      !["submitted","pending","approved"].includes(
-        r.status
-      )
+      !(r.request_type==="leave" ? ["submitted","pending","approved","cancelled"].includes(r.status) : ["submitted","pending","approved"].includes(r.status))
     ){
       return null;
     }
@@ -453,11 +451,9 @@ async function getSourceItem(
               r.status,
               assignedClassId || "-"
             ].join("|")
-          : String(
-              r.notice_time
-              || r.created_at
-              || r.id
-            )
+          : r.request_type==="leave" && r.status==="cancelled"
+            ? [r.id,"cancelled"].join("|")
+            : String(r.notice_time || r.created_at || r.id)
     };
   }
 
@@ -604,12 +600,21 @@ async function getCandidateStaffIds(
 
     if(fixedError) throw fixedError;
 
+    const {data:excluded,error:exclusionError} = await admin
+      .from("aftercare_staff_day_exclusions")
+      .select("staff_id")
+      .eq("assignment_date",itemDate)
+      .eq("aftercare_class_id",classId);
+    if(exclusionError) throw exclusionError;
+    const excludedStaffIds = new Set((excluded || []).map((r:any)=>String(r.staff_id)));
+
     return [
       ...new Set(
         (fixedStaff || [])
           .map((row:any)=>row.staff_id)
           .filter(Boolean)
           .map(String)
+          .filter((id:string)=>!excludedStaffIds.has(id))
       )
     ];
   }
