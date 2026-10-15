@@ -1375,12 +1375,23 @@ button,
     <div class="adminHeaderActions">
       <a class="btn btnGray adminHeaderLink" href="teacher.html?v=13">← 教職員平台</a>
       <a class="btn btnGreen adminHeaderLink" href="admin-manage.html">⚙️ 延長照顧後台資料設定</a>
+      <button class="btn btnGray" type="button" id="notificationCenterToggle" onclick="toggleNotificationCenter()" aria-controls="notificationCenterPanel" aria-expanded="false">🔔 通知中心</button>
       <button class="btn btnBlue" type="button" onclick="refreshAll()">↻ 重新整理</button>
     </div>
 
   </div>
 
 
+  <section id="notificationCenterPanel" class="panel" hidden style="display:none;margin:10px 0 16px;border:1px solid #dce6d9">
+    <div class="panelTitle">🔔 LINE 通知中心</div>
+    <p class="helper">顯示近 14 日教師／行政通知發送紀錄；「已送出」代表 LINE API 接受，不代表收件人已閱讀。家長通知尚未納入這份集中日誌。</p>
+    <div class="pickupToolbar">
+      <button class="btn btnBlue" type="button" onclick="refreshNotificationCenter()">↻ 更新紀錄</button>
+      <button class="btn btnGray" type="button" onclick="toggleNotificationCenter(false)">關閉</button>
+    </div>
+    <div id="notificationCenterSummary" class="helper" aria-live="polite">按更新紀錄以查看。</div>
+    <div id="notificationCenterRows" style="display:grid;gap:8px;margin-top:12px"></div>
+  </section>
   <div
     id="loginState"
     class="loginState"
@@ -8023,6 +8034,38 @@ async function refreshDailyCareFees(){
     state.textContent=label+(x.collected_at?"｜"+new Date(x.collected_at).toLocaleString("zh-TW",{timeZone:"Asia/Taipei"}):"");
     el.append(line,state);list.append(el);
   }
+}
+
+
+function toggleNotificationCenter(force){
+ const panel=document.getElementById("notificationCenterPanel"),button=document.getElementById("notificationCenterToggle");
+ if(!panel)return;
+ const show=typeof force==="boolean"?force:panel.hidden;
+ panel.hidden=!show;panel.style.display=show?"block":"none";
+ if(button)button.setAttribute("aria-expanded",String(show));
+ if(show)refreshNotificationCenter();
+}
+async function refreshNotificationCenter(){
+ const summary=document.getElementById("notificationCenterSummary"),rows=document.getElementById("notificationCenterRows");
+ if(!summary||!rows)return;
+ summary.textContent="正在讀取通知紀錄……";rows.replaceChildren();
+ const {data,error}=await supabaseClient.rpc("admin_notification_center",{p_limit:60});
+ if(error){summary.textContent="讀取失敗，請確認已登入行政帳號："+error.message;return;}
+ const counts=data?.summary||{};
+ summary.textContent="近14日｜LINE API 已接受 "+Number(counts.sent||0)+"｜失敗 "+Number(counts.failed||0)+"｜待處理 "+Number(counts.pending||0)+"｜略過 "+Number(counts.skipped||0);
+ const items=Array.isArray(data?.items)?data.items:[];
+ if(!items.length){rows.textContent="目前沒有教師／行政通知紀錄。";return;}
+ for(const x of items){
+   const line=document.createElement("div");line.className="staffRow";
+   const head=document.createElement("div");head.style.fontWeight="bold";
+   const labels={sent:"✅ LINE API 已接受",failed:"❌ 發送失敗",pending:"⏳ 待處理",skipped:"— 略過"};
+   head.textContent=(labels[x.status]||x.status)+"｜"+(x.recipient_name||"未知教師");
+   const detail=document.createElement("div");detail.className="helper";
+   detail.textContent=(x.notification_type||"事項")+"｜"+(x.created_at?new Date(x.created_at).toLocaleString("zh-TW",{timeZone:"Asia/Taipei"}):"");
+   line.append(head,detail);
+   if(x.error_detail){const fail=document.createElement("div");fail.className="helper";fail.textContent="錯誤："+x.error_detail;line.append(fail);}
+   rows.append(line);
+ }
 }
 
 async function main(){
