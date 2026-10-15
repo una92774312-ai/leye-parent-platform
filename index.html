@@ -4241,7 +4241,7 @@ async function submitLeave(){
   try{dates=getSelectedLeaveDates();}
   catch(e){alert(e.message);return;}
   if(!dates.length){alert("請選擇請假日期。");return;}
-  const todayYmd=dateToYMD(ymdToLocalDate(new Date().toLocaleDateString("en-CA",{timeZone:"Asia/Taipei"})));
+  const todayYmd=today();
   if(dates.some(d=>d<todayYmd)){alert("不可申請過去日期。");return;}
   const date=dates[0];
 
