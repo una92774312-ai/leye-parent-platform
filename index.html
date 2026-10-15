@@ -1952,16 +1952,24 @@ details.rules summary{
       📅 請假日期
     </label>
 
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+      <label><input type="radio" name="leaveMode" value="single" checked onchange="updateLeaveMode()"> 單日請假</label>
+      <label><input type="radio" name="leaveMode" value="multi" onchange="updateLeaveMode()"> 多日請假</label>
+    </div>
+    <div id="leaveSingleDate">
     <input
       id="leaveDate"
       type="date"
       onchange="validateSchoolDate(this)"
     >
 
-    <div class="helper">
-      非上課日不可選擇。
+    <div class="helper">非上課日不可選擇。</div>
     </div>
-
+    <div id="leaveMultiDates" style="display:none">
+      <label>開始日期 <input id="leaveStartDate" type="date"></label>
+      <label>結束日期 <input id="leaveEndDate" type="date"></label>
+      <div class="helper">最多連續 31 天，系統只建立上課日的請假紀錄，週末及休園日自動略過。</div>
+    </div>
   </div>
 
   <div class="group">
@@ -4191,6 +4199,30 @@ async function submitPickup(){
   }
 
 }
+function updateLeaveMode(){
+ const multi=document.querySelector('input[name="leaveMode"]:checked')?.value==="multi";
+ $("leaveSingleDate").style.display=multi?"none":"block";
+ $("leaveMultiDates").style.display=multi?"block":"none";
+}
+function getSelectedLeaveDates(){
+ const multi=document.querySelector('input[name="leaveMode"]:checked')?.value==="multi";
+ if(!multi)return $("leaveDate").value?[$("leaveDate").value]:[];
+ const start=$("leaveStartDate").value,end=$("leaveEndDate").value;
+ if(!start||!end)throw new Error("請選擇開始與結束日期。");
+ const a=ymdToLocalDate(start),b=ymdToLocalDate(end);
+ const span=Math.round((b-a)/86400000);
+ if(span<0)throw new Error("結束日期不可早於開始日期。");
+ if(span>30)throw new Error("多日請假最多連續 31 天。");
+ const dates=[];
+ for(let i=0;i<=span;i++){
+  const d=new Date(a);d.setDate(a.getDate()+i);
+  const ymd=dateToYMD(d);
+  if(!isSchoolClosedDate(ymd))dates.push(ymd);
+ }
+ if(!dates.length)throw new Error("所選日期沒有上課日，請重新選擇。");
+ return dates;
+}
+
 async function submitLeave(){
 
   const list =
@@ -4205,37 +4237,13 @@ async function submitLeave(){
   }
 
 
-  const date =
-    $("leaveDate").value;
-
-
-  if(
-    !date
-  ){
-
-    alert(
-      "請選擇請假日期。"
-    );
-
-    return;
-
-  }
-
-
-  if(
-    isSchoolClosedDate(
-      date
-    )
-  ){
-
-    validateSchoolDate(
-      $("leaveDate")
-    );
-
-    return;
-
-  }
-
+  let dates;
+  try{dates=getSelectedLeaveDates();}
+  catch(e){alert(e.message);return;}
+  if(!dates.length){alert("請選擇請假日期。");return;}
+  const todayYmd=dateToYMD(ymdToLocalDate(new Date().toLocaleDateString("en-CA",{timeZone:"Asia/Taipei"})));
+  if(dates.some(d=>d<todayYmd)){alert("不可申請過去日期。");return;}
+  const date=dates[0];
 
   const reason =
     $("leaveReason").value;
@@ -4421,15 +4429,15 @@ async function submitLeave(){
           "requests"
         )
         .select(
-          "id,child_id,status"
+          "id,child_id,request_date,status"
         )
         .eq(
           "request_type",
           "leave"
         )
-        .eq(
+        .in(
           "request_date",
-          date
+          dates
         )
         .in(
           "status",
@@ -4457,55 +4465,19 @@ async function submitLeave(){
     }
 
 
-    const duplicateChildIds =
-      new Set(
-        (
-          existingLeaves
-          ||
-          []
-        )
-        .map(
-          row =>
-          row.child_id
-        )
-      );
-
-
-    if(
-      duplicateChildIds.size
-      >
-      0
-    ){
-
-      const duplicateNames =
-        verifiedChildren
-          .filter(
-            child =>
-            duplicateChildIds.has(
-              child.id
-            )
-          )
-          .map(
-            child =>
-            child.name
-          );
-
-
-      alert(
-
-        duplicateNames.join("、")
-        +
-        ` 在 ${date} 已有請假紀錄，請勿重複送出。`
-        +
-        "\n\n如需修改或取消，請至「我的申請」查看。"
-
-      );
-
-
-      return;
-
+    const existingKeys=new Set((existingLeaves||[]).map(r=>r.child_id+"|"+r.request_date));
+    const pendingPairs=[];
+    for(const child of verifiedChildren){
+      for(const leaveDate of dates){
+        if(!existingKeys.has(child.id+"|"+leaveDate))pendingPairs.push({child,leaveDate});
+      }
     }
-
+    if(!pendingPairs.length){
+      alert("所選日期全部已有請假紀錄，請至「我的申請」查看。");
+      return;
+    }
+    const skipped=verifiedChildren.length*dates.length-pendingPairs.length;
+    if(skipped && !confirm("有 "+skipped+" 筆日期已請假，將略過既有紀錄並送出其餘日期，是否繼續？"))return;
 
     /*
     ==========================================
@@ -4519,7 +4491,8 @@ async function submitLeave(){
 `確認送出請假？
 
 幼兒：${childrenText(list)}
-日期：${date}
+日期：${dates[0]}${dates.length>1?" 至 "+dates[dates.length-1]:""}（"+dates.length+" 個上課日）
+新增筆數：${pendingPairs.length}
 原因：${reason}`
 
       )
@@ -4541,51 +4514,18 @@ async function submitLeave(){
         .toISOString();
 
 
-    const rows =
-      verifiedChildren.map(
-
-        child => ({
-
-          request_date:
-            date,
-
-          child_id:
-            child.id,
-
-          guardian_id:
-            verifiedGuardianId,
-
-          request_type:
-            "leave",
-
-          status:
-            "pending",
-
-          requested_start_time:
-            null,
-
-          requested_end_time:
-            null,
-
-          notice_time:
-            submittedAt,
-
-          reason:
-            note
-            ?
-            `${reason}｜${note}`
-            :
-            reason,
-
-          care_group:
-            child.care_group
-            ||
-            "mixed"
-
-        })
-
-      );
-
+    const rows=pendingPairs.map(({child,leaveDate})=>({
+      request_date:leaveDate,
+      child_id:child.id,
+      guardian_id:verifiedGuardianId,
+      request_type:"leave",
+      status:"pending",
+      requested_start_time:null,
+      requested_end_time:null,
+      notice_time:submittedAt,
+      reason:note?reason+"｜"+note:reason,
+      care_group:child.care_group||"mixed"
+    }));
 
     /*
     ==========================================
@@ -4679,9 +4619,9 @@ async function submitLeave(){
       +
       "\n日期："
       +
-      date
+      dates[0] + (dates.length>1?" 至 "+dates[dates.length-1]:"")
       +
-      "\n目前狀態：待處理"
+      "\n成功新增："+rows.length+" 筆請假（已略過："+skipped+" 筆）\n目前狀態：待處理"
 
     );
 
