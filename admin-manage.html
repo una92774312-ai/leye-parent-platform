@@ -1974,110 +1974,12 @@ async function validateAdmin(){
     "Supabase：正在驗證行政身分...";
 
 
-  const {
-    data:identity,
-    error:identityError
-  } =
-    await supabaseClient
-      .from("user_identities")
-      .select(
-        "staff_id,guardian_id"
-      )
-      .eq(
-        "auth_user_id",
-        currentUser.id
-      )
-      .maybeSingle();
-
-
-  if(
-    identityError
-  ){
-
-    showError(
-      "讀取身分對應失敗："
-      +
-      identityError.message
-    );
-
+  // 身分及角色由後端一次查核，避免兩次連續查表。
+  const {data:staff,error:staffError} = await supabaseClient.rpc("admin_session_profile");
+  if(staffError || !staff || staff.role !== "admin" || staff.active !== true){
+    showError("行政身分驗證失敗，請重新從教職員平台登入。");
     return false;
-
   }
-
-
-  if(
-    !identity
-    ||
-    !identity.staff_id
-  ){
-
-    showError(
-      "此帳號沒有綁定 staff 身分。"
-    );
-
-    return false;
-
-  }
-
-
-  const {
-    data:staff,
-    error:staffError
-  } =
-    await supabaseClient
-      .from("staff")
-      .select(
-        "id,display_name,role,active"
-      )
-      .eq(
-        "id",
-        identity.staff_id
-      )
-      .maybeSingle();
-
-
-  if(
-    staffError
-  ){
-
-    showError(
-      "讀取 staff 失敗："
-      +
-      staffError.message
-    );
-
-    return false;
-
-  }
-
-
-  if(
-    !staff
-    ||
-    staff.active !== true
-  ){
-
-    showError(
-      "此行政帳號不存在或已停用。"
-    );
-
-    return false;
-
-  }
-
-
-  if(
-    staff.role !== "admin"
-  ){
-
-    showError(
-      "目前此頁只開放 admin 行政角色。"
-    );
-
-    return false;
-
-  }
-
 
   currentStaff =
     staff;
