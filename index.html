@@ -2975,17 +2975,19 @@ async function loadGuardianAndChildren(){
     "正在從資料庫讀取幼兒資料...";
 
   const {
-    data:userData,
+    data:sessionData,
     error:userError
   } =
-    await supabaseClient.auth.getUser();
+    await supabaseClient.auth.getSession();
 
   if(
     userError
     ||
-    !userData
+    !sessionData
     ||
-    !userData.user
+    !sessionData.session
+    ||
+    !sessionData.session.user
   ){
 
     supabaseUser =
@@ -3007,7 +3009,7 @@ async function loadGuardianAndChildren(){
   }
 
   supabaseUser =
-    userData.user;
+    sessionData.session.user;
 
   $("supabaseState").textContent =
     "系統：家長帳號已登入";
@@ -3085,6 +3087,12 @@ async function loadGuardianAndChildren(){
   currentGuardianId =
     identityData.guardian_id;
 
+  const {data:links,error:linksError}=await supabaseClient.from("guardian_children")
+    .select("child_id").eq("guardian_id",currentGuardianId).eq("active",true);
+  if(linksError){showStatus("⚠️ 讀取親子關聯失敗。");return;}
+  const allowedIds=[...new Set((links||[]).map(x=>x.child_id))];
+  if(!allowedIds.length){children=[];renderChildrenEverywhere();return;}
+
   const {
     data:childData,
     error:childError
@@ -3100,6 +3108,7 @@ async function loadGuardianAndChildren(){
         "active",
         true
       )
+      .in("id",allowedIds)
       .order(
         "morning_class_id",
         {
@@ -3410,7 +3419,14 @@ function requestTimeText(row){const start=requestShortTime(row.requested_start_t
 function requestChildName(childId){const child=children.find(item=>item.id===childId);return child?child.className+"・"+child.name:"幼兒";}
 function requestAftercareName(code){return code?(AFTERCARE_CLASS_MAP[code]||code):"";}
 function requestCreatedText(value){if(!value)return "";const d=new Date(value);if(Number.isNaN(d.getTime()))return "";return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0")+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
-function renderRequestCard(row){const status=requestStatusInfo(row.status),className=requestAftercareName(row.assigned_aftercare_class_code),reason=row.reason?String(row.reason).trim():"",adminNote=row.admin_note?String(row.admin_note).trim():"";const classHtml=(row.status==="approved"&&className)?`<div class="requestClassBox">🏫 今日課後班：${escapeHtml(className)}</div>`:"";const noteHtml=adminNote?`<div class="requestNote">🌼 <b>本園備註</b><br>${escapeHtml(adminNote)}</div>`:"";return `<div class="requestCard"><div class="requestCardTop"><div class="requestType">${requestTypeLabel(row.request_type)}</div><div class="requestStatus ${status.className}">${status.icon} ${escapeHtml(status.text)}</div></div><div class="requestCardBody"><div class="requestChild">👶 ${escapeHtml(requestChildName(row.child_id))}</div><div class="requestMetaGrid"><div class="requestMeta"><div class="requestLabel">📅 日期</div><div class="requestValue">${escapeHtml(requestDateText(row.request_date))}</div></div><div class="requestMeta"><div class="requestLabel">⏰ 時段</div><div class="requestValue">${escapeHtml(requestTimeText(row))}</div></div>${reason?`<div class="requestMeta requestMetaFull"><div class="requestLabel">📝 申請內容</div><div class="requestValue">${escapeHtml(reason)}</div></div>`:""}</div>${classHtml}${noteHtml}</div>${row.created_at?`<div class="requestFoot">送出時間：${escapeHtml(requestCreatedText(row.created_at))}</div>`:""}</div>`;}
+async function cancelLeaveRequest(requestId){
+ if(!confirm("確定取消這一天的請假？"))return;
+ const {data,error}=await supabaseClient.rpc("guardian_cancel_leave",{p_request_id:requestId});
+ if(error){alert("取消失敗："+error.message);return;}
+ if(!data?.ok){alert("取消未完成。");return;}
+ await loadMyRequests();alert("已取消該日請假。");
+}
+function renderRequestCard(row){const status=requestStatusInfo(row.status),className=requestAftercareName(row.assigned_aftercare_class_code),reason=row.reason?String(row.reason).trim():"",adminNote=row.admin_note?String(row.admin_note).trim():"";const classHtml=(row.status==="approved"&&className)?`<div class="requestClassBox">🏫 今日課後班：${escapeHtml(className)}</div>`:"";const noteHtml=adminNote?`<div class="requestNote">🌼 <b>本園備註</b><br>${escapeHtml(adminNote)}</div>`:"";return `<div class="requestCard"><div class="requestCardTop"><div class="requestType">${requestTypeLabel(row.request_type)}</div><div class="requestStatus ${status.className}">${status.icon} ${escapeHtml(status.text)}</div></div><div class="requestCardBody"><div class="requestChild">👶 ${escapeHtml(requestChildName(row.child_id))}</div><div class="requestMetaGrid"><div class="requestMeta"><div class="requestLabel">📅 日期</div><div class="requestValue">${escapeHtml(requestDateText(row.request_date))}</div></div><div class="requestMeta"><div class="requestLabel">⏰ 時段</div><div class="requestValue">${escapeHtml(requestTimeText(row))}</div></div>${reason?`<div class="requestMeta requestMetaFull"><div class="requestLabel">📝 申請內容</div><div class="requestValue">${escapeHtml(reason)}</div></div>`:""}</div>${classHtml}${noteHtml}</div>${row.request_type==="leave"&&["submitted","pending","approved"].includes(row.status)&&row.request_date>=today()?`<button class="btn btnGray" type="button" onclick="cancelLeaveRequest(\'${row.id}\')">↩ 取消此日請假</button>`:""}${row.created_at?`<div class="requestFoot">送出時間：${escapeHtml(requestCreatedText(row.created_at))}</div>`:""}</div>`;}
 async function loadMyRequests(){
 
   const box =
