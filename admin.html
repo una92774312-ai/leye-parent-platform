@@ -4980,6 +4980,9 @@ async function approveCareRequest(
           assigned_aftercare_class_code:
             classCode,
 
+          assigned_aftercare_class_id:
+            classCode,
+
           admin_note:
             adminNote
 
@@ -5113,6 +5116,9 @@ async function updateRequestStatus(
   ){
 
     payload.assigned_aftercare_class_code =
+      null;
+
+    payload.assigned_aftercare_class_id =
       null;
 
   }
