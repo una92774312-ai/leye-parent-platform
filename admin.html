@@ -8013,7 +8013,15 @@ async function main(){
 
   await restoreSession();
   // 代課人員選單在實際展開操作時再讀取，避免拖慢行政首頁。
-  // await loadSubstitutionChoices();
+  const subPanel=document.getElementById("substitutionPanel");
+  if(subPanel){
+    subPanel.addEventListener("click",()=>{
+      if(!subPanel.dataset.choicesLoaded){
+        subPanel.dataset.choicesLoaded="1";
+        loadSubstitutionChoices().catch(()=>{subPanel.dataset.choicesLoaded="";});
+      }
+    },{once:false});
+  }
   if(document.getElementById("dailyCareFeeDate"))document.getElementById("dailyCareFeeDate").value=getTaiwanDateString();
 
 }
