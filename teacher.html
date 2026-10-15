@@ -2521,6 +2521,23 @@ function appendCareFeeControls(
   card.appendChild(box);
 }
 
+async function completeTeacherPickup(item, btn){
+  const recordId = item?.source_id || item?.id;
+  if(!recordId || item?.source_type !== "pickup") return;
+  if(!confirm(`確定 ${item?.child_name || "這位幼兒"} 已實際離園？此操作會記錄時間及計算可能的逾時費用。`)) return;
+  btn.disabled = true;
+  try{
+    const {data,error} = await teacherSupabase.rpc("teacher_complete_pickup",{p_pickup_record_id:recordId});
+    if(error) throw error;
+    if(data?.ok !== true) throw new Error("接送確認未成功");
+    await loadTeacherWeekItems();
+    alert("已完成接送紀錄");
+  }catch(err){
+    console.error("teacher_complete_pickup:",err);
+    alert("接送確認失敗："+(err?.message || "請聯絡行政"));
+  }finally{btn.disabled=false;}
+}
+
 function appendTeacherActionControls(
   card,
   item
@@ -2893,6 +2910,22 @@ function makeStudentItem(
     card,
     item
   );
+
+  // 「已處理」不是實際接送；完成接送需後端驗證課後教師權限。
+  if(type === "pickup" && item?.source_type === "pickup" && (item?.source_id || item?.id)){
+    const pickupArea = document.createElement("div");
+    pickupArea.className = "itemActionButtons";
+    if(item.actual_pickup_at){
+      pickupArea.textContent = "✓ 已接送 "+formatDateTime(item.actual_pickup_at);
+    }else{
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "🚗 確認已接送（實際離園）";
+      button.addEventListener("click",()=>completeTeacherPickup(item,button));
+      pickupArea.appendChild(button);
+    }
+    card.appendChild(pickupArea);
+  }
 
   return card;
 }
