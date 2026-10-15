@@ -924,7 +924,7 @@ Deno.serve(async(req) => {
         item.assignedAftercareClassId || ""
       );
 
-    if(!candidateStaffIds.length){
+    if(!candidateStaffIds.length && !(sourceType === "request" && item.status === "pending" && ["temporary","extended"].includes(item.notificationType))){
       return jsonResponse({
         ok:true,
         sent:0,
