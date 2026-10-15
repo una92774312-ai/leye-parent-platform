@@ -1823,6 +1823,21 @@ button,
 <div style="text-align:center;margin:0 auto 24px;font-size:12px;color:#78909c">
   <a href="privacy.html" target="_blank" rel="noopener">個人資料蒐集告知暨隱私權說明</a>
   ｜ <a href="terms.html" target="_blank" rel="noopener">平台使用說明</a>
+
+<section class="panel" id="substitutionPanel">
+  <div class="panelTitle">🔄 臨時代課安排</div>
+  <p class="helper">一位老師一天只能負責一個課後班；代課不改動固定教師往後的排班。</p>
+  <div class="scheduleToolbar">
+    <div><label>代課日期</label><input type="date" id="subDate"></div>
+    <div><label>課後班</label><select id="subClass"><option value="">選擇班級</option></select></div>
+    <div><label>請假老師</label><select id="subAbsent"><option value="">請選擇</option></select></div>
+    <div><label>代課老師</label><select id="subTeacher"><option value="">請選擇</option></select></div>
+  </div>
+  <label for="subNote">代課原因（請勿填寫健康等敏感細節）</label>
+  <input id="subNote" maxlength="300" placeholder="例：當日職務調整">
+  <button type="button" class="btn" id="subSave" onclick="submitAftercareSubstitution()">確認安排代課</button>
+  <p class="helper" id="subStatus" aria-live="polite"></p>
+</section>
 </div>
 
 
@@ -7943,6 +7958,35 @@ function installPanelCollapsers(){
 }
 
 
+async function loadSubstitutionChoices(){
+  const classEl=document.getElementById("subClass"), absent=document.getElementById("subAbsent"), sub=document.getElementById("subTeacher");
+  if(!classEl)return;
+  const [classes,people]=await Promise.all([
+    supabaseClient.from("aftercare_classes").select("id,name").eq("active",true).order("name"),
+    supabaseClient.from("staff").select("id,display_name").eq("active",true).order("display_name")
+  ]);
+  if(classes.error||people.error){document.getElementById("subStatus").textContent="載入選單失敗，請重新登入行政後台。";return;}
+  const opts=(rows,placeholder)=>'<option value="">'+placeholder+'</option>'+rows.map(r=>'<option value="'+r.id+'">'+String(r.name||r.display_name).replaceAll("&","&amp;").replaceAll("<","&lt;")+'</option>').join("");
+  classEl.innerHTML=opts(classes.data||[],"選擇班級");
+  absent.innerHTML=opts(people.data||[],"請選擇請假老師");
+  sub.innerHTML=opts(people.data||[],"請選擇代課老師");
+  document.getElementById("subDate").value=getTaiwanDateString();
+}
+async function submitAftercareSubstitution(){
+  const $s=id=>document.getElementById(id),date=$s("subDate").value,klass=$s("subClass").value,absent=$s("subAbsent").value,sub=$s("subTeacher").value;
+  const status=$s("subStatus"),btn=$s("subSave");
+  if(!date||!klass||!absent||!sub){status.textContent="請填妥日期、班級及兩位教師。";return;}
+  if(absent===sub){status.textContent="請假與代課不能是同一人。";return;}
+  if(!confirm("確認指定日期的代課安排？此操作會調整當日教師接送權限。"))return;
+  btn.disabled=true;status.textContent="正在確認排班衝突並儲存……";
+  try{
+    const {data,error}=await supabaseClient.rpc("assign_aftercare_substitute",{p_date:date,p_class_id:klass,p_absent_staff_id:absent,p_substitute_staff_id:sub,p_note:$s("subNote").value.trim()||null});
+    if(error)throw error;
+    status.textContent="✅ 已建立代課與當日停派紀錄。"+(data?.ok?"":" 請重新確認排班。");
+  }catch(e){status.textContent="無法儲存："+(e.message||String(e));}
+  finally{btn.disabled=false;}
+}
+
 async function main(){
 
   installPanelCollapsers();
@@ -7985,6 +8029,7 @@ async function main(){
 
 
   await restoreSession();
+  await loadSubstitutionChoices();
 
 }
 
