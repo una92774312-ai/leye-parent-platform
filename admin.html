@@ -1460,6 +1460,17 @@ button,
 <!-- 每月延托 / 臨托 / 逾時統計 -->
 <!-- ====================================== -->
 
+<div class="panel adminSecondaryPanel" id="dailyCareFeePanel">
+  <div class="panelTitle">💰 今日臨托／延托收費查核</div>
+  <div class="helper">此頁只核對收費，不會自動標記收款；實際收費仍由當日課後老師確認。</div>
+  <div class="pickupToolbar">
+    <label>日期 <input id="dailyCareFeeDate" type="date"></label>
+    <button class="btn btnBlue" type="button" onclick="refreshDailyCareFees()">↻ 查詢收費</button>
+  </div>
+  <div id="dailyCareFeeSummary" class="helper" aria-live="polite">請按查詢收費。</div>
+  <div id="dailyCareFeeList" style="display:grid;gap:8px;margin-top:12px"></div>
+</div>
+
 <div id="fees" class="panel adminSecondaryPanel">
   <div class="panelTitle">📊 每月托育與逾時收費統計</div>
   <div class="helper">
@@ -7987,6 +7998,33 @@ async function submitAftercareSubstitution(){
   finally{btn.disabled=false;}
 }
 
+
+async function refreshDailyCareFees(){
+  const date=document.getElementById("dailyCareFeeDate")?.value||getTaiwanDateString();
+  const summary=document.getElementById("dailyCareFeeSummary"),list=document.getElementById("dailyCareFeeList");
+  if(!summary||!list)return;
+  summary.textContent="正在查詢……";list.replaceChildren();
+  const {data,error}=await supabaseClient.rpc("admin_daily_care_fee_overview",{p_date:date});
+  if(error){summary.textContent="查詢失敗："+error.message;return;}
+  const items=data?.items||[];
+  const approved=items.filter(x=>x.status==="approved");
+  const received=approved.filter(x=>x.fee_status==="collected");
+  const pending=approved.filter(x=>x.fee_status!=="collected"&&x.fee_status!=="refund_required");
+  const refunds=items.filter(x=>x.fee_status==="refund_required");
+  const amount=arr=>arr.reduce((v,x)=>v+Number(x.collected_amount||0),0);
+  summary.textContent="已核准 "+approved.length+" 筆｜已收 "+received.length+" 筆 NT$"+amount(received)+"｜待收 "+pending.length+" 筆｜待退款 "+refunds.length+" 筆";
+  if(!items.length){list.textContent="本日沒有臨托、延托申請。";return;}
+  for(const x of items){
+    const el=document.createElement("div");el.className="staffRow";
+    const line=document.createElement("div");line.style.fontWeight="bold";
+    line.textContent=(x.morning_class||"未分班")+"｜"+x.child_name+"｜"+(x.type==="temporary"?"臨托":"延托");
+    const state=document.createElement("div");state.className="helper";
+    const label=x.fee_status==="collected"?"✅ 已收款 NT$"+x.collected_amount:x.fee_status==="refund_required"?"⚠️ 待退款":x.status==="approved"?"⏳ 待收 NT$"+x.expected_amount:"申請狀態："+x.status;
+    state.textContent=label+(x.collected_at?"｜"+new Date(x.collected_at).toLocaleString("zh-TW",{timeZone:"Asia/Taipei"}):"");
+    el.append(line,state);list.append(el);
+  }
+}
+
 async function main(){
 
   installPanelCollapsers();
@@ -8030,6 +8068,7 @@ async function main(){
 
   await restoreSession();
   await loadSubstitutionChoices();
+  if(document.getElementById("dailyCareFeeDate"))document.getElementById("dailyCareFeeDate").value=getTaiwanDateString();
 
 }
 
