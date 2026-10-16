@@ -271,6 +271,10 @@
       margin-bottom:14px;
     }
 
+    .countCard{width:100%;font:inherit;cursor:pointer;color:inherit;-webkit-tap-highlight-color:transparent;}
+    .countCard:focus-visible{outline:3px solid #39865a;outline-offset:2px}
+    .countCard:active{background:#e7f1e9}
+    .itemGroup{scroll-margin-top:110px}
     .countCard{
       border:1px solid var(--line);
       border-radius:12px;
@@ -1237,25 +1241,17 @@
               </button>
 
               <div class="todayCounts">
-                <div class="countCard">
-                  <div id="leaveCount" class="countNum">0</div>
-                  <div class="countLabel">本週請假</div>
-                </div>
+                <button class="countCard" type="button" onclick="jumpToTeacherItems('leaveItems')" aria-label="跳到本週請假紀錄"><div id="leaveCount" class="countNum">0</div>
+                  <div class="countLabel">本週請假</div></button>
 
-                <div class="countCard">
-                  <div id="temporaryCount" class="countNum">0</div>
-                  <div class="countLabel">本週臨托</div>
-                </div>
+                <button class="countCard" type="button" onclick="jumpToTeacherItems('careItems')" aria-label="跳到本週臨托紀錄"><div id="temporaryCount" class="countNum">0</div>
+                  <div class="countLabel">本週臨托</div></button>
 
-                <div class="countCard">
-                  <div id="extendedCount" class="countNum">0</div>
-                  <div class="countLabel">本週延托</div>
-                </div>
+                <button class="countCard" type="button" onclick="jumpToTeacherItems('careItems')" aria-label="跳到本週延托紀錄"><div id="extendedCount" class="countNum">0</div>
+                  <div class="countLabel">本週延托</div></button>
 
-                <div class="countCard">
-                  <div id="pickupCount" class="countNum">0</div>
-                  <div class="countLabel">本週接送</div>
-                </div>
+                <button class="countCard" type="button" onclick="jumpToTeacherItems('pickupItems')" aria-label="跳到本週接送紀錄"><div id="pickupCount" class="countNum">0</div>
+                  <div class="countLabel">本週接送</div></button>
               </div>
 
               <div id="todayItemsStatus" class="status show info">
@@ -2973,6 +2969,14 @@ function renderItemList(
       )
     );
   }
+}
+
+function jumpToTeacherItems(targetId){
+  const area=document.getElementById("todayItemsContent");
+  if(!area || area.classList.contains("hidden"))return;
+  const target=document.getElementById(targetId);
+  if(!target)return;
+  (target.closest(".itemGroup")||target).scrollIntoView({behavior:"smooth",block:"start"});
 }
 
 async function loadTeacherWeekItems(){
