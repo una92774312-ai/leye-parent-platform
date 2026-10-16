@@ -517,7 +517,8 @@ async function getCandidateStaffIds(
   child:any,
   itemDate:string,
   notificationType:string,
-  assignedAftercareClassId:string
+  assignedAftercareClassId:string,
+  earlyPickupBefore16:boolean = false
 ){
   const morningIds = new Set<string>();
 
@@ -718,6 +719,11 @@ async function getCandidateStaffIds(
     }
 
     return [...ids];
+  }
+
+  // 16:00 前提早離園，由原班導師處理，課後班只在名冊查看。
+  if(notificationType==="early_pickup" && earlyPickupBefore16){
+    return [...morningIds];
   }
 
   // 接送：
@@ -926,7 +932,8 @@ Deno.serve(async(req) => {
         child,
         item.itemDate,
         item.notificationType,
-        item.assignedAftercareClassId || ""
+        item.assignedAftercareClassId || "",
+        item.notificationType==="early_pickup" && String(item.expectedArrivalTime || item.scheduledPickupTime || "").slice(0,5) < "16:00"
       );
 
     if(!candidateStaffIds.length && !(sourceType === "request" && item.status === "pending" && ["temporary","extended"].includes(item.notificationType))){
