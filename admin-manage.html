@@ -1502,7 +1502,7 @@ details.adminSecondaryPanel{display:block}
       <input id="staffSearch" class="staffSearch" placeholder="搜尋老師姓名" oninput="renderStaffManagement()">
       <select id="staffRoleFilter" class="staffFilter" onchange="renderStaffManagement()">
         <option value="all">全部身分</option>
-        <option value="admin">課後行政管理（蔡青蓓／蔡妤瑄）</option><option value="admin_viewer">行政老師（僅查看，依排班支援課後）</option>
+        <option value="admin">課後行政管理（蔡青蓓／蔡妤瑄）</option><option value="admin_viewer">行政老師（僅查看）</option>
         <option value="class_teacher">原班導師</option>
         <option value="aftercare_teacher">支援／外聘</option>
       </select>
@@ -1515,7 +1515,7 @@ details.adminSecondaryPanel{display:block}
       <div class="manageCardTitle">新增老師</div>
       <div class="staffEditGrid">
         <div><div class="helper">姓名</div><input id="newStaffName" placeholder="例：王小美"></div>
-        <div><div class="helper">主要身分</div><select id="newStaffRole"><option value="class_teacher">原班導師</option><option value="aftercare_teacher">支援／外聘</option><option value="admin">課後行政管理（蔡青蓓／蔡妤瑄）</option><option value="admin_viewer">行政老師（僅查看，依排班支援課後）</option></select></div>
+        <div><div class="helper">主要身分</div><select id="newStaffRole"><option value="class_teacher">原班導師</option><option value="aftercare_teacher">支援／外聘</option><option value="admin">課後行政管理（蔡青蓓／蔡妤瑄）</option><option value="admin_viewer">行政老師（僅查看）</option></select></div>
         <div><div class="helper">固定原班</div><select id="newStaffHomeroom"><option value="">無</option><option value="C01">櫻桃班</option><option value="C02">蘋果班</option><option value="C03">蝴蝶班</option><option value="C04">白兔班</option><option value="C05">蜜蜂班</option><option value="C06">袋鼠班</option><option value="C07">綿羊班</option><option value="C08">企鵝班</option></select></div>
         <div><div class="helper">固定課後班</div><select id="newStaffAftercare"><option value="">無</option><option value="AC01">蝴蝶班｜18:00</option><option value="AC02">白兔班｜17:00</option><option value="AC03">蜜蜂班｜18:00</option><option value="AC04">綿羊班｜17:00</option><option value="AC05">櫻桃班｜幼幼</option><option value="AC06">蘋果班｜幼幼</option></select></div>
         <div><div class="helper">Excel 別名（選填）</div><input id="newStaffAliases" placeholder="例：小美, 美美"></div>
@@ -1580,7 +1580,7 @@ details.adminSecondaryPanel{display:block}
     <input id="staffEditId" type="hidden">
     <div class="staffEditGrid">
       <div><div class="helper">姓名</div><input id="staffEditName"></div>
-      <div><div class="helper">主要身分</div><select id="staffEditRole"><option value="admin">課後行政管理（蔡青蓓／蔡妤瑄）</option><option value="admin_viewer">行政老師（僅查看，依排班支援課後）</option><option value="class_teacher">原班導師</option><option value="aftercare_teacher">支援／外聘</option></select></div>
+      <div><div class="helper">主要身分</div><select id="staffEditRole"><option value="admin">課後行政管理（蔡青蓓／蔡妤瑄）</option><option value="admin_viewer">行政老師（僅查看）</option><option value="class_teacher">原班導師</option><option value="aftercare_teacher">支援／外聘</option></select></div>
       <div><div class="helper">固定原班</div><select id="staffEditHomeroom"></select></div>
       <div><div class="helper">固定課後班</div><select id="staffEditAftercare"></select></div>
       <div><div class="helper">LINE 狀態</div><div id="staffEditLineState" style="padding:11px 0;font-weight:900"></div></div>
@@ -5472,7 +5472,7 @@ async function generateBulkTeacherLinks(){
         if(error||!data?.binding_code)throw error||new Error("沒有產生綁定資料");
         bulkTeacherRows.push({
           "老師姓名":staff.display_name,
-          "身分":staff.role==="admin"?"課後行政":staff.role==="admin_viewer"?"行政（僅查看）":staff.role==="class_teacher"?"原班導師":"課後老師",
+          "身分":staff.role==="admin"?"課後行政":staff.role==="admin_viewer"?"行政老師（僅查看）":staff.role==="class_teacher"?"原班導師":"課後老師",
           "專屬綁定連結":"https://una92774312-ai.github.io/leye-parent-platform/teacher.html#bind="+encodeURIComponent(data.binding_code),
           "有效期限":data.expires_at?formatDateTime(data.expires_at):"",
           "發送狀態":"尚未發送"
