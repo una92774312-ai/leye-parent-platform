@@ -1347,6 +1347,7 @@ button,
     grid-template-columns:1fr;
   }
 }
+body.readonlyAdmin #dailyCareFeePanel,body.readonlyAdmin #fees,body.readonlyAdmin #notificationCenterPanel,body.readonlyAdmin #staff-management{display:none!important}
 </style>
 </head>
 
@@ -1374,7 +1375,7 @@ button,
 
     <div class="adminHeaderActions">
       <a class="btn btnGray adminHeaderLink" href="teacher.html?v=13">← 教職員平台</a>
-      <a class="btn btnGreen adminHeaderLink" href="admin-manage.html">⚙️ 延長照顧後台資料設定</a>
+      <a id="manageAdminSettingsLink" class="btn btnGreen adminHeaderLink" href="admin-manage.html">⚙️ 延長照顧後台資料設定</a>
       <button class="btn btnGray" type="button" id="notificationCenterToggle" onclick="toggleNotificationCenter()" aria-controls="notificationCenterPanel" aria-expanded="false">🔔 通知中心</button>
       <button class="btn btnBlue" type="button" onclick="refreshAll()">↻ 重新整理</button>
     </div>
@@ -2076,13 +2077,25 @@ async function validateAdmin(){
 
   // 身分及角色由後端一次查核，避免兩次連續查表。
   const {data:staff,error:staffError} = await supabaseClient.rpc("admin_session_profile");
-  if(staffError || !staff || staff.role !== "admin" || staff.active !== true){
+  if(staffError || !staff || !["admin","admin_viewer"].includes(staff.role) || staff.active !== true){
     showError("行政身分驗證失敗，請重新從教職員平台登入。");
     return false;
   }
 
   currentStaff =
     staff;
+  if(staff.role==="admin_viewer"){
+    document.body.classList.add("readonlyAdmin");
+    const settings=document.getElementById("manageAdminSettingsLink");
+    if(settings)settings.remove();
+    for(const id of ["dailyCareFeePanel","fees","notificationCenterPanel","staff-management"]){
+      const element=document.getElementById(id);
+      if(element){element.hidden=true;element.style.display="none";}
+    }
+    const bell=document.getElementById("notificationCenterToggle");
+    if(bell)bell.remove();
+  }
+
 
 
   sessionStorage.removeItem(
@@ -2119,7 +2132,7 @@ async function validateAdmin(){
     "｜"
     +
     escapeHtml(
-      staff.role
+      staff.role==="admin_viewer"?"行政老師（僅查看）":"課後行政管理"
     );
 
 
@@ -2181,8 +2194,7 @@ async function refreshAll(){
   await Promise.all([
     refreshPickupRecords(),
     refreshRequests(),
-    refreshStaffManagement(),
-    loadSchoolClosedAdmin()
+    ...(currentStaff.role==="admin" ? [refreshStaffManagement(),loadSchoolClosedAdmin()] : [])
   ]);
 
 }
@@ -3211,7 +3223,7 @@ function renderPickupCard(
   }
   else{
 
-    completionHtml =
+    completionHtml = currentStaff?.role==="admin_viewer" ? `<div class="helper">接送資訊僅供查看；若有課後排班，請至教職員平台確認接送。</div>` :
       `
         <div class="pickupAction">
 
@@ -4346,6 +4358,7 @@ function requestCardHtml(
   function adminActionHtml(
   r
 ){
+  if(currentStaff?.role==="admin_viewer")return `<div class="helper">僅供查看，課後行政審核由指定負責人處理。</div>`;
 
   if(
     r.status !== "pending"
