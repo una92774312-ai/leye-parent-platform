@@ -2167,6 +2167,8 @@ async function loadTeacherRoster(){
     return;
   }
 
+  const pickupStatuses=await teacherSupabase.rpc("teacher_pilot_completed_pickup_ids");
+  completedPilotPickupIds=new Set(Array.isArray(pickupStatuses.data)?pickupStatuses.data.map(String):[]);
   renderTeacherRoster(data||{});
 
   status.className="status show ok";
