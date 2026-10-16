@@ -1982,7 +1982,7 @@ function rosterChildHtml(
   }
 
   const alreadyPickedUp=completedPilotPickupIds.has(String(child?.child_id||""));
-  const pickupControl = mode==="regular" && new Date().toLocaleTimeString("en-GB",{timeZone:"Asia/Taipei",hour12:false}).slice(0,5)>="16:00" && !isLeave &&
+  const pickupControl = mode==="regular" && new Date().toLocaleTimeString("en-GB",{timeZone:"Asia/Taipei",hour12:false}).slice(0,5)>="16:00" && !isLeave && !["absent","cancelled"].includes(String(child?.assignment_status||"")) &&
     (["C01","C02"].includes(child?.morning_class_id) || String(child?.school_code||"").startsWith("TEST-")) &&
     currentRosterStaffRole!=="admin" &&
     /^[a-f0-9-]{36}$/i.test(child?.child_id||"")
