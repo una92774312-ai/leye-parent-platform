@@ -2025,13 +2025,14 @@ function rosterListHtml(
 }
 
 let currentRosterStaffRole="";
+let completedPilotPickupIds=new Set();
 async function confirmRegularCarePickup(childId,button){
   if(!confirm("確認孩子已實際離園？操作後將記錄時間，不可提前點選。"))return;
   button.disabled=true;
   const {error}=await teacherSupabase.rpc("teacher_complete_regular_aftercare",{p_child_id:childId});
   if(error){alert("接送未完成："+error.message);button.disabled=false;return;}
+  completedPilotPickupIds.add(childId);
   button.textContent="✓ 已接送";
-  await loadTeacherRoster();
 }
 
 function renderTeacherRoster(data){
