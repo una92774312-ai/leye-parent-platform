@@ -963,7 +963,7 @@ Deno.serve(async(req) => {
         .select("id,display_name,role,line_user_id,active")
         .in("id",candidateStaffIds)
         .eq("active",true)
-        .in("role",["class_teacher","aftercare_teacher","admin"]);
+        .in("role",["class_teacher","aftercare_teacher","admin","admin_viewer"]);
 
     if(staffError) throw staffError;
 
