@@ -1254,6 +1254,11 @@
                   <div class="countLabel">本週接送</div></button>
               </div>
 
+              <div style="display:flex;gap:8px;margin:12px 0;align-items:center">
+                <button class="weekUtilityBtn" type="button" onclick="changeTeacherWeek(-1)" style="flex:1">← 上週</button>
+                <button class="weekUtilityBtn" type="button" onclick="changeTeacherWeek(0)" style="flex:1">本週</button>
+                <button class="weekUtilityBtn" type="button" onclick="changeTeacherWeek(1)" style="flex:1">下週 →</button>
+              </div>
               <div id="todayItemsStatus" class="status show info">
                 正在讀取本週學生事項…
               </div>
@@ -2979,6 +2984,12 @@ function jumpToTeacherItems(targetId){
   (target.closest(".itemGroup")||target).scrollIntoView({behavior:"smooth",block:"start"});
 }
 
+let teacherWeekOffset=0;
+async function changeTeacherWeek(direction){
+  teacherWeekOffset=direction===0?0:Math.max(-4,Math.min(8,teacherWeekOffset+direction));
+  try{await loadTeacherWeekItems();}catch(error){console.error(error);el("todayItemsStatus").textContent="讀取週資料失敗，請稍後重試。";}
+}
+
 async function loadTeacherWeekItems(){
   const statusBox =
     el("todayItemsStatus");
@@ -2994,7 +3005,8 @@ async function loadTeacherWeekItems(){
     error
   } =
     await teacherSupabase.rpc(
-      "get_teacher_week_items"
+      "get_teacher_week_items_for_date",
+      {p_reference_date:(()=>{const now=new Date();const t=new Date(now.toLocaleString("en-US",{timeZone:"Asia/Taipei"}));t.setDate(t.getDate()+teacherWeekOffset*7);return [t.getFullYear(),String(t.getMonth()+1).padStart(2,"0"),String(t.getDate()).padStart(2,"0")].join("-");})()}
     );
 
   if(error){
