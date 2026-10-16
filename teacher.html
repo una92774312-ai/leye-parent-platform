@@ -2016,7 +2016,9 @@ function rosterListHtml(
   `;
 }
 
+let currentRosterStaffRole="";
 function renderTeacherRoster(data){
+  currentRosterStaffRole=data?.staff?.role||"";
   const content=el("rosterContent");
   const summary=el("rosterSummary");
 
