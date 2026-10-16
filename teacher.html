@@ -1981,11 +1981,12 @@ function rosterChildHtml(
     );
   }
 
+  const alreadyPickedUp=completedPilotPickupIds.has(String(child?.child_id||""));
   const pickupControl = mode==="regular" && !isLeave &&
     ["C01","C02"].includes(child?.morning_class_id) &&
     currentRosterStaffRole!=="admin" &&
     /^[a-f0-9-]{36}$/i.test(child?.child_id||"")
-      ? `<button type="button" class="confirmBtn" onclick="confirmRegularCarePickup('${child.child_id}',this)">🚗 確認已接送</button>`
+      ? alreadyPickedUp ? `<span>✓ 已接送</span>` : `<button type="button" class="confirmBtn" onclick="confirmRegularCarePickup('${child.child_id}',this)">🚗 確認已接送</button>`
       : "";
 
   return `
