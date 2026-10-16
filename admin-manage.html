@@ -1568,7 +1568,7 @@ details.adminSecondaryPanel{display:block}
     <div class="manageCard">
       <div class="manageCardTitle">LINE 綁定狀態</div>
       <div class="helper">老師不需要自行找 LINE User ID；之後由老師平台送出綁定申請，行政只需確認。這裡先管理「已綁定／未綁定」與待審申請。</div>
-      <div id="lineBindingStats" class="staffStats"></div>
+      <div class="helper">批次產生僅限未綁定、非待審核教職員。重新產生會使舊連結失效；匯出檔案請個別私訊，不可公開。</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button type="button" class="staffMiniBtn staffMiniGreen" id="bulkTeacherBtn" onclick="generateBulkTeacherLinks()">🔗 批次產生老師專屬連結</button><button type="button" class="staffMiniBtn" id="exportTeacherBtn" onclick="exportBulkTeacherLinks()" disabled>⬇️ 匯出 Excel</button></div><div id="bulkTeacherStatus" class="helper">尚未產生連結。</div><div id="lineBindingStats" class="staffStats"></div>
       <div id="lineBindingList" class="lineBindingList"><div class="empty">尚未載入綁定資料。</div></div>
     </div>
   </div>
@@ -5447,6 +5447,50 @@ async function issueStaffBindingCode(staffId){
     `請將專屬綁定連結私訊給「${staff.display_name}」。\n有效期限：${expires}\n\n老師點開後不需輸入綁定碼，但仍須 LINE 登入及行政核准。請勿張貼在群組或公開畫面。`,
     privateLink
   );
+}
+
+
+let bulkTeacherRows=[];
+let bulkTeacherBusy=false;
+async function generateBulkTeacherLinks(){
+  if(bulkTeacherBusy)return;
+  const pending=new Set(teacherBindingRequests.filter(x=>x.status==="pending").map(x=>x.staff_id));
+  const targets=staffList.filter(x=>x.active===true&&!isTestStaff(x)&&!x.line_user_id&&!pending.has(x.id)&&["admin","class_teacher","aftercare_teacher"].includes(x.role));
+  if(!targets.length){alert("沒有符合條件的未綁定教職員。");return;}
+  if(!confirm("確定為 "+targets.length+" 位教職員產生個別專屬連結？\n舊的未使用連結將失效，新連結有效14天。"))return;
+  bulkTeacherBusy=true;
+  bulkTeacherRows=[];
+  const button=$("bulkTeacherBtn"),exportButton=$("exportTeacherBtn"),status=$("bulkTeacherStatus");
+  button.disabled=true;exportButton.disabled=true;
+  const failed=[];
+  try{
+    for(let i=0;i<targets.length;i++){
+      const staff=targets[i];
+      status.textContent="正在產生 "+(i+1)+"/"+targets.length+"，請保持此頁開啟。";
+      try{
+        const {data,error}=await supabaseClient.rpc("admin_issue_staff_binding_code",{p_staff_id:staff.id,p_valid_days:14});
+        if(error||!data?.binding_code)throw error||new Error("沒有產生綁定資料");
+        bulkTeacherRows.push({
+          "老師姓名":staff.display_name,
+          "身分":staff.role==="admin"?"行政":staff.role==="class_teacher"?"原班導師":"課後老師",
+          "專屬綁定連結":"https://una92774312-ai.github.io/leye-parent-platform/teacher.html#bind="+encodeURIComponent(data.binding_code),
+          "有效期限":data.expires_at?formatDateTime(data.expires_at):"",
+          "發送狀態":"尚未發送"
+        });
+      }catch(e){failed.push(staff.display_name+"："+(e.message||String(e)));}
+    }
+    exportButton.disabled=bulkTeacherRows.length===0;
+    status.textContent="成功 "+bulkTeacherRows.length+" 筆；失敗 "+failed.length+" 筆。"+(failed.length?" 失敗："+failed.join("；"):"")+" 請立即匯出 Excel 並分別私訊。";
+  }finally{button.disabled=false;bulkTeacherBusy=false;}
+}
+function exportBulkTeacherLinks(){
+  if(!bulkTeacherRows.length){alert("尚未產生連結。");return;}
+  if(typeof XLSX==="undefined"){alert("Excel 元件尚未載入。");return;}
+  const sheet=XLSX.utils.json_to_sheet(bulkTeacherRows);
+  sheet["!cols"]=[{wch:18},{wch:14},{wch:105},{wch:24},{wch:15}];
+  const book=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(book,sheet,"教職員專屬連結");
+  XLSX.writeFile(book,"樂業附幼_教職員LINE專屬綁定連結.xlsx");
 }
 
 function renderLineBindingManagement(){
