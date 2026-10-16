@@ -1375,12 +1375,23 @@ button,
     <div class="adminHeaderActions">
       <a class="btn btnGray adminHeaderLink" href="teacher.html?v=13">← 教職員平台</a>
       <a class="btn btnGreen adminHeaderLink" href="admin-manage.html">⚙️ 延長照顧後台資料設定</a>
+      <button class="btn btnGray" type="button" id="notificationCenterToggle" onclick="toggleNotificationCenter()" aria-controls="notificationCenterPanel" aria-expanded="false">🔔 通知中心</button>
       <button class="btn btnBlue" type="button" onclick="refreshAll()">↻ 重新整理</button>
     </div>
 
   </div>
 
 
+  <section id="notificationCenterPanel" class="panel" hidden style="display:none;margin:10px 0 16px;border:1px solid #dce6d9">
+    <div class="panelTitle">🔔 LINE 通知中心</div>
+    <p class="helper">顯示近 14 日教師／行政通知發送紀錄；「已送出」代表 LINE API 接受，不代表收件人已閱讀。家長通知尚未納入這份集中日誌。</p>
+    <div class="pickupToolbar">
+      <button class="btn btnBlue" type="button" onclick="refreshNotificationCenter()">↻ 更新紀錄</button>
+      <button class="btn btnGray" type="button" onclick="toggleNotificationCenter(false)">關閉</button>
+    </div>
+    <div id="notificationCenterSummary" class="helper" aria-live="polite">按更新紀錄以查看。</div>
+    <div id="notificationCenterRows" style="display:grid;gap:8px;margin-top:12px"></div>
+  </section>
   <div
     id="loginState"
     class="loginState"
@@ -1459,6 +1470,17 @@ button,
 <!-- ====================================== -->
 <!-- 每月延托 / 臨托 / 逾時統計 -->
 <!-- ====================================== -->
+
+<div class="panel" id="dailyCareFeePanel">
+  <div class="panelTitle">💰 今日臨托／延托收費查核</div>
+  <div class="helper">此頁只核對收費，不會自動標記收款；實際收費仍由當日課後老師確認。</div>
+  <div class="pickupToolbar">
+    <label>日期 <input id="dailyCareFeeDate" type="date"></label>
+    <button class="btn btnBlue" type="button" onclick="refreshDailyCareFees()">↻ 查詢收費</button>
+  </div>
+  <div id="dailyCareFeeSummary" class="helper" aria-live="polite">請按查詢收費。</div>
+  <div id="dailyCareFeeList" style="display:grid;gap:8px;margin-top:12px"></div>
+</div>
 
 <div id="fees" class="panel adminSecondaryPanel">
   <div class="panelTitle">📊 每月托育與逾時收費統計</div>
@@ -1823,6 +1845,21 @@ button,
 <div style="text-align:center;margin:0 auto 24px;font-size:12px;color:#78909c">
   <a href="privacy.html" target="_blank" rel="noopener">個人資料蒐集告知暨隱私權說明</a>
   ｜ <a href="terms.html" target="_blank" rel="noopener">平台使用說明</a>
+
+<section class="panel" id="substitutionPanel">
+  <div class="panelTitle">🔄 臨時代課安排</div>
+  <p class="helper">一位老師一天只能負責一個課後班；代課不改動固定教師往後的排班。</p>
+  <div class="scheduleToolbar">
+    <div><label>代課日期</label><input type="date" id="subDate"></div>
+    <div><label>課後班</label><select id="subClass"><option value="">選擇班級</option></select></div>
+    <div><label>請假老師</label><select id="subAbsent"><option value="">請選擇</option></select></div>
+    <div><label>代課老師</label><select id="subTeacher"><option value="">請選擇</option></select></div>
+  </div>
+  <label for="subNote">代課原因（請勿填寫健康等敏感細節）</label>
+  <input id="subNote" maxlength="300" placeholder="例：當日職務調整">
+  <button type="button" class="btn" id="subSave" onclick="submitAftercareSubstitution()">確認安排代課</button>
+  <p class="helper" id="subStatus" aria-live="polite"></p>
+</section>
 </div>
 
 
@@ -2037,110 +2074,12 @@ async function validateAdmin(){
     "Supabase：正在驗證行政身分...";
 
 
-  const {
-    data:identity,
-    error:identityError
-  } =
-    await supabaseClient
-      .from("user_identities")
-      .select(
-        "staff_id,guardian_id"
-      )
-      .eq(
-        "auth_user_id",
-        currentUser.id
-      )
-      .maybeSingle();
-
-
-  if(
-    identityError
-  ){
-
-    showError(
-      "讀取身分對應失敗："
-      +
-      identityError.message
-    );
-
+  // 身分及角色由後端一次查核，避免兩次連續查表。
+  const {data:staff,error:staffError} = await supabaseClient.rpc("admin_session_profile");
+  if(staffError || !staff || staff.role !== "admin" || staff.active !== true){
+    showError("行政身分驗證失敗，請重新從教職員平台登入。");
     return false;
-
   }
-
-
-  if(
-    !identity
-    ||
-    !identity.staff_id
-  ){
-
-    showError(
-      "此帳號沒有綁定 staff 身分。"
-    );
-
-    return false;
-
-  }
-
-
-  const {
-    data:staff,
-    error:staffError
-  } =
-    await supabaseClient
-      .from("staff")
-      .select(
-        "id,display_name,role,active"
-      )
-      .eq(
-        "id",
-        identity.staff_id
-      )
-      .maybeSingle();
-
-
-  if(
-    staffError
-  ){
-
-    showError(
-      "讀取 staff 失敗："
-      +
-      staffError.message
-    );
-
-    return false;
-
-  }
-
-
-  if(
-    !staff
-    ||
-    staff.active !== true
-  ){
-
-    showError(
-      "此行政帳號不存在或已停用。"
-    );
-
-    return false;
-
-  }
-
-
-  if(
-    staff.role !== "admin"
-  ){
-
-    showError(
-      "目前此頁只開放 admin 行政角色。"
-    );
-
-    return false;
-
-  }
-
 
   currentStaff =
     staff;
@@ -4980,6 +4919,9 @@ async function approveCareRequest(
           assigned_aftercare_class_code:
             classCode,
 
+          assigned_aftercare_class_id:
+            classCode,
+
           admin_note:
             adminNote
 
@@ -5113,6 +5055,9 @@ async function updateRequestStatus(
   ){
 
     payload.assigned_aftercare_class_code =
+      null;
+
+    payload.assigned_aftercare_class_id =
       null;
 
   }
@@ -7937,6 +7882,94 @@ function installPanelCollapsers(){
 }
 
 
+async function loadSubstitutionChoices(){
+  const classEl=document.getElementById("subClass"), absent=document.getElementById("subAbsent"), sub=document.getElementById("subTeacher");
+  if(!classEl)return;
+  const [classes,people]=await Promise.all([
+    supabaseClient.from("aftercare_classes").select("id,name").eq("active",true).order("name"),
+    supabaseClient.from("staff").select("id,display_name").eq("active",true).order("display_name")
+  ]);
+  if(classes.error||people.error){document.getElementById("subStatus").textContent="載入選單失敗，請重新登入行政後台。";return;}
+  const opts=(rows,placeholder)=>'<option value="">'+placeholder+'</option>'+rows.map(r=>'<option value="'+r.id+'">'+String(r.name||r.display_name).replaceAll("&","&amp;").replaceAll("<","&lt;")+'</option>').join("");
+  classEl.innerHTML=opts(classes.data||[],"選擇班級");
+  absent.innerHTML=opts(people.data||[],"請選擇請假老師");
+  sub.innerHTML=opts(people.data||[],"請選擇代課老師");
+  document.getElementById("subDate").value=getTaiwanDateString();
+}
+async function submitAftercareSubstitution(){
+  const $s=id=>document.getElementById(id),date=$s("subDate").value,klass=$s("subClass").value,absent=$s("subAbsent").value,sub=$s("subTeacher").value;
+  const status=$s("subStatus"),btn=$s("subSave");
+  if(!date||!klass||!absent||!sub){status.textContent="請填妥日期、班級及兩位教師。";return;}
+  if(absent===sub){status.textContent="請假與代課不能是同一人。";return;}
+  if(!confirm("確認指定日期的代課安排？此操作會調整當日教師接送權限。"))return;
+  btn.disabled=true;status.textContent="正在確認排班衝突並儲存……";
+  try{
+    const {data,error}=await supabaseClient.rpc("assign_aftercare_substitute",{p_date:date,p_class_id:klass,p_absent_staff_id:absent,p_substitute_staff_id:sub,p_note:$s("subNote").value.trim()||null});
+    if(error)throw error;
+    status.textContent="✅ 已建立代課與當日停派紀錄。"+(data?.ok?"":" 請重新確認排班。");
+  }catch(e){status.textContent="無法儲存："+(e.message||String(e));}
+  finally{btn.disabled=false;}
+}
+
+
+async function refreshDailyCareFees(){
+  const date=document.getElementById("dailyCareFeeDate")?.value||getTaiwanDateString();
+  const summary=document.getElementById("dailyCareFeeSummary"),list=document.getElementById("dailyCareFeeList");
+  if(!summary||!list)return;
+  summary.textContent="正在查詢……";list.replaceChildren();
+  const {data,error}=await supabaseClient.rpc("admin_daily_care_fee_overview",{p_date:date});
+  if(error){summary.textContent="查詢失敗："+error.message;return;}
+  const items=data?.items||[];
+  const approved=items.filter(x=>x.status==="approved");
+  const received=approved.filter(x=>x.fee_status==="collected");
+  const pending=approved.filter(x=>x.fee_status!=="collected"&&x.fee_status!=="refund_required");
+  const refunds=items.filter(x=>x.fee_status==="refund_required");
+  const amount=arr=>arr.reduce((v,x)=>v+Number(x.collected_amount||0),0);
+  summary.textContent="已核准 "+approved.length+" 筆｜已收 "+received.length+" 筆 NT$"+amount(received)+"｜待收 "+pending.length+" 筆｜待退款 "+refunds.length+" 筆";
+  if(!items.length){list.textContent="本日沒有臨托、延托申請。";return;}
+  for(const x of items){
+    const el=document.createElement("div");el.className="staffRow";
+    const line=document.createElement("div");line.style.fontWeight="bold";
+    line.textContent=(x.morning_class||"未分班")+"｜"+x.child_name+"｜"+(x.type==="temporary"?"臨托":"延托");
+    const state=document.createElement("div");state.className="helper";
+    const label=x.fee_status==="collected"?"✅ 已收款 NT$"+x.collected_amount:x.fee_status==="refund_required"?"⚠️ 待退款":x.status==="approved"?"⏳ 待收 NT$"+x.expected_amount:"申請狀態："+x.status;
+    state.textContent=label+(x.collected_at?"｜"+new Date(x.collected_at).toLocaleString("zh-TW",{timeZone:"Asia/Taipei"}):"");
+    el.append(line,state);list.append(el);
+  }
+}
+
+
+function toggleNotificationCenter(force){
+ const panel=document.getElementById("notificationCenterPanel"),button=document.getElementById("notificationCenterToggle");
+ if(!panel)return;
+ const show=typeof force==="boolean"?force:panel.hidden;
+ panel.hidden=!show;panel.style.display=show?"block":"none";
+ if(button)button.setAttribute("aria-expanded",String(show));
+ if(show)refreshNotificationCenter();
+}
+async function refreshNotificationCenter(){
+ const summary=document.getElementById("notificationCenterSummary"),rows=document.getElementById("notificationCenterRows");
+ if(!summary||!rows)return;
+ summary.textContent="正在讀取通知紀錄……";rows.replaceChildren();
+ const {data,error}=await supabaseClient.rpc("admin_notification_center",{p_limit:60});
+ if(error){summary.textContent="讀取失敗，請確認已登入行政帳號："+error.message;return;}
+ const counts=data?.summary||{};
+ summary.textContent="近14日｜LINE API 已接受 "+Number(counts.sent||0)+"｜失敗 "+Number(counts.failed||0)+"｜待處理 "+Number(counts.pending||0)+"｜略過 "+Number(counts.skipped||0);
+ const items=Array.isArray(data?.items)?data.items:[];
+ if(!items.length){rows.textContent="目前沒有教師／行政通知紀錄。";return;}
+ for(const x of items){
+   const line=document.createElement("div");line.className="staffRow";
+   const head=document.createElement("div");head.style.fontWeight="bold";
+   const labels={sent:"✅ LINE API 已接受",failed:"❌ 發送失敗",pending:"⏳ 待處理",skipped:"— 略過"};
+   head.textContent=(labels[x.status]||x.status)+"｜"+(x.recipient_name||"未知教師");
+   const detail=document.createElement("div");detail.className="helper";
+   detail.textContent=(x.notification_type||"事項")+"｜"+(x.created_at?new Date(x.created_at).toLocaleString("zh-TW",{timeZone:"Asia/Taipei"}):"");
+   line.append(head,detail);
+   if(x.error_detail){const fail=document.createElement("div");fail.className="helper";fail.textContent="錯誤："+x.error_detail;line.append(fail);}
+   rows.append(line);
+ }
+}
+
 async function main(){
 
   installPanelCollapsers();
@@ -7979,6 +8012,17 @@ async function main(){
 
 
   await restoreSession();
+  // 代課人員選單在實際展開操作時再讀取，避免拖慢行政首頁。
+  const subPanel=document.getElementById("substitutionPanel");
+  if(subPanel){
+    subPanel.addEventListener("click",()=>{
+      if(!subPanel.dataset.choicesLoaded){
+        subPanel.dataset.choicesLoaded="1";
+        loadSubstitutionChoices().catch(()=>{subPanel.dataset.choicesLoaded="";});
+      }
+    },{once:false});
+  }
+  if(document.getElementById("dailyCareFeeDate"))document.getElementById("dailyCareFeeDate").value=getTaiwanDateString();
 
 }
 

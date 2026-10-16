@@ -271,6 +271,10 @@
       margin-bottom:14px;
     }
 
+    .countCard{width:100%;font:inherit;cursor:pointer;color:inherit;-webkit-tap-highlight-color:transparent;}
+    .countCard:focus-visible{outline:3px solid #39865a;outline-offset:2px}
+    .countCard:active{background:#e7f1e9}
+    .itemGroup{scroll-margin-top:110px}
     .countCard{
       border:1px solid var(--line);
       border-radius:12px;
@@ -1237,27 +1241,24 @@
               </button>
 
               <div class="todayCounts">
-                <div class="countCard">
-                  <div id="leaveCount" class="countNum">0</div>
-                  <div class="countLabel">本週請假</div>
-                </div>
+                <button class="countCard" type="button" onclick="jumpToTeacherItems('leaveItems')" aria-label="跳到本週請假紀錄"><div id="leaveCount" class="countNum">0</div>
+                  <div class="countLabel">本週請假</div></button>
 
-                <div class="countCard">
-                  <div id="temporaryCount" class="countNum">0</div>
-                  <div class="countLabel">本週臨托</div>
-                </div>
+                <button class="countCard" type="button" onclick="jumpToTeacherItems('careItems')" aria-label="跳到本週臨托紀錄"><div id="temporaryCount" class="countNum">0</div>
+                  <div class="countLabel">本週臨托</div></button>
 
-                <div class="countCard">
-                  <div id="extendedCount" class="countNum">0</div>
-                  <div class="countLabel">本週延托</div>
-                </div>
+                <button class="countCard" type="button" onclick="jumpToTeacherItems('careItems')" aria-label="跳到本週延托紀錄"><div id="extendedCount" class="countNum">0</div>
+                  <div class="countLabel">本週延托</div></button>
 
-                <div class="countCard">
-                  <div id="pickupCount" class="countNum">0</div>
-                  <div class="countLabel">本週接送</div>
-                </div>
+                <button class="countCard" type="button" onclick="jumpToTeacherItems('pickupItems')" aria-label="跳到本週接送紀錄"><div id="pickupCount" class="countNum">0</div>
+                  <div class="countLabel">本週接送</div></button>
               </div>
 
+              <div style="display:flex;gap:8px;margin:12px 0;align-items:center">
+                <button class="weekUtilityBtn" type="button" onclick="changeTeacherWeek(-1)" style="flex:1">← 上週</button>
+                <button class="weekUtilityBtn" type="button" onclick="changeTeacherWeek(0)" style="flex:1">本週</button>
+                <button class="weekUtilityBtn" type="button" onclick="changeTeacherWeek(1)" style="flex:1">下週 →</button>
+              </div>
               <div id="todayItemsStatus" class="status show info">
                 正在讀取本週學生事項…
               </div>
@@ -2521,6 +2522,23 @@ function appendCareFeeControls(
   card.appendChild(box);
 }
 
+async function completeTeacherPickup(item, btn){
+  const recordId = item?.source_id || item?.id;
+  if(!recordId || item?.source_type !== "pickup") return;
+  if(!confirm(`確定 ${item?.child_name || "這位幼兒"} 已實際離園？此操作會記錄時間及計算可能的逾時費用。`)) return;
+  btn.disabled = true;
+  try{
+    const {data,error} = await teacherSupabase.rpc("teacher_complete_pickup",{p_pickup_record_id:recordId});
+    if(error) throw error;
+    if(data?.ok !== true) throw new Error("接送確認未成功");
+    await loadTeacherWeekItems();
+    alert("已完成接送紀錄");
+  }catch(err){
+    console.error("teacher_complete_pickup:",err);
+    alert("接送確認失敗："+(err?.message || "請聯絡行政"));
+  }finally{btn.disabled=false;}
+}
+
 function appendTeacherActionControls(
   card,
   item
@@ -2894,6 +2912,24 @@ function makeStudentItem(
     item
   );
 
+  // 「已處理」不是實際接送；完成接送需後端驗證課後教師權限。
+  if(type === "pickup" && item?.source_type === "pickup" && (item?.source_id || item?.id)){
+    const pickupArea = document.createElement("div");
+    pickupArea.className = "itemActionButtons";
+    if(item.actual_pickup_at){
+      pickupArea.textContent = "✓ 已接送 "+formatDateTime(item.actual_pickup_at);
+    }else if(item?.can_act === false){
+      pickupArea.textContent = "👀 僅供查看：16:00 前提早接送由原班導師確認，課後老師不需點選。";
+    }else{
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "🚗 確認已接送（實際離園）";
+      button.addEventListener("click",()=>completeTeacherPickup(item,button));
+      pickupArea.appendChild(button);
+    }
+    card.appendChild(pickupArea);
+  }
+
   return card;
 }
 
@@ -2940,6 +2976,20 @@ function renderItemList(
   }
 }
 
+function jumpToTeacherItems(targetId){
+  const area=document.getElementById("todayItemsContent");
+  if(!area || area.classList.contains("hidden"))return;
+  const target=document.getElementById(targetId);
+  if(!target)return;
+  (target.closest(".itemGroup")||target).scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+let teacherWeekOffset=0;
+async function changeTeacherWeek(direction){
+  teacherWeekOffset=direction===0?0:Math.max(-4,Math.min(8,teacherWeekOffset+direction));
+  try{await loadTeacherWeekItems();}catch(error){console.error(error);el("todayItemsStatus").textContent="讀取週資料失敗，請稍後重試。";}
+}
+
 async function loadTeacherWeekItems(){
   const statusBox =
     el("todayItemsStatus");
@@ -2955,7 +3005,8 @@ async function loadTeacherWeekItems(){
     error
   } =
     await teacherSupabase.rpc(
-      "get_teacher_week_items"
+      "get_teacher_week_items_for_date",
+      {p_reference_date:(()=>{const now=new Date();const t=new Date(now.toLocaleString("en-US",{timeZone:"Asia/Taipei"}));t.setDate(t.getDate()+teacherWeekOffset*7);return [t.getFullYear(),String(t.getMonth()+1).padStart(2,"0"),String(t.getDate()).padStart(2,"0")].join("-");})()}
     );
 
   if(error){

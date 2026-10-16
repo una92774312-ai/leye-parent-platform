@@ -1,0 +1,6 @@
+-- Staging review required. Run only after checking complete_pickup body and staff scoping.
+-- Teacher-only RPC delegates no administrative permissions; adapt fee logic from the
+-- existing production function before enabling. Do NOT grant complete_pickup to teachers.
+-- Current teacher.html expects RPC teacher_complete_pickup(p_pickup_record_id uuid).
+-- Acceptance tests: assigned aftercare teacher, other-class teacher, morning teacher,
+-- parent, repeated click, early pickup, local day and fee boundaries.
