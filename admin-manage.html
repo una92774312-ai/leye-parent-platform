@@ -5442,9 +5442,10 @@ async function issueStaffBindingCode(staffId){
     return;
   }
 
+  const privateLink="https://una92774312-ai.github.io/leye-parent-platform/teacher.html#bind="+encodeURIComponent(code);
   window.prompt(
-    `請複製並私下交給「${staff.display_name}」。\n有效期限：${expires}\n\n請勿張貼在群組或公開畫面。`,
-    code
+    `請將專屬綁定連結私訊給「${staff.display_name}」。\n有效期限：${expires}\n\n老師點開後不需輸入綁定碼，但仍須 LINE 登入及行政核准。請勿張貼在群組或公開畫面。`,
+    privateLink
   );
 }
 
