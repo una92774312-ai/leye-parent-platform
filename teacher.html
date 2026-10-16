@@ -3706,6 +3706,7 @@ async function showUnboundState(){
     .classList.remove(
       "hidden"
     );
+  consumeTeacherLinkCode();
 
   setTimeout(
     () => el("staffBindingCode")?.focus(),
@@ -3859,6 +3860,17 @@ async function init(){
       "error"
     );
   }
+}
+
+function consumeTeacherLinkCode(){
+  const match=location.hash.match(/(?:^#|[&])bind=([A-Z0-9]{16})(?:&|$)/i);
+  if(!match)return;
+  el("staffBindingCode").value=match[1].toUpperCase();
+  const label=document.querySelector('label[for="staffBindingCode"]');
+  if(label)label.textContent="已透過專屬連結帶入綁定資料";
+  el("staffBindingCode").style.display="none";
+  try{history.replaceState(null,"",location.pathname+location.search);}catch(_){}
+  refreshTeacherBindButton();
 }
 
 function refreshTeacherBindButton(){
