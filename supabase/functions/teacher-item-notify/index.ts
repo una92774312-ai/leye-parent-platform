@@ -543,6 +543,17 @@ async function getCandidateStaffIds(
     }
   }
 
+  // 當日代理導師與固定導師均應接收原班事項。
+  const {data:datedMorning,error:datedMorningError} =
+    await admin.from("staff_assignments").select("staff_id")
+      .eq("active",true)
+      .eq("morning_class_id",child.morning_class_id)
+      .eq("assignment_date",itemDate);
+  if(datedMorningError) throw datedMorningError;
+  for(const row of datedMorning || []){
+    if(row.staff_id) morningIds.add(String(row.staff_id));
+  }
+
   const {data:specialAccess,error:specialError} =
     await admin
       .from("staff_class_access")
@@ -952,7 +963,7 @@ Deno.serve(async(req) => {
         .select("id,display_name,role,line_user_id,active")
         .in("id",candidateStaffIds)
         .eq("active",true)
-        .in("role",["class_teacher","aftercare_teacher"]);
+        .in("role",["class_teacher","aftercare_teacher","admin"]);
 
     if(staffError) throw staffError;
 
