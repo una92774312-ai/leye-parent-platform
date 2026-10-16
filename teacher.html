@@ -3598,7 +3598,7 @@ async function establishTeacherSession(
       );
 
     if(
-      staff.role === "admin"
+      staff.role === "admin" || staff.role === "admin_viewer"
     ){
       el("adminPortalBtn")
         .classList.remove(
