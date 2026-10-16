@@ -1662,10 +1662,7 @@ function classNamesText(list){
     return "目前沒有";
   }
 
-  return list
-    .map(item => item?.name || item?.id || "")
-    .filter(Boolean)
-    .join("、");
+  return [...new Set(list.map(item => item?.name || item?.id || "").filter(Boolean))].join("、");
 }
 
 async function loadTeacherScope(){
