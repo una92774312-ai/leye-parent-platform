@@ -1532,6 +1532,7 @@ function setBusy(busy){
 }
 
 function roleLabel(role){
+  if(role === "admin_viewer") return "行政老師（僅查看）";
   if(role === "admin"){
     return "行政人員";
   }
