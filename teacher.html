@@ -1132,6 +1132,9 @@
 .backToTopBtn:focus-visible{outline:3px solid #659877;outline-offset:3px}
 .warmQuoteText{line-height:1.6;overflow-wrap:anywhere}
 @media(max-width:600px){.warmQuoteText{font-size:26px;line-height:1.5}.warmQuote{padding:9px 13px}}
+.todayClassRosters{margin-top:15px}.todayClassHeading{font-size:16px;font-weight:800;color:#365840;margin-bottom:10px}
+.todayClassRosters .rosterClassDetails{margin-bottom:9px;background:#f9fcf8}
+.todayClassRosters .rosterClassDetails>summary{min-height:48px}
 </style>
 </head>
 
@@ -1222,7 +1225,7 @@
 
             <div class="scopeGrid" id="teacherScopeGrid">
               <div class="scopeCard" id="morningScopeCard">
-                <div class="scopeLabel">今天關心的班級</div>
+                <div class="scopeLabel">班級幼兒概況</div>
                 <div id="morningScope" class="scopeValue">讀取中…</div>              </div>
 
               <div class="scopeCard" id="aftercareScopeCard">
@@ -1240,6 +1243,7 @@
               正在讀取老師可查看範圍…
             </div>
 
+            <div id="todayClassRosters" class="todayClassRosters"></div>
             <details id="rosterDetails" class="rosterDetails">
               <summary>
                 <span id="rosterTitle">👥 我的班級幼兒</span>
@@ -1762,9 +1766,8 @@ async function loadTeacherScope(){
   scopeBox.className = "status show ok";
   scopeBox.textContent = ""; 
   ["morning","aftercare","special"].forEach(key=>{const card=el(key+"ScopeCard");const list=key==="morning"?morning:key==="aftercare"?aftercare:special;if(card)card.style.display=list.length?"":"none";});
-  const admin= data?.role==="admin";
-  if(admin){el("morningScopeCard").style.display="";el("morningScopeCard").querySelector(".scopeLabel").textContent="全園幼兒概況";}
-  else el("morningScopeCard").querySelector(".scopeLabel").textContent="今天關心的班級";
+  el("morningScopeCard").querySelector(".scopeLabel").textContent="班級幼兒概況";
+  el("teacherScopeGrid").style.display="none";
 
   return data;
 }
@@ -2105,7 +2108,7 @@ async function confirmRegularCarePickup(childId,button){
   button.textContent="✓ 已接送";
 }
 
-function renderTeacherRoster(data){
+function renderTeacherRoster(data,todayScope={}){
   currentRosterStaffRole=data?.staff?.role||"";
   const content=el("rosterContent");
   const summary=el("rosterSummary");
@@ -2121,7 +2124,7 @@ function renderTeacherRoster(data){
       ? data.aftercare_groups
       : [];
 
-  if(role==="admin"){
+  if(role==="admin"||role==="admin_viewer"){
     el("rosterTitle").textContent=
       "👥 全園班級幼兒";
 
@@ -2147,6 +2150,23 @@ function renderTeacherRoster(data){
       `原班 ${morning.length} 班`;
   }
 
+  // 首頁只呈現自己今天負責的班級；六位行政另外可開啟全園名冊。
+  const morningIds=new Set(todayScope.morning_ids||[]);
+  const aftercareIds=new Set(todayScope.aftercare_ids||[]);
+  const ownMorning=morning.filter(group=>morningIds.has(group.class_id));
+  const ownAftercare=aftercare.filter(group=>aftercareIds.has(group.aftercare_class_id));
+  const todayGroups=[];
+  for(const group of ownMorning){
+    todayGroups.push('<details class="rosterClassDetails"><summary><span>🏫 '+escapeHtmlText(group.class_name||group.class_id)+'・班級幼兒</span><span class="rosterClassCount">'+Number(group.child_count||0)+' 人</span></summary><div class="rosterClassBody">'+rosterListHtml(group.children,"morning")+'</div></details>');
+  }
+  for(const group of ownAftercare){
+    todayGroups.push('<details class="rosterClassDetails"><summary><span>🌙 '+escapeHtmlText(group.aftercare_class_name||group.aftercare_class_id)+'・今日課後班</span><span class="rosterClassCount">課後 '+Number(group.regular_count||0)+'｜臨托 '+Number(group.temporary_count||0)+'</span></summary><div class="rosterClassBody"><div class="rosterSubTitle">固定課後幼兒</div>'+rosterListHtml(group.regular_children,"regular")+'<div class="rosterSubTitle">今日臨托</div>'+rosterListHtml(group.temporary_children,"temporary")+'</div></details>');
+  }
+  const todayBox=el("todayClassRosters");
+  todayBox.innerHTML='<div class="todayClassHeading">🌿 今天的班級幼兒</div>'+(todayGroups.length?todayGroups.join(""):'<div class="rosterEmpty">今天沒有安排需要帶班的課程。</div>');
+  const isAdmin=role==="admin"||role==="admin_viewer";
+  el("rosterDetails").style.display=isAdmin?"":"none";
+  el("rosterDetails").open=false;
   const parts=[];
 
   if(morning.length){
@@ -2238,7 +2258,9 @@ async function loadTeacherRoster(){
 
   const pickupStatuses=await teacherSupabase.rpc("teacher_pilot_completed_pickup_ids");
   completedPilotPickupIds=new Set(Array.isArray(pickupStatuses.data)?pickupStatuses.data.map(String):[]);
-  renderTeacherRoster(data||{});
+  const {data:todayScope,error:todayError}=await teacherSupabase.rpc("get_teacher_today_assigned_classes");
+  if(todayError){console.error("today assigned classes error",todayError);status.className="status show error";status.textContent="當日班級資料讀取失敗。";return;}
+  renderTeacherRoster(data||{},todayScope||{});
 
   status.className="status show ok";
   status.textContent=
