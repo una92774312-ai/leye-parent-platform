@@ -1122,10 +1122,15 @@
 .teacherFoldContent{padding:0 12px 13px}
 .warmQuote{border:1px solid #e6eee3;background:#f4f8f1;padding:13px 14px;border-radius:17px;margin:12px 0 8px}
 .warmQuoteLabel{font-size:12px;font-weight:700;color:#69886d}
-.warmQuoteText{font-size:15px;line-height:1.65;letter-spacing:0;color:#344d39;margin:9px 0 7px;text-align:left;min-height:0;font-weight:400}
+@font-face{font-family:"LeYeChenyuHand";src:url("https://cdn.jsdelivr.net/gh/Chenyu-otf/chenyuluoyan_thin@main/ChenYuluoyan-2.0-Thin.ttf") format("truetype");font-style:normal;font-weight:400;font-display:swap}
+.warmQuoteText{font-family:"LeYeChenyuHand","DFKai-SB","BiauKai","Microsoft JhengHei",cursive;font-size:19px;line-height:1.65;letter-spacing:0;color:#344d39;margin:9px 0 7px;text-align:left;min-height:0;font-weight:400}
 .warmQuoteAuthor{font-size:11px;line-height:1.5;text-align:right;color:#718671}
 
 @media(prefers-reduced-motion:reduce){.warmQuote *{transition:none!important;animation:none!important}}
+.backToTopFooter{margin:28px 0 12px;display:flex;justify-content:center}
+.backToTopBtn{border:1px solid #dce9da;background:#f0f7ef;color:#346144;border-radius:999px;min-height:48px;padding:11px 28px;font-size:15px;font-weight:750;cursor:pointer;box-shadow:0 2px 8px rgba(40,70,45,.06)}
+.backToTopBtn:focus-visible{outline:3px solid #659877;outline-offset:3px}
+.warmQuoteText{line-height:1.65;overflow-wrap:anywhere}
 </style>
 </head>
 
@@ -1467,6 +1472,9 @@
     <div style="text-align:center;margin:18px 0 0;font-size:12px;color:#7d847c">
       <a href="privacy.html" target="_blank" rel="noopener" style="color:#52644e">個人資料蒐集告知暨隱私權說明</a>
     </div>
+  <footer class="backToTopFooter">
+      <button class="backToTopBtn" type="button" onclick="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})" aria-label="回到網頁頂部">↑ 回到頂部</button>
+    </footer>
   </main>
 
 <script>
