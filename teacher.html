@@ -1135,6 +1135,12 @@
 .todayClassRosters{margin-top:15px}.todayClassHeading{font-size:16px;font-weight:800;color:#365840;margin-bottom:10px}
 .todayClassRosters .rosterClassDetails{margin-bottom:9px;background:#f9fcf8}
 .todayClassRosters .rosterClassDetails>summary{min-height:48px}
+.adminMorningSupport{border:1px solid #dfebdc;border-radius:16px;background:#f7fbf5;padding:14px;margin-top:15px;color:#395b40}
+.adminSupportHeader{display:flex;flex-wrap:wrap;gap:6px;font-size:16px;margin-bottom:11px}.adminSupportHeader strong{color:#315d3b}
+.adminSupportControls{display:grid;grid-template-columns:1fr;gap:8px}.adminSupportControls label{font-size:13px;color:#6b806e}
+.adminSupportControls select{min-height:43px;width:100%;border:1px solid #cfdccd;border-radius:10px;background:white;padding:8px;font-size:15px}
+.adminSupportControls button{min-height:44px;border:0;border-radius:10px;background:#577d5b;color:white;font-size:15px;font-weight:800}
+.adminSupportControls button:disabled{opacity:.55}.adminSupportStatus{font-size:12px;line-height:1.6;color:#687d6c;margin:9px 0 0}
 </style>
 </head>
 
@@ -1243,6 +1249,15 @@
               正在讀取老師可查看範圍…
             </div>
 
+            <section id="adminMorningSupport" class="adminMorningSupport hidden" aria-label="今日補休代班">
+  <div class="adminSupportHeader"><span>🌿 今日補休代班：</span><strong id="adminSupportCurrent">無代班</strong></div>
+  <div class="adminSupportControls">
+    <label for="adminSupportClass">選擇今天支援的原班</label>
+    <select id="adminSupportClass"><option value="">無代班</option></select>
+    <button type="button" id="adminSupportSave" onclick="saveAdminMorningSupport()">確認今日安排</button>
+  </div>
+  <p id="adminSupportStatus" class="adminSupportStatus" aria-live="polite">只有確認安排後，班級才會顯示在「今天的班級幼兒」。</p>
+</section>
             <div id="todayClassRosters" class="todayClassRosters"></div>
             <details id="rosterDetails" class="rosterDetails">
               <summary>
@@ -2108,6 +2123,39 @@ async function confirmRegularCarePickup(childId,button){
   button.textContent="✓ 已接送";
 }
 
+
+let adminSupportCurrentId=null;
+async function loadAdminMorningSupport(roster){
+ const role=roster?.staff?.role;
+ const pane=el("adminMorningSupport");
+ if(!pane)return;
+ if(role!=="admin" && role!=="admin_viewer"){pane.classList.add("hidden");return;}
+ pane.classList.remove("hidden");
+ const select=el("adminSupportClass");
+ const {data:current,error}=await teacherSupabase.rpc("admin_my_morning_support");
+ if(error){el("adminSupportStatus").textContent="目前無法讀取補休代班，請稍後重試。";return;}
+ adminSupportCurrentId=current?.class_id||null;
+ const groups=Array.isArray(roster?.morning_groups)?roster.morning_groups:[];
+ select.innerHTML='<option value="">無代班</option>'+groups.map(g=>'<option value="'+escapeHtmlText(g.class_id)+'">'+escapeHtmlText(g.class_name||g.class_id)+'</option>').join("");
+ select.value=adminSupportCurrentId||"";
+ const chosen=groups.find(g=>g.class_id===adminSupportCurrentId);
+ el("adminSupportCurrent").textContent=chosen?.class_name||"無代班";
+ el("adminSupportStatus").textContent=adminSupportCurrentId?"今天的代班已啟用；可直接在下方查看幼兒名冊。":"行政老師可自行選擇今天需要支援的原班。";
+}
+async function saveAdminMorningSupport(){
+ const select=el("adminSupportClass"),btn=el("adminSupportSave"),next=select.value||null;
+ if(next===adminSupportCurrentId)return;
+ const name=select.selectedOptions[0]?.textContent||"無代班";
+ if(!window.confirm(next?"確認今天補休支援「"+name+"」？這會開放該班今日請假與提早接送確認權限。":"確定取消今天的補休代班？會同步收回該班支援權限。"))return;
+ btn.disabled=true;el("adminSupportStatus").textContent="正在更新今日支援安排…";
+ try{
+  const {error}=await teacherSupabase.rpc("admin_self_morning_support",{p_class_id:next});
+  if(error)throw error;
+  await loadTeacherRoster();
+ }catch(e){el("adminSupportStatus").textContent="安排未完成："+(e.message||"請重新操作");}
+ finally{btn.disabled=false;}
+}
+
 function renderTeacherRoster(data,todayScope={}){
   currentRosterStaffRole=data?.staff?.role||"";
   const content=el("rosterContent");
@@ -2261,6 +2309,7 @@ async function loadTeacherRoster(){
   const {data:todayScope,error:todayError}=await teacherSupabase.rpc("get_teacher_today_assigned_classes");
   if(todayError){console.error("today assigned classes error",todayError);status.className="status show error";status.textContent="當日班級資料讀取失敗。";return;}
   renderTeacherRoster(data||{},todayScope||{});
+  await loadAdminMorningSupport(data||{});
 
   status.className="status show ok";
   status.textContent=
