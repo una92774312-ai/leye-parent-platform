@@ -1104,6 +1104,15 @@
       }
     }
 
+.identityBox,#loginStatus,#scopeStatus{display:none!important}
+.workBox{background:#fffefa;border-color:#e8ebe3;border-radius:22px;padding:18px}
+.workTitle{font-size:21px;color:#355944;line-height:1.5}
+.workSub{font-size:14px;color:#758476}
+.scopeGrid{gap:9px}.scopeCard{background:#f5f9f3;border:1px solid #e3eae0;border-radius:16px;padding:14px}
+.todayBox{border-radius:20px}.todayTitle{font-size:18px;color:#375744}
+.todayCounts{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.itemGroup{border-radius:15px}
+@media(min-width:600px){.todayCounts{grid-template-columns:repeat(4,minmax(0,1fr))}}
 </style>
 </head>
 
@@ -1169,12 +1178,10 @@
           </div>
 
           <div id="workEntry" class="workBox hidden">
-            <div class="workTitle">
-              老師工作平台已登入
-            </div>
+            <div class="workTitle" id="teacherGreeting">🌿 今天也辛苦了，老師！</div>
 
             <div class="workSub">
-              系統依教職員身分與排班顯示本週事項；超過本週的紀錄請使用「查詢過去紀錄」。
+              孩子們今天需要留意的事，都幫您整理在這裡了。
             </div>
 
             <div id="roleBadge" class="roleBadge">—</div>
@@ -1188,18 +1195,18 @@
               ⚙️ 進入行政管理平台
             </a>
 
-            <div class="scopeGrid">
-              <div class="scopeCard">
-                <div class="scopeLabel">原班可查看範圍</div>
+            <div class="scopeGrid" id="teacherScopeGrid">
+              <div class="scopeCard" id="morningScopeCard">
+                <div class="scopeLabel">今天關心的班級</div>
                 <div id="morningScope" class="scopeValue">讀取中…</div>              </div>
 
-              <div class="scopeCard">
-                <div class="scopeLabel">今日課後班</div>
+              <div class="scopeCard" id="aftercareScopeCard">
+                <div class="scopeLabel">今天負責的課後班</div>
                 <div id="aftercareScope" class="scopeValue">讀取中…</div>
               </div>
 
-              <div class="scopeCard">
-                <div class="scopeLabel">額外授權班級</div>
+              <div class="scopeCard" id="specialScopeCard">
+                <div class="scopeLabel">協助照顧的班級</div>
                 <div id="specialScope" class="scopeValue">讀取中…</div>
               </div>
             </div>
@@ -1225,7 +1232,7 @@
             <div id="todayItemsSection" class="todayBox">
               <div class="todayHeader">
                 <div>
-                  <div class="todayTitle">本週學生事項</div>
+                  <div class="todayTitle">🌷 這週孩子們的大小事</div>
                   <div id="todayItemsDate" class="todayDate">讀取中…</div>
                 </div>
 
@@ -1237,10 +1244,10 @@
                 type="button"
                 onclick="openTeacherHistory()"
               >
-                🔎 查詢過去請假／延托／臨托紀錄
+                🔎 查詢其他日期的紀錄
               </button>
 
-              <div class="todayCounts">
+              <div class="todayCounts" id="teacherWeekCounts">
                 <button class="countCard" type="button" onclick="jumpToTeacherItems('leaveItems')" aria-label="跳到本週請假紀錄"><div id="leaveCount" class="countNum">0</div>
                   <div class="countLabel">本週請假</div></button>
 
@@ -1263,10 +1270,10 @@
                 正在讀取本週學生事項…
               </div>
 
-              <div id="todayItemsContent" class="hidden">
+              <div id="todayItemsContent" class="hidden teacherWeeklyGroups">
                 <div class="itemGroup">
                   <div class="itemGroupHeader">
-                    <span>🟣 本週請假</span>
+                    <span>🌷 請假通知</span>
                     <span id="leaveGroupCount" class="groupCount">0</span>
                   </div>
                   <div id="leaveItems" class="itemList"></div>
@@ -1274,7 +1281,7 @@
 
                 <div class="itemGroup">
                   <div class="itemGroupHeader">
-                    <span>🟢 本週延托／臨托</span>
+                    <span>🧸 課後照顧安排</span>
                     <span id="careGroupCount" class="groupCount">0</span>
                   </div>
                   <div id="careItems" class="itemList"></div>
@@ -1282,7 +1289,7 @@
 
                 <div class="itemGroup">
                   <div class="itemGroupHeader">
-                    <span>🚗 本週接送事項</span>
+                    <span>🚗 接送小提醒</span>
                     <span id="pickupGroupCount" class="groupCount">0</span>
                   </div>
                   <div id="pickupItems" class="itemList"></div>
@@ -1692,8 +1699,11 @@ async function loadTeacherScope(){
   el("specialScope").textContent = classNamesText(special);
 
   scopeBox.className = "status show ok";
-  scopeBox.textContent =
-    "✓ 老師可查看範圍讀取完成";
+  scopeBox.textContent = ""; 
+  ["morning","aftercare","special"].forEach(key=>{const card=el(key+"ScopeCard");const list=key==="morning"?morning:key==="aftercare"?aftercare:special;if(card)card.style.display=list.length?"":"none";});
+  const admin= data?.role==="admin";
+  if(admin){el("morningScopeCard").style.display="";el("morningScopeCard").querySelector(".scopeLabel").textContent="全園幼兒概況";}
+  else el("morningScopeCard").querySelector(".scopeLabel").textContent="今天關心的班級";
 
   return data;
 }
@@ -3149,10 +3159,8 @@ async function loadTeacherWeekItems(){
   statusBox.className =
     "status show ok";
 
-  statusBox.textContent =
-    (counts.total ?? 0) > 0
-      ? `✓ 本週共有 ${counts.total} 筆可查看事項；下週會自動從首頁隱藏。`
-      : "✓ 本週目前沒有學生事項";
+  statusBox.textContent = (counts.total??0)>0 ? `這週有 ${counts.total} 件孩子們的事項，辛苦您留意了 🌱` : "這週目前沒有需要處理的新事項 🌿";
+  ["leave","care","pickup"].forEach(kind=>{const elem=el(kind+"Items")?.closest(".itemGroup");const n=kind==="leave"?leave.length:kind==="care"?care.length:pickup.length;if(elem)elem.style.display=n?"":"none";});
 
   return data;
 }
@@ -3597,18 +3605,17 @@ async function establishTeacherSession(
     box.className =
       "status show ok";
 
-    box.textContent =
-      "✓ 老師系統登入完成";
+    box.textContent = "";
 
     const staff =
       authData.staff ||
       statusData.staff ||
       {};
 
-    el("roleBadge").textContent =
-      roleLabel(
-        staff.role
-      );
+    el("roleBadge").textContent = roleLabel(staff.role);
+    const hour=Number(new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Taipei",hour:"2-digit",hourCycle:"h23"}).format(new Date()));
+    const greeting=hour<11?"早安":hour<17?"午安":"晚安";
+    el("teacherGreeting").textContent=`🌿 ${greeting}，${staff.display_name||authData?.staff?.name||statusData?.staff?.name||"老師"}老師！`;
 
     if(
       staff.role === "admin" || staff.role === "admin_viewer"
@@ -3636,9 +3643,7 @@ async function establishTeacherSession(
       loadTeacherWeekItems()
     ]);
 
-    el("pageIntro")
-      .innerHTML =
-        "LINE 與教職員身分已確認。<br>老師權限、班級名冊與本週學生事項已載入。";
+    el("pageIntro").textContent="每一份細心照顧，都是孩子安心成長的力量。";
 
   }
   catch(err){
