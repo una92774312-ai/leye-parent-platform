@@ -1113,6 +1113,21 @@
 .todayCounts{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .itemGroup{border-radius:15px}
 @media(min-width:600px){.todayCounts{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.teacherFoldGroup{border:1px solid #e1e9e0;border-radius:16px;background:#fff;margin-top:12px;overflow:hidden}
+.teacherFoldHeading{display:flex;align-items:center;gap:9px;padding:14px 15px;cursor:pointer;list-style:none;font-weight:800;color:#385843;font-size:15px;min-height:24px}
+.teacherFoldHeading::-webkit-details-marker{display:none}
+.teacherFoldHeading:focus-visible{outline:3px solid #85a792;outline-offset:-3px}
+.teacherFoldToggle{margin-left:auto;background:#edf5ed;border-radius:50%;width:32px;height:32px;display:grid;place-items:center;color:#356345;font-size:23px;font-weight:600}
+.teacherFoldToggle:after{content:"+"}.teacherFoldGroup[open] .teacherFoldToggle:after{content:"−"}
+.teacherFoldContent{padding:0 12px 13px}
+.warmQuote{position:relative;border:1px solid #e6eee3;background:#f4f8f1;padding:17px 16px;border-radius:19px;margin:15px 0 12px}
+.warmQuoteLabel{font-size:12px;font-weight:800;color:#69886d}
+.warmQuoteText{font-size:17px;line-height:1.8;letter-spacing:.015em;color:#344d39;margin:12px 0 8px;text-align:center;min-height:58px}
+.warmQuoteAuthor{font-size:12px;text-align:right;color:#718671}
+.warmQuoteControls{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.warmQuoteNav{border:1px solid #dae7d7;background:#fff;border-radius:999px;padding:7px 14px;color:#476b4e;font-size:13px}
+.warmQuoteCounter{font-size:12px;color:#859587}
+@media(prefers-reduced-motion:reduce){.warmQuote *{transition:none!important;animation:none!important}}
 </style>
 </head>
 
@@ -1185,6 +1200,16 @@
             </div>
 
             <div id="roleBadge" class="roleBadge">—</div>
+            <section class="warmQuote" aria-label="每天給老師的一點溫柔">
+              <div class="warmQuoteLabel">♡ 每天給老師的一點溫柔</div>
+              <div id="warmQuoteText" class="warmQuoteText">今天也辛苦了，記得好好照顧自己。</div>
+              <div id="warmQuoteAuthor" class="warmQuoteAuthor">—— 樂業附幼・暖心小語</div>
+              <div class="warmQuoteControls">
+                <button type="button" class="warmQuoteNav" onclick="changeWarmQuote(-1)" aria-label="上一句暖心語錄">‹ 上一句</button>
+                <span id="warmQuoteCounter" class="warmQuoteCounter" aria-live="off"></span>
+                <button type="button" class="warmQuoteNav" onclick="changeWarmQuote(1)" aria-label="下一句暖心語錄">下一句 ›</button>
+              </div>
+            </section>
 
             <a
               id="adminPortalBtn"
@@ -1271,21 +1296,15 @@
               </div>
 
               <div id="todayItemsContent" class="hidden teacherWeeklyGroups">
-                <div class="itemGroup">
-                  <div class="itemGroupHeader">
-                    <span>🌷 請假通知</span>
-                    <span id="leaveGroupCount" class="groupCount">0</span>
-                  </div>
-                  <div id="leaveItems" class="itemList"></div>
-                </div>
+                <details class="itemGroup teacherFoldGroup" id="leaveFold">
+                  <summary class="teacherFoldHeading"><span>🌷 請假通知</span><span id="leaveGroupCount" class="groupCount">0</span><span class="teacherFoldToggle" aria-hidden="true"></span></summary>
+                  <div id="leaveItems" class="itemList teacherFoldContent"></div>
+                </details>
 
-                <div class="itemGroup">
-                  <div class="itemGroupHeader">
-                    <span>🧸 課後照顧安排</span>
-                    <span id="careGroupCount" class="groupCount">0</span>
-                  </div>
-                  <div id="careItems" class="itemList"></div>
-                </div>
+                <details class="itemGroup teacherFoldGroup" id="careFold">
+                  <summary class="teacherFoldHeading"><span>🧸 課後照顧安排</span><span id="careGroupCount" class="groupCount">0</span><span class="teacherFoldToggle" aria-hidden="true"></span></summary>
+                  <div id="careItems" class="itemList teacherFoldContent"></div>
+                </details>
 
                 <div class="itemGroup">
                   <div class="itemGroupHeader">
@@ -1662,6 +1681,45 @@ async function callFunction(
   }
 
   return data;
+}
+
+
+const teacherWarmQuotes=[{"id":1,"text":"教師有三種愛：對學習的愛、對學習者的愛，以及將前兩種愛結合在一起的愛。","author":"史考特・海登"},{"id":2,"text":"教學的藝術，就是協助發現的藝術。","author":"馬克・範・多倫"},{"id":4,"text":"老師是怎樣的人，比他教些什麼更重要。","author":"卡爾・梅寧格"},{"id":5,"text":"有時候，一個溫柔的回應，就是孩子今天最安心的時刻。","author":"樂業附幼・暖心小語"},{"id":6,"text":"不一定每一天都看得見進步，但陪伴本身就有意義。","author":"樂業附幼・暖心小語"},{"id":7,"text":"每個孩子都有自己的步調，而你正在學著欣賞不同的花期。","author":"樂業附幼・暖心小語"},{"id":8,"text":"今天陪孩子發現一件新鮮事，也是一份小小的幸福。","author":"樂業附幼・暖心小語"},{"id":9,"text":"教育不只是帶孩子往前走，也是在一起探索世界。","author":"樂業附幼・暖心小語"},{"id":10,"text":"不必成為完美的老師，真誠而穩定的陪伴就很珍貴。","author":"樂業附幼・暖心小語"},{"id":11,"text":"今天或許很忙，但你已經一步一步完成了好多事情。","author":"樂業附幼・暖心小語"},{"id":12,"text":"努力不一定要轟轟烈烈，日常裡的用心也很值得肯定。","author":"樂業附幼・暖心小語"},{"id":13,"text":"有些日子只求平穩度過，那也已經很好了。","author":"樂業附幼・暖心小語"},{"id":14,"text":"生活不是一場速度競賽，照自己的節奏走，也能走得很遠。","author":"樂業附幼・暖心小語"},{"id":15,"text":"你做過的那些細心小事，也值得被好好看見。","author":"樂業附幼・暖心小語"},{"id":16,"text":"不用每件事都做到一百分，留一點空間給自己。","author":"樂業附幼・暖心小語"},{"id":17,"text":"今天完成的每一件小事，都是認真生活的證明。","author":"樂業附幼・暖心小語"},{"id":18,"text":"即使事情沒有照預期發展，也不代表今天的努力白費。","author":"樂業附幼・暖心小語"},{"id":19,"text":"一步一步來就好，你不需要同時做好所有事情。","author":"樂業附幼・暖心小語"},{"id":20,"text":"願你在忙碌的一天裡，也有一件值得微笑的小事。","author":"樂業附幼・暖心小語"},{"id":21,"text":"好好休息不是偷懶，而是讓自己重新擁有喜歡生活的力氣。","author":"樂業附幼・暖心小語"},{"id":22,"text":"照顧別人很重要，記得也把自己放進需要照顧的名單裡。","author":"樂業附幼・暖心小語"},{"id":23,"text":"允許自己偶爾疲憊，不會減少你認真工作的價值。","author":"樂業附幼・暖心小語"},{"id":24,"text":"今天已經夠努力了，剩下的事情可以明天再慢慢完成。","author":"樂業附幼・暖心小語"},{"id":25,"text":"你不必一直很有力量，偶爾需要被支持也很好。","author":"樂業附幼・暖心小語"},{"id":26,"text":"忙碌之間，記得喝口水、伸伸懶腰，也對自己溫柔一點。","author":"樂業附幼・暖心小語"},{"id":27,"text":"下班後的時間也屬於你，去做一件讓自己開心的事吧。","author":"樂業附幼・暖心小語"},{"id":28,"text":"不需要用忙碌證明價值，平靜的日子同樣值得珍惜。","author":"樂業附幼・暖心小語"},{"id":29,"text":"有時候最好的前進方式，就是先讓自己好好休息。","author":"樂業附幼・暖心小語"},{"id":31,"text":"不熟悉的事情慢慢學就好，沒有人需要一開始就什麼都會。","author":"樂業附幼・暖心小語"},{"id":32,"text":"每一次願意嘗試，都是在為自己打開新的可能。","author":"樂業附幼・暖心小語"},{"id":33,"text":"今天不順利的事，也許會成為明天更從容的經驗。","author":"樂業附幼・暖心小語"},{"id":34,"text":"成長不一定是變得更厲害，也可能是越來越懂得照顧自己。","author":"樂業附幼・暖心小語"},{"id":35,"text":"不必和別人的進度比較，你正在走自己的路。","author":"樂業附幼・暖心小語"},{"id":36,"text":"勇敢不是從不緊張，而是緊張的時候也允許自己慢慢嘗試。","author":"樂業附幼・暖心小語"},{"id":37,"text":"有些答案需要時間，現在還不知道也沒關係。","author":"樂業附幼・暖心小語"},{"id":38,"text":"遇到困難時，願意求助也是一種很好的能力。","author":"樂業附幼・暖心小語"},{"id":39,"text":"一點一點的改變，久了也會成為令人驚喜的成長。","author":"樂業附幼・暖心小語"},{"id":40,"text":"今天學會了什麼，比今天有沒有做到完美更值得記住。","author":"樂業附幼・暖心小語"},{"id":41,"text":"一個人的努力很珍貴，一群人的互相照應更讓人安心。","author":"樂業附幼・暖心小語"},{"id":42,"text":"願你每天上班，都能遇見一點善意和一點好心情。","author":"樂業附幼・暖心小語"},{"id":44,"text":"有些幸福很簡單：一杯喜歡的飲料、一頓好吃的午餐。","author":"樂業附幼・暖心小語"},{"id":45,"text":"希望今天的你，除了照顧孩子，也被生活好好照顧。","author":"樂業附幼・暖心小語"},{"id":46,"text":"不是每一天都要閃閃發亮，平凡而自在也很好。","author":"樂業附幼・暖心小語"},{"id":47,"text":"日子有忙有閒、有晴有雨，你依然值得擁有好心情。","author":"樂業附幼・暖心小語"},{"id":48,"text":"如果今天有點累，就把步伐放慢一些，沒有關係的。","author":"樂業附幼・暖心小語"},{"id":49,"text":"願我們不只一起把工作做好，也能一起分享生活的小快樂。","author":"樂業附幼・暖心小語"},{"id":50,"text":"謝謝今天的自己，也期待明天會有新的小美好。","author":"樂業附幼・暖心小語"},{"id":51,"text":"今天有完成的事，也有還沒完成的事，沒關係，明天再慢慢來。","author":"樂業附幼・暖心小語"},{"id":52,"text":"一天裡總會有幾個忙亂的時刻，但不代表整天都不美好。","author":"樂業附幼・暖心小語"},{"id":53,"text":"你不需要每天都進步，有時候維持自己的步調就很好。","author":"樂業附幼・暖心小語"},{"id":54,"text":"小小的休息，也能讓平凡的一天多一點舒服。","author":"樂業附幼・暖心小語"},{"id":55,"text":"有些事情慢一點完成，也是一種從容。","author":"樂業附幼・暖心小語"},{"id":56,"text":"願你今天遇到的善意，比需要煩惱的事情還多一點。","author":"樂業附幼・暖心小語"},{"id":57,"text":"每個人都有自己的生活節奏，不用急著追上任何人。","author":"樂業附幼・暖心小語"},{"id":58,"text":"你值得擁有一段不用趕時間、只屬於自己的時光。","author":"樂業附幼・暖心小語"},{"id":59,"text":"工作之外，你還有好多值得期待的小小幸福。","author":"樂業附幼・暖心小語"},{"id":60,"text":"不必為了成為更好的自己，而忘了喜歡現在的自己。","author":"樂業附幼・暖心小語"},{"id":61,"text":"有時候，今天最值得慶祝的事，就是好好吃了一頓飯。","author":"樂業附幼・暖心小語"},{"id":62,"text":"願每個認真生活的日子，都留得下一點輕鬆與自在。","author":"樂業附幼・暖心小語"}];
+let warmQuoteDeck=[],warmQuotePosition=0,warmQuoteTimer=null;
+function randomQuoteDeck(){
+ const arr=[...teacherWarmQuotes];
+ for(let i=arr.length-1;i>0;i--){
+   const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];
+ }
+ const previous=localStorage.getItem("leye-last-first-warm-quote");
+ if(arr.length>1&&String(arr[0].id)===previous)[arr[0],arr[1]]=[arr[1],arr[0]];
+ localStorage.setItem("leye-last-first-warm-quote",String(arr[0].id));
+ return arr;
+}
+function showWarmQuote(){
+ const quote=warmQuoteDeck[warmQuotePosition];if(!quote)return;
+ el("warmQuoteText").textContent="「"+quote.text+"」";
+ el("warmQuoteAuthor").textContent="—— "+quote.author;
+ el("warmQuoteCounter").textContent=(warmQuotePosition+1)+" / "+warmQuoteDeck.length;
+}
+function changeWarmQuote(direction){
+ if(!warmQuoteDeck.length)return;
+ warmQuotePosition=(warmQuotePosition+direction+warmQuoteDeck.length)%warmQuoteDeck.length;
+ showWarmQuote();startWarmQuoteTimer();
+}
+function startWarmQuoteTimer(){
+ if(warmQuoteTimer)clearInterval(warmQuoteTimer);
+ if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+ warmQuoteTimer=setInterval(()=>{
+   if(document.hidden)return;
+   warmQuotePosition=(warmQuotePosition+1)%warmQuoteDeck.length;
+   if(warmQuotePosition===0)warmQuoteDeck=randomQuoteDeck();
+   showWarmQuote();
+ },30000);
+}
+function initializeWarmQuotes(){
+ try{warmQuoteDeck=randomQuoteDeck();warmQuotePosition=0;showWarmQuote();startWarmQuoteTimer();}
+ catch(error){console.warn("暖心語錄暫時無法使用",error);}
 }
 
 function classNamesText(list){
@@ -3029,6 +3087,7 @@ function jumpToTeacherItems(targetId){
   if(!area || area.classList.contains("hidden"))return;
   const target=document.getElementById(targetId);
   if(!target)return;
+  const folder=target.closest("details.teacherFoldGroup");if(folder)folder.open=true;
   (target.closest(".itemGroup")||target).scrollIntoView({behavior:"smooth",block:"start"});
 }
 
@@ -3636,6 +3695,7 @@ async function establishTeacherSession(
       .classList.remove(
         "hidden"
       );
+    initializeWarmQuotes();
 
     await loadTeacherScope();
     await Promise.all([
