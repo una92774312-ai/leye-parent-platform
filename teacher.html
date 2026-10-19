@@ -1141,6 +1141,7 @@
 .adminSupportControls select{min-height:43px;width:100%;border:1px solid #cfdccd;border-radius:10px;background:white;padding:8px;font-size:15px}
 .adminSupportControls button{min-height:44px;border:0;border-radius:10px;background:#577d5b;color:white;font-size:15px;font-weight:800}
 .adminSupportControls button:disabled{opacity:.55}.adminSupportStatus{font-size:12px;line-height:1.6;color:#687d6c;margin:9px 0 0}
+.adminSupportTimes{display:grid;grid-template-columns:1fr 1fr;gap:9px}.adminSupportTimes label{display:grid;gap:6px}.supportSlot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:5px 0;padding:9px 10px;border-radius:9px;background:#fff;font-size:14px}.supportSlot button{border:1px solid #d4a9a9;color:#9b3c3c;background:#fff;border-radius:8px;padding:6px 10px}
 </style>
 </head>
 
@@ -1253,10 +1254,12 @@
   <div class="adminSupportHeader"><span>🌿 今日補休代班：</span><strong id="adminSupportCurrent">無代班</strong></div>
   <div class="adminSupportControls">
     <label for="adminSupportClass">選擇今天支援的原班</label>
-    <select id="adminSupportClass"><option value="">無代班</option></select>
-    <button type="button" id="adminSupportSave" onclick="saveAdminMorningSupport()">確認今日安排</button>
+    <select id="adminSupportClass"><option value="">請選擇班級</option></select>
+    <div class="adminSupportTimes"><label>開始時間<select id="adminSupportStart"></select></label><label>結束時間<select id="adminSupportEnd"></select></label></div>
+    <div id="adminSupportList"></div>
+    <button type="button" id="adminSupportSave" onclick="saveAdminMorningSupport()">新增時段</button>
   </div>
-  <p id="adminSupportStatus" class="adminSupportStatus" aria-live="polite">只有確認安排後，班級才會顯示在「今天的班級幼兒」。</p>
+  <p id="adminSupportStatus" class="adminSupportStatus" aria-live="polite">每次安排半小時為單位，可新增多個不重疊時段。</p>
 </section>
             <div id="todayClassRosters" class="todayClassRosters"></div>
             <details id="rosterDetails" class="rosterDetails">
@@ -2124,38 +2127,51 @@ async function confirmRegularCarePickup(childId,button){
 }
 
 
-let adminSupportCurrentId=null;
+
+let adminSupportSlots=[];
+function adminSupportTimeOptions(){
+ let out=[];
+ for(let h=7;h<=18;h++)for(let m of [0,30])if(h!==18||m===0){const t=String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");out.push('<option value="'+t+'">'+t+'</option>');}
+ return out.join("");
+}
 async function loadAdminMorningSupport(roster){
- const role=roster?.staff?.role;
- const pane=el("adminMorningSupport");
+ const role=roster?.staff?.role,pane=el("adminMorningSupport");
  if(!pane)return;
- if(role!=="admin" && role!=="admin_viewer"){pane.classList.add("hidden");return;}
+ if(role!=="admin"&&role!=="admin_viewer"){pane.classList.add("hidden");return;}
  pane.classList.remove("hidden");
- const select=el("adminSupportClass");
- const {data:current,error}=await teacherSupabase.rpc("admin_my_morning_support");
- if(error){el("adminSupportStatus").textContent="目前無法讀取補休代班，請稍後重試。";return;}
- adminSupportCurrentId=current?.class_id||null;
+ const {data,error}=await teacherSupabase.rpc("admin_my_morning_support_slots");
+ if(error){el("adminSupportStatus").textContent="代班時段讀取失敗，請稍後重試。";return;}
+ adminSupportSlots=Array.isArray(data)?data:[];
  const groups=Array.isArray(roster?.morning_groups)?roster.morning_groups:[];
- select.innerHTML='<option value="">無代班</option>'+groups.map(g=>'<option value="'+escapeHtmlText(g.class_id)+'">'+escapeHtmlText(g.class_name||g.class_id)+'</option>').join("");
- select.value=adminSupportCurrentId||"";
- const chosen=groups.find(g=>g.class_id===adminSupportCurrentId);
- el("adminSupportCurrent").textContent=chosen?.class_name||"無代班";
- el("adminSupportStatus").textContent=adminSupportCurrentId?"今天的代班已啟用；可直接在下方查看幼兒名冊。":"行政老師可自行選擇今天需要支援的原班。";
+ el("adminSupportClass").innerHTML='<option value="">請選擇班級</option>'+groups.map(g=>'<option value="'+escapeHtmlText(g.class_id)+'">'+escapeHtmlText(g.class_name||g.class_id)+'</option>').join("");
+ for(let id of ["adminSupportStart","adminSupportEnd"])el(id).innerHTML=adminSupportTimeOptions();
+ el("adminSupportStart").value="09:00";el("adminSupportEnd").value="11:00";
+ el("adminSupportCurrent").textContent=adminSupportSlots.length?adminSupportSlots.map(x=>(groups.find(g=>g.class_id===x.class_id)?.class_name||x.class_id)+" "+x.start+"－"+x.end).join("、"):"無代班";
+ el("adminSupportList").innerHTML=adminSupportSlots.map(x=>{
+  const name=groups.find(g=>g.class_id===x.class_id)?.class_name||x.class_id;
+  return '<div class="supportSlot"><span>'+escapeHtmlText(name)+'　'+x.start+'－'+x.end+'</span><button type="button" onclick="removeAdminMorningSupportSlot(\''+x.id+'\')">取消</button></div>';
+ }).join("");
+ el("adminSupportStatus").textContent="時段內可操作；時段結束後當天仍可查看，不能繼續確認接送。";
 }
 async function saveAdminMorningSupport(){
- const select=el("adminSupportClass"),btn=el("adminSupportSave"),next=select.value||null;
- if(next===adminSupportCurrentId)return;
- const name=select.selectedOptions[0]?.textContent||"無代班";
- if(!window.confirm(next?"確認今天補休支援「"+name+"」？這會開放該班今日請假與提早接送確認權限。":"確定取消今天的補休代班？會同步收回該班支援權限。"))return;
- btn.disabled=true;el("adminSupportStatus").textContent="正在更新今日支援安排…";
+ const klass=el("adminSupportClass").value,start=el("adminSupportStart").value,end=el("adminSupportEnd").value,btn=el("adminSupportSave");
+ if(!klass){el("adminSupportStatus").textContent="請先選擇支援班級。";return;}
+ if(start>=end){el("adminSupportStatus").textContent="結束時間必須晚於開始時間。";return;}
+ if(!window.confirm("確認今天 "+start+"－"+end+" 支援「"+el("adminSupportClass").selectedOptions[0].textContent+"」？"))return;
+ btn.disabled=true;
  try{
-  const {error}=await teacherSupabase.rpc("admin_self_morning_support",{p_class_id:next});
+  const {error}=await teacherSupabase.rpc("admin_self_morning_support_slot",{p_class_id:klass,p_start_time:start,p_end_time:end});
   if(error)throw error;
   await loadTeacherRoster();
- }catch(e){el("adminSupportStatus").textContent="安排未完成："+(e.message||"請重新操作");}
+ }catch(e){el("adminSupportStatus").textContent="安排失敗："+(e.message||"請重新操作");}
  finally{btn.disabled=false;}
 }
-
+async function removeAdminMorningSupportSlot(id){
+ if(!window.confirm("確定取消這筆今日補休代班？相關代班操作權限會立即收回。"))return;
+ const {error}=await teacherSupabase.rpc("admin_self_morning_support_slot",{p_class_id:null,p_start_time:null,p_end_time:null,p_remove_id:id});
+ if(error){el("adminSupportStatus").textContent="取消失敗："+error.message;return;}
+ await loadTeacherRoster();
+}
 function renderTeacherRoster(data,todayScope={}){
   currentRosterStaffRole=data?.staff?.role||"";
   const content=el("rosterContent");
