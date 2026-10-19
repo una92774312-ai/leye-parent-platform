@@ -2432,7 +2432,6 @@ function appendCareFeeControls(
 
   if(
     item?.fee_status==="collected"
-    || item?.fee_collected_at
   ){
     box.classList.add("collected");
 
@@ -2440,7 +2439,7 @@ function appendCareFeeControls(
       document.createElement("div");
 
     collectedText.textContent=
-      `✅ 收費完成 NT$${Number(item?.fee_collected_amount||amount)}`
+      `${item?.can_correct_fee===true?"✅ 已收費":"✅ 收費完成"} NT${Number(item?.fee_collected_amount||amount)}`
       +
       (
         item?.fee_collected_at
@@ -3278,12 +3277,10 @@ function historyCardHtml(item){
     }
     else if(
       item?.fee_status==="collected"
-      ||
-      item?.fee_collected_at
     ){
       feeHtml=`
         <div class="feeCollectBox collected">
-          ✅ 收費完成 NT$${Number(item?.fee_collected_amount||feeAmount)}
+          ${item?.can_correct_fee===true?"✅ 已收費":"✅ 收費完成"} NT${Number(item?.fee_collected_amount||feeAmount)}
           ${item?.fee_collected_at
             ? "｜"+escapeHtmlText(formatDateTime(item.fee_collected_at))
             : ""}
