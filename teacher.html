@@ -1120,13 +1120,11 @@
 .teacherFoldToggle{margin-left:auto;background:#edf5ed;border-radius:50%;width:32px;height:32px;display:grid;place-items:center;color:#356345;font-size:23px;font-weight:600}
 .teacherFoldToggle:after{content:"+"}.teacherFoldGroup[open] .teacherFoldToggle:after{content:"−"}
 .teacherFoldContent{padding:0 12px 13px}
-.warmQuote{position:relative;border:1px solid #e6eee3;background:#f4f8f1;padding:17px 16px;border-radius:19px;margin:15px 0 12px}
-.warmQuoteLabel{font-size:12px;font-weight:800;color:#69886d}
-.warmQuoteText{font-size:17px;line-height:1.8;letter-spacing:.015em;color:#344d39;margin:12px 0 8px;text-align:center;min-height:58px}
-.warmQuoteAuthor{font-size:12px;text-align:right;color:#718671}
-.warmQuoteControls{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
-.warmQuoteNav{border:1px solid #dae7d7;background:#fff;border-radius:999px;padding:7px 14px;color:#476b4e;font-size:13px}
-.warmQuoteCounter{font-size:12px;color:#859587}
+.warmQuote{border:1px solid #e6eee3;background:#f4f8f1;padding:13px 14px;border-radius:17px;margin:12px 0 8px}
+.warmQuoteLabel{font-size:12px;font-weight:700;color:#69886d}
+.warmQuoteText{font-size:15px;line-height:1.65;letter-spacing:0;color:#344d39;margin:9px 0 7px;text-align:left;min-height:0;font-weight:400}
+.warmQuoteAuthor{font-size:11px;line-height:1.5;text-align:right;color:#718671}
+
 @media(prefers-reduced-motion:reduce){.warmQuote *{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -1204,11 +1202,7 @@
               <div class="warmQuoteLabel">♡ 每天給老師的一點溫柔</div>
               <div id="warmQuoteText" class="warmQuoteText">今天也辛苦了，記得好好照顧自己。</div>
               <div id="warmQuoteAuthor" class="warmQuoteAuthor">—— 樂業附幼・暖心小語</div>
-              <div class="warmQuoteControls">
-                <button type="button" class="warmQuoteNav" onclick="changeWarmQuote(-1)" aria-label="上一句暖心語錄">‹ 上一句</button>
-                <span id="warmQuoteCounter" class="warmQuoteCounter" aria-live="off"></span>
-                <button type="button" class="warmQuoteNav" onclick="changeWarmQuote(1)" aria-label="下一句暖心語錄">下一句 ›</button>
-              </div>
+
             </section>
 
             <a
@@ -1700,7 +1694,7 @@ function showWarmQuote(){
  const quote=warmQuoteDeck[warmQuotePosition];if(!quote)return;
  el("warmQuoteText").textContent="「"+quote.text+"」";
  el("warmQuoteAuthor").textContent="—— "+quote.author;
- el("warmQuoteCounter").textContent=(warmQuotePosition+1)+" / "+warmQuoteDeck.length;
+
 }
 function changeWarmQuote(direction){
  if(!warmQuoteDeck.length)return;
