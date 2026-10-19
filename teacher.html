@@ -2398,6 +2398,23 @@ async function markCareFeeCollected(
   }
 }
 
+function updateFeeCorrectionCountdown(){
+  document.querySelectorAll(".feeCorrectionBtn[data-collected-at]").forEach(button=>{
+    const ts=Date.parse(button.dataset.collectedAt||"");
+    if(!Number.isFinite(ts) || Date.now()<ts+300000)return;
+    const box=button.closest(".feeCollectBox");
+    button.remove();
+    if(!box)return;
+    const label=box.querySelector("div");
+    if(label?.textContent?.includes("✅ 已收費"))label.textContent=label.textContent.replace("✅ 已收費","✅ 收費完成");
+    for(const node of box.childNodes){
+      if(node.nodeType===3 && node.textContent.includes("✅ 已收費"))
+        node.textContent=node.textContent.replace("✅ 已收費","✅ 收費完成");
+    }
+  });
+}
+setInterval(updateFeeCorrectionCountdown,15000);
+
 function appendCareFeeControls(
   card,
   item
@@ -2455,6 +2472,7 @@ function appendCareFeeControls(
 
       btn.type="button";
       btn.className="feeCorrectionBtn";
+      btn.dataset.collectedAt=String(item?.fee_collected_at||"");
       btn.textContent="↩ 誤觸？5 分鐘內撤銷收費紀錄";
 
       btn.addEventListener(
@@ -3289,6 +3307,7 @@ function historyCardHtml(item){
               <button
                 class="feeCorrectionBtn"
                 type="button"
+                data-collected-at="${escapeHtmlText(item?.fee_collected_at||"")}"
                 onclick="correctCareFeeCollection('${escapeHtmlText(item.request_id)}',this)"
               >
                 ↩ 誤觸？5 分鐘內撤銷
