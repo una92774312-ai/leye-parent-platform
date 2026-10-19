@@ -3697,6 +3697,7 @@ async function establishTeacherSession(
       {};
 
     el("roleBadge").textContent = roleLabel(staff.role);
+    el("adminPortalBtn").textContent=staff.role==="admin_viewer"?"👀 進入行政查看平台":"⚙️ 進入行政管理平台";
     const hour=Number(new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Taipei",hour:"2-digit",hourCycle:"h23"}).format(new Date()));
     const greeting=hour<11?"早安":hour<17?"午安":"晚安";
     el("teacherGreeting").textContent=`🌿 ${greeting}，${staff.display_name||authData?.staff?.name||statusData?.staff?.name||"老師"}老師！`;
