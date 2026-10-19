@@ -1483,6 +1483,22 @@ details.adminSecondaryPanel{display:block}
 </div>
 
 
+<section class="panel" id="substitutionPanel">
+  <div class="panelTitle">🔄 臨時代課安排（限行政管理）</div>
+  <p class="helper">選擇日期及班級後自動帶入當日負責老師；代課候選名單僅列出當天沒有課後班職務的人員。代課只調整指定日期，不變更固定排班。</p>
+  <div class="staffEditGrid">
+    <div><div class="helper">代課日期</div><input type="date" id="subDate" onchange="refreshSubstituteChoices()"></div>
+    <div><div class="helper">課後班</div><select id="subClass" onchange="refreshSubstituteChoices()"><option value="">選擇班級</option></select></div>
+    <div><div class="helper">請假老師（當日排班）</div><select id="subAbsent"><option value="">請先選擇日期與班級</option></select></div>
+    <div><div class="helper">代課老師（當日無課後班）</div><select id="subTeacher"><option value="">請先選擇日期與班級</option></select></div>
+  </div>
+  <div class="helper" style="margin-top:10px">若當天有兩位以上原排班老師，請確認要替換的是哪一位；沒有可用代課老師時不可送出。</div>
+  <div class="helper" style="margin-top:12px">代課原因（請勿填寫健康等敏感資訊）</div>
+  <input id="subNote" maxlength="300" placeholder="例：當日職務調整" style="width:100%;box-sizing:border-box">
+  <button type="button" class="btn btnGreen" id="subSave" onclick="submitAftercareSubstitution()" style="margin-top:12px">確認安排代課</button>
+  <p class="helper" id="subStatus" aria-live="polite"></p>
+</section>
+
 <!-- ====================================== -->
 <!-- 老師與課後班排班管理 V16 -->
 <!-- ====================================== -->
@@ -7776,6 +7792,45 @@ function installPanelCollapsers(){
 }
 
 
+
+async function initializeSubstitutionManagement(){
+  const date=$("subDate"),klass=$("subClass");
+  if(!date || !klass || !currentStaff || currentStaff.role!=="admin")return;
+  date.value=getTaiwanDateString();
+  const {data,error}=await supabaseClient.from("aftercare_classes").select("id,name").eq("active",true).order("name");
+  if(error){$("subStatus").textContent="班級讀取失敗："+error.message;return;}
+  klass.innerHTML='<option value="">選擇班級</option>'+(data||[]).map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.name)+'</option>').join("");
+}
+async function refreshSubstituteChoices(){
+  const date=$("subDate").value,klass=$("subClass").value,absent=$("subAbsent"),teacher=$("subTeacher");
+  absent.innerHTML='<option value="">請先選擇日期與班級</option>';teacher.innerHTML='<option value="">請先選擇日期與班級</option>';
+  $("subSave").disabled=true;
+  if(!date||!klass)return;
+  const previousAbs=absent.value,previousSub=teacher.value;
+  $("subStatus").textContent="正在核對當日課後排班……";
+  const {data,error}=await supabaseClient.rpc("admin_substitute_available_staff",{p_date:date,p_class_id:klass});
+  if(error){$("subStatus").textContent="排班查詢失敗："+error.message;return;}
+  const opts=(arr,label)=>'<option value="">'+label+'</option>'+(arr||[]).map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.name)+'</option>').join("");
+  absent.innerHTML=opts(data?.absent,"請選擇原排班老師");
+  teacher.innerHTML=opts(data?.available,"請選擇代課老師");
+  if((data?.absent||[]).length===1)absent.value=data.absent[0].id;
+  else if(previousAbs&&(data?.absent||[]).some(x=>x.id===previousAbs))absent.value=previousAbs;
+  if(previousSub&&(data?.available||[]).some(x=>x.id===previousSub))teacher.value=previousSub;
+  $("subStatus").textContent="當日排班 "+(data?.absent||[]).length+" 位；可代課 "+(data?.available||[]).length+" 位。";
+  $("subSave").disabled=!(data?.absent?.length && data?.available?.length);
+}
+async function submitAftercareSubstitution(){
+  const date=$("subDate").value,klass=$("subClass").value,absent=$("subAbsent").value,teacher=$("subTeacher").value,btn=$("subSave");
+  if(!date||!klass||!absent||!teacher){$("subStatus").textContent="請完成日期、班級、原排班老師與代課老師選擇。";return;}
+  if(absent===teacher){$("subStatus").textContent="原排班老師與代課老師不可相同。";return;}
+  if(!confirm("確定調整 "+date+" 的課後班代課？此操作會變更當日接送授權。"))return;
+  btn.disabled=true;$("subStatus").textContent="重新檢查排班衝突並儲存……";
+  const {data,error}=await supabaseClient.rpc("assign_aftercare_substitute",{p_date:date,p_class_id:klass,p_absent_staff_id:absent,p_substitute_staff_id:teacher,p_note:$("subNote").value.trim()||null});
+  if(error){$("subStatus").textContent="儲存失敗："+error.message;btn.disabled=false;return;}
+  $("subStatus").textContent=data?.ok?"✅ 當日代課已安排，固定排班未修改。":"請重新確認代課結果。";
+  await refreshSubstituteChoices();
+}
+
 async function main(){
 
   installPanelCollapsers();
@@ -7818,6 +7873,7 @@ async function main(){
 
 
   await restoreSession();
+  await initializeSubstitutionManagement();
 
 }
 
