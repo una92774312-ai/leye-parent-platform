@@ -3129,6 +3129,63 @@ function makeStudentItem(
   return card;
 }
 
+
+function groupConsecutiveLeaves(items){
+ const sorted=[...items].sort((a,b)=>String(a.request_date).localeCompare(String(b.request_date)));
+ const groups=[];
+ for(const item of sorted){
+  const prior=groups[groups.length-1];
+  const last=prior?.[prior.length-1];
+  const ts=x=>Date.parse(x?.created_at||"")||0;
+  const adjacent=last&&((Date.parse(item.request_date+"T00:00:00Z")-Date.parse(last.request_date+"T00:00:00Z"))/86400000)<=3;
+  const sameSubmission=last&&last.child_id===item.child_id&&String(last.reason||"")===String(item.reason||"")&&String(last.note||"")===String(item.note||"")&&Math.abs(ts(last)-ts(item))<120000;
+  if(prior&&adjacent&&sameSubmission)prior.push(item);else groups.push([item]);
+ }
+ return groups;
+}
+async function actOnLeaveGroup(items,actionType,card){
+ const pending=items.filter(x=>x.can_act!==false&&(actionType==="confirmed"? !["confirmed","handled"].includes(x.teacher_action_status):x.teacher_action_status!=="handled"));
+ if(!pending.length)return;
+ if(!confirm("確認將這 "+pending.length+" 天請假一次"+(actionType==="confirmed"?"確認收到":"標記已處理")+"？"))return;
+ card.classList.add("actionBusy");
+ let done=0;
+ try{
+  for(const item of pending){
+   const {error}=await teacherSupabase.rpc("teacher_act_on_item",{p_source_type:item.source_type,p_source_id:item.source_id,p_action_type:actionType,p_note:null});
+   if(error)throw error;
+   done++;
+  }
+  await loadTeacherWeekItems();
+ }catch(e){
+  alert("已完成 "+done+"／"+pending.length+" 天；剩餘日期未完成："+(e.message||"請稍後重試"));
+  await loadTeacherWeekItems();
+ }finally{card.classList.remove("actionBusy");}
+}
+function makeGroupedLeaveItem(items){
+ const first=items[0],last=items[items.length-1];
+ const card=document.createElement("div");card.className="studentItem";
+ const top=document.createElement("div");top.className="studentTop";
+ const name=document.createElement("div");name.className="studentName";name.textContent=first.child_name||"幼兒";
+ const meta=document.createElement("div");meta.className="studentClass";
+ meta.textContent=(first.morning_class_name||first.morning_class_id||"原班")+"｜"+formatDateText(first.request_date)+" ～ "+formatDateText(last.request_date);
+ const left=document.createElement("div");left.style.flex="1";left.append(name,meta);
+ const badge=document.createElement("div");badge.className="itemBadge leave";badge.textContent=items.length+" 天請假";
+ top.append(left,badge);card.appendChild(top);
+ const d=document.createElement("div");d.className="itemDetail";d.style.whiteSpace="pre-line";
+ d.textContent="原因："+(first.reason||"未填寫")+"\n每日進度："+items.map(x=>formatDateText(x.request_date)+" "+(["confirmed","handled"].includes(x.teacher_action_status)?"✓ 已確認":"待確認")).join("、");
+ card.appendChild(d);
+ const actionable=items.filter(x=>x.can_act!==false);
+ const toConfirm=actionable.filter(x=>!["confirmed","handled"].includes(x.teacher_action_status));
+ const toHandle=actionable.filter(x=>x.teacher_action_status==="confirmed");
+ if(toConfirm.length||toHandle.length){
+  const buttons=document.createElement("div");buttons.className="itemActionButtons";
+  if(toConfirm.length){const b=document.createElement("button");b.type="button";b.className="confirmBtn";b.textContent="一次確認 "+toConfirm.length+" 天";b.onclick=()=>actOnLeaveGroup(items,"confirmed",card);buttons.append(b);}
+  if(toHandle.length){const b=document.createElement("button");b.type="button";b.className="handledBtn";b.textContent="一次標記已處理 "+toHandle.length+" 天";b.onclick=()=>actOnLeaveGroup(items,"handled",card);buttons.append(b);}
+  card.appendChild(buttons);
+ } else {const d=document.createElement("div");d.className="itemActionState";d.textContent=actionable.length?"✓ 已全部確認":"僅供查看";card.appendChild(d);}
+ return card;
+}
+
 function renderItemList(
   containerId,
   items,
@@ -3160,6 +3217,12 @@ function renderItemList(
     return;
   }
 
+  if(type==="leave"){
+    for(const group of groupConsecutiveLeaves(items)){
+      container.appendChild(group.length>1?makeGroupedLeaveItem(group):makeStudentItem(group[0],type));
+    }
+    return;
+  }
   for(
     const item of items
   ){
@@ -3225,6 +3288,8 @@ async function loadTeacherWeekItems(){
       ? data.leave
       : [];
 
+  const groupedLeaveCount=groupConsecutiveLeaves(leave).length;
+
   const care =
     Array.isArray(data?.care)
       ? data.care
@@ -3242,12 +3307,12 @@ async function loadTeacherWeekItems(){
 
   setText(
     "todayTotalBadge",
-    counts.total ?? 0
+    ((counts.total??0)-leave.length+groupedLeaveCount)
   );
 
   setText(
     "leaveCount",
-    counts.leave ?? leave.length
+    groupedLeaveCount
   );
 
   setText(
@@ -3308,7 +3373,7 @@ async function loadTeacherWeekItems(){
   statusBox.className =
     "status show ok";
 
-  statusBox.textContent = (counts.total??0)>0 ? `這週有 ${counts.total} 件孩子們的事項，辛苦您留意了 🌱` : "這週目前沒有需要處理的新事項 🌿";
+  statusBox.textContent = ((counts.total??0)-leave.length+groupedLeaveCount)>0 ? `這週有 ${(counts.total??0)-leave.length+groupedLeaveCount} 件孩子們的事項，辛苦您留意了 🌱` : "這週目前沒有需要處理的新事項 🌿";
   ["leave","care","pickup"].forEach(kind=>{const elem=el(kind+"Items")?.closest(".itemGroup");const n=kind==="leave"?leave.length:kind==="care"?care.length:pickup.length;if(elem)elem.style.display=n?"":"none";});
 
   return data;
