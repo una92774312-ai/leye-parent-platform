@@ -1951,7 +1951,7 @@ function rosterChildHtml(
   ){
     badges.push(
       rosterBadgeHtml(
-        "已收費",
+        "收費完成",
         "paid"
       )
     );
@@ -2222,13 +2222,13 @@ async function correctCareFeeCollection(
 
       if(msg.includes("CORRECTION_WINDOW_EXPIRED")){
         throw new Error(
-          "已超過 10 分鐘誤觸修正時間，請由行政老師處理。"
+          "已超過 5 分鐘誤觸修正時間，請由行政老師處理。"
         );
       }
 
       if(msg.includes("ONLY_COLLECTOR_CAN_CORRECT")){
         throw new Error(
-          "只有原本記錄收費的老師可以在 10 分鐘內撤銷。"
+          "只有原本記錄收費的老師可以在 5 分鐘內撤銷。"
         );
       }
 
@@ -2368,7 +2368,7 @@ async function markCareFeeCollected(
     alert(
       data?.result==="already_collected"
         ? `這筆費用已經記錄為已收費 NT$${savedAmount}。`
-        : `已成功記錄收費 NT$${savedAmount}。\n10 分鐘內若為誤觸，可由原收費老師撤銷。`
+        : `已成功記錄收費 NT$${savedAmount}。\n5 分鐘內若為誤觸，可由原收費老師撤銷。`
     );
 
     await Promise.all([
@@ -2440,7 +2440,7 @@ function appendCareFeeControls(
       document.createElement("div");
 
     collectedText.textContent=
-      `✅ 已收費 NT$${Number(item?.fee_collected_amount||amount)}`
+      `✅ 收費完成 NT$${Number(item?.fee_collected_amount||amount)}`
       +
       (
         item?.fee_collected_at
@@ -2456,7 +2456,7 @@ function appendCareFeeControls(
 
       btn.type="button";
       btn.className="feeCorrectionBtn";
-      btn.textContent="↩ 誤觸？10 分鐘內撤銷收費紀錄";
+      btn.textContent="↩ 誤觸？5 分鐘內撤銷收費紀錄";
 
       btn.addEventListener(
         "click",
@@ -3283,7 +3283,7 @@ function historyCardHtml(item){
     ){
       feeHtml=`
         <div class="feeCollectBox collected">
-          ✅ 已收費 NT$${Number(item?.fee_collected_amount||feeAmount)}
+          ✅ 收費完成 NT$${Number(item?.fee_collected_amount||feeAmount)}
           ${item?.fee_collected_at
             ? "｜"+escapeHtmlText(formatDateTime(item.fee_collected_at))
             : ""}
@@ -3294,7 +3294,7 @@ function historyCardHtml(item){
                 type="button"
                 onclick="correctCareFeeCollection('${escapeHtmlText(item.request_id)}',this)"
               >
-                ↩ 誤觸？10 分鐘內撤銷
+                ↩ 誤觸？5 分鐘內撤銷
               </button>
             `
             : ""}
