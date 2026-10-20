@@ -4033,12 +4033,26 @@ function renderRequests(){
   }
 
 
-  $("requestList").innerHTML =
-    list
-      .map(
-        requestCardHtml
-      )
-      .join("");
+  const displayItems=[];
+  const leaveGroups=new Map();
+  for(const item of list){
+    if(item.request_type!=="leave"){
+      displayItems.push({kind:"single",item});
+      continue;
+    }
+    const key=[item.child_id,item.guardian_id,item.created_at,item.reason||""].join("|");
+    if(!leaveGroups.has(key)){
+      const group={kind:"leave",rows:[]};
+      leaveGroups.set(key,group);
+      displayItems.push(group);
+    }
+    leaveGroups.get(key).rows.push(item);
+  }
+  $("requestList").innerHTML=displayItems.map(entry=>
+    entry.kind==="leave"&&entry.rows.length>1
+      ? multiDayLeaveAdminCard(entry.rows)
+      : requestCardHtml(entry.kind==="leave"?entry.rows[0]:entry.item)
+  ).join("");
 
 }
 
@@ -4048,6 +4062,29 @@ function renderRequests(){
 申請卡片
 ==================================================
 */
+
+function multiDayLeaveAdminCard(rows){
+  const sorted=[...rows].sort((a,b)=>String(a.request_date).localeCompare(String(b.request_date)));
+  const first=sorted[0];
+  const child=childrenMap[first.child_id];
+  const cls=child?(CLASS_MAP[child.morning_class_id]||child.morning_class_id||"未設定班級"):"未設定班級";
+  const dates=sorted.map(r=>String(r.request_date||""));
+  const count=sorted.length;
+  const statuses=[...new Set(sorted.map(r=>statusText(r.status)))].join("、");
+  const days=sorted.map(r=>escapeHtml(String(r.request_date||""))+"｜"+escapeHtml(statusText(r.status))).join("<br>");
+  return `<div class="requestCard">
+    <div class="requestTop"><div><div class="requestChild">${escapeHtml(child?.name||"未知幼兒")}</div>
+    <div class="requestClass">${escapeHtml(cls)}｜連續請假 ${count} 天</div></div>
+    <span class="badge">${escapeHtml(statuses)}</span></div>
+    <div class="requestBody"><div class="info"><div class="infoLabel">請假期間</div>
+    <div class="infoValue">${escapeHtml(dates[0])} ～ ${escapeHtml(dates[count-1])}</div></div>
+    <div class="info"><div class="infoLabel">申請類型</div><div class="infoValue">請假（合併顯示）</div></div></div>
+    <div class="reasonBox"><b>📝 家長原因</b><div>${escapeHtml(first.reason||"未填寫")}</div></div>
+    <details style="margin-top:10px"><summary style="cursor:pointer;font-weight:600">查看各日紀錄（${count} 天）</summary>
+    <div class="helper" style="padding:10px 0;line-height:2">${days}</div></details>
+    <div class="helper" style="margin-top:10px">由原班老師確認，行政端僅供查看。家長仍可逐日取消請假。</div>
+  </div>`;
+}
 
 function requestCardHtml(
   r
