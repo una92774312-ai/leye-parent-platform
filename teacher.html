@@ -3148,22 +3148,19 @@ function groupConsecutiveLeaves(items){
 }
  
 async function actOnLeaveGroup(items,actionType,card){
- const pending=items.filter(x=>x.can_act!==false&&(actionType==="confirmed"? !["confirmed","handled"].includes(x.teacher_action_status):x.teacher_action_status==="confirmed"));
- if(!pending.length)return;
- if(!confirm("確認將這 "+pending.length+" 天請假一次"+(actionType==="confirmed"?"確認收到":"標記已處理")+"？"))return;
- card.classList.add("actionBusy");
- let done=0;
- try{
-  for(const item of pending){
-   const {error}=await teacherSupabase.rpc("teacher_act_on_item",{p_source_type:item.source_type,p_source_id:item.source_id,p_action_type:actionType,p_note:null});
-   if(error)throw error;
-   done++;
-  }
-  await loadTeacherWeekItems();
- }catch(e){
-  alert("已完成 "+done+"／"+pending.length+" 天；剩餘日期未完成："+(e.message||"請稍後重試"));
-  await loadTeacherWeekItems();
- }finally{card.classList.remove("actionBusy");}
+  const pending=items.filter(x=>x.can_act!==false&&(actionType==="confirmed"?!["confirmed","handled"].includes(x.teacher_action_status):x.teacher_action_status==="confirmed"));
+  if(!pending.length)return;
+  if(!confirm("確認將這 "+pending.length+" 天請假一次"+(actionType==="confirmed"?"確認收到":"標記已處理")+"？"))return;
+  card.classList.add("actionBusy");
+  try{
+    const ids=pending.map(item=>item.source_id||item.request_id);
+    const {error}=await teacherSupabase.rpc("teacher_act_on_leave_group",{p_request_ids:ids,p_action_type:actionType});
+    if(error)throw error;
+    await loadTeacherWeekItems();
+  }catch(e){
+    console.error("請假整批確認失敗",e);
+    alert("操作未完成，所有日期均未更新。請重新整理後再試。"+(e?.message?"\n"+e.message:""));
+  }finally{card.classList.remove("actionBusy");}
 }
 function makeGroupedLeaveItem(items){
  const first=items[0],last=items[items.length-1];
@@ -3273,7 +3270,7 @@ async function loadTeacherWeekItems(){
   const data=await fetchWeek(referenceDate);
   // Read adjacent weeks so a single submission spanning weekends or month-end remains one card.
   // Only leave records are combined; care and pickup still display selected-week data.
-  const neighborDates=[-2,-1,1,2].map(offset=>{
+  const neighborDates=Array.from({length:16},(_,i)=>i-8).filter(offset=>offset!==0).map(offset=>{
     const d=new Date(referenceDate+"T12:00:00Z");
     d.setUTCDate(d.getUTCDate()+offset*7);
     return d.toISOString().slice(0,10);
@@ -3379,7 +3376,7 @@ async function loadTeacherWeekItems(){
   statusBox.className =
     "status show ok";
  
-  statusBox.textContent = Math.max(0,(counts.total??0)-(Array.isArray(data?.leave)?data.leave.length:0)+groupedLeaveCount)>0 ? `這週有 ${(counts.total??0)-leave.length+groupedLeaveCount} 件孩子們的事項，辛苦您留意了 🌱` : "這週目前沒有需要處理的新事項 🌿";
+  statusBox.textContent = Math.max(0,(counts.total??0)-(Array.isArray(data?.leave)?data.leave.length:0)+groupedLeaveCount)>0 ? `這週有 ${Math.max(0,(counts.total??0)-(Array.isArray(data?.leave)?data.leave.length:0)+groupedLeaveCount)} 件孩子們的事項，辛苦您留意了 🌱` : "這週目前沒有需要處理的新事項 🌿";
   ["leave","care","pickup"].forEach(kind=>{const elem=el(kind+"Items")?.closest(".itemGroup");const n=kind==="leave"?leave.length:kind==="care"?care.length:pickup.length;if(elem)elem.style.display=n?"":"none";});
  
   return data;
