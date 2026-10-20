@@ -3270,7 +3270,7 @@ async function loadTeacherWeekItems(){
   const data=await fetchWeek(referenceDate);
   // Read adjacent weeks so a single submission spanning weekends or month-end remains one card.
   // Only leave records are combined; care and pickup still display selected-week data.
-  const neighborDates=Array.from({length:16},(_,i)=>i-8).filter(offset=>offset!==0).map(offset=>{
+  const neighborDates=Array.from({length:17},(_,i)=>i-8).filter(offset=>offset!==0).map(offset=>{
     const d=new Date(referenceDate+"T12:00:00Z");
     d.setUTCDate(d.getUTCDate()+offset*7);
     return d.toISOString().slice(0,10);
