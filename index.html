@@ -1420,6 +1420,15 @@ details.rules summary{
 .requestFoot{padding:10px 15px 13px;color:#a0a29c;font-size:.7rem;text-align:right;}
 @media(max-width:380px){.quickTabs{gap:4px;padding-left:7px;padding-right:7px}.quickTab{padding-left:1px;padding-right:1px;font-size:.64rem}.requestMetaGrid{grid-template-columns:1fr}.requestMetaFull{grid-column:auto}}
 
+
+/* 家庭身分與幼兒共用紀錄 */
+.guardianIdentityHeadline { font-size:1.05rem; font-weight:750; line-height:1.6; overflow-wrap:anywhere; }
+.guardianIdentityHelp { margin:6px 0 8px; font-size:.82rem; line-height:1.6; }
+.guardianRolePicker { display:flex; flex-direction:column; gap:9px; margin-top:10px; }
+.guardianRolePicker label { font-weight:650; }
+.guardianRolePicker select { width:100%; border:1px solid #cfd9cd; border-radius:10px; padding:12px; font-size:1rem; color:#334837; background:white; }
+#guardianRoleEdit { margin-top:8px; font-size:.83rem; }
+
 </style>
 </head>
 
@@ -1501,6 +1510,25 @@ details.rules summary{
 
   </div>
 
+</div>
+
+
+<div id="guardianIdentityCard" class="notice noticeBlue hidden" aria-live="polite">
+  <div id="guardianIdentityText" class="guardianIdentityHeadline">您的身分：確認中...</div>
+  <p class="guardianIdentityHelp">每位照顧者使用自己的專屬綁定連結；同一位幼兒的申請紀錄由已授權的家人共同查看。</p>
+  <div id="guardianRolePicker" class="guardianRolePicker hidden">
+    <label for="guardianRoleSelect">請確認您與孩子的關係</label>
+    <select id="guardianRoleSelect">
+      <option value="">請選擇身分</option>
+      <option value="爸爸">爸爸</option>
+      <option value="媽媽">媽媽</option>
+      <option value="阿公">阿公</option>
+      <option value="阿嬤">阿嬤</option>
+      <option value="其他照顧者">其他照顧者</option>
+    </select>
+    <button type="button" class="btn btnPrimary" onclick="saveGuardianCaregiverRole()">確認並儲存身分</button>
+  </div>
+  <button type="button" id="guardianRoleEdit" class="btn btnGray hidden" onclick="editGuardianCaregiverRole()">更改身分稱謂</button>
 </div>
 
 <!-- ====================================== -->
@@ -2310,7 +2338,7 @@ details.rules summary{
 
 <div id="requestsPage" class="page hidden">
   <div class="pageTitle">📋 我的申請</div>
-  <div class="pageDesc">查看近期請假、延長托育與臨時托育的申請進度。</div>
+  <div class="pageDesc">查看已綁定幼兒的請假、延托及臨托申請紀錄；爸爸、媽媽等已授權家人共用同一份紀錄。</div>
   <div class="notice noticeBlue">🌷 本園完成處理後，申請狀態會同步更新在這裡。<br>臨時托育或延長托育核准後，如有安排課後班級，也會一併顯示。</div>
   <div class="requestToolbar"><button class="refreshRequestsBtn" type="button" onclick="loadMyRequests()">↻ 更新申請狀態</button></div>
   <div id="myRequestsList" class="requestList"><div class="empty">正在載入申請紀錄...</div></div>
@@ -2506,6 +2534,9 @@ let currentPickupMode =
 
 let children =
   [];
+
+let guardianCaregiverRole = null;
+let guardianRoleEditing = false;
 
 let currentGuardianId =
   null;
@@ -3204,10 +3235,70 @@ async function loadGuardianAndChildren(){
 
     );
 
+  guardianCaregiverRole = null;
+  const {data:guardianData,error:guardianError} = await supabaseClient
+    .from("guardians")
+    .select("caregiver_role")
+    .eq("id",currentGuardianId)
+    .maybeSingle();
+  if(guardianError){
+    console.error("讀取家長身分稱謂失敗：",guardianError);
+    showStatus("⚠️ 身分稱謂暫時無法讀取，請重新開啟平台。");
+  }else{
+    guardianCaregiverRole = guardianData?.caregiver_role || null;
+  }
+  guardianRoleEditing = false;
   renderChildrenEverywhere();
 
 }
 
+function renderGuardianIdentityCard(){
+  const box=$("guardianIdentityCard");
+  if(!box)return;
+  if(!currentGuardianId || !children.length){
+    box.classList.add("hidden");
+    return;
+  }
+  box.classList.remove("hidden");
+  const childNames=children.map(c=>c.name).filter(Boolean).join("、");
+  $("guardianIdentityText").textContent =
+    "您的身分："+childNames+"的"+(guardianCaregiverRole || "家長（尚未確認稱謂）");
+  const editing=!guardianCaregiverRole || guardianRoleEditing;
+  $("guardianRolePicker").classList.toggle("hidden",!editing);
+  $("guardianRoleEdit").classList.toggle("hidden",editing);
+  if(editing){
+    $("guardianRoleSelect").value=guardianCaregiverRole || "";
+  }
+}
+
+function editGuardianCaregiverRole(){
+  guardianRoleEditing = true;
+  renderGuardianIdentityCard();
+}
+
+async function saveGuardianCaregiverRole(){
+  if(!currentGuardianId || !supabaseUser){
+    alert("請先完成 LINE 家長登入。");
+    return;
+  }
+  const newRole=$("guardianRoleSelect").value;
+  if(!["爸爸","媽媽","阿公","阿嬤","其他照顧者"].includes(newRole)){
+    alert("請先選擇您與孩子的關係。");
+    return;
+  }
+  const confirmText=children.map(c=>c.name).join("、")+"的"+newRole;
+  if(!confirm("確定您的身分為「"+confirmText+"」？"))return;
+  const {data,error}=await supabaseClient.rpc("guardian_set_caregiver_role",{p_role:newRole});
+  if(error){
+    console.error("身分稱謂儲存失敗：",error);
+    alert("儲存失敗，請重新登入後再試："+error.message);
+    return;
+  }
+  guardianCaregiverRole=data || newRole;
+  guardianRoleEditing=false;
+  renderGuardianIdentityCard();
+  alert("已儲存身分："+confirmText);
+}
 
 function renderChildrenEverywhere(){
 
@@ -3258,6 +3349,7 @@ function renderChildrenEverywhere(){
     "temporary"
   );
 
+  renderGuardianIdentityCard();
 }
 
 
@@ -3431,7 +3523,7 @@ function requestChildName(childId){const child=children.find(item=>item.id===chi
 function requestAftercareName(code){return code?(AFTERCARE_CLASS_MAP[code]||code):"";}
 function requestCreatedText(value){if(!value)return "";const d=new Date(value);if(Number.isNaN(d.getTime()))return "";return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0")+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
 async function cancelLeaveRequest(requestId){
- if(!confirm("確定取消這一天的請假？"))return;
+ if(!confirm("確定取消這一天的請假？孩子其他家人看到的申請狀態也會同步更新。"))return;
  const {data,error}=await supabaseClient.rpc("guardian_cancel_leave",{p_request_id:requestId});
  if(error){alert("取消失敗："+error.message);return;}
  if(!data?.ok){alert("取消未完成。");return;}
@@ -3453,10 +3545,12 @@ async function loadMyRequests(){
     !supabaseUser
     ||
     !currentGuardianId
+    ||
+    !children.length
   ){
 
     box.innerHTML =
-      '<div class="empty">尚未完成家長身分驗證。<br><br>請重新開啟家長服務平台。</div>';
+      '<div class="empty">尚未取得家長身分或已授權幼兒資料。<br><br>請重新開啟家長服務平台。</div>';
 
     return;
 
@@ -3478,9 +3572,9 @@ async function loadMyRequests(){
         .select(
           "id,request_date,child_id,request_type,status,requested_start_time,requested_end_time,reason,assigned_aftercare_class_code,admin_note,created_at"
         )
-        .eq(
-          "guardian_id",
-          currentGuardianId
+        .in(
+          "child_id",
+          children.map(c=>c.id)
         )
         .order(
           "request_date",
@@ -4829,10 +4923,6 @@ async function submitExtended(){
           "id,child_id,status"
         )
         .eq(
-          "guardian_id",
-          guardianId
-        )
-        .eq(
           "request_type",
           "extended"
         )
@@ -5245,10 +5335,6 @@ async function submitTemporary(){
         )
         .select(
           "id,child_id,status"
-        )
-        .eq(
-          "guardian_id",
-          guardianId
         )
         .eq(
           "request_type",
@@ -6375,7 +6461,7 @@ async function main(){
     }
 
     $("lineStatus").innerHTML =
-      `<b>${escapeHtml(lineDisplayName)}</b>（LINE 已連線）`;
+      `<b>LINE 已連線</b>`;
 
 
     /*
@@ -6434,7 +6520,7 @@ async function main(){
 
 
     $("lineStatus").innerHTML =
-      `<b>${escapeHtml(lineDisplayName)}</b>（LINE 身分已驗證）`;
+      `<b>LINE 身分已驗證</b>`;
 
   }
   catch(e){
@@ -6453,7 +6539,7 @@ async function main(){
     ){
 
       $("lineStatus").innerHTML =
-        `<b>${escapeHtml(lineDisplayName)}</b>（尚未綁定家長資料）`;
+        `<b>LINE 已連線</b>（尚未綁定家長資料）`;
 
       $("boundSummary").textContent =
         "第一次使用請先完成家庭綁定";
@@ -6478,7 +6564,7 @@ async function main(){
     ){
 
       $("lineStatus").innerHTML =
-        `<b>${escapeHtml(lineDisplayName)}</b>（LINE 身分已驗證）`;
+        `<b>LINE 身分已驗證</b>`;
 
       $("boundSummary").textContent =
         "目前尚未開放此班級";
