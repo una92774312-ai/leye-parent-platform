@@ -2937,9 +2937,7 @@ function renderPickupCard(
 
 
   const childName =
-    child.name
-    ||
-    "未知幼兒";
+    child.name ? pilotChildShortName(child.name) : "未知幼兒";
 
 
   const className =
@@ -3239,17 +3237,10 @@ function renderPickupCard(
 
         <div class="info">
 
-          <div class="infoLabel">
-            接送人員
-          </div>
-
-          <div class="infoValue">
-            ${escapeHtml(
-              row.pickup_person
-              ||
-              "—"
-            )}
-          </div>
+          <div class="infoLabel">接送人員</div>
+          <details class="infoValue"><summary style="cursor:pointer">核對接送人員（依職務需要展開）</summary>
+            <div style="margin-top:6px">${escapeHtml(row.pickup_person || "未登記")}</div>
+          </details>
 
         </div>
 
@@ -4012,11 +4003,7 @@ function requestCardHtml(
 
 
   const childName =
-    child
-    ?
-    child.name
-    :
-    "未知幼兒";
+    child ? pilotChildShortName(child.name) : "未知幼兒";
 
 
   const className =
