@@ -1372,6 +1372,18 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 .pilotGuardianRoleControls select {padding:8px;border:1px solid #bdcfbf;border-radius:8px;max-width:200px;}
 .pilotGuardianRoleControls button {white-space:nowrap;}
 
+
+/* 行政人員專用：家長 LINE 綁定進度唯讀清單 */
+#parentBindingOverview{display:none}
+.parentBindingOverviewToolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.parentBindingGroups{display:grid;gap:12px;margin-top:12px}
+.parentBindingSection{border:1px solid #dce7de;border-radius:12px;padding:12px;background:#fafcf9;min-width:0}
+.parentBindingSectionHeader{display:flex;gap:8px;justify-content:space-between;align-items:center;font-size:1rem;font-weight:750;color:#2c5637;margin-bottom:9px}
+.parentBindingRowList{display:grid;gap:7px;max-height:340px;overflow-y:auto;overscroll-behavior:contain}
+.parentBindingRow{padding:10px 12px;border:1px solid #e1e9df;border-radius:9px;background:white;overflow-wrap:anywhere;line-height:1.5}
+.parentBindingRow small{display:block;margin-top:3px;color:#62736b}
+.parentBindingEmpty{color:#66756d;font-size:.95rem;margin:4px 2px}
+
 </style>
 </head>
 
@@ -1485,6 +1497,18 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
   </div>
 
 </div>
+
+
+<!-- 行政人員查看家長 LINE 綁定進度：唯讀，不提供綁定碼或個人 LINE 資訊 -->
+<section id="parentBindingOverview" class="panel" hidden style="display:none" aria-labelledby="parentBindingOverviewTitle">
+  <div id="parentBindingOverviewTitle" class="panelTitle">🔗 試行家長 LINE 綁定進度</div>
+  <p class="helper">僅供行政人員查看。幼兒以暱稱顯示；分為「已完成／待確認」，各區依班級、座號排序。這裡不會修改家長身分或產生新綁定碼。</p>
+  <div class="parentBindingOverviewToolbar">
+    <button class="btn btnBlue" type="button" onclick="loadAdminParentBindingOverview()">↻ 更新家長綁定進度</button>
+    <span id="parentBindingOverviewSummary" class="helper" aria-live="polite">登入後顯示最新家長綁定狀態。</span>
+  </div>
+  <div id="parentBindingOverviewGroups" class="parentBindingGroups"></div>
+</section>
 
 <div class="dashboardHint">
   點選上方卡片，即可查看詳情。
@@ -2118,6 +2142,9 @@ async function validateAdmin(){
 
   currentStaff =
     staff;
+  // 行政管理員與行政查看人員都能查看唯讀家長綁定進度。
+  const bindingOverview=document.getElementById("parentBindingOverview");
+  if(bindingOverview){bindingOverview.hidden=false;bindingOverview.style.display="block";}
   if(staff.role==="admin_viewer"){
     document.body.classList.add("readonlyAdmin");
     const settings=document.getElementById("manageAdminSettingsLink");
@@ -2190,6 +2217,45 @@ async function validateAdmin(){
 ==================================================
 */
 
+
+/*
+ * 家長 LINE 綁定進度：限行政管理員及行政查看人員。
+ * 權限由伺服器 RPC 再次驗證；僅顯示暱稱與不含個人識別碼的綁定狀態。
+ */
+async function loadAdminParentBindingOverview(){
+  if(!currentStaff || !["admin","admin_viewer"].includes(currentStaff.role))return;
+  const status=$("parentBindingOverviewSummary");
+  const holder=$("parentBindingOverviewGroups");
+  if(!status || !holder)return;
+  status.textContent="正在查詢家長綁定進度…";
+  const {data,error}=await supabaseClient.rpc("admin_pilot_guardian_binding_overview");
+  if(error){
+    status.textContent="綁定狀態讀取失敗："+error.message;
+    holder.textContent="";
+    return;
+  }
+  const rows=Array.isArray(data?.rows)?data.rows:[];
+  const complete=row=>row.line_bound===true && !!row.caregiver_role;
+  const completed=rows.filter(complete);
+  const pending=rows.filter(row=>!complete(row));
+  status.textContent="共 "+rows.length+" 位家長名額｜已完成 "+completed.length+" 位｜待確認 "+pending.length+" 位";
+  const renderRows=(entries,title)=>{
+    const blocks=entries.map(row=>{
+      const label=escapeHtml(row.children_label||"未登記幼兒");
+      const slot=escapeHtml(row.family_slot||"?");
+      const role=escapeHtml(row.caregiver_role||"身分尚未確認");
+      const state=complete(row)?"LINE 已綁定，身分已確認":(row.line_bound?"LINE 已綁定，身分待確認":"LINE 尚未綁定");
+      return '<div class="parentBindingRow"><b>'+label+'</b>'
+        +'<small>家長名額 '+slot+'｜'+role+'｜'+escapeHtml(state)+'</small></div>';
+    }).join("");
+    return '<section class="parentBindingSection" aria-label="'+title+'">'
+      +'<div class="parentBindingSectionHeader"><span>'+title+'</span><span>'+entries.length+' 位</span></div>'
+      +'<div class="parentBindingRowList">'+(blocks||'<div class="parentBindingEmpty">目前沒有此狀態的家長。</div>')+'</div></section>';
+  };
+  // 後端已依班級、座號、名額排序；分組後維持原順序。
+  holder.innerHTML=renderRows(completed,"✅ 已完成")+renderRows(pending,"🕒 待確認");
+}
+
 async function refreshAll(){
 
   if(
@@ -2206,6 +2272,7 @@ async function refreshAll(){
   await Promise.all([
     refreshPickupRecords(),
     refreshRequests(),
+    loadAdminParentBindingOverview(),
     ...(currentStaff.role==="admin" ? [refreshStaffManagement(),loadSchoolClosedAdmin()] : [])
   ]);
 
