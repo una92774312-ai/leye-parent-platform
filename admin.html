@@ -1360,6 +1360,11 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 
 
 /* 家長身分管理：小螢幕亦可操作 */
+.pilotGuardianGroup { display:grid; gap:8px; min-width:0; }
+.pilotGuardianGroup + .pilotGuardianGroup { margin-top:8px; }
+.pilotGuardianGroupHeader { display:flex; align-items:center; justify-content:space-between; gap:12px; font-weight:750; font-size:1rem; padding:10px 12px; background:#edf3ec; border-radius:10px; color:#2c5637; }
+.pilotGuardianGroupCount { font-size:.9rem; font-weight:650; white-space:nowrap; }
+.pilotGuardianEmpty { padding:4px 10px; }
 .pilotGuardianRolesTable { display:grid;gap:8px;margin-top:12px;max-height:540px;overflow:auto; }
 .pilotGuardianRoleRow { border:1px solid #e0e8dd;border-radius:12px;padding:12px;background:#fafcf9;display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap; }
 .pilotGuardianRoleNames {flex:1 1 230px;min-width:180px;overflow-wrap:anywhere;line-height:1.55;}
@@ -5265,29 +5270,46 @@ async function loadPilotGuardianRoles(){
     status.textContent="家長名額讀取失敗："+error.message;
     return null;
   }
+  // 後端清單已依班級、座號、家長名額排列；分組時保持相同先後順序。
   const rows=Array.isArray(data?.rows)?data.rows:[];
+  const isCompleted=row=>row.line_bound===true && !!row.caregiver_role;
+  const completedRows=rows.filter(isCompleted);
+  const pendingRows=rows.filter(row=>!isCompleted(row));
   pilotGuardianRolesState=data;
-  status.textContent="共 "+(data?.total||0)+" 位家長；已確認 "+(data?.assigned||0)+" 位。未確認 "+((data?.total||0)-(data?.assigned||0))+" 位。";
+  status.textContent="共 "+rows.length+" 位家長；已完成 "+completedRows.length+" 位，待確認 "+pendingRows.length+" 位（完成＝已綁定 LINE 且已確認身分）。各區依班級／座號排列。";
   if(!rows.length){
     table.innerHTML='<p class="helper">目前沒有可管理的試行家長。</p>';
     return data;
   }
   const options=['','爸爸','媽媽','阿公','阿嬤','其他照顧者'];
-  table.innerHTML=rows.map(row=>{
+  function renderGuardianRow(row){
     const id=escapeHtml(String(row.guardian_id));
     const role=row.caregiver_role||'';
     const childNames=escapeHtml(pilotShortChildNames(row.child_names)||'未登記幼兒');
+    const classSeatLine=escapeHtml(pilotShortChildSummary(row.child_summary)||'');
     const slot=escapeHtml(row.family_slot||'?');
-    const flag=row.line_bound?'／已綁定 LINE':row.has_valid_code?'／有有效綁定碼':'／尚無有效綁定碼';
+    const state=isCompleted(row)?'已完成':(!row.line_bound?'LINE 尚未綁定':'身分待確認');
     return '<div class="pilotGuardianRoleRow">'
-      +'<div class="pilotGuardianRoleNames"><b>'+childNames+'</b><br><small>家長名額 '+slot+escapeHtml(flag)+'</small></div>'
+      +'<div class="pilotGuardianRoleNames"><b>'+childNames+'</b><br>'
+      +'<small>班級／座號：'+classSeatLine+'</small><br>'
+      +'<small>家長名額 '+slot+'／'+escapeHtml(state)+'</small></div>'
       +'<div class="pilotGuardianRoleControls">'
       +'<select id="pilotRole-'+id+'" aria-label="'+childNames+'家長名額'+slot+'身分">'
       +options.map(value=>'<option value="'+escapeHtml(value)+'"'+(value===role?' selected':'')+'>'+escapeHtml(value||'待確認身分')+'</option>').join('')
       +'</select>'
       +'<button type="button" class="btn btnGreen" onclick="savePilotGuardianRole(&quot;'+id+'&quot;)">儲存身分</button>'
       +'</div></div>';
-  }).join('');
+  }
+  function renderGuardianGroup(title,groupRows){
+    return '<section class="pilotGuardianGroup" aria-label="'+title+'">'
+      +'<div class="pilotGuardianGroupHeader"><span>'+title+'</span>'
+      +'<span class="pilotGuardianGroupCount">'+groupRows.length+' 位</span></div>'
+      +(groupRows.length?groupRows.map(renderGuardianRow).join(''):
+        '<p class="helper pilotGuardianEmpty">目前沒有此狀態的家長。</p>')
+      +'</section>';
+  }
+  table.innerHTML=renderGuardianGroup('已完成',completedRows)
+    +renderGuardianGroup('待確認',pendingRows);
   return data;
 }
 async function savePilotGuardianRole(guardianId){
