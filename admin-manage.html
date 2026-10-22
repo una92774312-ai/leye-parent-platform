@@ -1292,6 +1292,15 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 @media(max-width:760px){.panelTitle{font-size:1.02rem}.summaryOwner{font-weight:600}.dashboardHint{font-weight:500}}
 .adminManagePage .summaryGrid,.adminManagePage .dashboardHint{display:none!important}
 
+
+/* 家長身分管理：小螢幕亦可操作 */
+.pilotGuardianRolesTable { display:grid;gap:8px;margin-top:12px;max-height:540px;overflow:auto; }
+.pilotGuardianRoleRow { border:1px solid #e0e8dd;border-radius:12px;padding:12px;background:#fafcf9;display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap; }
+.pilotGuardianRoleNames {flex:1 1 230px;min-width:180px;overflow-wrap:anywhere;line-height:1.55;}
+.pilotGuardianRoleControls {display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.pilotGuardianRoleControls select {padding:8px;border:1px solid #bdcfbf;border-radius:8px;max-width:200px;}
+.pilotGuardianRoleControls button {white-space:nowrap;}
+
 </style>
 </head>
 
@@ -1478,19 +1487,42 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 <!-- ====================================== -->
 
 <div id="parent-binding" class="panel adminSecondaryPanel">
-  <div class="panelTitle">🔗 試行家長 LINE 綁定碼</div>
-  <div class="helper">
-    僅行政人員可產生。每次重新產生都會讓先前「尚未使用」的家長綁定碼立即失效。
-    下載後請逐一私訊對應家長，不可貼在班級群組。
-  </div>
-  <button
-    class="btn btnGreen"
-    type="button"
-    onclick="downloadPilotParentBindingCodes()"
-    style="margin-top:12px"
-  >
-    ⬇️ 重新產生並下載家長綁定清單
+  <div class="panelTitle">🔗 試行家長 LINE 綁定管理</div>
+  <p class="helper">
+    以幼兒姓名區分家長帳號，不保存爸爸、媽媽的真實姓名。
+    同一位家長若對應多位幼兒，仍只需一組專屬連結。
+  </p>
+  <p class="helper" style="color:#8d5b18">
+    ⚠️ 家長名額 1／2 只是資料編號，不能直接推定誰是爸爸、誰是媽媽。
+    請先核對身分，避免把專屬連結發給錯誤的人。
+  </p>
+  <button class="btn btnGreen" type="button" onclick="loadPilotGuardianRoles()" style="margin-top:8px">
+    👨‍👩‍👧 查看並設定家長身分（不會重新產碼）
   </button>
+  <div id="pilotGuardianRolesStatus" class="helper" style="margin-top:10px" aria-live="polite">
+    點上方按鈕讀取幼兒對應的家長名額。
+  </div>
+  <div id="pilotGuardianRolesTable" class="pilotGuardianRolesTable"></div>
+  <hr style="margin:20px 0;border:0;border-top:1px solid #e0e9e1">
+  <div class="panelTitle" style="font-size:1rem">📄 保留目前 10/21 有效的專屬網址</div>
+  <p class="helper">選擇電腦原本下載的 10/21 CSV，系統在行政頁面核對有效綁定碼，重新整理「誰的爸爸／媽媽」標籤。<b>不會重設任何綁定碼。</b></p>
+  <input type="file" id="pilotOriginalCsv" accept=".csv,text/csv" aria-label="選擇既有家長綁定清單 CSV" style="width:100%;max-width:460px;margin-top:8px">
+  <div>
+    <button class="btn btnGreen" type="button" onclick="relabelExistingPilotBindingCodes()" style="margin-top:10px">
+      ⬇️ 使用原綁定碼下載爸爸媽媽專屬清單
+    </button>
+  </div>
+  <hr style="margin:20px 0;border:0;border-top:1px solid #e0e9e1">
+  <details>
+    <summary style="font-weight:650;cursor:pointer">找不到原始 CSV？最後備用：重新產生全新綁定碼</summary>
+    <p class="helper" style="margin-top:10px;color:#9c381f">
+      這個功能會讓先前尚未使用的 58 組綁定碼立即失效。
+      必須先完成全部家長身分核對，而且確認舊連結尚未發給家長後，才能操作。
+    </p>
+    <button class="btn btnGreen" type="button" onclick="downloadPilotParentBindingCodes()" style="margin-top:12px">
+      🔄 重新產生並下載全新家長綁定清單
+    </button>
+  </details>
 </div>
 
 
@@ -3951,26 +3983,12 @@ function renderRequests(){
   }
 
 
-  const displayItems=[];
-  const leaveGroups=new Map();
-  for(const item of list){
-    if(item.request_type!=="leave"){
-      displayItems.push({kind:"single",item});
-      continue;
-    }
-    const key=[item.child_id,item.guardian_id,item.created_at,item.reason||""].join("|");
-    if(!leaveGroups.has(key)){
-      const group={kind:"leave",rows:[]};
-      leaveGroups.set(key,group);
-      displayItems.push(group);
-    }
-    leaveGroups.get(key).rows.push(item);
-  }
-  $("requestList").innerHTML=displayItems.map(entry=>
-    entry.kind==="leave"&&entry.rows.length>1
-      ? multiDayLeaveAdminCard(entry.rows)
-      : requestCardHtml(entry.kind==="leave"?entry.rows[0]:entry.item)
-  ).join("");
+  $("requestList").innerHTML =
+    list
+      .map(
+        requestCardHtml
+      )
+      .join("");
 
 }
 
@@ -3980,29 +3998,6 @@ function renderRequests(){
 申請卡片
 ==================================================
 */
-
-function multiDayLeaveAdminCard(rows){
-  const sorted=[...rows].sort((a,b)=>String(a.request_date).localeCompare(String(b.request_date)));
-  const first=sorted[0];
-  const child=childrenMap[first.child_id];
-  const cls=child?(CLASS_MAP[child.morning_class_id]||child.morning_class_id||"未設定班級"):"未設定班級";
-  const dates=sorted.map(r=>String(r.request_date||""));
-  const count=sorted.length;
-  const statuses=[...new Set(sorted.map(r=>statusText(r.status)))].join("、");
-  const days=sorted.map(r=>escapeHtml(String(r.request_date||""))+"｜"+escapeHtml(statusText(r.status))).join("<br>");
-  return `<div class="requestCard">
-    <div class="requestTop"><div><div class="requestChild">${escapeHtml(child?.name||"未知幼兒")}</div>
-    <div class="requestClass">${escapeHtml(cls)}｜連續請假 ${count} 天</div></div>
-    <span class="badge">${escapeHtml(statuses)}</span></div>
-    <div class="requestBody"><div class="info"><div class="infoLabel">請假期間</div>
-    <div class="infoValue">${escapeHtml(dates[0])} ～ ${escapeHtml(dates[count-1])}</div></div>
-    <div class="info"><div class="infoLabel">申請類型</div><div class="infoValue">請假（合併顯示）</div></div></div>
-    <div class="reasonBox"><b>📝 家長原因</b><div>${escapeHtml(first.reason||"未填寫")}</div></div>
-    <details style="margin-top:10px"><summary style="cursor:pointer;font-weight:600">查看各日紀錄（${count} 天）</summary>
-    <div class="helper" style="padding:10px 0;line-height:2">${days}</div></details>
-    <div class="helper" style="margin-top:10px">由原班老師確認，行政端僅供查看。家長仍可逐日取消請假。</div>
-  </div>`;
-}
 
 function requestCardHtml(
   r
@@ -5106,81 +5101,210 @@ function csvCell(value){
   return text;
 }
 
-async function downloadPilotParentBindingCodes(){
-  if(
-    !confirm(
-      "確定重新產生櫻桃班、蘋果班家長綁定碼？\n\n先前尚未使用的綁定碼會立即失效。"
-    )
-  ){
-    return;
-  }
 
-  try{
-    const {data,error}=await supabaseClient.rpc(
-      "admin_regenerate_pilot_guardian_codes",
-      {p_valid_days:14}
-    );
 
-    if(error) throw error;
+/* ==================================================
+  家長身分：先辨識，再下載原有綁定碼或最後才重新產碼
+================================================== */
 
-    const rows=
-      Array.isArray(data?.rows)
-        ? data.rows
-        : [];
-
-    if(!rows.length){
-      throw new Error("沒有可匯出的試行家長資料。");
-    }
-
-    const lines=[
-      [
-        "幼兒",
-        "家長姓名",
-        "16碼一次性綁定碼",
-        "專屬綁定連結",
-        "有效期限",
-        "發送狀態"
-      ].map(csvCell).join(",")
-    ];
-
-    rows.forEach(row=>{
-      lines.push(
-        [
-          row.child_summary,
-          row.guardian_name,
-          row.binding_code,
-          row.binding_link,
-          formatDateTime(row.expires_at),
-          "尚未發送"
-        ]
-        .map(csvCell)
-        .join(",")
-      );
-    });
-
-    const csv="\uFEFF"+lines.join("\r\n");
-    const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download="樂業附幼_櫻桃蘋果班_家長LINE綁定清單.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),1000);
-
-    alert(
-      "✅ 新的家長綁定碼已產生並下載。\n\n請只把每位家長自己的專屬連結私訊給本人。"
-    );
-  }
-  catch(err){
-    alert(
-      "家長綁定碼產生失敗：\n"+
-      (err?.message||String(err))
-    );
-  }
+// 家長身分及綁定清單專用暱稱。正式姓名仍保留於資料庫與教職員名冊。
+function pilotChildShortName(fullName){
+  const chars=Array.from(String(fullName||"").trim().normalize("NFC"));
+  if(!chars.length)return "";
+  if(chars.length<=2)return chars[chars.length-1].repeat(2);
+  return chars.slice(-2).join("");
+}
+function pilotShortChildNames(names){
+  return String(names||"").split("、").filter(Boolean).map(pilotChildShortName).join("、");
+}
+function pilotShortChildSummary(summary){
+  return String(summary||"").split("／").map(segment=>{
+    const space=segment.lastIndexOf(" ");
+    return space<0?segment:segment.slice(0,space+1)+pilotChildShortName(segment.slice(space+1));
+  }).join("／");
+}
+function pilotShortGuardianLabel(row){
+  if(!row || !row.caregiver_role)return row?.guardian_label || "身分待確認（請勿發送）";
+  const names=String(row.child_summary||"").split("／")
+    .map(segment=>segment.trim().split(/\s+/).pop())
+    .filter(Boolean).map(pilotChildShortName).join("、");
+  return names?names+"的"+row.caregiver_role:"身分待確認（請勿發送）";
 }
 
+let pilotGuardianRolesState=null;
+async function loadPilotGuardianRoles(){
+  const status=$("pilotGuardianRolesStatus");
+  const table=$("pilotGuardianRolesTable");
+  if(!currentStaff || currentStaff.role!=="admin"){
+    if(status)status.textContent="請以行政管理員帳號登入。";
+    return null;
+  }
+  status.textContent="正在查詢家長名額，這個操作不會產生新綁定碼……";
+  const {data,error}=await supabaseClient.rpc("admin_pilot_guardian_roles");
+  if(error){
+    status.textContent="家長名額讀取失敗："+error.message;
+    return null;
+  }
+  const rows=Array.isArray(data?.rows)?data.rows:[];
+  pilotGuardianRolesState=data;
+  status.textContent="共 "+(data?.total||0)+" 位家長；已確認 "+(data?.assigned||0)+" 位。未確認 "+((data?.total||0)-(data?.assigned||0))+" 位。";
+  if(!rows.length){
+    table.innerHTML='<p class="helper">目前沒有可管理的試行家長。</p>';
+    return data;
+  }
+  const options=['','爸爸','媽媽','阿公','阿嬤','其他照顧者'];
+  table.innerHTML=rows.map(row=>{
+    const id=escapeHtml(String(row.guardian_id));
+    const role=row.caregiver_role||'';
+    const childNames=escapeHtml(pilotShortChildNames(row.child_names)||'未登記幼兒');
+    const slot=escapeHtml(row.family_slot||'?');
+    const flag=row.line_bound?'／已綁定 LINE':row.has_valid_code?'／有有效綁定碼':'／尚無有效綁定碼';
+    return '<div class="pilotGuardianRoleRow">'
+      +'<div class="pilotGuardianRoleNames"><b>'+childNames+'</b><br><small>家長名額 '+slot+escapeHtml(flag)+'</small></div>'
+      +'<div class="pilotGuardianRoleControls">'
+      +'<select id="pilotRole-'+id+'" aria-label="'+childNames+'家長名額'+slot+'身分">'
+      +options.map(value=>'<option value="'+escapeHtml(value)+'"'+(value===role?' selected':'')+'>'+escapeHtml(value||'待確認身分')+'</option>').join('')
+      +'</select>'
+      +'<button type="button" class="btn btnGreen" onclick="savePilotGuardianRole(&quot;'+id+'&quot;)">儲存身分</button>'
+      +'</div></div>';
+  }).join('');
+  return data;
+}
+async function savePilotGuardianRole(guardianId){
+  const select=$("pilotRole-"+guardianId);
+  if(!select)return;
+  const role=select.value;
+  const item=pilotGuardianRolesState?.rows?.find(row=>row.guardian_id===guardianId);
+  if(!item)return;
+  const label=(pilotShortChildNames(item.child_names)||"幼兒")+"的"+(role||"家長（待確認）");
+  if(!confirm("確定將此帳號設定為「"+label+"」？\n\n設定身分不會改變既有綁定碼。"))return;
+  select.disabled=true;
+  const {error}=await supabaseClient.rpc("admin_set_pilot_guardian_role",{p_guardian_id:guardianId,p_role:role||null});
+  if(error){
+    alert("設定失敗："+error.message);
+    select.disabled=false;
+    return;
+  }
+  await loadPilotGuardianRoles();
+}
+async function requirePilotRolesReady(){
+  const info=await loadPilotGuardianRoles();
+  if(!info)return false;
+  if(!info.total || info.assigned!==info.total){
+    alert("尚有 "+((info.total||0)-(info.assigned||0))+" 位家長身分未確認。\n請先為每個名額選擇爸爸、媽媽或其他照顧者，以免專屬連結發錯人。");
+    return false;
+  }
+  return true;
+}
+function parsePilotCsvRecords(content){
+  const records=[];let fields=[];let field='';let quoted=false;
+  content=String(content||'').replace(/^\uFEFF/,'');
+  for(let i=0;i<content.length;i++){
+    const ch=content[i];
+    if(ch==='"'){
+      if(quoted&&content[i+1]==='"'){field+='"';i++;}
+      else quoted=!quoted;
+    }else if(ch===','&&!quoted){
+      fields.push(field);field='';
+    }else if((ch==='\n'||ch==='\r')&&!quoted){
+      if(ch==='\r'&&content[i+1]==='\n')i++;
+      fields.push(field);field='';
+      if(fields.some(v=>v.trim()!==''))records.push(fields);
+      fields=[];
+    }else field+=ch;
+  }
+  if(quoted)throw new Error("CSV 格式錯誤：引號沒有結束。");
+  fields.push(field);
+  if(fields.some(v=>v.trim()!==''))records.push(fields);
+  return records;
+}
+function downloadPilotLabeledCsv(rows,filename){
+  const header=["幼兒","家長身分","16碼一次性綁定碼","專屬綁定連結","有效期限","發送狀態"];
+  const records=[header.map(csvCell).join(",")];
+  for(const row of rows){
+    const code=String(row.binding_code||'').toUpperCase();
+    records.push([
+      pilotShortChildSummary(row.child_summary)||'',
+      pilotShortGuardianLabel(row)||'',
+      code,
+      "https://liff.line.me/2011537895-QkIp9Lh8/#bind="+encodeURIComponent(code),
+      formatDateTime(row.expires_at),
+      "尚未發送"
+    ].map(csvCell).join(","));
+  }
+  const csv="\uFEFF"+records.join("\r\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+async function matchAndVerifyPilotCodes(codes){
+  const {data,error}=await supabaseClient.rpc("admin_match_pilot_binding_codes",{p_codes:codes});
+  if(error)throw error;
+  const rows=Array.isArray(data?.rows)?data.rows:[];
+  if(rows.length!==new Set(codes).size){
+    throw new Error("有部分綁定碼已失效、重複，或不屬於目前開放的家長名額。有效匹配："+rows.length+"/"+new Set(codes).size+"。");
+  }
+  if(rows.some(r=>!r.caregiver_role)){
+    throw new Error("仍有家長身分未確認，請先設定爸爸／媽媽身分。");
+  }
+  if(new Set(rows.map(r=>r.guardian_id)).size!==rows.length){
+    throw new Error("清單存在同一位家長的重複帳號紀錄，請檢查原始 CSV。");
+  }
+  return rows;
+}
+async function relabelExistingPilotBindingCodes(){
+  if(!await requirePilotRolesReady())return;
+  const file=$("pilotOriginalCsv")?.files?.[0];
+  if(!file){alert("請先選擇電腦中 10 月 21 日下載的家長綁定 CSV 檔。");return;}
+  if(file.size>2500000){alert("CSV 檔案過大，請確認是否選對檔案。");return;}
+  try{
+    const records=parsePilotCsvRecords(await file.text());
+    if(!records.length)throw new Error("檔案沒有資料。");
+    const codeColumn=records[0].findIndex(v=>v.includes("16碼一次性綁定碼"));
+    if(codeColumn<0)throw new Error("找不到「16碼一次性綁定碼」欄位，請使用行政後台產生的原始 CSV。");
+    const codes=records.slice(1).map(row=>String(row[codeColumn]||'').trim().toUpperCase()).filter(Boolean);
+    if(codes.length!==(pilotGuardianRolesState?.total||0)){
+      throw new Error("清單共 "+codes.length+" 組；目前應有 "+pilotGuardianRolesState.total+" 位。請先核對檔案是否完整。");
+    }
+    if(codes.some(code=>!/^[A-Z0-9]{16}$/.test(code)))throw new Error("發現格式不正確的綁定碼。");
+    const rows=await matchAndVerifyPilotCodes(codes);
+    downloadPilotLabeledCsv(rows,"樂業附幼_爸爸媽媽專屬綁定清單_沿用原碼.csv");
+    alert("✅ 已重新標示 "+rows.length+" 位家長身分，舊綁定碼未改變。\n請逐一私訊給正確的爸爸、媽媽，不要分享到班級群組。");
+  }catch(e){alert("無法重新標示既有清單：\n"+(e?.message||String(e)));}
+}
+
+async function downloadPilotParentBindingCodes(){
+  if(!await requirePilotRolesReady())return;
+  if(!confirm("最後確認：目前有效的家長專屬連結將全部失效。\n\n如果你有 10/21 的原 CSV，請優先選用「沿用原碼」。\n\n確定原檔已遺失、還沒將原連結發送給家長，仍要重新產生嗎？"))return;
+  let originalRows=[];
+  try{
+    const {data,error}=await supabaseClient.rpc("admin_regenerate_pilot_guardian_codes",{p_valid_days:14});
+    if(error)throw error;
+    originalRows=Array.isArray(data?.rows)?data.rows:[];
+    if(!originalRows.length)throw new Error("沒有產生任何家長綁定碼。");
+    const codes=originalRows.map(r=>String(r.binding_code||'').toUpperCase());
+    const rows=await matchAndVerifyPilotCodes(codes);
+    downloadPilotLabeledCsv(rows,"樂業附幼_爸爸媽媽專屬綁定清單_新碼.csv");
+    alert("✅ 已重新產生 "+rows.length+" 組新綁定碼，並下載含正確身分的 CSV。\n舊版未使用的綁定碼已失效，請勿再傳送舊檔案。");
+    await loadPilotGuardianRoles();
+  }catch(e){
+    if(originalRows.length){
+      // 已產碼成功但重新標示失敗，保留明碼備份，避免綁定碼無法找回。
+      downloadPilotLabeledCsv(originalRows.map(r=>({
+        binding_code:r.binding_code,
+        child_summary:r.child_summary,
+        guardian_label:"待核對身分（不可直接發送）",
+        expires_at:r.expires_at
+      })),"樂業附幼_新碼緊急備份_尚未核對勿發送.csv");
+      alert("⚠️ 已產生新碼，但身分重新標示出錯，已下載緊急備份清單。\n請勿對家長發送，先回報錯誤："+(e?.message||String(e)));
+    }else{
+      alert("未能完成綁定碼產生："+(e?.message||String(e)));
+    }
+  }
+}
 
 async function exportMonthlyCareReport(){
   const year=Number($("monthlyReportYear")?.value);

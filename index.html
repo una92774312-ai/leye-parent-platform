@@ -3252,6 +3252,16 @@ async function loadGuardianAndChildren(){
 
 }
 
+
+// 幼兒對外暱稱：完整姓名至少三字時取末兩字；雙字姓名重複名字末字。
+// 僅用於畫面及通知清單，完整姓名與幼兒 UUID 均維持原值。
+function parentChildShortName(fullName){
+  const chars=Array.from(String(fullName||"").trim().normalize("NFC"));
+  if(!chars.length)return "";
+  if(chars.length<=2)return chars[chars.length-1].repeat(2);
+  return chars.slice(-2).join("");
+}
+
 function renderGuardianIdentityCard(){
   const box=$("guardianIdentityCard");
   if(!box)return;
@@ -3260,7 +3270,7 @@ function renderGuardianIdentityCard(){
     return;
   }
   box.classList.remove("hidden");
-  const childNames=children.map(c=>c.name).filter(Boolean).join("、");
+  const childNames=children.map(c=>parentChildShortName(c.name)).filter(Boolean).join("、");
   $("guardianIdentityText").textContent =
     "您的身分："+childNames+"的"+(guardianCaregiverRole || "家長（尚未確認稱謂）");
   const editing=!guardianCaregiverRole || guardianRoleEditing;
@@ -3286,7 +3296,7 @@ async function saveGuardianCaregiverRole(){
     alert("請先選擇您與孩子的關係。");
     return;
   }
-  const confirmText=children.map(c=>c.name).join("、")+"的"+newRole;
+  const confirmText=children.map(c=>parentChildShortName(c.name)).join("、")+"的"+newRole;
   if(!confirm("確定您的身分為「"+confirmText+"」？"))return;
   const {data,error}=await supabaseClient.rpc("guardian_set_caregiver_role",{p_role:newRole});
   if(error){
@@ -3317,7 +3327,7 @@ function renderChildrenEverywhere(){
     children
       .map(
         c =>
-        `${c.className} ${c.name}`
+        `${c.className} ${parentChildShortName(c.name)}`
       )
       .join("、")
 
@@ -3420,7 +3430,7 @@ function renderPickerList(
             <div>
 
               <div class="childName">
-                ${escapeHtml(c.name)}
+                ${escapeHtml(parentChildShortName(c.name))}
               </div>
 
               <div class="childClass">
@@ -3506,7 +3516,7 @@ function childrenText(list){
   return list
     .map(
       c =>
-      `${c.className} ${c.name}`
+      `${c.className} ${parentChildShortName(c.name)}`
     )
     .join("、");
 
@@ -3519,7 +3529,7 @@ function requestStatusInfo(status){const map={submitted:{text:"待本園確認",
 function requestDateText(value){if(!value)return "-";const parts=String(value).split("-");return parts.length===3?parts.join(" / "):String(value);}
 function requestShortTime(value){return value?String(value).slice(0,5):"";}
 function requestTimeText(row){const start=requestShortTime(row.requested_start_time),end=requestShortTime(row.requested_end_time);if(!start&&!end)return row.request_type==="leave"?"整日":"-";return (start||"-")+"－"+(end||"-");}
-function requestChildName(childId){const child=children.find(item=>item.id===childId);return child?child.className+"・"+child.name:"幼兒";}
+function requestChildName(childId){const child=children.find(item=>item.id===childId);return child?child.className+"・"+parentChildShortName(child.name):"幼兒";}
 function requestAftercareName(code){return code?(AFTERCARE_CLASS_MAP[code]||code):"";}
 function requestCreatedText(value){if(!value)return "";const d=new Date(value);if(Number.isNaN(d.getTime()))return "";return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0")+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
 async function cancelLeaveRequest(requestId){
@@ -4985,7 +4995,7 @@ async function submitExtended(){
           )
           .map(
             child =>
-            child.name
+            parentChildShortName(child.name)
           );
 
       alert(
@@ -5399,7 +5409,7 @@ async function submitTemporary(){
           )
           .map(
             child =>
-            child.name
+            parentChildShortName(child.name)
           );
 
       alert(
