@@ -3019,9 +3019,7 @@ function renderPickupCard(
 
 
   const childName =
-    child.name
-    ||
-    "未知幼兒";
+    child.name ? pilotChildShortName(child.name) : "未知幼兒";
 
 
   const className =
@@ -3321,17 +3319,10 @@ function renderPickupCard(
 
         <div class="info">
 
-          <div class="infoLabel">
-            接送人員
-          </div>
-
-          <div class="infoValue">
-            ${escapeHtml(
-              row.pickup_person
-              ||
-              "—"
-            )}
-          </div>
+          <div class="infoLabel">接送人員</div>
+          <details class="infoValue"><summary style="cursor:pointer">核對接送人員（依職務需要展開）</summary>
+            <div style="margin-top:6px">${escapeHtml(row.pickup_person || "未登記")}</div>
+          </details>
 
         </div>
 
@@ -4094,11 +4085,7 @@ function requestCardHtml(
 
 
   const childName =
-    child
-    ?
-    child.name
-    :
-    "未知幼兒";
+    child ? pilotChildShortName(child.name) : "未知幼兒";
 
 
   const className =
@@ -8048,7 +8035,7 @@ async function refreshDailyCareFees(){
   for(const x of items){
     const el=document.createElement("div");el.className="staffRow";
     const line=document.createElement("div");line.style.fontWeight="bold";
-    line.textContent=(x.morning_class||"未分班")+"｜"+x.child_name+"｜"+(x.type==="temporary"?"臨托":"延托");
+    line.textContent=(x.morning_class||"未分班")+"｜"+pilotChildShortName(x.child_name)+"｜"+(x.type==="temporary"?"臨托":"延托");
     const state=document.createElement("div");state.className="helper";
     const label=x.fee_status==="collected"?"✅ 已收款 NT$"+x.collected_amount:x.fee_status==="refund_required"?"⚠️ 待退款":x.status==="approved"?"⏳ 待收 NT$"+x.expected_amount:"申請狀態："+x.status;
     state.textContent=label+(x.collected_at?"｜"+new Date(x.collected_at).toLocaleString("zh-TW",{timeZone:"Asia/Taipei"}):"");

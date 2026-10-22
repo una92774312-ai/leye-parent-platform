@@ -1356,12 +1356,12 @@
                 <div class="historyBody">
                   <div class="historyForm">
                     <div class="historyField full">
-                      <label for="historyKeyword">幼兒姓名</label>
+                      <label for="historyKeyword">幼兒暱稱</label>
                       <input
                         id="historyKeyword"
                         type="search"
                         maxlength="50"
-                        placeholder="輸入姓名搜尋；留白則顯示全部"
+                        placeholder="輸入暱稱搜尋；留白則顯示全部"
                       >
                     </div>
 
@@ -1395,7 +1395,7 @@
                   </div>
 
                   <div id="historyStatus" class="status show info">
-                    可依姓名、日期與類型查詢。
+                    可依暱稱、日期與類型查詢。
                   </div>
 
                   <div id="historyMeta" class="historyMeta"></div>
@@ -1877,7 +1877,7 @@ async function actOnTeacherItem(
       : "確認收到";
 
   const ok = confirm(
-    `${item?.child_name || "這位學生"}：確定要${actionText}嗎？`
+    `${staffChildNickname(item?.child_name || "") || "這位幼兒"}：確定要${actionText}嗎？`
   );
 
   if(!ok){
@@ -2085,7 +2085,7 @@ function rosterChildHtml(
     <div class="rosterChildRow ${isLeave?"leavePriority":""}">
       <div>
         <div class="rosterChildName">
-          ${escapeHtmlText(seat+(child?.name||"未命名幼兒"))}
+          ${escapeHtmlText(seat+staffChildNickname(child?.name))}
         </div>
         <div class="rosterChildMeta">
           ${escapeHtmlText(meta.join("｜"))}
@@ -2435,7 +2435,7 @@ async function markCareFeeCollected(
   detail={}
 ){
   const childName=
-    detail?.childName || "這位幼兒";
+    staffChildNickname(detail?.childName);
 
   const date=
     detail?.date || "今日";
@@ -2724,7 +2724,7 @@ function appendCareFeeControls(
 async function completeTeacherPickup(item, btn){
   const recordId = item?.source_id || item?.id;
   if(!recordId || item?.source_type !== "pickup") return;
-  if(!confirm(`確定 ${item?.child_name || "這位幼兒"} 已實際離園？此操作會記錄時間及計算可能的逾時費用。`)) return;
+  if(!confirm(`確定 ${staffChildNickname(item?.child_name)} 已實際離園？此操作會記錄時間及計算可能的逾時費用。`)) return;
   btn.disabled = true;
   try{
     const {data,error} = await teacherSupabase.rpc("teacher_complete_pickup",{p_pickup_record_id:recordId});
@@ -2917,8 +2917,7 @@ function makeStudentItem(
     "studentName";
 
   name.textContent =
-    item?.child_name ||
-    "未命名幼兒";
+    staffChildNickname(item?.child_name);
 
   const className =
     document.createElement("div");
@@ -3071,7 +3070,7 @@ function makeStudentItem(
 
     if(item?.pickup_person){
       rows.push(
-        `接送者：${item.pickup_person}`
+        `接送者：已登記（請依現場接送規定核對）`
       );
     }
 
@@ -3172,7 +3171,7 @@ function makeGroupedLeaveItem(items){
  const first=items[0],last=items[items.length-1];
  const card=document.createElement("div");card.className="studentItem";
  const top=document.createElement("div");top.className="studentTop";
- const name=document.createElement("div");name.className="studentName";name.textContent=first.child_name||"幼兒";
+ const name=document.createElement("div");name.className="studentName";name.textContent=staffChildNickname(first.child_name);
  const meta=document.createElement("div");meta.className="studentClass";
  meta.textContent=(first.morning_class_name||first.morning_class_id||"原班")+"｜"+formatDateText(first.request_date)+" ～ "+formatDateText(last.request_date);
  const left=document.createElement("div");left.style.flex="1";left.append(name,meta);
@@ -3597,7 +3596,7 @@ function historyCardHtml(item){
       <div class="historyCardTop">
         <div>
           <div class="historyCardName">
-            ${escapeHtmlText(item?.child_name || "未命名幼兒")}
+            ${escapeHtmlText(staffChildNickname(item?.child_name))}
           </div>
           <div class="historyCardSub">
             ${escapeHtmlText(item?.morning_class_name || item?.morning_class_id || "")}
@@ -3618,6 +3617,15 @@ function historyCardHtml(item){
   `;
 }
 
+// 幼兒個資顯示原則：頁面以暱稱呈現，正式姓名留在原有資料庫。
+// 不修改原始資料，也不修改後端判斷所需的幼兒 UUID。
+function staffChildNickname(fullName){
+  const chars=Array.from(String(fullName??"").trim().normalize("NFC"));
+  if(!chars.length)return "幼兒";
+  if(chars.length<=2)return chars[chars.length-1].repeat(2);
+  return chars.slice(-2).join("");
+}
+
 function escapeHtmlText(value){
   return String(value ?? "")
     .replaceAll("&","&amp;")
@@ -3632,8 +3640,10 @@ async function searchTeacherHistory(){
   const results=el("historyResults");
   const meta=el("historyMeta");
 
-  const keyword=
-    el("historyKeyword").value.trim();
+  const typedNickname=el("historyKeyword").value.trim();
+  // 雙字暱稱（例如「炎炎」）可能來自單名「張炎」，資料庫以「炎」搜尋。
+  const keyword=Array.from(typedNickname).length===2 && Array.from(typedNickname)[0]===Array.from(typedNickname)[1]
+    ? Array.from(typedNickname)[0] : typedNickname;
 
   const start=
     el("historyStart").value;
