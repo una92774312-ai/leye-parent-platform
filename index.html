@@ -1429,6 +1429,23 @@ details.rules summary{
 .guardianRolePicker select { width:100%; border:1px solid #cfd9cd; border-radius:10px; padding:12px; font-size:1rem; color:#334837; background:white; }
 #guardianRoleEdit { margin-top:8px; font-size:.83rem; }
 
+
+/* 未開放班級的手足可查看姓名與班級，但不得勾選送出申請。 */
+.childPickReadonly,.childPickReadonly:hover{
+  background:#f6f6f3;
+  border-color:#d9d9d2;
+  cursor:default;
+}
+.childPickReadonly:active{transform:none}
+.childPickReadonly input{cursor:not-allowed}
+.childReadOnlyNote{
+  margin-top:5px;
+  color:#887354;
+  font-size:.79rem;
+  font-weight:700;
+  line-height:1.5;
+}
+
 </style>
 </head>
 
@@ -3363,90 +3380,38 @@ function renderChildrenEverywhere(){
 }
 
 
-function renderPickerList(
-  targetId,
-  prefix
-){
-
-  const box =
-    $(targetId);
-
-  if(
-    !supabaseUser
-  ){
-
-    box.innerHTML =
-
-    `
-      <div class="empty">
-        尚未登入家長帳號。
-      </div>
-    `;
-
-    return;
-
-  }
-
-  if(
-    !children.length
-  ){
-
-    box.innerHTML =
-
-    `
-      <div class="empty">
-        此家長帳號目前沒有已綁定幼兒。<br>
-        請洽本園確認家長與幼兒的綁定資料。
-      </div>
-    `;
-
-    return;
-
-  }
-
-  box.innerHTML =
-
-    children
-      .map(
-
-        c =>
-
-        `
-          <label class="childPick">
-
-            <input
-              type="checkbox"
-              name="${prefix}Child"
-              value="${c.id}"
-              ${
-                children.length === 1
-                ?
-                "checked"
-                :
-                ""
-              }
-            >
-
-            <div>
-
-              <div class="childName">
-                ${escapeHtml(parentChildShortName(c.name))}
-              </div>
-
-              <div class="childClass">
-                原班級：${escapeHtml(c.className)}
-              </div>
-
-            </div>
-
-          </label>
-        `
-
-      )
-      .join("");
-
+// 櫻桃、蘋果試行期間，其他班級手足僅展示，不列入線上申請。
+// 真正的送出權限同步由資料庫的 guardian_child_rollout_enabled 限制。
+function isPilotApplicationChild(child){
+  return child && (child.classId === "C01" || child.classId === "C02");
 }
 
+function renderPickerList(targetId,prefix){
+  const box=$(targetId);
+  if(!supabaseUser){
+    box.innerHTML='<div class="empty">尚未登入家長帳號。</div>';
+    return;
+  }
+  if(!children.length){
+    box.innerHTML='<div class="empty">此家長帳號目前沒有已綁定幼兒。請洽本園確認家長與幼兒的綁定資料。</div>';
+    return;
+  }
+  const pilotChildrenCount=children.filter(isPilotApplicationChild).length;
+  box.innerHTML=children.map(c=>{
+    const canApply=isPilotApplicationChild(c);
+    return `
+      <label class="childPick ${canApply ? '' : 'childPickReadonly'}">
+        <input type="checkbox" name="${prefix}Child" value="${escapeHtml(c.id)}"
+          ${canApply ? '' : 'disabled'}
+          ${canApply && pilotChildrenCount === 1 ? 'checked' : ''}>
+        <div>
+          <div class="childName">${escapeHtml(parentChildShortName(c.name))}</div>
+          <div class="childClass">原班級：${escapeHtml(c.className)}</div>
+          ${canApply ? '' : '<div class="childReadOnlyNote">🔒 已連結的手足｜此班尚未開放線上申請</div>'}
+        </div>
+      </label>`;
+  }).join('');
+}
 
 function selectedChildren(prefix){
 
