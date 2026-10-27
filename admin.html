@@ -2865,6 +2865,47 @@ async function refreshPickupRecords(){
   }
 
 
+  // 行政手動記點：獨立於實際接送、逾時收費與完成狀態。
+  // 未提供事由的記點，僅顯示「待補」，不得解讀成已確認接送時間。
+  const {
+    data:manualPointRows,
+    error:manualPointError
+  } = await supabaseClient
+      .from("pickup_manual_unexcused_points")
+      .select("child_id,violation_date,points,reason,parent_notice_status,children(name,morning_class_id)")
+      .eq("status","active")
+      .lte("violation_date", targetDate);
+
+  if(manualPointError){
+    console.warn("讀取行政記點失敗：", manualPointError.message);
+  }
+  const manualPoints = manualPointRows || [];
+  if(!manualPointError){
+    manualPoints.forEach(point => {
+      unexcusedCountMap[point.child_id] =
+        (unexcusedCountMap[point.child_id] || 0) + Number(point.points || 0);
+    });
+  }
+  const manualToday = manualPoints.filter(point => point.violation_date === targetDate);
+  const manualTodayHtml = manualToday.length
+    ? `<div style="margin:0 0 14px;padding:12px;border:1px solid #efd5a0;border-radius:12px;background:#fffaf0">
+        <div style="font-weight:800;margin-bottom:8px">行政人工記點（與實際接送、收費分開記錄）</div>
+        ${manualToday.map(point => {
+          const child = point.children || {};
+          const name = child.name ? pilotChildShortName(child.name) : '幼兒';
+          const reason = point.reason || '原因待補登';
+          const notice = point.parent_notice_status === 'sent' ? '已通知家長' : '尚未通知家長';
+          const cumulative = unexcusedCountMap[point.child_id] || Number(point.points || 1);
+          return `<div style="padding:8px 0;border-top:1px solid #f0e7d1;line-height:1.6">
+            <strong>${escapeHtml(name)}</strong>｜${escapeHtml(point.violation_date)}｜
+            人工記點 ${Number(point.points || 1)} 次（目前累計 ${cumulative}／3 次）<br>
+            <small>事由：${escapeHtml(reason)}；${escapeHtml(notice)}。</small>
+          </div>`;
+        }).join('')}
+      </div>`
+    : '';
+
+
   let pickupChildrenMap =
     {};
 
@@ -3022,6 +3063,11 @@ async function refreshPickupRecords(){
     !pickupRecords.length
   ){
 
+    if(manualTodayHtml){
+      $("pickupList").innerHTML = manualTodayHtml;
+      return;
+    }
+
     $("pickupList").innerHTML =
       `
         <div class="empty">
@@ -3037,6 +3083,7 @@ async function refreshPickupRecords(){
 
 
   $("pickupList").innerHTML =
+    manualTodayHtml +
     pickupRecords
       .map(
         row =>
@@ -3234,9 +3281,7 @@ function renderPickupCard(
 
 
   if(
-    row.pickup_mode
-    ===
-    "late_notice"
+    ["late_notice","early"].includes(row.pickup_mode)
   ){
 
     lateNoticeHtml =
@@ -3244,7 +3289,7 @@ function renderPickupCard(
         <div class="info">
 
           <div class="infoLabel">
-            預計抵達
+            ${row.pickup_mode === "early" ? "預計提早接回" : "預計晚到抵達"}
           </div>
 
           <div class="infoValue">
@@ -3261,7 +3306,7 @@ function renderPickupCard(
         <div class="info">
 
           <div class="infoLabel">
-            晚到原因
+            ${row.pickup_mode === "early" ? "提早原因" : "晚到原因"}
           </div>
 
           <div class="infoValue">
