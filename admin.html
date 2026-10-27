@@ -808,7 +808,7 @@ button{
 
 .scheduleSummary{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(5,minmax(0,1fr));
   gap:8px;
   margin-top:12px;
 }
@@ -1383,6 +1383,52 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 .parentBindingRow{padding:10px 12px;border:1px solid #e1e9df;border-radius:9px;background:white;overflow-wrap:anywhere;line-height:1.5}
 .parentBindingRow small{display:block;margin-top:3px;color:#62736b}
 .parentBindingEmpty{color:#66756d;font-size:.95rem;margin:4px 2px}
+
+
+/* Excel 原貌式的月班表預覽：日期固定，六班並排，儲存格直接顯示姓名。 */
+.previewBody.scheduleSheetMode{max-height:none;overflow:visible}
+.scheduleSheetToolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 12px;border-top:1px solid var(--line);background:#fff}
+.scheduleSheetToolbarTitle{font-size:.92rem;font-weight:900;color:var(--text)}
+.scheduleSheetToolbarHelp{font-size:.78rem;color:var(--muted);line-height:1.55}
+.scheduleSheetFilter{border:1px solid #bfd8ee;color:#125a95;background:#f1f8ff;border-radius:9px;font-weight:800;padding:8px 12px;cursor:pointer}
+.scheduleSheetFilter[aria-pressed="true"]{background:#1976d2;color:#fff;border-color:#1976d2}
+.scheduleSheetLegend{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:9px 12px;font-size:.78rem;color:#546e7a;background:#fbfcfd;border-top:1px solid #e5ebee}
+.scheduleLegendDot{width:11px;height:11px;border-radius:3px;display:inline-block;vertical-align:-1px;margin-right:3px;border:1px solid rgba(0,0,0,.08)}
+.scheduleSheetFrame{max-height:575px;overflow:auto;overscroll-behavior:contain;border-top:1px solid var(--line);background:#fff}
+.scheduleExcelTable{border-spacing:0;border-collapse:separate;width:max-content;min-width:100%;table-layout:fixed;font-size:.81rem;line-height:1.5;color:#273640}
+.scheduleExcelTable th,.scheduleExcelTable td{border-right:1px solid #dce5e7;border-bottom:1px solid #dce5e7;text-align:center;padding:7px 6px;vertical-align:middle}
+.scheduleExcelTable thead th{background:#e8f1f7;color:#244d64;font-weight:900;white-space:nowrap;position:sticky;z-index:3}
+.scheduleExcelTable thead tr:first-child th{top:0;height:40px}
+.scheduleExcelTable thead tr:nth-child(2) th{top:40px;height:32px;background:#f1f6fa;color:#607988;font-size:.74rem}
+.scheduleExcelTable th.scheduleDateHeader{left:0;z-index:6;width:97px;min-width:97px}
+.scheduleExcelTable th.scheduleWeekHeader{left:97px;z-index:6;width:47px;min-width:47px}
+.scheduleExcelTable td.scheduleDateCell{position:sticky;left:0;z-index:2;background:#f7fafb;font-weight:900;min-width:97px;white-space:nowrap}
+.scheduleExcelTable td.scheduleWeekCell{position:sticky;left:97px;z-index:2;background:#f7fafb;font-weight:800;width:47px;min-width:47px}
+.scheduleExcelTable td.scheduleTeacherCell{min-width:110px;width:110px;max-width:110px;white-space:normal;word-break:break-word;background:#fff}
+.scheduleExcelTable tbody tr:nth-child(even) td.scheduleTeacherCell{background:#fcfdfd}
+.scheduleExcelTable tbody tr:hover td{box-shadow:inset 0 0 0 9999px rgba(25,118,210,.035)}
+.scheduleExcelTable td.scheduleTeacherCell.isSupport{background:#edf6ff !important}
+.scheduleExcelTable td.scheduleTeacherCell.isUnmatched{background:#fff4d7 !important}
+.scheduleExcelTable td.scheduleTeacherCell.isProblem{background:#ffe7e7 !important}
+.scheduleExcelTable td.scheduleTeacherCell.isBlank{color:#bdc6cb}
+.scheduleExcelTable td.scheduleTeacherCell.isHoliday{background:#f3f5f6 !important;color:#768690}
+.scheduleTeacherName{font-weight:750;color:#273640}
+.scheduleTeacherMeta{font-size:.68rem;font-weight:800;margin-top:3px;color:#206798}
+.scheduleExcelTable .isUnmatched .scheduleTeacherMeta{color:#9b6400}
+.scheduleExcelTable .isProblem .scheduleTeacherMeta{color:#b71c1c}
+.scheduleSheetEmpty{padding:20px;color:var(--muted);text-align:center}
+.scheduleSheetDetails{border-top:1px solid var(--line);background:#fff;padding:10px 14px;font-size:.83rem}
+.scheduleSheetDetails summary{cursor:pointer;font-weight:850;color:#455d69;line-height:1.7}
+.scheduleSheetDiffList{max-height:220px;overflow:auto;margin-top:9px;border:1px solid #e6edf0;border-radius:7px;padding:7px 9px}
+.scheduleSheetDiffItem{padding:5px 2px;border-bottom:1px solid #edf1f3;line-height:1.5}
+.scheduleSheetDiffItem:last-child{border-bottom:0}
+.scheduleSheetAlert{padding:9px 12px;background:#fffaf0;border-top:1px solid #f5e5ba;font-size:.82rem;line-height:1.7;color:#725400}
+@media(max-width:760px){
+  .scheduleSheetFrame{max-height:520px}
+  .scheduleExcelTable{font-size:.8rem}
+  .scheduleExcelTable td.scheduleTeacherCell{min-width:110px}
+  .scheduleSheetToolbar{align-items:flex-start}
+}
 
 </style>
 </head>
@@ -6979,6 +7025,129 @@ function scheduleRowKey(
 }
 
 
+
+/* 用 Excel 原始欄位呈現整月份，不將每個老師拆成一列。 */
+let scheduleOnlyIssues = false;
+
+function setSchedulePreviewIssuesOnly(only){
+  scheduleOnlyIssues = Boolean(only);
+  const body = $("schedulePreviewBody");
+  if(!body) return;
+  body.querySelectorAll("tr[data-schedule-day]").forEach(tr => {
+    tr.hidden = scheduleOnlyIssues && tr.dataset.hasIssue !== "1";
+  });
+  const button = $("scheduleOnlyIssuesBtn");
+  if(button){
+    button.textContent = scheduleOnlyIssues ? "顯示整月" : "只看需要核對的日期";
+    button.setAttribute("aria-pressed", String(scheduleOnlyIssues));
+  }
+  const empty = $("scheduleFilteredEmpty");
+  if(empty){
+    const shown = Array.from(body.querySelectorAll("tr[data-schedule-day]")).some(tr => !tr.hidden);
+    empty.style.display = shown ? "none" : "block";
+  }
+}
+
+function renderExcelStyleSchedulePreview(added, removed){
+  const sheet = scheduleWorkbook?.Sheets[$("scheduleSheetSelect").value];
+  if(!sheet){
+    $("schedulePreviewBody").innerHTML = '<div class="scheduleSheetEmpty">尚未載入 Excel 工作表。</div>';
+    return;
+  }
+
+  const rows = XLSX.utils.sheet_to_json(sheet,{header:1,raw:true,defval:null});
+  const headerIndex = findScheduleHeaderRow(rows);
+  if(headerIndex < 0){
+    $("schedulePreviewBody").innerHTML = '<div class="scheduleSheetEmpty">無法辨識班級標題列。</div>';
+    return;
+  }
+  const groups = scheduleClassGroups(rows,headerIndex,sheet);
+  const weekLabels = ["日","一","二","三","四","五","六"];
+  const matching = text => cleanExcelName(text);
+  const mapKey = (dateKey,classId,raw) => `${dateKey}|${classId}|${matching(raw)}`;
+  const supportMap = new Map();
+  parsedScheduleRows.filter(r => r.kind === "support").forEach(r => {
+    supportMap.set(mapKey(r.assignment_date,r.aftercare_class_id,r.source_label||r.support_name),r);
+  });
+  const classNameToId = new Map(groups.map(g => [g.name,g.id]));
+  const noticeMap = new Map();
+  parsedScheduleNotices.forEach(n => {
+    const classId = classNameToId.get(n.className);
+    if(classId){noticeMap.set(mapKey(n.date,classId,n.label),n);}
+  });
+  const problemByDayClass = new Map();
+  parsedScheduleProblems.forEach(p => {
+    const classId = classNameToId.get(p.className);
+    const key = `${p.date}|${classId||""}`;
+    if(!problemByDayClass.has(key)) problemByDayClass.set(key,[]);
+    problemByDayClass.get(key).push(p);
+  });
+
+  const dayMarkup = [];
+  let issueDays = 0;
+  for(let i=headerIndex+1;i<rows.length;i++){
+    const rawRow = rows[i]||[];
+    const date = parseExcelDate(rawRow[0]);
+    if(!date || date.getFullYear() !== parsedScheduleYear || date.getMonth()+1 !== parsedScheduleMonth) continue;
+    const dateKey = localDateKey(date);
+    let issue = false;
+    let cells = '';
+    let nonempty = false;
+    for(const group of groups){
+      const dayClassProblems = problemByDayClass.get(`${dateKey}|${group.id}`)||[];
+      for(let c=group.col;c<=group.endCol;c++){
+        const source = matching(rawRow[c]);
+        if(source) nonempty = true;
+        const support = supportMap.get(mapKey(dateKey,group.id,source));
+        const notice = noticeMap.get(mapKey(dateKey,group.id,source));
+        const problems = dayClassProblems.filter(p =>
+          !p.label || matching(p.label) === source ||
+          (p.type === "too_many" || p.type === "duplicate_staff")
+        );
+        if(notice || problems.length) issue = true;
+        const isHoliday = /放假|停課/.test(source);
+        const classes = ['scheduleTeacherCell', !source?'isBlank':'', support?'isSupport':'',notice?'isUnmatched':'',problems.length?'isProblem':'',isHoliday?'isHoliday':''].filter(Boolean).join(' ');
+        const detail = problems.length ? '衝突／錯誤' : notice ? '未建檔・請核對' : support ? `支援・${support.support_type||'其他'}` : '';
+        const description = problems.length ? problems.map(p=>p.message).join('；') : notice ? notice.message : support ? `${support.support_name}（${support.support_type||'支援'}）` : source;
+        const label = source ? escapeHtml(source) : '—';
+        cells += `<td class="${classes}" title="${escapeHtml(description||'空白')}"><div class="scheduleTeacherName">${label}</div>${detail?`<div class="scheduleTeacherMeta">${escapeHtml(detail)}</div>`:''}</td>`;
+      }
+    }
+    if(!nonempty) continue;
+    if(issue) issueDays++;
+    const dateText = `${String(date.getMonth()+1).padStart(2,'0')}/${String(date.getDate()).padStart(2,'0')}`;
+    dayMarkup.push(`<tr data-schedule-day="${dateKey}" data-has-issue="${issue?'1':'0'}"><td class="scheduleDateCell">${dateText}</td><td class="scheduleWeekCell">${weekLabels[date.getDay()]}</td>${cells}</tr>`);
+  }
+
+  const groupsHeader = groups.map(g => `<th scope="colgroup" colspan="${g.endCol-g.col+1}">${escapeHtml(g.name)}</th>`).join('');
+  const slotHeader = groups.map(g => Array.from({length:g.endCol-g.col+1},(_,i)=>`<th scope="col">老師${i+1}</th>`).join('')).join('');
+  const problemsCount = parsedScheduleProblems.length;
+  const noticeCount = parsedScheduleNotices.length;
+  const detailEntries = [
+    ...parsedScheduleNotices.map(n => `<div class="scheduleSheetDiffItem">⚠ ${escapeHtml(n.date)}｜${escapeHtml(n.className)}｜${escapeHtml(n.message)}</div>`),
+    ...parsedScheduleProblems.map(p => `<div class="scheduleSheetDiffItem">⛔ ${escapeHtml(p.date||'')}｜${escapeHtml(p.className||'')}｜${escapeHtml(p.message)}</div>`)
+  ];
+  const diffRow = (row,flag) => {
+    const classLabel = AFTERCARE_CLASSES[row.aftercare_class_id]?.name || row.aftercare_class_id;
+    const person = row.kind === 'support' ? `${row.support_name}（支援）` : row.staff_name;
+    return `<div class="scheduleSheetDiffItem ${flag==='+'?'diffAdd':'diffRemove'}">${flag} ${escapeHtml(row.assignment_date)}｜${escapeHtml(classLabel)}｜${escapeHtml(person)}</div>`;
+  };
+  const diffRows = [...added.map(r => diffRow(r,'+')),...removed.map(r => diffRow(r,'−'))];
+  scheduleOnlyIssues = false;
+  const parts = [
+    `<div class="scheduleSheetToolbar"><div><div class="scheduleSheetToolbarTitle">Excel 班表預覽｜${parsedScheduleYear} 年 ${parsedScheduleMonth} 月</div><div class="scheduleSheetToolbarHelp">${dayMarkup.length} 個排班日・六個班級橫向排列；可左右／上下捲動，姓名與備註依 Excel 原樣顯示。</div></div><button type="button" id="scheduleOnlyIssuesBtn" class="scheduleSheetFilter" aria-pressed="false" onclick="setSchedulePreviewIssuesOnly(!scheduleOnlyIssues)">只看需要核對的日期</button></div>`,
+    `<div class="scheduleSheetFrame" role="region" aria-label="六班 Excel 班表預覽，可左右捲動" tabindex="0"><table class="scheduleExcelTable"><thead><tr><th class="scheduleDateHeader" rowspan="2" scope="col">日期</th><th class="scheduleWeekHeader" rowspan="2" scope="col">星期</th>${groupsHeader}</tr><tr>${slotHeader}</tr></thead><tbody>${dayMarkup.join('')}</tbody></table></div>`,
+    `<div id="scheduleFilteredEmpty" class="scheduleSheetEmpty" style="display:none">本月份沒有未建檔或衝突，請按「顯示整月」查看完整班表。</div>`,
+    `<div class="scheduleSheetLegend"><span><i class="scheduleLegendDot" style="background:#fff"></i>正式老師</span><span><i class="scheduleLegendDot" style="background:#edf6ff"></i>支援老師</span><span><i class="scheduleLegendDot" style="background:#fff4d7"></i>未建檔、需核對</span><span><i class="scheduleLegendDot" style="background:#ffe7e7"></i>衝突／錯誤</span></div>`,
+    (noticeCount||problemsCount) ? `<div class="scheduleSheetAlert">需要核對：未建檔 ${noticeCount} 筆、衝突／錯誤 ${problemsCount} 筆，分布在 ${issueDays} 個日期。未建檔姓名會保留為支援老師，單純未建檔不阻止匯入。</div>` : `<div class="scheduleSheetLegend">✓ 本月沒有未建檔姓名提醒或排班衝突。</div>`,
+    detailEntries.length ? `<details class="scheduleSheetDetails"><summary>展開查看姓名提醒及衝突明細（${detailEntries.length} 筆）</summary><div class="scheduleSheetDiffList">${detailEntries.join('')}</div></details>` : '',
+    `<details class="scheduleSheetDetails"><summary>展開查看和資料庫的差異｜新增／變更 ${added.length} 筆、原班表將被取代 ${removed.length} 筆</summary><div class="scheduleSheetDiffList">${diffRows.length?diffRows.join(''):'<div>Excel 與資料庫的排班沒有差異。</div>'}</div></details>`
+  ];
+  $("schedulePreviewBody").classList.add("scheduleSheetMode");
+  $("schedulePreviewBody").innerHTML = parts.filter(Boolean).join('');
+  $("schedulePreview").style.display = "block";
+}
+
 /*
 ==================================================
 顯示 Excel 預覽與差異
@@ -7130,177 +7299,9 @@ async function renderSchedulePreview(){
   $("scheduleUnmatchedCount").textContent =
     String(parsedScheduleNotices.length);
 
-  const previewRows = [];
-
-  // 未建檔姓名提醒並非錯誤，匯入時仍會保存成其他支援。
-  parsedScheduleNotices.forEach(item => {
-    previewRows.push(`
-      <div class="previewRow">
-        <div>${escapeHtml(item.date)}</div>
-        <div>${escapeHtml(item.className)}</div>
-        <div>ℹ️ ${escapeHtml(item.message)}</div>
-      </div>
-    `);
-  });
+  renderExcelStyleSchedulePreview(added,removed);
 
 
-  parsedScheduleProblems
-    .forEach(
-      item => {
-
-        previewRows.push(`
-          <div class="previewRow previewProblem">
-
-            <div>
-              ${escapeHtml(
-                item.date
-              )}
-            </div>
-
-            <div>
-              ${escapeHtml(
-                item.className
-                ||
-                "—"
-              )}
-            </div>
-
-            <div>
-              ⚠️
-              ${escapeHtml(
-                item.message
-              )}
-            </div>
-
-          </div>
-        `);
-
-      }
-    );
-
-
-  added
-    .slice(
-      0,
-      120
-    )
-    .forEach(
-      row => {
-
-        const name =
-          row.kind === "support"
-          ?
-          `${row.support_name}（${row.support_type || "支援"}）`
-          :
-          row.staff_name;
-
-
-        previewRows.push(`
-          <div class="previewRow">
-
-            <div>
-              ${escapeHtml(
-                row.assignment_date
-              )}
-            </div>
-
-            <div>
-              ${escapeHtml(
-                AFTERCARE_CLASSES[
-                  row.aftercare_class_id
-                ]?.name
-                ||
-                row.aftercare_class_id
-              )}
-            </div>
-
-            <div class="diffAdd">
-              ＋
-              ${escapeHtml(
-                name
-              )}
-            </div>
-
-          </div>
-        `);
-
-      }
-    );
-
-
-  removed
-    .slice(
-      0,
-      120
-    )
-    .forEach(
-      row => {
-
-        const name =
-          row.kind === "support"
-          ?
-          `${row.support_name}（支援）`
-          :
-          row.staff_name;
-
-
-        previewRows.push(`
-          <div class="previewRow">
-
-            <div>
-              ${escapeHtml(
-                row.assignment_date
-              )}
-            </div>
-
-            <div>
-              ${escapeHtml(
-                AFTERCARE_CLASSES[
-                  row.aftercare_class_id
-                ]?.name
-                ||
-                row.aftercare_class_id
-              )}
-            </div>
-
-            <div class="diffRemove">
-              －
-              ${escapeHtml(
-                name
-              )}
-            </div>
-
-          </div>
-        `);
-
-      }
-    );
-
-
-  if(
-    !previewRows.length
-  ){
-
-    previewRows.push(
-      `
-        <div
-          class="empty"
-          style="margin:10px"
-        >
-          Excel 與目前資料庫班表沒有差異。
-        </div>
-      `
-    );
-
-  }
-
-
-  $("schedulePreview").style.display =
-    "block";
-
-
-  $("schedulePreviewBody").innerHTML =
-    previewRows.join("");
 
 
   $("currentScheduleList").innerHTML =
