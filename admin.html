@@ -1692,6 +1692,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
         <button class="btn btnBlue" type="button" onclick="parseSelectedScheduleSheet()">🔎 解析班表</button>
       </div>
       <div id="scheduleFileState" class="helper">尚未選擇 Excel。</div>
+      <div id="scheduleClassDetection" class="helper" aria-live="polite">班級辨識：尚未解析。</div>
       <div class="scheduleSummary">
         <div class="scheduleSummaryItem"><div class="helper">月份</div><div id="scheduleMonthSummary" class="scheduleSummaryNumber">—</div></div>
         <div class="scheduleSummaryItem"><div class="helper">正式老師排班</div><div id="scheduleStaffCount" class="scheduleSummaryNumber">0</div></div>
@@ -6186,67 +6187,62 @@ function findScheduleHeaderRow(rows){
 }
 
 
-function scheduleClassGroups(rows,headerRow){
+function scheduleClassGroups(rows,headerRow,worksheet){
 
-  const header =
-    rows[headerRow] || [];
+  const header = rows[headerRow] || [];
 
+  // AC04 的正式名稱是「綿羊班」，舊版 Excel 的「陽光書屋」仍可匯入。
   const classNames = [
-    {needle:"蜜蜂班",id:"AC03",name:"蜜蜂班"},
-    {needle:"白兔班",id:"AC02",name:"白兔班"},
-    {needle:"蝴蝶班",id:"AC01",name:"蝴蝶班"},
-    {needle:"陽光書屋",id:"AC04",name:"陽光書屋"},
-    {needle:"蘋果班",id:"AC06",name:"蘋果班"},
-    {needle:"櫻桃班",id:"AC05",name:"櫻桃班"}
+    {id:"AC03",name:"蜜蜂班",aliases:["蜜蜂班"]},
+    {id:"AC02",name:"白兔班",aliases:["白兔班"]},
+    {id:"AC01",name:"蝴蝶班",aliases:["蝴蝶班"]},
+    {id:"AC04",name:"綿羊班",aliases:["綿羊班","陽光書屋"]},
+    {id:"AC06",name:"蘋果班",aliases:["蘋果班"]},
+    {id:"AC05",name:"櫻桃班",aliases:["櫻桃班"]}
   ];
-
 
   const starts = [];
 
   classNames.forEach(item => {
-
-    const col =
-      header.findIndex(cell => cleanExcelName(cell).includes(item.needle));
-
+    const col = header.findIndex(cell => {
+      const title = cleanExcelName(cell).replace(/\s/g,"");
+      return item.aliases.some(alias => title.includes(alias));
+    });
     if(col >= 0){
       starts.push({...item,col});
     }
-
   });
-
 
   starts.sort((a,b) => a.col - b.col);
 
+  // 優先使用該列的合併儲存格範圍；一般儲存格由下個班級起點界定。
+  // 最後一班最多使用兩欄，避免把旁邊的備註誤當成老師。
+  const merges = worksheet?.["!merges"] || [];
+  let sheetEndCol = header.length - 1;
+  if(worksheet?.["!ref"] && typeof XLSX !== "undefined"){
+    sheetEndCol = XLSX.utils.decode_range(worksheet["!ref"]).e.c;
+  }
 
   return starts.map((item,index) => {
-
     const next = starts[index + 1];
+    const boundaryEnd = next ? next.col - 1 : sheetEndCol;
+    const mergedHeader = merges.find(merge =>
+      merge.s.r === headerRow &&
+      merge.s.c <= item.col &&
+      merge.e.c >= item.col
+    );
 
-    let endCol =
-      next
-      ? next.col - 1
-      : item.col;
+    const endCol = Math.max(
+      item.col,
+      Math.min(
+        boundaryEnd,
+        item.col + 1,
+        mergedHeader ? mergedHeader.e.c : boundaryEnd
+      )
+    );
 
-
-    if(item.id === "AC04"){
-      endCol = item.col;
-    }
-
-    if(item.id === "AC06" || item.id === "AC05"){
-      endCol = item.col + 1;
-    }
-
-    if(item.id === "AC03" || item.id === "AC02" || item.id === "AC01"){
-      endCol = item.col + 1;
-    }
-
-    return {
-      ...item,
-      endCol
-    };
-
+    return {...item,endCol};
   });
-
 }
 
 
@@ -6283,34 +6279,47 @@ async function parseSelectedScheduleSheet(){
     );
 
 
-  const headerRow =
-    findScheduleHeaderRow(rows);
-
-
-  if(headerRow < 0){
-    alert("找不到課後班欄位。請確認選到正確的月班表工作表。");
-    return;
-  }
-
-
-  const groups =
-    scheduleClassGroups(rows,headerRow);
-
-
-  if(groups.length < 6){
-    alert("班表欄位辨識不完整，目前只找到 " + groups.length + " 個課後班。");
-    return;
-  }
-
-
-  const lookup =
-    staffLookupMaps();
-
-
+  // 每次解析先清除舊結果：找不到班級時不可沿用前一次的匯入資料。
   parsedScheduleRows = [];
   parsedScheduleProblems = [];
   parsedScheduleYear = null;
   parsedScheduleMonth = null;
+  $("scheduleImportBtn").disabled = true;
+  $("schedulePreview").style.display = "none";
+  $("scheduleMonthSummary").textContent = "—";
+  $("scheduleStaffCount").textContent = "0";
+  $("scheduleSupportCount").textContent = "0";
+  $("scheduleProblemCount").textContent = "0";
+
+  const detection = $("scheduleClassDetection");
+  const headerRow = findScheduleHeaderRow(rows);
+
+  if(headerRow < 0){
+    detection.textContent = "班級辨識：找不到課後班標題列。";
+    alert("找不到課後班欄位。請確認選到正確的月班表工作表。");
+    return;
+  }
+
+  const groups = scheduleClassGroups(rows,headerRow,ws);
+  const expectedClasses = ["AC01","AC02","AC03","AC04","AC05","AC06"];
+  const missing = expectedClasses
+    .filter(id => !groups.some(group => group.id === id))
+    .map(id => AFTERCARE_CLASSES[id].name);
+  const recognized = groups.map(group => group.name);
+
+  detection.textContent =
+    `班級辨識：${groups.length}/6｜已找到：${recognized.join("、")}` +
+    (missing.length ? `｜未找到：${missing.join("、")}` : "｜全部班級已找到");
+
+  if(missing.length){
+    alert(
+      `班表只找到 ${groups.length}/6 個課後班。\n` +
+      `未找到：${missing.join("、")}\n\n請檢查 Excel 標題列。`
+    );
+    return;
+  }
+
+  const lookup = staffLookupMaps();
 
   const sheetPeriod=
     inferScheduleYearMonth(
