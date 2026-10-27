@@ -1696,12 +1696,13 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
       <div class="scheduleSummary">
         <div class="scheduleSummaryItem"><div class="helper">月份</div><div id="scheduleMonthSummary" class="scheduleSummaryNumber">—</div></div>
         <div class="scheduleSummaryItem"><div class="helper">正式老師排班</div><div id="scheduleStaffCount" class="scheduleSummaryNumber">0</div></div>
-        <div class="scheduleSummaryItem"><div class="helper">支援人員</div><div id="scheduleSupportCount" class="scheduleSummaryNumber">0</div></div>
-        <div class="scheduleSummaryItem"><div class="helper">未辨識／錯誤</div><div id="scheduleProblemCount" class="scheduleSummaryNumber red">0</div></div>
+        <div class="scheduleSummaryItem"><div class="helper">支援老師排班</div><div id="scheduleSupportCount" class="scheduleSummaryNumber">0</div></div>
+        <div class="scheduleSummaryItem"><div class="helper">未建檔支援提醒</div><div id="scheduleUnmatchedCount" class="scheduleSummaryNumber">0</div></div>
+        <div class="scheduleSummaryItem"><div class="helper">排班衝突／錯誤</div><div id="scheduleProblemCount" class="scheduleSummaryNumber red">0</div></div>
       </div>
       <div id="schedulePreview" class="previewBox" style="display:none"><div class="previewHeader">班表預覽與檢查</div><div id="schedulePreviewBody" class="previewBody"></div></div>
       <div class="actionButtons"><button id="scheduleImportBtn" class="btn btnGreen" type="button" onclick="confirmScheduleImport()" disabled>✅ 確認匯入本月班表</button></div>
-      <div class="helper">匯入前不會修改資料庫；有未辨識姓名或排班衝突時會先阻止匯入。</div>
+      <div class="helper">園務會議當天的國小、巡輔等支援老師會按姓名匯入；其他未建檔的姓名也會列為「其他支援」，不需先建立帳號。請在預覽核對提醒；只有真正的排班衝突或格式錯誤會阻止匯入。</div>
     </div>
     <div id="currentScheduleBox" class="manageCard" style="margin-top:12px">
       <div class="manageCardTitle">目前資料庫月排班</div>
@@ -2085,6 +2086,10 @@ let parsedScheduleRows =
 
 
 let parsedScheduleProblems =
+  [];
+
+// 教師尚未建檔的提醒：照常以支援姓名匯入，不影響匯入按鈕。
+let parsedScheduleNotices =
   [];
 
 
@@ -5939,26 +5944,27 @@ function cleanExcelName(value){
 
 function normalizeSupportName(label){
 
-  let name =
-    cleanExcelName(label);
+  let name = cleanExcelName(label);
 
+  // Excel 常見：林佳樺17點（國小）、田筱瑜（巡輔）、國小-某老師。
+  // 儲存純姓名；原始內容仍保留在 source_label 欄位。
   name = name
-    .replace(/國小師\s*/g,"")
-    .replace(/國小[-－]\s*/g,"")
-    .replace(/\([^)]*\)/g,"")
-    .replace(/（[^）]*）/g,"")
-    .replace(/\s+/g,"")
+    .replace(/^[\s　]*(?:國小師|國小[-－]|巡輔[-－]|支援[-－])[\s　]*/g, "")
+    .replace(/\([^)]*\)/g, "")
+    .replace(/（[^）]*）/g, "")
+    .replace(/\d{1,2}\s*點(?:\s*\d{1,2}\s*分)?/g, "")
+    .replace(/\d{1,2}[:：]\d{2}/g, "")
+    .replace(/[\s　]*(?:國小師|國小支援|巡輔|代班|支援老師|支援)[\s　]*$/g, "")
+    .replace(/\s+/g, "")
     .trim();
 
-  return name;
-
+  return name || cleanExcelName(label);
 }
 
 
 function supportTypeFromLabel(label){
 
-  const text =
-    cleanExcelName(label);
+  const text = cleanExcelName(label);
 
   if(text.includes("巡輔")){
     return "巡輔";
@@ -5969,25 +5975,15 @@ function supportTypeFromLabel(label){
   }
 
   return "其他支援";
-
 }
 
 
 function isSupportLabel(label){
 
-  const text =
-    cleanExcelName(label);
+  const text = cleanExcelName(label);
 
-  return (
-    text.includes("巡輔")
-    ||
-    text.includes("國小-")
-    ||
-    text.includes("國小－")
-    ||
-    text.includes("國小師")
-  );
-
+  // 支援老師可能只在園務會議當日出現，也可能寫為「某某（國小）」。
+  return /巡輔|國小|代班|支援/.test(text);
 }
 
 
@@ -6282,6 +6278,7 @@ async function parseSelectedScheduleSheet(){
   // 每次解析先清除舊結果：找不到班級時不可沿用前一次的匯入資料。
   parsedScheduleRows = [];
   parsedScheduleProblems = [];
+  parsedScheduleNotices = [];
   parsedScheduleYear = null;
   parsedScheduleMonth = null;
   $("scheduleImportBtn").disabled = true;
@@ -6290,6 +6287,7 @@ async function parseSelectedScheduleSheet(){
   $("scheduleStaffCount").textContent = "0";
   $("scheduleSupportCount").textContent = "0";
   $("scheduleProblemCount").textContent = "0";
+  $("scheduleUnmatchedCount").textContent = "0";
 
   const detection = $("scheduleClassDetection");
   const headerRow = findScheduleHeaderRow(rows);
@@ -6497,12 +6495,26 @@ async function parseSelectedScheduleSheet(){
 
         if(!staff){
 
-          parsedScheduleProblems.push({
-            type:"unresolved",
+          // 月度園務會議可能有未建立帳號的臨時支援老師。
+          // 一律保留「日期、班級、姓名」並作為支援紀錄傳給後端，
+          // 不把未知姓名當成匯入失敗，也不擅自建立正式 staff_id。
+          parsedScheduleRows.push({
+            kind:"support",
+            record_type:"support",
+            assignment_date:dateKey,
+            date:dateKey,
+            aftercare_class_id:group.id,
+            class_id:group.id,
+            support_name:normalizeSupportName(sourceLabel),
+            support_type:"其他支援",
+            source_label:sourceLabel
+          });
+
+          parsedScheduleNotices.push({
             date:dateKey,
             className:group.name,
             label:sourceLabel,
-            message:`未辨識老師：${sourceLabel}`
+            message:`${sourceLabel} 未建檔，已列為其他支援（請核對姓名）`
           });
 
           continue;
@@ -7113,13 +7125,23 @@ async function renderSchedulePreview(){
 
 
   $("scheduleProblemCount").textContent =
-    String(
-      parsedScheduleProblems.length
-    );
+    String(parsedScheduleProblems.length);
 
+  $("scheduleUnmatchedCount").textContent =
+    String(parsedScheduleNotices.length);
 
-  const previewRows =
-    [];
+  const previewRows = [];
+
+  // 未建檔姓名提醒並非錯誤，匯入時仍會保存成其他支援。
+  parsedScheduleNotices.forEach(item => {
+    previewRows.push(`
+      <div class="previewRow">
+        <div>${escapeHtml(item.date)}</div>
+        <div>${escapeHtml(item.className)}</div>
+        <div>ℹ️ ${escapeHtml(item.message)}</div>
+      </div>
+    `);
+  });
 
 
   parsedScheduleProblems
@@ -7369,7 +7391,10 @@ async function renderSchedulePreview(){
       ).padStart(
         2,
         "0"
-      )} 課後班表嗎？\n\n系統會以這份 Excel 更新該月份的課後排班。`
+      )} 課後班表嗎？\n\n系統會以這份 Excel 更新該月份的課後排班。` +
+      (parsedScheduleNotices.length
+        ? `\n\n注意：有 ${parsedScheduleNotices.length} 筆未建檔姓名，將以「其他支援」姓名匯入。請確定已核對預覽。`
+        : "")
     )
   ){
 
