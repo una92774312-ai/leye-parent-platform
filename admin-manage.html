@@ -1352,6 +1352,21 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
   .scheduleSheetToolbar{align-items:flex-start}
 }
 
+
+/* 2026/10：已匯入月排班與 Excel 預覽使用同一種六班橫向表格。 */
+.scheduleDbPerson{display:block;padding:3px 4px;border-radius:5px;margin:2px 0;font-size:.78rem;font-weight:800;line-height:1.55;overflow-wrap:anywhere}
+.scheduleDbPerson.isFormal{color:#25465a;background:#eef2f4}
+.scheduleDbPerson.isSupport{color:#125a95;background:#dfedff}
+.scheduleDbPerson.isMissingStaff{color:#a35c00;background:#fff0c9}
+.scheduleDbCell .scheduleTeacherMeta{margin:0 0 4px}
+.scheduleDbCalendarEmpty{color:#9ba9b2;font-size:.73rem}
+.scheduleDbEmptyDate td{background:#f7f9fa !important;color:#8a9ba7}
+.scheduleDbWeekend td.scheduleDateCell,.scheduleDbWeekend td.scheduleWeekCell{background:#f4f6f7;color:#82929d}
+.scheduleExcelTable tr[hidden]{display:none !important}
+.scheduleDbControls{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.scheduleDbInfo{padding:8px 12px;background:#f8fafb;font-size:.77rem;color:#526a79;line-height:1.6}
+@media(max-width:760px){.scheduleDbControls{width:100%}}
+
 </style>
 </head>
 
@@ -6539,177 +6554,165 @@ async function parseSelectedScheduleSheet(){
 }
 
 
+/* 共用的班級欄位配置：保持與原始 Excel 一致，不能把綿羊班補成兩欄。 */
+const SCHEDULE_DISPLAY_CLASSES = [
+  {id:'AC03',name:'蜜蜂班',slots:2},
+  {id:'AC02',name:'白兔班',slots:2},
+  {id:'AC01',name:'蝴蝶班',slots:2},
+  {id:'AC04',name:'綿羊班',slots:1},
+  {id:'AC06',name:'蘋果班',slots:2},
+  {id:'AC05',name:'櫻桃班',slots:2}
+];
+
+/* 兩個區塊皆能快速切換上下半月，不必捲動幾百筆老師紀錄。 */
+let scheduleDbHalf = 'all';
+let scheduleDbOnlyFilled = false;
+let scheduleDbQuerySerial = 0;
+
+function filterScheduleDbRows(){
+  const box=$('currentScheduleList');
+  if(!box)return;
+  let visible=0;
+  box.querySelectorAll('tr[data-db-day]').forEach(tr=>{
+    const day=Number(tr.dataset.dayNum||0);
+    const inHalf = scheduleDbHalf==='first' ? day<=15 : scheduleDbHalf==='second' ? day>=16 : true;
+    tr.hidden=!inHalf || (scheduleDbOnlyFilled && tr.dataset.hasAssignments!=='1');
+    if(!tr.hidden)visible++;
+  });
+  box.querySelectorAll('[data-db-half]').forEach(btn=>{
+    btn.setAttribute('aria-pressed',String(btn.dataset.dbHalf===scheduleDbHalf));
+  });
+  const filledBtn=$('scheduleDbFilledBtn');
+  if(filledBtn){
+    filledBtn.setAttribute('aria-pressed',String(scheduleDbOnlyFilled));
+    filledBtn.textContent=scheduleDbOnlyFilled?'包含未排班日期':'只看有排班日期';
+  }
+  const empty=$('scheduleDbFilteredEmpty');
+  if(empty) empty.style.display=visible?'none':'block';
+}
+
+function setScheduleDbHalf(half){
+  if(!['all','first','second'].includes(half)) return;
+  scheduleDbHalf=half;
+  filterScheduleDbRows();
+}
+
+function setScheduleDbOnlyFilled(only){
+  scheduleDbOnlyFilled=Boolean(only);
+  filterScheduleDbRows();
+}
+
+function renderDatabaseScheduleTable(year,month,records){
+  const target=$('currentScheduleList');
+  if(!target)return;
+  const lastDay=new Date(year,month,0).getDate();
+  const weekday=['日','一','二','三','四','五','六'];
+  const byCell=new Map();
+  records.forEach(r=>{
+    const key=r.date+'|'+r.classId;
+    if(!byCell.has(key))byCell.set(key,[]);
+    byCell.get(key).push(r);
+  });
+  const groupHeads=SCHEDULE_DISPLAY_CLASSES.map(g=>`<th scope="colgroup" colspan="${g.slots}">${escapeHtml(g.name)}</th>`).join('');
+  const slotHeads=SCHEDULE_DISPLAY_CLASSES.map(g=>Array.from({length:g.slots},(_,n)=>`<th scope="col">老師 ${n+1}</th>`).join('')).join('');
+  let scheduledDays=0;
+  let maxShownDate='';
+  let dateRows='';
+  for(let d=1;d<=lastDay;d++){
+    const key=`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isWeekend=[0,6].includes(new Date(year,month-1,d).getDay());
+    let hasAssignment=false;
+    let cells='';
+    for(const group of SCHEDULE_DISPLAY_CLASSES){
+      const items=byCell.get(key+'|'+group.id)||[];
+      if(items.length){hasAssignment=true;maxShownDate=key;}
+      // 超過 Excel 欄位數的支援老師，仍全部保留在該班最後一格。
+      const slots=Array.from({length:group.slots},()=>[]);
+      items.forEach((person,i)=>slots[Math.min(i,group.slots-1)].push(person));
+      for(const people of slots){
+        let peopleHtml='';
+        for(const person of people){
+          const kind = person.missing ? 'isMissingStaff' : person.type==='正式老師' ? 'isFormal' : 'isSupport';
+          const caption = person.type==='正式老師' ? '' : `（${person.type||'支援'}）`;
+          const fullText = (person.sourceLabel||person.name||'未命名支援')+caption;
+          // 支援老師保留 Excel 原始寫法（如「林佳樺17點（國小）」），核對時不必猜備註。
+          const visibleName = person.type==='正式老師' ? person.name : (person.sourceLabel||person.name);
+          peopleHtml+=`<span class="scheduleDbPerson ${kind}" title="${escapeHtml(fullText)}">${escapeHtml(visibleName||'未命名支援')}${caption?`<span class="scheduleTeacherMeta">${escapeHtml(caption)}</span>`:''}</span>`;
+        }
+        cells+=`<td class="scheduleTeacherCell scheduleDbCell ${people.length?'':'isBlank'}">${peopleHtml||'<span class="scheduleDbCalendarEmpty">—</span>'}</td>`;
+      }
+    }
+    if(hasAssignment) scheduledDays++;
+    const className=(hasAssignment?'':'scheduleDbEmptyDate')+(isWeekend?' scheduleDbWeekend':'');
+    dateRows+=`<tr class="${className}" data-db-day="${key}" data-day-num="${d}" data-has-assignments="${hasAssignment?'1':'0'}"><td class="scheduleDateCell">${String(month).padStart(2,'0')}/${String(d).padStart(2,'0')}</td><td class="scheduleWeekCell">${weekday[new Date(year,month-1,d).getDay()]}</td>${cells}</tr>`;
+  }
+  scheduleDbHalf='all';
+  scheduleDbOnlyFilled=false;
+  const buttons=[['all','整月'],['first','1–15 日'],['second',`16–${lastDay} 日`]].map(([key,text])=>`<button type="button" class="scheduleSheetFilter" data-db-half="${key}" aria-pressed="${key==='all'}" onclick="setScheduleDbHalf('${key}')">${text}</button>`).join('');
+  const months=`${year}/${String(month).padStart(2,'0')}`;
+  target.innerHTML=`
+    <div class="scheduleSheetToolbar">
+      <div><div class="scheduleSheetToolbarTitle">資料庫班表｜${escapeHtml(months)}</div>
+        <div class="scheduleSheetToolbarHelp">${lastDay} 個日曆日・其中 ${scheduledDays} 日已有排班・${records.length} 筆老師／支援紀錄；未排班日顯示「—」。</div></div>
+      <div class="scheduleDbControls">${buttons}<button id="scheduleDbFilledBtn" type="button" class="scheduleSheetFilter" aria-pressed="false" onclick="setScheduleDbOnlyFilled(!scheduleDbOnlyFilled)">只看有排班日期</button></div>
+    </div>
+    <div class="scheduleSheetFrame" role="region" tabindex="0" aria-label="目前資料庫六班排班表，可左右及上下捲動">
+      <table class="scheduleExcelTable"><thead><tr><th class="scheduleDateHeader" rowspan="2" scope="col">日期</th><th class="scheduleWeekHeader" rowspan="2" scope="col">星期</th>${groupHeads}</tr><tr>${slotHeads}</tr></thead><tbody>${dateRows}</tbody></table>
+    </div>
+    <div id="scheduleDbFilteredEmpty" class="scheduleSheetEmpty" style="display:none">這個日期範圍沒有符合條件的排班，請切換「整月」。</div>
+    <div class="scheduleSheetLegend"><span><i class="scheduleLegendDot" style="background:#eef2f4"></i>正式老師</span><span><i class="scheduleLegendDot" style="background:#dfedff"></i>支援老師</span><span><i class="scheduleLegendDot" style="background:#fff0c9"></i>未找到老師資料</span><span>每個班級可顯示多位老師，不會截斷支援人員。</span></div>
+    <div class="scheduleDbInfo">資料來源：資料庫中此月份「啟用中」的正式老師及支援人員排班。顯示空白不代表該日需要排班；表格中的老師順序不一定等於 Excel 原始欄位位置。${maxShownDate?`目前有排班的最晚日期：${maxShownDate}。`:''}</div>`;
+  filterScheduleDbRows();
+}
+
 /*
 ==================================================
 直接查看資料庫已匯入月班表
 ==================================================
 */
-
 async function loadDatabaseScheduleView(yearArg,monthArg){
-
-  const target=$("currentScheduleList");
-  if(!target||!currentUser||!currentStaff) return;
-
-  const nowTw =
-    new Date(
-      new Date().toLocaleString(
-        "en-US",
-        {timeZone:"Asia/Taipei"}
-      )
-    );
-
-  const year=
-    Number(
-      yearArg
-      ||
-      $("dbScheduleYear")?.value
-      ||
-      nowTw.getFullYear()
-    );
-
-  const month=
-    Number(
-      monthArg
-      ||
-      $("dbScheduleMonth")?.value
-      ||
-      nowTw.getMonth()+1
-    );
-
-  if(!year||month<1||month>12){
+  const target=$('currentScheduleList');
+  if(!target||!currentUser||!currentStaff)return;
+  const serial=++scheduleDbQuerySerial;
+  const nowTw=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Taipei'}));
+  const year=Number(yearArg||$('dbScheduleYear')?.value||nowTw.getFullYear());
+  const month=Number(monthArg||$('dbScheduleMonth')?.value||(nowTw.getMonth()+1));
+  if(!Number.isInteger(year)||!Number.isInteger(month)||year<2025||year>2100||month<1||month>12){
     target.innerHTML='<div class="empty">請選擇正確的年月。</div>';
     return;
   }
-
-  if($("dbScheduleYear")) $("dbScheduleYear").value=String(year);
-  if($("dbScheduleMonth")) $("dbScheduleMonth").value=String(month);
-
-  const start=
-    year+"-"+String(month).padStart(2,"0")+"-01";
-
-  const next=
-    month===12
-      ? (year+1)+"-01-01"
-      : year+"-"+String(month+1).padStart(2,"0")+"-01";
-
+  if($('dbScheduleYear'))$('dbScheduleYear').value=String(year);
+  if($('dbScheduleMonth'))$('dbScheduleMonth').value=String(month);
+  const start=`${year}-${String(month).padStart(2,'0')}-01`;
+  const next=month===12?`${year+1}-01-01`:`${year}-${String(month+1).padStart(2,'0')}-01`;
   target.innerHTML='<div class="loading">正在讀取資料庫月班表...</div>';
-
-  const [formalResult,supportResult]=
-    await Promise.all([
-      supabaseClient
-        .from("staff_assignments")
-        .select("staff_id,assignment_date,aftercare_class_id,start_time,end_time,active")
-        .gte("assignment_date",start)
-        .lt("assignment_date",next)
-        .not("aftercare_class_id","is",null)
-        .eq("active",true)
-        .order("assignment_date",{ascending:true})
-        .order("aftercare_class_id",{ascending:true}),
-
-      supabaseClient
-        .from("aftercare_support_assignments")
-        .select("assignment_date,aftercare_class_id,support_name,support_type,start_time,end_time,active")
-        .gte("assignment_date",start)
-        .lt("assignment_date",next)
-        .eq("active",true)
-        .order("assignment_date",{ascending:true})
-        .order("aftercare_class_id",{ascending:true})
-    ]);
-
+  const [formalResult,supportResult]=await Promise.all([
+    supabaseClient.from('staff_assignments')
+      .select('staff_id,assignment_date,aftercare_class_id,start_time,end_time,active')
+      .gte('assignment_date',start).lt('assignment_date',next)
+      .not('aftercare_class_id','is',null).eq('active',true)
+      .order('assignment_date',{ascending:true}).order('aftercare_class_id',{ascending:true}),
+    supabaseClient.from('aftercare_support_assignments')
+      .select('assignment_date,aftercare_class_id,support_name,support_type,source_label,start_time,end_time,active')
+      .gte('assignment_date',start).lt('assignment_date',next)
+      .eq('active',true)
+      .order('assignment_date',{ascending:true}).order('aftercare_class_id',{ascending:true})
+  ]);
+  if(serial!==scheduleDbQuerySerial)return;
   if(formalResult.error||supportResult.error){
-    target.innerHTML=
-      '<div class="empty">⚠️ 班表讀取失敗<br><br>'+
-      escapeHtml(
-        formalResult.error?.message
-        ||
-        supportResult.error?.message
-        ||
-        "未知錯誤"
-      )+
-      '</div>';
+    target.innerHTML=`<div class="empty">⚠️ 班表讀取失敗<br>${escapeHtml(formalResult.error?.message||supportResult.error?.message||'未知錯誤')}</div>`;
     return;
   }
-
   const rows=[];
-
   (formalResult.data||[]).forEach(row=>{
     const staff=staffList.find(s=>s.id===row.staff_id);
-    rows.push({
-      date:row.assignment_date,
-      classId:row.aftercare_class_id,
-      name:staff?.display_name||"未知老師",
-      type:"正式老師"
-    });
+    rows.push({date:row.assignment_date,classId:row.aftercare_class_id,name:staff?.display_name||'未知老師',type:'正式老師',missing:!staff});
   });
-
   (supportResult.data||[]).forEach(row=>{
-    rows.push({
-      date:row.assignment_date,
-      classId:row.aftercare_class_id,
-      name:row.support_name||"未命名支援",
-      type:row.support_type||"支援"
-    });
+    rows.push({date:row.assignment_date,classId:row.aftercare_class_id,name:row.support_name||'未命名支援',sourceLabel:row.source_label||'',type:row.support_type||'支援',missing:false});
   });
-
-  rows.sort((a,b)=>
-    a.date.localeCompare(b.date)
-    ||
-    a.classId.localeCompare(b.classId)
-    ||
-    a.name.localeCompare(b.name)
-  );
-
-  if(!rows.length){
-    target.innerHTML=
-      '<div class="empty">'+
-      escapeHtml(year+"/"+String(month).padStart(2,"0"))+
-      ' 目前尚未匯入月班表。</div>';
-    return;
-  }
-
-  const grouped={};
-
-  rows.forEach(row=>{
-    const key=row.date+"|"+row.classId;
-    if(!grouped[key]) grouped[key]=[];
-    grouped[key].push(row);
-  });
-
-  const html=
-    Object.entries(grouped)
-      .map(([key,items])=>{
-        const [date,classId]=key.split("|");
-        const names=items
-          .map(item=>
-            '<span class="badge badgeOther" style="margin:2px 4px 2px 0">'+
-            escapeHtml(item.name)+
-            (item.type!=="正式老師"
-              ? "（"+escapeHtml(item.type)+"）"
-              : "")+
-            '</span>'
-          )
-          .join("");
-
-        return `
-          <div class="previewRow">
-            <div>${escapeHtml(date)}</div>
-            <div>${escapeHtml(AFTERCARE_CLASSES[classId]?.name||classId)}</div>
-            <div>${names}</div>
-          </div>
-        `;
-      })
-      .join("");
-
-  target.innerHTML=`
-    <div class="helper" style="margin-bottom:8px">
-      ${escapeHtml(year+"/"+String(month).padStart(2,"0"))}
-      ｜共 ${rows.length} 筆已匯入排班
-    </div>
-    <div class="previewBox" style="display:block">
-      <div class="previewHeader">日期｜課後班｜老師／支援</div>
-      <div class="previewBody">${html}</div>
-    </div>
-  `;
+  rows.sort((a,b)=>a.date.localeCompare(b.date)||a.classId.localeCompare(b.classId)||Number(a.type!=='正式老師')-Number(b.type!=='正式老師')||a.name.localeCompare(b.name,'zh-Hant'));
+  renderDatabaseScheduleTable(year,month,rows);
 }
 
 
@@ -6873,24 +6876,38 @@ function scheduleRowKey(
 
 /* 用 Excel 原始欄位呈現整月份，不將每個老師拆成一列。 */
 let scheduleOnlyIssues = false;
+let schedulePreviewHalf = 'all';
+
+function updateScheduleExcelFilters(){
+  const body = $('schedulePreviewBody');
+  if(!body) return;
+  let visible=0;
+  body.querySelectorAll('tr[data-schedule-day]').forEach(tr=>{
+    const day=Number(tr.dataset.dayNum||0);
+    const halfMatches=schedulePreviewHalf==='first' ? day<=15 : schedulePreviewHalf==='second' ? day>=16 : true;
+    tr.hidden=!halfMatches || (scheduleOnlyIssues && tr.dataset.hasIssue!=='1');
+    if(!tr.hidden)visible++;
+  });
+  const issueBtn = $('scheduleOnlyIssuesBtn');
+  if(issueBtn){
+    issueBtn.textContent = scheduleOnlyIssues ? '顯示所有日期' : '只看需要核對的日期';
+    issueBtn.setAttribute('aria-pressed',String(scheduleOnlyIssues));
+  }
+  body.querySelectorAll('[data-excel-half]').forEach(btn=>{
+    btn.setAttribute('aria-pressed',String(btn.dataset.excelHalf===schedulePreviewHalf));
+  });
+  const empty = $('scheduleFilteredEmpty');
+  if(empty)empty.style.display = visible ? 'none' : 'block';
+}
 
 function setSchedulePreviewIssuesOnly(only){
-  scheduleOnlyIssues = Boolean(only);
-  const body = $("schedulePreviewBody");
-  if(!body) return;
-  body.querySelectorAll("tr[data-schedule-day]").forEach(tr => {
-    tr.hidden = scheduleOnlyIssues && tr.dataset.hasIssue !== "1";
-  });
-  const button = $("scheduleOnlyIssuesBtn");
-  if(button){
-    button.textContent = scheduleOnlyIssues ? "顯示整月" : "只看需要核對的日期";
-    button.setAttribute("aria-pressed", String(scheduleOnlyIssues));
-  }
-  const empty = $("scheduleFilteredEmpty");
-  if(empty){
-    const shown = Array.from(body.querySelectorAll("tr[data-schedule-day]")).some(tr => !tr.hidden);
-    empty.style.display = shown ? "none" : "block";
-  }
+  scheduleOnlyIssues=Boolean(only);
+  updateScheduleExcelFilters();
+}
+function setSchedulePreviewHalf(half){
+  if(!['all','first','second'].includes(half))return;
+  schedulePreviewHalf=half;
+  updateScheduleExcelFilters();
 }
 
 function renderExcelStyleSchedulePreview(added, removed){
@@ -6961,7 +6978,7 @@ function renderExcelStyleSchedulePreview(added, removed){
     if(!nonempty) continue;
     if(issue) issueDays++;
     const dateText = `${String(date.getMonth()+1).padStart(2,'0')}/${String(date.getDate()).padStart(2,'0')}`;
-    dayMarkup.push(`<tr data-schedule-day="${dateKey}" data-has-issue="${issue?'1':'0'}"><td class="scheduleDateCell">${dateText}</td><td class="scheduleWeekCell">${weekLabels[date.getDay()]}</td>${cells}</tr>`);
+    dayMarkup.push(`<tr data-schedule-day="${dateKey}" data-day-num="${date.getDate()}" data-has-issue="${issue?'1':'0'}"><td class="scheduleDateCell">${dateText}</td><td class="scheduleWeekCell">${weekLabels[date.getDay()]}</td>${cells}</tr>`);
   }
 
   const groupsHeader = groups.map(g => `<th scope="colgroup" colspan="${g.endCol-g.col+1}">${escapeHtml(g.name)}</th>`).join('');
@@ -6979,8 +6996,11 @@ function renderExcelStyleSchedulePreview(added, removed){
   };
   const diffRows = [...added.map(r => diffRow(r,'+')),...removed.map(r => diffRow(r,'−'))];
   scheduleOnlyIssues = false;
+  schedulePreviewHalf = 'all';
+  const lastDay = new Date(parsedScheduleYear,parsedScheduleMonth,0).getDate();
+  const halfButtons = [['all','整月'],['first','1–15 日'],['second',`16–${lastDay} 日`]].map(([key,label]) => `<button type="button" class="scheduleSheetFilter" data-excel-half="${key}" aria-pressed="${key==='all'}" onclick="setSchedulePreviewHalf('${key}')">${label}</button>`).join('');
   const parts = [
-    `<div class="scheduleSheetToolbar"><div><div class="scheduleSheetToolbarTitle">Excel 班表預覽｜${parsedScheduleYear} 年 ${parsedScheduleMonth} 月</div><div class="scheduleSheetToolbarHelp">${dayMarkup.length} 個排班日・六個班級橫向排列；可左右／上下捲動，姓名與備註依 Excel 原樣顯示。</div></div><button type="button" id="scheduleOnlyIssuesBtn" class="scheduleSheetFilter" aria-pressed="false" onclick="setSchedulePreviewIssuesOnly(!scheduleOnlyIssues)">只看需要核對的日期</button></div>`,
+    `<div class="scheduleSheetToolbar"><div><div class="scheduleSheetToolbarTitle">Excel 班表預覽｜${parsedScheduleYear} 年 ${parsedScheduleMonth} 月</div><div class="scheduleSheetToolbarHelp">${dayMarkup.length} 個排班日・六個班級橫向排列；可切換至 16 日以後，姓名與備註依 Excel 原樣顯示。</div></div><div class="scheduleDbControls">${halfButtons}<button type="button" id="scheduleOnlyIssuesBtn" class="scheduleSheetFilter" aria-pressed="false" onclick="setSchedulePreviewIssuesOnly(!scheduleOnlyIssues)">只看需要核對的日期</button></div></div>`,
     `<div class="scheduleSheetFrame" role="region" aria-label="六班 Excel 班表預覽，可左右捲動" tabindex="0"><table class="scheduleExcelTable"><thead><tr><th class="scheduleDateHeader" rowspan="2" scope="col">日期</th><th class="scheduleWeekHeader" rowspan="2" scope="col">星期</th>${groupsHeader}</tr><tr>${slotHeader}</tr></thead><tbody>${dayMarkup.join('')}</tbody></table></div>`,
     `<div id="scheduleFilteredEmpty" class="scheduleSheetEmpty" style="display:none">本月份沒有未建檔或衝突，請按「顯示整月」查看完整班表。</div>`,
     `<div class="scheduleSheetLegend"><span><i class="scheduleLegendDot" style="background:#fff"></i>正式老師</span><span><i class="scheduleLegendDot" style="background:#edf6ff"></i>支援老師</span><span><i class="scheduleLegendDot" style="background:#fff4d7"></i>未建檔、需核對</span><span><i class="scheduleLegendDot" style="background:#ffe7e7"></i>衝突／錯誤</span></div>`,
@@ -7149,41 +7169,8 @@ async function renderSchedulePreview(){
 
 
 
-  $("currentScheduleList").innerHTML =
-    `
-      <div
-        class="helper"
-        style="
-          font-size:.86rem;
-          line-height:1.8
-        "
-      >
-        目前資料庫：
-        ${currentRows.length}
-        筆
-        <br>
-
-        Excel 新班表：
-        ${parsedScheduleRows.length}
-        筆
-        <br>
-
-        <span class="diffAdd">
-          新增／變更：
-          ${added.length}
-          筆
-        </span>
-
-        <br>
-
-        <span class="diffRemove">
-          將被取代：
-          ${removed.length}
-          筆
-        </span>
-      </div>
-    `;
-
+  // 同步顯示與 Excel 相同月份的資料庫表格，不再覆蓋為逐筆摘要。
+  await loadDatabaseScheduleView(parsedScheduleYear,parsedScheduleMonth);
 
   $("scheduleImportBtn").disabled =
     parsedScheduleProblems.length > 0
