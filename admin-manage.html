@@ -8116,26 +8116,35 @@ main();
 
 
 /* 單一家長綁定碼：後端 RPC 仍會檢查 admin 權限及試行名額。 */
+let singleGuardianOptions=[];
 async function loadSingleGuardianOptions(){
   const select=$("singleGuardianSelect"), output=$("singleGuardianResult");
   select.replaceChildren(new Option("正在讀取…",""));
   output.textContent="";
-  const data=await loadPilotGuardianRoles();
+  if(!currentStaff || currentStaff.role!=="admin"){
+    output.textContent="請以行政管理員帳號登入。";return;
+  }
+  const [pilot,test]=await Promise.all([
+    supabaseClient.rpc("admin_pilot_guardian_roles"),
+    supabaseClient.rpc("admin_test_guardian_binding_options")
+  ]);
+  if(pilot.error || test.error){
+    output.textContent="讀取失敗："+(pilot.error?.message||test.error?.message);return;
+  }
+  singleGuardianOptions=[...(pilot.data?.rows||[]),...(Array.isArray(test.data)?test.data:[])];
   select.replaceChildren(new Option("請選擇家長名額",""));
-  if(!data)return;
-  for(const row of (data.rows||[])){
+  for(const row of singleGuardianOptions){
     const child=pilotShortChildSummary(row.child_summary)||pilotShortChildNames(row.child_names)||"未登記幼兒";
     const role=row.caregiver_role||"身分待確認";
-    const label=child+"｜家長名額 "+(row.family_slot||"?")+"｜"+role+(row.line_bound?"（已綁定）":"（未綁定）");
-    select.add(new Option(label,String(row.guardian_id)));
+    select.add(new Option(child+"｜家長名額 "+(row.family_slot||"?")+"｜"+role+(row.line_bound?"（已綁定）":"（未綁定）"),String(row.guardian_id)));
   }
-  output.textContent="請確認選取的幼兒、家長名額與照顧者身分後再產生。";
+  output.textContent="共讀取 "+singleGuardianOptions.length+" 位家長（含測試名額）。請核對身分後再產生。";
 }
 async function issueSingleGuardianCode(){
   const select=$("singleGuardianSelect"),output=$("singleGuardianResult");
   const guardianId=select.value;
   if(!currentStaff||currentStaff.role!=="admin"){output.textContent="只有行政管理員可以產生連結。";return;}
-  const row=pilotGuardianRolesState?.rows?.find(x=>String(x.guardian_id)===guardianId);
+  const row=singleGuardianOptions.find(x=>String(x.guardian_id)===guardianId);
   if(!row){output.textContent="請先讀取並選擇有效家長名額。";return;}
   if(!row.caregiver_role){output.textContent="請先在上方確認此家長的身分。";return;}
   const child=pilotShortChildSummary(row.child_summary)||pilotShortChildNames(row.child_names)||"幼兒";
@@ -8149,7 +8158,7 @@ async function issueSingleGuardianCode(){
     const url="https://liff.line.me/2011537895-QkIp9Lh8/#bind="+encodeURIComponent(code);
     output.replaceChildren();
     const info=document.createElement("p");
-    info.textContent="已產生："+child+"｜"+row.caregiver_role+"；有效期限："+formatDateTime(data.expires_at);
+    info.textContent="已產生："+child+"｜"+row.caregiver_role+"；有效期限："+new Date(data.expires_at).toLocaleString("zh-TW");
     const link=document.createElement("textarea");
     link.readOnly=true;link.rows=3;link.value=url;link.setAttribute("aria-label","此家長專屬綁定連結");
     const copy=document.createElement("button");
