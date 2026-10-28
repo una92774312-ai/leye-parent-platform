@@ -1716,6 +1716,10 @@ details.rules summary{
         <option>其他原因</option>
       </select>
 
+      <div id="earlyOriginalInfo" class="notice noticeGreen" style="margin:10px 0;line-height:1.65">
+        原訂接回時間會依幼兒當天課後安排自動核對。
+      </div>
+
       <label
         class="title"
         style="margin-top:10px"
@@ -3488,7 +3492,7 @@ function childrenText(list){
 }
 
 
-const AFTERCARE_CLASS_MAP = {AC01:"蝴蝶班",AC02:"白兔班",AC03:"蜜蜂班",AC04:"陽光書屋",AC05:"櫻桃班",AC06:"蘋果班"};
+const AFTERCARE_CLASS_MAP = {AC01:"蝴蝶班",AC02:"白兔班",AC03:"蜜蜂班",AC04:"綿羊班",AC05:"櫻桃班",AC06:"蘋果班"};
 function requestTypeLabel(type){return ({leave:"❌ 請假",extended:"⏰ 延長托育",temporary:"🧸 臨時托育"})[type]||"📋 申請";}
 function requestStatusInfo(status){const map={submitted:{text:"待本園確認",icon:"🟡",className:"statusPending"},pending:{text:"待本園確認",icon:"🟡",className:"statusPending"},approved:{text:"已核准",icon:"✅",className:"statusApproved"},waitlist:{text:"候補",icon:"🟠",className:"statusWaitlist"},rejected:{text:"無法安排",icon:"❌",className:"statusRejected"},cancelled:{text:"已取消",icon:"⚪",className:"statusCancelled"}};return map[status]||{text:status||"未知狀態",icon:"📋",className:"statusCancelled"};}
 function requestDateText(value){if(!value)return "-";const parts=String(value).split("-");return parts.length===3?parts.join(" / "):String(value);}
@@ -3496,6 +3500,25 @@ function requestShortTime(value){return value?String(value).slice(0,5):"";}
 function requestTimeText(row){const start=requestShortTime(row.requested_start_time),end=requestShortTime(row.requested_end_time);if(!start&&!end)return row.request_type==="leave"?"整日":"-";return (start||"-")+"－"+(end||"-");}
 function requestChildName(childId){const child=children.find(item=>item.id===childId);return child?child.className+"・"+parentChildShortName(child.name):"幼兒";}
 function requestAftercareName(code){return code?(AFTERCARE_CLASS_MAP[code]||code):"";}
+
+async function cancelCareRequest(requestId){
+  if(!window.confirm("確定取消這筆延托／臨托嗎？取消後若仍需要托育，必須重新提出申請。"))return;
+  const {data,error}=await supabaseClient.rpc("guardian_cancel_care",{p_request_id:requestId});
+  if(error){alert("取消失敗："+error.message+"\n如已涉及收費，請直接聯絡園方。");return;}
+  if(!data?.ok){alert("取消未完成，請重新整理確認。");return;}
+  alert("已取消此筆申請，請留意園方安排。");
+  await loadMyRequests();
+}
+function canCancelLeYeCare(row){
+ if(!["extended","temporary"].includes(row.request_type))return false;
+ if(!["submitted","pending","approved","waitlist"].includes(row.status))return false;
+ if(row.fee_collected_at || (row.fee_status && row.fee_status!=="none"))return false;
+ const ymd=today();if(row.request_date<ymd)return false;
+ if(row.request_date>ymd)return true;
+ const current=new Date().toLocaleTimeString("sv-SE",{timeZone:"Asia/Taipei",hour12:false}).slice(0,5);
+ const cutoff=(row.request_type==="extended" || String(row.requested_end_time||"").startsWith("18:00"))?"17:00":"16:00";
+ return current<cutoff;
+}
 function requestCreatedText(value){if(!value)return "";const d=new Date(value);if(Number.isNaN(d.getTime()))return "";return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0")+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
 async function cancelLeaveRequest(requestId){
  if(!confirm("確定取消這一天的請假？孩子其他家人看到的申請狀態也會同步更新。"))return;
@@ -3504,7 +3527,7 @@ async function cancelLeaveRequest(requestId){
  if(!data?.ok){alert("取消未完成。");return;}
  await loadMyRequests();alert("已取消該日請假。");
 }
-function renderRequestCard(row){const status=requestStatusInfo(row.status),className=requestAftercareName(row.assigned_aftercare_class_code),reason=row.reason?String(row.reason).trim():"",adminNote=row.admin_note?String(row.admin_note).trim():"";const classHtml=(row.status==="approved"&&className)?`<div class="requestClassBox">🏫 今日課後班：${escapeHtml(className)}</div>`:"";const noteHtml=adminNote?`<div class="requestNote">🌼 <b>本園備註</b><br>${escapeHtml(adminNote)}</div>`:"";return `<div class="requestCard"><div class="requestCardTop"><div class="requestType">${requestTypeLabel(row.request_type)}</div><div class="requestStatus ${status.className}">${status.icon} ${escapeHtml(status.text)}</div></div><div class="requestCardBody"><div class="requestChild">👶 ${escapeHtml(requestChildName(row.child_id))}</div><div class="requestMetaGrid"><div class="requestMeta"><div class="requestLabel">📅 日期</div><div class="requestValue">${escapeHtml(requestDateText(row.request_date))}</div></div><div class="requestMeta"><div class="requestLabel">⏰ 時段</div><div class="requestValue">${escapeHtml(requestTimeText(row))}</div></div>${reason?`<div class="requestMeta requestMetaFull"><div class="requestLabel">📝 申請內容</div><div class="requestValue">${escapeHtml(reason)}</div></div>`:""}</div>${classHtml}${noteHtml}</div>${row.request_type==="leave"&&["submitted","pending","approved"].includes(row.status)&&row.request_date>=today()?`<button class="btn btnGray" type="button" onclick="cancelLeaveRequest(\'${row.id}\')">↩ 取消此日請假</button>`:""}${row.created_at?`<div class="requestFoot">送出時間：${escapeHtml(requestCreatedText(row.created_at))}</div>`:""}</div>`;}
+function renderRequestCard(row){const status=requestStatusInfo(row.status),className=requestAftercareName(row.assigned_aftercare_class_code),reason=row.reason?String(row.reason).trim():"",adminNote=row.admin_note?String(row.admin_note).trim():"";const classHtml=(row.status==="approved"&&className)?`<div class="requestClassBox">🏫 今日課後班：${escapeHtml(className)}</div>`:"";const noteHtml=adminNote?`<div class="requestNote">🌼 <b>本園備註</b><br>${escapeHtml(adminNote)}</div>`:"";const proxyHtml=row.staff_proxy_by?`<div class="requestNote">👩‍🏫 此筆由園方老師協助登記，托育仍須依園方審核流程安排。</div>`:"";return `<div class="requestCard"><div class="requestCardTop"><div class="requestType">${requestTypeLabel(row.request_type)}</div><div class="requestStatus ${status.className}">${status.icon} ${escapeHtml(status.text)}</div></div><div class="requestCardBody"><div class="requestChild">👶 ${escapeHtml(requestChildName(row.child_id))}</div><div class="requestMetaGrid"><div class="requestMeta"><div class="requestLabel">📅 日期</div><div class="requestValue">${escapeHtml(requestDateText(row.request_date))}</div></div><div class="requestMeta"><div class="requestLabel">⏰ 時段</div><div class="requestValue">${escapeHtml(requestTimeText(row))}</div></div>${reason?`<div class="requestMeta requestMetaFull"><div class="requestLabel">📝 申請內容</div><div class="requestValue">${escapeHtml(reason)}</div></div>`:""}</div>${classHtml}${noteHtml}${proxyHtml}</div>${row.request_type==="leave"&&["submitted","pending","approved"].includes(row.status)&&row.request_date>=today()?`<button class="btn btnGray" type="button" onclick="cancelLeaveRequest(\'${row.id}\')">↩ 取消此日請假</button>`:""}${canCancelLeYeCare(row)?`<button class="btn btnGray" type="button" onclick="cancelCareRequest('${row.id}')">↩ 取消延托／臨托（需在截止時間前）</button>`:""}${row.created_at?`<div class="requestFoot">送出時間：${escapeHtml(requestCreatedText(row.created_at))}</div>`:""}</div>`;}
 async function loadMyRequests(){
 
   const box =
@@ -3545,7 +3568,7 @@ async function loadMyRequests(){
           "requests"
         )
         .select(
-          "id,request_date,child_id,request_type,status,requested_start_time,requested_end_time,reason,assigned_aftercare_class_code,admin_note,created_at"
+          "id,request_date,child_id,request_type,status,requested_start_time,requested_end_time,reason,assigned_aftercare_class_code,admin_note,created_at,staff_proxy_by,fee_status,fee_collected_at"
         )
         .in(
           "child_id",
@@ -3666,6 +3689,7 @@ function setPickupMode(
   ){
     refreshLateNotice();
   }
+  if(mode === "提早接孩子")refreshEarlyOriginalHint();
 
 }
 
@@ -3873,6 +3897,39 @@ function pickerChange(){
 }
 
 
+
+// 依園方當日排班或固定托育計畫，讀取幼兒真正的原訂接回時間。
+async function getOriginalPickupTime(childId){
+  const {data,error}=await supabaseClient.rpc('guardian_original_pickup_time',{
+    p_child_id:childId,
+    p_pickup_date:today()
+  });
+  if(error)throw error;
+  if(!data)throw new Error('目前無法核對原訂接送時間，請聯絡老師。');
+  return String(data).slice(0,5);
+}
+let earlyOriginalHintSequence=0;
+async function refreshEarlyOriginalHint(){
+  const box=$('earlyOriginalInfo');
+  if(!box || currentPickupMode!=='提早接孩子' || !currentGuardianId)return;
+  const seq=++earlyOriginalHintSequence;
+  const checked=[...document.querySelectorAll('input[name="pickupChild"]:checked')]
+    .filter(x=>!x.disabled).map(x=>x.value);
+  if(!checked.length){box.textContent='請先勾選幼兒，即可查看原訂接回時間。';return;}
+  box.textContent='正在核對園方原訂接回時間…';
+  try{
+    const values=await Promise.all(checked.map(id=>getOriginalPickupTime(id)));
+    if(seq!==earlyOriginalHintSequence)return;
+    box.textContent='原訂接回：'+values.join('、')+'（依園方課後安排）';
+  }catch(e){
+    if(seq!==earlyOriginalHintSequence)return;
+    box.textContent='原訂時間讀取失敗，送出前會再次核對：'+(e.message||e);
+  }
+}
+document.addEventListener('change',e=>{
+  if(e.target && e.target.name==='pickupChild')refreshEarlyOriginalHint();
+});
+
 async function submitPickup(){
 
   const list =
@@ -4022,29 +4079,24 @@ async function submitPickup(){
     }
 
 
-    pickupModeCode =
-      "early";
-
-    scheduledTime =
-      earlyTime;
-
-    expectedArrival =
-      earlyTime;
-
-    noticeReason =
-      earlyReason;
-
-
-    displayText =
-      "提早接孩子"
-      +
-      "｜"
-      +
-      earlyTime
-      +
-      "｜"
-      +
-      earlyReason;
+    // 舊 RPC 仍要求早接時間暫放在 p_scheduled；資料庫觸發器
+    // 將依幼兒的原訂課後安排，分別正確寫入正式原訂時間與預計時間。
+    let originalTimes;
+    try{
+      originalTimes=await Promise.all(list.map(child=>getOriginalPickupTime(child.id)));
+    }catch(e){
+      alert('原訂接回時間核對失敗，請稍後重試：'+(e.message||e));
+      return;
+    }
+    if(originalTimes.some(t=>earlyTime>=t)){
+      alert('提早接送時間必須早於幼兒原訂接回時間（'+originalTimes.join('、')+'）。');
+      return;
+    }
+    pickupModeCode="early";
+    scheduledTime=earlyTime;
+    expectedArrival=earlyTime;
+    noticeReason=earlyReason;
+    displayText='提早接孩子｜原訂 '+originalTimes.join('、')+'｜預計 '+earlyTime+'｜'+earlyReason;
 
   }
 
@@ -4102,6 +4154,16 @@ async function submitPickup(){
     }
 
 
+    try{
+      const trueTimes=await Promise.all(list.map(child=>getOriginalPickupTime(child.id)));
+      if(trueTimes.some(t=>t!==original)){
+        alert('園方原訂接回時間為 '+trueTimes.join('、')+'，與您選擇的 '+original+' 不同。請選擇正確的原訂時間；若安排有疑問請先聯絡老師。');
+        return;
+      }
+    }catch(e){
+      alert('無法核對原訂接送時間，請稍後重試：'+(e.message||e));
+      return;
+    }
     pickupModeCode =
       "late_notice";
 
@@ -4141,6 +4203,21 @@ async function submitPickup(){
 
   }
 
+
+  // 一般接送必須與園方原訂時段相同，避免當日誤選導致後續逾時統計錯誤。
+  if(['normal_1600','first_1700','second_1800'].includes(pickupModeCode)){
+    try{
+      const officialTimes=await Promise.all(list.map(child=>getOriginalPickupTime(child.id)));
+      if(officialTimes.some(time=>time!==scheduledTime)){
+        alert('園方登記的原訂接回時間為 '+officialTimes.join('、')+
+          '，與這次選擇的 '+scheduledTime+' 不同。若需提早請選「提早接孩子」，若預計晚到請選「我會晚到」。');
+        return;
+      }
+    }catch(e){
+      alert('核對幼兒原訂時間失敗，請稍後重試：'+(e.message||e));
+      return;
+    }
+  }
 
   /*
   ================================================

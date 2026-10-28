@@ -1143,6 +1143,17 @@
 .adminSupportControls button:disabled{opacity:.55}.adminSupportStatus{font-size:12px;line-height:1.6;color:#687d6c;margin:9px 0 0}
 .adminSupportTimes{display:grid;grid-template-columns:1fr 1fr;gap:9px}.adminSupportTimes label{display:grid;gap:6px}.supportSlot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:5px 0;padding:9px 10px;border-radius:9px;background:#fff;font-size:14px}.supportSlot button{border:1px solid #d4a9a9;color:#9b3c3c;background:#fff;border-radius:8px;padding:6px 10px}
 </style>
+
+<style>
+.leyeTeacherDialog{border:0;border-radius:18px;padding:22px;width:min(94vw,450px);max-height:85dvh;overflow:auto;background:#fff;color:#263a2d;box-shadow:0 14px 70px #0003}
+.leyeTeacherDialog::backdrop{background:#0007}
+.leyeTeacherDialog label{font-size:14px;font-weight:700;display:block;margin:10px 0 5px}
+.leyeTeacherDialog select,.leyeTeacherDialog input,.leyeTeacherDialog textarea{width:100%;min-height:42px;border:1px solid #cdd9ca;border-radius:10px;padding:8px;font-size:16px;box-sizing:border-box}
+.leyeDialogButtons{display:flex;gap:10px;margin-top:18px}.leyeDialogButtons button{flex:1;border:0;border-radius:10px;padding:13px;background:#e9eee7;color:#304938;font-weight:bold}.leyeDialogButtons button:last-child{background:#32774d;color:#fff}
+.leyeActionBtn{border:1px solid #c9dbc5;background:#f0f9eb;border-radius:8px;padding:7px 9px;font-size:12px;margin:3px;cursor:pointer;color:#32623c}
+.leyeActionBtn.warn{background:#fff6e7;border-color:#e9d09e;color:#825500}
+.leyeCurrentBadge{display:inline-flex;background:#eff4eb;color:#355c38;border-radius:8px;padding:5px 8px;font-size:12px;margin:3px 3px 3px 0}
+</style>
 </head>
 
 <body>
@@ -1262,6 +1273,31 @@
   <p id="adminSupportStatus" class="adminSupportStatus" aria-live="polite">每次安排半小時為單位，可新增多個不重疊時段。</p>
 </section>
             <div id="todayClassRosters" class="todayClassRosters"></div>
+            <section id="leyeProvisionalSection" class="todayBox" style="display:none;margin-top:10px" aria-label="16點尚未接回待安排">
+              <div class="todayTitle">⏰ 16:00 未接回｜暫列17:00／18:00</div>
+              <div id="leyeProvisionalList" style="padding:10px"></div>
+              <small>這是待確認的照顧名單，不代表臨托已核准；不處理收費。</small>
+            </section>
+            <dialog id="leyeTeacherDialog" class="leyeTeacherDialog">
+              <form method="dialog" onsubmit="return false">
+                <h3 id="leyeDialogTitle">今日接送操作</h3>
+                <p id="leyeDialogHint" style="font-size:13px;color:#647367"></p>
+                <div id="leyeDialogTypeWrap"><label for="leyeDialogType">操作類別</label>
+                  <select id="leyeDialogType" onchange="updateLeYeActionFields()">
+                    <option value="leave">今日請假</option><option value="early">提早接送</option>
+                    <option value="extended">延長托育（17:00→18:00）</option>
+                    <option value="temporary">臨時托育</option>
+                  </select></div>
+                <div id="leyeDialogTimeWrap"><label for="leyeDialogTime">時間或時段</label><select id="leyeDialogTime"></select></div>
+                <div id="leyeDialogDateWrap"><label for="leyeDialogDate">日期（老師代辦可選未來 30 天）</label><input type="date" id="leyeDialogDate"></div>
+                <label for="leyeDialogReason">原因／備註（如家長口頭告知）</label>
+                <textarea id="leyeDialogReason" rows="2" maxlength="250" placeholder="請簡短填寫原因或家長確認情況"></textarea>
+                <div id="leyeDialogError" aria-live="polite" style="color:#a93529;font-size:13px"></div>
+                <div class="leyeDialogButtons"><button type="button" onclick="document.getElementById('leyeTeacherDialog').close()">返回</button>
+                  <button type="button" id="leyeDialogSubmit" onclick="saveLeYeTeacherAction()">儲存登記</button></div>
+              </form>
+            </dialog>
+
             <details id="rosterDetails" class="rosterDetails">
               <summary>
                 <span id="rosterTitle">👥 我的班級幼兒</span>
@@ -1935,6 +1971,107 @@ async function actOnTeacherItem(
   }
 }
 
+
+// 樂業附幼 2026/10：實際接送時間採「區間紀錄」，不代入逾時計費公式。
+let leyeTodayStatus=new Map();
+let leyeDialogChild="";
+let leyeDialogAction="";
+function leyeTaipeiDay(){return new Date().toLocaleDateString("sv-SE",{timeZone:"Asia/Taipei"});}
+function leyeTaipeiClock(){return new Date().toLocaleTimeString("sv-SE",{timeZone:"Asia/Taipei",hour12:false}).slice(0,5);}
+function leyeTodayChildStatus(id){return leyeTodayStatus.get(String(id))||null;}
+function leyeTeacherActionButton(childId,kind,label,warning=false){
+  if(!/^[0-9a-f-]{36}$/i.test(String(childId||"")))return "";
+  return `<button type="button" class="leyeActionBtn ${warning?"warn":""}" onclick="openLeYeTeacherAction('${childId}','${kind}')">${escapeHtmlText(label)}</button>`;
+}
+async function loadLeYeTodayStatus(roster){
+  const list=[];
+  for(const g of [...(roster?.morning_groups||[]),...(roster?.aftercare_groups||[])]){
+    for(const x of [...(g?.children||[]),...(g?.regular_children||[]),...(g?.temporary_children||[])])if(x?.child_id)list.push(x.child_id);
+  }
+  const ids=[...new Set(list)];
+  if(!ids.length){leyeTodayStatus=new Map();return;}
+  const {data,error}=await teacherSupabase.rpc("teacher_today_child_status",{p_child_ids:ids,p_day:leyeTaipeiDay()});
+  if(error){console.warn("今日狀態讀取失敗",error);leyeTodayStatus=new Map();return;}
+  leyeTodayStatus=new Map((data||[]).map(x=>[String(x.child_id),x]));
+}
+function fillLeYeTimeOptions(opts){
+ const elSel=document.getElementById("leyeDialogTime");
+ elSel.innerHTML=opts.map(([value,label])=>`<option value="${value}">${label}</option>`).join("");
+}
+function updateLeYeActionFields(){
+ const type=leyeDialogAction==="proxy"?document.getElementById("leyeDialogType").value:leyeDialogAction;
+ const timeWrap=document.getElementById("leyeDialogTimeWrap");
+ const dateWrap=document.getElementById("leyeDialogDateWrap");
+ dateWrap.style.display=leyeDialogAction==="proxy"?"":"none";
+ timeWrap.style.display=type==="leave"?"none":"";
+ const now=leyeTaipeiClock();
+ if(type==="slot"){
+   timeWrap.style.display="";
+ }else if(type==="early"){
+   const a=[];for(let h=7;h<=18;h++)for(let m of [0,15,30,45]){
+     const t=String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");if(t < String(leyeTodayChildStatus(leyeDialogChild)?.original_pickup_time||"16:00").slice(0,5))a.push([t,t]);}
+   fillLeYeTimeOptions(a);
+   const upcoming=a.find(x=>x[0]>=now);
+   if(upcoming)document.getElementById("leyeDialogTime").value=upcoming[0];
+ }else if(type==="temporary")fillLeYeTimeOptions([["17:00","16:00～17:00"],["18:00","16:00～18:00"]]);
+ else if(type==="late"||type==="late18")fillLeYeTimeOptions([["17:00","暫列 17:00"],["18:00","暫列 18:00"]]);
+ else if(type==="extended")fillLeYeTimeOptions([["18:00","17:00～18:00"]]);
+}
+async function openLeYeTeacherAction(childId,action){
+  leyeDialogChild=childId;leyeDialogAction=action;
+  const dlg=document.getElementById("leyeTeacherDialog");
+  document.getElementById("leyeDialogError").textContent="";
+  document.getElementById("leyeDialogReason").value="";
+  document.getElementById("leyeDialogDate").value=leyeTaipeiDay();
+  document.getElementById("leyeDialogTypeWrap").style.display=action==="proxy"?"":"none";
+  document.getElementById("leyeDialogTitle").textContent=action==="slot"?"選擇已接送時段":action==="proxy"?"老師代家長登記":"16:00 未接回安排";
+  document.getElementById("leyeDialogHint").textContent=action==="slot"?"請依現場實際接送時段登記。時段僅供接送核對，不自動產生或修改費用。":action==="proxy"?"紀錄操作老師，托育申請仍須依園方規定審核。":"先暫列17:00；確認後可改為18:00。未經確認不視為托育核准。";
+  updateLeYeActionFields();
+  if(action==="slot"){
+    const {data,error}=await teacherSupabase.rpc("leye_pickup_slot_options");
+    if(error){alert("時段讀取失敗："+error.message);return;}
+    const now=leyeTaipeiClock();
+    const list=(data||[]).map(x=>[String(x.slot_start).slice(0,5)+"|"+String(x.slot_end).slice(0,5),String(x.slot_start).slice(0,5)+"－"+String(x.slot_end).slice(0,5)])
+      .filter(x=>x[0].split("|")[1]<=now);
+    if(!list.length){alert("目前尚無可選擇的已完成時段。");return;}
+    fillLeYeTimeOptions(list);
+    document.getElementById("leyeDialogTime").value=list[list.length-1][0];
+  }
+  if(action==="late18")document.getElementById("leyeDialogTime").value="18:00";
+  dlg.showModal();
+}
+async function saveLeYeTeacherAction(){
+ const btn=document.getElementById("leyeDialogSubmit");
+ const errorBox=document.getElementById("leyeDialogError");
+ const time=document.getElementById("leyeDialogTime").value;
+ const date=document.getElementById("leyeDialogDate").value;
+ const reason=document.getElementById("leyeDialogReason").value.trim();
+ btn.disabled=true;errorBox.textContent="";
+ try{
+  let rpc,args;
+  if(leyeDialogAction==="slot"){
+    const parts=time.split("|");
+    rpc="teacher_record_pickup_slot";
+    args={p_child_id:leyeDialogChild,p_pickup_date:leyeTaipeiDay(),p_slot_start:parts[0],p_slot_end:parts[1],p_note:reason||null};
+  }else if(leyeDialogAction==="proxy"){
+    rpc="teacher_proxy_child_request";
+    const type=document.getElementById("leyeDialogType").value;
+    args={p_child_id:leyeDialogChild,p_request_date:date,p_type:type,p_end_or_early_time:type==="leave"?null:type==="extended"?"18:00":time,p_reason:reason||null};
+  }else{
+    rpc="teacher_provisional_late_pickup";
+    args={p_child_id:leyeDialogChild,p_pickup_date:leyeTaipeiDay(),p_end_time:time,p_reason:reason||null};
+  }
+  const {data,error}=await teacherSupabase.rpc(rpc,args);
+  if(error)throw error;
+  if(!data?.ok)throw Error("登記未完成");
+  document.getElementById("leyeTeacherDialog").close();
+  alert("✓ 已儲存。需要審核的托育申請請由行政確認。");
+  await loadTeacherRoster();
+  if(typeof loadTeacherWeekItems==="function")await loadTeacherWeekItems();
+ }catch(err){errorBox.textContent="無法儲存："+(err?.message||String(err));}
+ finally{btn.disabled=false;}
+}
+
 function rosterBadgeHtml(
   text,
   className=""
@@ -1947,12 +2084,14 @@ function rosterChildHtml(
   mode,
   canConfirmPickup=false
 ){
-  const isLeave=
-    child?.is_leave===true;
+  const todayStatus=leyeTodayChildStatus(child?.child_id);
+  const isLeave=child?.is_leave===true || todayStatus?.status_code==="leave";
 
   const badges=[];
+  if(todayStatus?.status_text){badges.push(rosterBadgeHtml(todayStatus.status_text,todayStatus.status_code==="leave"?"leave":""));}
 
-  if(isLeave){
+
+  if(isLeave && todayStatus?.status_code!=="leave"){
     badges.push(
       rosterBadgeHtml(
         mode==="temporary"
@@ -2072,14 +2211,25 @@ function rosterChildHtml(
     );
   }
 
-  const alreadyPickedUp=completedPilotPickupIds.has(String(child?.child_id||""));
-  // 僅在該教師「當日」確實被指派此課後班時提供實際接送按鈕。
-  // admin 角色不再一律排除，但同樣不得操作未指派班級。
-  const pickupControl = mode==="regular" && canConfirmPickup===true && new Date().toLocaleTimeString("en-GB",{timeZone:"Asia/Taipei",hour12:false}).slice(0,5)>="16:00" && !isLeave && !["absent","cancelled"].includes(String(child?.assignment_status||"")) &&
-    (["C01","C02"].includes(child?.morning_class_id) || String(child?.school_code||"").startsWith("TEST-")) &&
-    /^[a-f0-9-]{36}$/i.test(child?.child_id||"")
-      ? alreadyPickedUp ? `<span>✓ 已接送</span>` : `<button type="button" class="confirmBtn" onclick="confirmRegularCarePickup('${child.child_id}',this)">🚗 確認已接送</button>`
-      : "";
+  const childKey=String(child?.child_id||"");
+  const pickedUp=todayStatus?.status_code==="picked_up" || completedPilotPickupIds.has(childKey);
+  const isEarly=todayStatus?.status_code==="early";
+  const isWaitingLater=todayStatus?.status_code==="provisional";
+  let pickupControl="";
+  if(!isLeave && /^[0-9a-f-]{36}$/i.test(childKey)){
+    if(pickedUp)pickupControl='<span class="leyeCurrentBadge">✓ 已接送</span>';
+    else if(mode==="regular"||mode==="temporary"||isEarly){
+      pickupControl+=leyeTeacherActionButton(childKey,"slot","選擇已接送時段");
+    }
+    if(mode==="morning" && todayStatus?.status_code==="normal" && leyeTaipeiClock()>="16:00"){
+      pickupControl+=leyeTeacherActionButton(childKey,"late","16:00 未接回",true);
+    }
+    if(mode==="morning" && isWaitingLater){
+      pickupControl+=leyeTeacherActionButton(childKey,"late18","調整17:00／18:00",true);
+      pickupControl+=leyeTeacherActionButton(childKey,"slot","選擇已接送時段");
+    }
+    if(!pickedUp)pickupControl+=leyeTeacherActionButton(childKey,"proxy","協助家長登記");
+  }
 
   return `
     <div class="rosterChildRow ${isLeave?"leavePriority":""}">
@@ -2120,15 +2270,6 @@ function rosterListHtml(
 
 let currentRosterStaffRole="";
 let completedPilotPickupIds=new Set();
-async function confirmRegularCarePickup(childId,button){
-  if(!confirm("確認孩子已實際離園？操作後將記錄時間，不可提前點選。"))return;
-  button.disabled=true;
-  const {error}=await teacherSupabase.rpc("teacher_complete_regular_aftercare",{p_child_id:childId});
-  if(error){alert("接送未完成："+error.message);button.disabled=false;return;}
-  completedPilotPickupIds.add(childId);
-  button.textContent="✓ 已接送";
-}
-
 
 
 let adminSupportSlots=[];
@@ -2224,10 +2365,10 @@ function renderTeacherRoster(data,todayScope={}){
   const ownAftercare=aftercare.filter(group=>aftercareIds.has(group.aftercare_class_id));
   const todayGroups=[];
   for(const group of ownMorning){
-    todayGroups.push('<details class="rosterClassDetails"><summary><span>🏫 '+escapeHtmlText(group.class_name||group.class_id)+'・班級幼兒</span><span class="rosterClassCount">'+Number(group.child_count||0)+' 人</span></summary><div class="rosterClassBody">'+rosterListHtml(group.children,"morning")+'</div></details>');
+    todayGroups.push('<details class="rosterClassDetails" open><summary><span>🏫 '+escapeHtmlText(group.class_name||group.class_id)+'・班級幼兒</span><span class="rosterClassCount">'+Number(group.child_count||0)+' 人</span></summary><div class="rosterClassBody">'+rosterListHtml(group.children,"morning")+'</div></details>');
   }
   for(const group of ownAftercare){
-    todayGroups.push('<details class="rosterClassDetails"><summary><span>🌙 '+escapeHtmlText(group.aftercare_class_name||group.aftercare_class_id)+'・今日課後班</span><span class="rosterClassCount">課後 '+Number(group.regular_count||0)+'｜臨托 '+Number(group.temporary_count||0)+'</span></summary><div class="rosterClassBody"><div class="rosterSubTitle">固定課後幼兒</div>'+rosterListHtml(group.regular_children,"regular",true)+'<div class="rosterSubTitle">今日臨托</div>'+rosterListHtml(group.temporary_children,"temporary")+'</div></details>');
+    todayGroups.push('<details class="rosterClassDetails" open><summary><span>🌙 '+escapeHtmlText(group.aftercare_class_name||group.aftercare_class_id)+'・今日課後班</span><span class="rosterClassCount">課後 '+Number(group.regular_count||0)+'｜臨托 '+Number(group.temporary_count||0)+'</span></summary><div class="rosterClassBody"><div class="rosterSubTitle">固定課後幼兒</div>'+rosterListHtml(group.regular_children,"regular",true)+'<div class="rosterSubTitle">今日臨托</div>'+rosterListHtml(group.temporary_children,"temporary")+'</div></details>');
   }
   const todayBox=el("todayClassRosters");
   todayBox.innerHTML='<div class="todayClassHeading">🌿 今天的班級幼兒</div>'+(todayGroups.length?todayGroups.join(""):'<div class="rosterEmpty">今天沒有安排需要帶班的課程。</div>');
@@ -2300,6 +2441,16 @@ function renderTeacherRoster(data,todayScope={}){
   content.innerHTML=parts.join("");
 }
 
+async function refreshLeYeProvisional(){
+  const box=document.getElementById("leyeProvisionalSection"),target=document.getElementById("leyeProvisionalList");
+  if(!box||!target)return;
+  const {data,error}=await teacherSupabase.rpc("teacher_provisional_pickup_list");
+  if(error){console.warn("暫列名單讀取失敗",error);box.style.display="none";return;}
+  if(!Array.isArray(data)||!data.length){box.style.display="none";return;}
+  box.style.display="";
+  target.innerHTML=data.map(x=>`<div class="rosterChildRow"><span>${escapeHtmlText(x.morning_class_name||"")}・${escapeHtmlText(staffChildNickname(x.child_name))}</span><span>${escapeHtmlText(String(x.provisional_end_time||"").slice(0,5))} 待確認 ${leyeTeacherActionButton(x.child_id,"late18","調整時間",true)}</span></div>`).join("");
+}
+
 async function loadTeacherRoster(){
   const status=el("rosterStatus");
 
@@ -2327,7 +2478,9 @@ async function loadTeacherRoster(){
   completedPilotPickupIds=new Set(Array.isArray(pickupStatuses.data)?pickupStatuses.data.map(String):[]);
   const {data:todayScope,error:todayError}=await teacherSupabase.rpc("get_teacher_today_assigned_classes");
   if(todayError){console.error("today assigned classes error",todayError);status.className="status show error";status.textContent="當日班級資料讀取失敗。";return;}
+  await loadLeYeTodayStatus(data||{});
   renderTeacherRoster(data||{},todayScope||{});
+  await refreshLeYeProvisional();
   await loadAdminMorningSupport(data||{});
 
   status.className="status show ok";
@@ -2722,20 +2875,9 @@ function appendCareFeeControls(
 }
 
 async function completeTeacherPickup(item, btn){
-  const recordId = item?.source_id || item?.id;
-  if(!recordId || item?.source_type !== "pickup") return;
-  if(!confirm(`確定 ${staffChildNickname(item?.child_name)} 已實際離園？此操作會記錄時間及計算可能的逾時費用。`)) return;
-  btn.disabled = true;
-  try{
-    const {data,error} = await teacherSupabase.rpc("teacher_complete_pickup",{p_pickup_record_id:recordId});
-    if(error) throw error;
-    if(data?.ok !== true) throw new Error("接送確認未成功");
-    await loadTeacherWeekItems();
-    alert("已完成接送紀錄");
-  }catch(err){
-    console.error("teacher_complete_pickup:",err);
-    alert("接送確認失敗："+(err?.message || "請聯絡行政"));
-  }finally{btn.disabled=false;}
+  const childId=item?.child_id;
+  if(!childId){alert("此筆通知沒有幼兒識別，請回到今日班級名冊操作。");return;}
+  await openLeYeTeacherAction(String(childId),"slot");
 }
 
 function appendTeacherActionControls(
@@ -2985,8 +3127,10 @@ function makeStudentItem(
       );
     }
 
-    badge.textContent =
-      requestTypeLabel(pickupType);
+    const slotState=leyeTodayChildStatus(item?.child_id);
+    badge.textContent = slotState?.status_code==="picked_up"
+      ? "已接送"
+      : requestTypeLabel(pickupType);
   }
 
   top.appendChild(left);
@@ -3063,9 +3207,9 @@ function makeStudentItem(
     }
 
     if(item?.expected_arrival_time){
-      rows.push(
-        `預計抵達：${formatClock(item.expected_arrival_time)}`
-      );
+      const expectedLabel=item?.pickup_mode==='early' ? '預計提早接回' :
+        item?.pickup_mode==='late_notice' ? '預計晚到抵達' : '預計接送';
+      rows.push(`${expectedLabel}：${formatClock(item.expected_arrival_time)}`);
     }
 
     if(item?.pickup_person){
@@ -3105,6 +3249,7 @@ function makeStudentItem(
     );
   }
 
+  // 收到通知／標記處理與實際接送是不同作業；下方另外顯示已接送時段。
   appendTeacherActionControls(
     card,
     item
@@ -3114,14 +3259,16 @@ function makeStudentItem(
   if(type === "pickup" && item?.source_type === "pickup" && (item?.source_id || item?.id)){
     const pickupArea = document.createElement("div");
     pickupArea.className = "itemActionButtons";
-    if(item.actual_pickup_at){
+    if(leyeTodayChildStatus(item?.child_id)?.status_code==="picked_up"){
+      pickupArea.textContent = "✓ 已接送 "+(leyeTodayChildStatus(item?.child_id)?.pickup_slot_text||"");
+    }else if(item.actual_pickup_at){
       pickupArea.textContent = "✓ 已接送 "+formatDateTime(item.actual_pickup_at);
     }else if(item?.can_act === false){
       pickupArea.textContent = "👀 僅供查看：16:00 前提早接送由原班導師確認，課後老師不需點選。";
     }else{
       const button = document.createElement("button");
       button.type = "button";
-      button.textContent = "🚗 確認已接送（實際離園）";
+      button.textContent = "🚗 選擇已接送時段";
       button.addEventListener("click",()=>completeTeacherPickup(item,button));
       pickupArea.appendChild(button);
     }
