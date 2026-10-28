@@ -1570,6 +1570,14 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
   </div>
   <div id="pilotGuardianRolesTable" class="pilotGuardianRolesTable"></div>
   <hr style="margin:20px 0;border:0;border-top:1px solid #e0e9e1">
+  <div class="panelTitle" style="font-size:1rem">🔗 單一家長補發綁定連結</div>
+  <p class="helper">僅處理選定家長名額，不影響其他家長。產生新碼後，該名額尚未使用的舊連結會失效；已綁定 LINE 的家長不需重新綁定。</p>
+  <button class="btn btnBlue" type="button" onclick="loadSingleGuardianOptions()" style="margin:8px 0">讀取可選家長名額</button>
+  <label class="helper" for="singleGuardianSelect">選擇幼兒及家長名額（請先核對身分）</label>
+  <select id="singleGuardianSelect"><option value="">請先讀取名額</option></select>
+  <button class="btn btnGreen" type="button" onclick="issueSingleGuardianCode()" style="margin-top:10px">產生此家長的 14 天專屬連結</button>
+  <div id="singleGuardianResult" class="helper" aria-live="polite" style="margin-top:10px"></div>
+  <hr style="margin:20px 0;border:0;border-top:1px solid #e0e9e1">
   <div class="panelTitle" style="font-size:1rem">📄 保留目前 10/21 有效的專屬網址</div>
   <p class="helper">選擇電腦原本下載的 10/21 CSV，系統在行政頁面核對有效綁定碼，重新整理「誰的爸爸／媽媽」標籤。<b>不會重設任何綁定碼。</b></p>
   <input type="file" id="pilotOriginalCsv" accept=".csv,text/csv" aria-label="選擇既有家長綁定清單 CSV" style="width:100%;max-width:460px;margin-top:8px">
@@ -8105,6 +8113,51 @@ async function main(){
 
 
 main();
+
+
+/* 單一家長綁定碼：後端 RPC 仍會檢查 admin 權限及試行名額。 */
+async function loadSingleGuardianOptions(){
+  const select=$("singleGuardianSelect"), output=$("singleGuardianResult");
+  select.replaceChildren(new Option("正在讀取…",""));
+  output.textContent="";
+  const data=await loadPilotGuardianRoles();
+  select.replaceChildren(new Option("請選擇家長名額",""));
+  if(!data)return;
+  for(const row of (data.rows||[])){
+    const child=pilotShortChildSummary(row.child_summary)||pilotShortChildNames(row.child_names)||"未登記幼兒";
+    const role=row.caregiver_role||"身分待確認";
+    const label=child+"｜家長名額 "+(row.family_slot||"?")+"｜"+role+(row.line_bound?"（已綁定）":"（未綁定）");
+    select.add(new Option(label,String(row.guardian_id)));
+  }
+  output.textContent="請確認選取的幼兒、家長名額與照顧者身分後再產生。";
+}
+async function issueSingleGuardianCode(){
+  const select=$("singleGuardianSelect"),output=$("singleGuardianResult");
+  const guardianId=select.value;
+  if(!currentStaff||currentStaff.role!=="admin"){output.textContent="只有行政管理員可以產生連結。";return;}
+  const row=pilotGuardianRolesState?.rows?.find(x=>String(x.guardian_id)===guardianId);
+  if(!row){output.textContent="請先讀取並選擇有效家長名額。";return;}
+  if(!row.caregiver_role){output.textContent="請先在上方確認此家長的身分。";return;}
+  const child=pilotShortChildSummary(row.child_summary)||pilotShortChildNames(row.child_names)||"幼兒";
+  if(!confirm("確定只為「"+child+"｜"+row.caregiver_role+"（名額 "+(row.family_slot||"?")+"）」產生新連結？\\n\\n此名額舊的未使用連結將失效；其他家長不受影響。"))return;
+  output.textContent="正在產生連結…";
+  try{
+    const {data,error}=await supabaseClient.rpc("admin_issue_guardian_binding_code",{p_guardian_id:guardianId,p_valid_days:14});
+    if(error)throw error;
+    const code=String(data?.binding_code||"");
+    if(!/^[A-Z0-9]{16}$/.test(code))throw new Error("後端未回傳有效的 16 碼綁定碼");
+    const url="https://liff.line.me/2011537895-QkIp9Lh8/#bind="+encodeURIComponent(code);
+    output.replaceChildren();
+    const info=document.createElement("p");
+    info.textContent="已產生："+child+"｜"+row.caregiver_role+"；有效期限："+formatDateTime(data.expires_at);
+    const link=document.createElement("textarea");
+    link.readOnly=true;link.rows=3;link.value=url;link.setAttribute("aria-label","此家長專屬綁定連結");
+    const copy=document.createElement("button");
+    copy.type="button";copy.className="btn btnBlue";copy.textContent="複製專屬連結";
+    copy.onclick=async()=>{try{await navigator.clipboard.writeText(url);alert("已複製，請私訊正確家長。");}catch(e){link.select();alert("請長按上方連結複製。");}};
+    output.append(info,link,copy);
+  }catch(e){output.textContent="產生失敗："+(e?.message||String(e));}
+}
 
 </script>
 
