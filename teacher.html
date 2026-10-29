@@ -11,7 +11,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
-  <title>樂業附幼｜教職員平台 V13</title>
+  <title>樂業附幼｜教職員平台 V14</title>
 
   <script
     charset="utf-8"
@@ -1142,6 +1142,16 @@
 .adminSupportControls button{min-height:44px;border:0;border-radius:10px;background:#577d5b;color:white;font-size:15px;font-weight:800}
 .adminSupportControls button:disabled{opacity:.55}.adminSupportStatus{font-size:12px;line-height:1.6;color:#687d6c;margin:9px 0 0}
 .adminSupportTimes{display:grid;grid-template-columns:1fr 1fr;gap:9px}.adminSupportTimes label{display:grid;gap:6px}.supportSlot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:5px 0;padding:9px 10px;border-radius:9px;background:#fff;font-size:14px}.supportSlot button{border:1px solid #d4a9a9;color:#9b3c3c;background:#fff;border-radius:8px;padding:6px 10px}
+
+/* V14 mobile roster layout */
+.rosterChildRow{grid-template-columns:minmax(0,1fr);gap:10px;align-items:start}
+.rosterChildName{overflow-wrap:normal;word-break:keep-all;white-space:normal;line-height:1.5}
+.rosterBadges{max-width:none;justify-content:flex-start;align-items:center;gap:7px}
+.rosterBadges .leyeActionBtn{margin:0;min-height:40px;padding:9px 11px;font-size:13px;flex:1 1 145px}
+.rosterBadges .rosterBadge,.rosterBadges .leyeCurrentBadge{flex:0 0 auto}
+@media(max-width:480px){.rosterBadges{max-width:none}.rosterChildRow{grid-template-columns:minmax(0,1fr)}}
+.teacherFoldGroup{margin-top:10px}.teacherFoldHeading{padding:11px 13px}
+.todayCounts{gap:7px}.countCard{min-height:64px;padding:8px 6px}
 </style>
 
 <style>
@@ -1315,7 +1325,7 @@
             <div id="todayItemsSection" class="todayBox">
               <div class="todayHeader">
                 <div>
-                  <div class="todayTitle">🌷 這週孩子們的大小事</div>
+                  <div class="todayTitle">🌷 今日孩子們的大小事</div>
                   <div id="todayItemsDate" class="todayDate">讀取中…</div>
                 </div>
 
@@ -1331,26 +1341,21 @@
               </button>
 
               <div class="todayCounts" id="teacherWeekCounts">
-                <button class="countCard" type="button" onclick="jumpToTeacherItems('leaveItems')" aria-label="跳到本週請假紀錄"><div id="leaveCount" class="countNum">0</div>
-                  <div class="countLabel">本週請假</div></button>
+                <button class="countCard" type="button" onclick="jumpToTeacherItems('leaveItems')" aria-label="跳到今日請假紀錄"><div id="leaveCount" class="countNum">0</div>
+                  <div class="countLabel">今日請假</div></button>
 
-                <button class="countCard" type="button" onclick="jumpToTeacherItems('careItems')" aria-label="跳到本週臨托紀錄"><div id="temporaryCount" class="countNum">0</div>
-                  <div class="countLabel">本週臨托</div></button>
+                <button class="countCard" type="button" onclick="jumpToTeacherItems('careItems')" aria-label="跳到今日臨托紀錄"><div id="temporaryCount" class="countNum">0</div>
+                  <div class="countLabel">今日臨托</div></button>
 
-                <button class="countCard" type="button" onclick="jumpToTeacherItems('careItems')" aria-label="跳到本週延托紀錄"><div id="extendedCount" class="countNum">0</div>
-                  <div class="countLabel">本週延托</div></button>
+                <button class="countCard" type="button" onclick="jumpToTeacherItems('careItems')" aria-label="跳到今日延托紀錄"><div id="extendedCount" class="countNum">0</div>
+                  <div class="countLabel">今日延托</div></button>
 
-                <button class="countCard" type="button" onclick="jumpToTeacherItems('pickupItems')" aria-label="跳到本週接送紀錄"><div id="pickupCount" class="countNum">0</div>
-                  <div class="countLabel">本週接送</div></button>
+                <button class="countCard" type="button" onclick="jumpToTeacherItems('pickupItems')" aria-label="跳到今日接送紀錄"><div id="pickupCount" class="countNum">0</div>
+                  <div class="countLabel">今日接送</div></button>
               </div>
 
-              <div style="display:flex;gap:8px;margin:12px 0;align-items:center">
-                <button class="weekUtilityBtn" type="button" onclick="changeTeacherWeek(-1)" style="flex:1">← 上週</button>
-                <button class="weekUtilityBtn" type="button" onclick="changeTeacherWeek(0)" style="flex:1">本週</button>
-                <button class="weekUtilityBtn" type="button" onclick="changeTeacherWeek(1)" style="flex:1">下週 →</button>
-              </div>
               <div id="todayItemsStatus" class="status show info">
-                正在讀取本週學生事項…
+                正在讀取今日學生事項…
               </div>
 
               <div id="todayItemsContent" class="hidden teacherWeeklyGroups">
@@ -1364,13 +1369,10 @@
                   <div id="careItems" class="itemList teacherFoldContent"></div>
                 </details>
 
-                <div class="itemGroup">
-                  <div class="itemGroupHeader">
-                    <span>🚗 接送小提醒</span>
-                    <span id="pickupGroupCount" class="groupCount">0</span>
-                  </div>
-                  <div id="pickupItems" class="itemList"></div>
-                </div>
+                <details class="itemGroup teacherFoldGroup" id="pickupFold">
+                  <summary class="teacherFoldHeading"><span>🚗 接送小提醒</span><span id="pickupGroupCount" class="groupCount">0</span><span class="teacherFoldToggle" aria-hidden="true"></span></summary>
+                  <div id="pickupItems" class="itemList teacherFoldContent"></div>
+                </details>
               </div>
             </div>
 
@@ -3411,7 +3413,7 @@ async function loadTeacherWeekItems(){
     "status show info";
 
   statusBox.textContent =
-    "正在讀取本週學生事項…";
+    "正在讀取今日學生事項…";
 
   const referenceDate=(()=>{const now=new Date();const t=new Date(now.toLocaleString("en-US",{timeZone:"Asia/Taipei"}));t.setDate(t.getDate()+teacherWeekOffset*7);return [t.getFullYear(),String(t.getMonth()+1).padStart(2,"0"),String(t.getDate()).padStart(2,"0")].join("-");})();
   const fetchWeek=async(date)=>{
@@ -3440,86 +3442,27 @@ async function loadTeacherWeekItems(){
   const weekGroups=combinedGroups.filter(group=>group.some(x=>String(x.request_date)>=startDate&&String(x.request_date)<=endDate));
   const leave=weekGroups.flat();
 
-  const counts =
-    data?.counts || {};
-
-  const groupedLeaveCount=weekGroups.length;
-
-  const care =
-    Array.isArray(data?.care)
-      ? data.care
-      : [];
-
-  const pickup =
-    Array.isArray(data?.pickup)
-      ? data.pickup
-      : [];
-
-  setText(
-    "todayItemsDate",
-    `${formatDateText(data?.week_start)} ～ ${formatDateText(data?.week_end)}`
-  );
-
-  setText(
-    "todayTotalBadge",
-    Math.max(0,(counts.total??0)-(Array.isArray(data?.leave)?data.leave.length:0)+groupedLeaveCount)
-  );
-
-  setText(
-    "leaveCount",
-    groupedLeaveCount
-  );
-
-  setText(
-    "temporaryCount",
-    counts.temporary ?? 0
-  );
-
-  setText(
-    "extendedCount",
-    counts.extended ?? 0
-  );
-
-  setText(
-    "pickupCount",
-    counts.pickup ?? pickup.length
-  );
-
-  setText(
-    "leaveGroupCount",
-    groupedLeaveCount
-  );
-
-  setText(
-    "careGroupCount",
-    (counts.temporary ?? 0)
-    +
-    (counts.extended ?? 0)
-  );
-
-  setText(
-    "pickupGroupCount",
-    counts.pickup ?? pickup.length
-  );
-
-  renderItemList(
-    "leaveItems",
-    leave,
-    "leave"
-  );
-
-  renderItemList(
-    "careItems",
-    care,
-    "care"
-  );
-
-  renderItemList(
-    "pickupItems",
-    pickup,
-    "pickup"
-  );
-
+  const today = leyeTaipeiDay();
+  const isToday = item => String(item?.request_date || item?.pickup_date || item?.date || "").slice(0,10) === today;
+  const todayLeave = leave.filter(isToday);
+  const todayCare = (Array.isArray(data?.care) ? data.care : []).filter(isToday);
+  const todayPickup = (Array.isArray(data?.pickup) ? data.pickup : []).filter(isToday);
+  const todayLeaveCount = groupConsecutiveLeaves(todayLeave).length;
+  const todayTemporaryCount = todayCare.filter(x => String(x.type || x.request_type || x.care_type || "").toLowerCase().includes("temporary")).length;
+  const todayExtendedCount = todayCare.length - todayTemporaryCount;
+  const todayTotal = todayLeaveCount + todayCare.length + todayPickup.length;
+  setText("todayItemsDate", formatDateText(today));
+  setText("todayTotalBadge", todayTotal);
+  setText("leaveCount", todayLeaveCount);
+  setText("temporaryCount", todayTemporaryCount);
+  setText("extendedCount", todayExtendedCount);
+  setText("pickupCount", todayPickup.length);
+  setText("leaveGroupCount", todayLeaveCount);
+  setText("careGroupCount", todayCare.length);
+  setText("pickupGroupCount", todayPickup.length);
+  renderItemList("leaveItems", todayLeave, "leave");
+  renderItemList("careItems", todayCare, "care");
+  renderItemList("pickupItems", todayPickup, "pickup");
   el("todayItemsContent")
     .classList.remove(
       "hidden"
@@ -3528,8 +3471,8 @@ async function loadTeacherWeekItems(){
   statusBox.className =
     "status show ok";
 
-  statusBox.textContent = Math.max(0,(counts.total??0)-(Array.isArray(data?.leave)?data.leave.length:0)+groupedLeaveCount)>0 ? `這週有 ${(counts.total??0)-leave.length+groupedLeaveCount} 件孩子們的事項，辛苦您留意了 🌱` : "這週目前沒有需要處理的新事項 🌿";
-  ["leave","care","pickup"].forEach(kind=>{const elem=el(kind+"Items")?.closest(".itemGroup");const n=kind==="leave"?leave.length:kind==="care"?care.length:pickup.length;if(elem)elem.style.display=n?"":"none";});
+  statusBox.textContent = todayTotal > 0 ? `今日有 ${todayTotal} 件孩子們的事項，辛苦您留意了 🌱` : "今日目前沒有新事項 🌿";
+  [["leave",todayLeave.length],["care",todayCare.length],["pickup",todayPickup.length]].forEach(([kind,n])=>{const elem=el(kind+"Items")?.closest(".itemGroup");if(elem)elem.style.display=n?"":"none";});
 
   return data;
 }
