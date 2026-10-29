@@ -11,7 +11,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
-  <title>樂業附幼｜教職員平台 V15</title>
+  <title>樂業附幼｜教職員平台 V16</title>
 
   <script
     charset="utf-8"
@@ -1153,6 +1153,13 @@
 .teacherFoldGroup{margin-top:10px}.teacherFoldHeading{padding:11px 13px}
 .todayCounts{gap:7px}.countCard{min-height:64px;padding:8px 6px}
 
+/* V16 iPhone date-field overflow protection */
+.historySheet,.historyBody,.historyForm,.historyField{min-width:0;max-width:100%;box-sizing:border-box}
+.historyForm{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.historyField{width:100%;overflow:hidden}
+.historyField input[type="date"]{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;-webkit-appearance:none;appearance:none;font-size:16px;padding:0 8px}
+.historyField input[type="date"]::-webkit-date-and-time-value{min-width:0;text-align:left}
+@media(max-width:600px){.historyForm{grid-template-columns:minmax(0,1fr)}.historyField.full,.historySearchBtn{grid-column:1/-1}}
 /* V15 compact tap-to-expand roster */
 .rosterChildDisclosure{display:block;padding:0;overflow:hidden}
 .rosterChildSummary{list-style:none;display:flex;align-items:center;gap:9px;min-height:58px;padding:10px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -3519,7 +3526,7 @@ function openTeacherHistory(){
     new Date(now);
 
   startDate.setDate(
-    startDate.getDate()-89
+    startDate.getDate()-6
   );
 
   if(!el("historyStart").value){
