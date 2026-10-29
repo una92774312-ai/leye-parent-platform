@@ -11,7 +11,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
-  <title>樂業附幼｜教職員平台 V14</title>
+  <title>樂業附幼｜教職員平台 V15</title>
 
   <script
     charset="utf-8"
@@ -1152,6 +1152,26 @@
 @media(max-width:480px){.rosterBadges{max-width:none}.rosterChildRow{grid-template-columns:minmax(0,1fr)}}
 .teacherFoldGroup{margin-top:10px}.teacherFoldHeading{padding:11px 13px}
 .todayCounts{gap:7px}.countCard{min-height:64px;padding:8px 6px}
+
+/* V15 compact tap-to-expand roster */
+.rosterChildDisclosure{display:block;padding:0;overflow:hidden}
+.rosterChildSummary{list-style:none;display:flex;align-items:center;gap:9px;min-height:58px;padding:10px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rosterChildSummary::-webkit-details-marker{display:none}
+.rosterChildSummary:focus-visible{outline:3px solid #26743d;outline-offset:-3px}
+.rosterChildIdentity{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rosterChildName{display:block;white-space:normal;word-break:keep-all;overflow-wrap:normal;font-size:14px}
+.rosterChildMeta{display:block;margin:0}
+.rosterChildSummaryBadges{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:52%}
+.rosterChildChevron{flex:0 0 auto;width:9px;height:9px;border-right:2px solid #66806b;border-bottom:2px solid #66806b;transform:rotate(45deg);transition:transform .15s;margin:0 3px 4px}
+.rosterChildDisclosure[open] .rosterChildChevron{transform:rotate(225deg);margin:4px 3px 0}
+.rosterChildActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px 12px 12px;border-top:1px solid #e4ebe3}
+.rosterChildActions .leyeActionBtn{width:100%;min-width:0;min-height:44px;margin:0;padding:8px 5px;font-size:12px;line-height:1.35}
+.rosterChildActions .leyeCurrentBadge{grid-column:1/-1;justify-self:start}
+.rosterNoActions{font-size:12px;color:#6f7c71;grid-column:1/-1}
+.todayCounts{gap:7px;margin-bottom:10px}
+.countCard{min-height:56px;padding:7px 6px;border-radius:11px}
+.countNum{font-size:19px}.countLabel{margin-top:3px;font-size:12px}
+@media(max-width:360px){.rosterChildActions{grid-template-columns:1fr}.rosterChildSummaryBadges{max-width:45%}}
 </style>
 
 <style>
@@ -2234,20 +2254,17 @@ function rosterChildHtml(
   }
 
   return `
-    <div class="rosterChildRow ${isLeave?"leavePriority":""}">
-      <div>
-        <div class="rosterChildName">
-          ${escapeHtmlText(seat+staffChildNickname(child?.name))}
-        </div>
-        <div class="rosterChildMeta">
-          ${escapeHtmlText(meta.join("｜"))}
-        </div>
-      </div>
-      <div class="rosterBadges">
-        ${badges.join("")}
-${pickupControl}
-      </div>
-    </div>
+    <details class="rosterChildRow rosterChildDisclosure ${isLeave?"leavePriority":""}">
+      <summary class="rosterChildSummary">
+        <span class="rosterChildIdentity">
+          <span class="rosterChildName">${escapeHtmlText(seat+staffChildNickname(child?.name))}</span>
+          <span class="rosterChildMeta">${escapeHtmlText(meta.join("｜"))}</span>
+        </span>
+        <span class="rosterChildSummaryBadges">${badges.join("")}</span>
+        <span class="rosterChildChevron" aria-hidden="true"></span>
+      </summary>
+      <div class="rosterChildActions">${pickupControl || '<span class="rosterNoActions">目前無需操作</span>'}</div>
+    </details>
   `;
 }
 
