@@ -3290,7 +3290,7 @@ function makeStudentItem(
     }else if(item.actual_pickup_at){
       pickupArea.textContent = "✓ 已接送 "+formatDateTime(item.actual_pickup_at);
     }else if(item?.can_act === false){
-      pickupArea.textContent = "👀 僅供查看：16:00 前提早接送由原班導師確認，課後老師不需點選。";
+      pickupArea.textContent = "👀 僅供查看：16:10（含）前提早接送由原班導師確認，課後老師不需點選。";
     }else{
       const button = document.createElement("button");
       button.type = "button";
