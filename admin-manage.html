@@ -11,7 +11,7 @@
   content="width=device-width, initial-scale=1.0, viewport-fit=cover"
 >
 
-<title>樂業附幼｜行政設定</title>
+<title>樂業附幼｜行政設定 V17</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
@@ -8131,14 +8131,37 @@ async function loadSingleGuardianOptions(){
   if(pilot.error || test.error){
     output.textContent="讀取失敗："+(pilot.error?.message||test.error?.message);return;
   }
-  singleGuardianOptions=[...(pilot.data?.rows||[]),...(Array.isArray(test.data)?test.data:[])];
+  const base=[...(pilot.data?.rows||[]),...(Array.isArray(test.data)?test.data:[])];
+  // 新增企鵝班家長：只查詢四個已核對的名額，不讀取其他家庭資料。
+  const additions=[
+    {guardian_id:"437e8d54-3362-4dcf-b2a7-8dc447b13ad0",child_summary:"企鵝班 4號 瑞希",caregiver_role:"爸爸",family_slot:1},
+    {guardian_id:"7846710f-d547-415d-8fb6-1a19c93378ee",child_summary:"企鵝班 4號 瑞希",caregiver_role:"媽媽",family_slot:2},
+    {guardian_id:"a80314e4-dd11-4fd7-b9ae-5a560a1f4956",child_summary:"企鵝班 7號 翌翌",caregiver_role:"爸爸",family_slot:1},
+    {guardian_id:"02dc70fe-c582-4499-932e-cd4d9c40c3e6",child_summary:"企鵝班 7號 翌翌",caregiver_role:"媽媽",family_slot:2}
+  ];
+  // 伺服器核對名額狀態；若 RLS 禁止讀取，不把未驗證名額當成可用。
+  const ids=additions.map(r=>r.guardian_id);
+  const {data:verified,error:verifyError}=await supabaseClient.from("guardians")
+    .select("id,caregiver_role,line_user_id,active")
+    .in("id",ids);
+  const verifiedMap=new Map((verified||[]).filter(r=>r.active!==false).map(r=>[r.id,r]));
+  const eligible=verifyError?[]:additions.filter(r=>verifiedMap.has(r.guardian_id)).map(r=>({
+    ...r, caregiver_role:verifiedMap.get(r.guardian_id).caregiver_role||r.caregiver_role,
+    line_bound:!!verifiedMap.get(r.guardian_id).line_user_id
+  }));
+  const byId=new Map();
+  for(const row of [...base,...eligible])if(row.guardian_id)byId.set(String(row.guardian_id),row);
+  singleGuardianOptions=[...byId.values()];
   select.replaceChildren(new Option("請選擇家長名額",""));
   for(const row of singleGuardianOptions){
     const child=pilotShortChildSummary(row.child_summary)||pilotShortChildNames(row.child_names)||"未登記幼兒";
     const role=row.caregiver_role||"身分待確認";
     select.add(new Option(child+"｜家長名額 "+(row.family_slot||"?")+"｜"+role+(row.line_bound?"（已綁定）":"（未綁定）"),String(row.guardian_id)));
   }
-  output.textContent="共讀取 "+singleGuardianOptions.length+" 位家長（含測試名額）。請核對身分後再產生。";
+  output.textContent="共讀取 "+singleGuardianOptions.length+" 位家長（含測試名額）。"+
+    (verifyError?" 新增的企鵝班家長因讀取權限限制尚未載入："+verifyError.message:
+     eligible.length<4?" 企鵝班新增名額只驗證到 "+eligible.length+"／4 筆，請勿發送缺少的名額。":" 已包含企鵝班新增的 4 個家長名額。")+
+    " 產碼仍需通過後端權限驗證。";
 }
 async function issueSingleGuardianCode(){
   const select=$("singleGuardianSelect"),output=$("singleGuardianResult");
