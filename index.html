@@ -1446,6 +1446,24 @@ details.rules summary{
   line-height:1.5;
 }
 
+
+/* 取消托育：柔和的選項式確認視窗 */
+.careCancelOverlay{position:fixed;inset:0;z-index:100000;background:rgba(32,49,38,.44);display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box}
+.careCancelDialog{width:min(100%,440px);max-height:90vh;overflow:auto;background:#fffdf8;border-radius:24px;padding:25px 22px;box-shadow:0 20px 65px rgba(25,40,30,.2);box-sizing:border-box;color:#35493a}
+.careCancelDialog h3{font-size:21px;margin:0 0 8px;color:#315c41}
+.careCancelDialog p{line-height:1.65;font-size:14px;color:#667568;margin:0 0 17px}
+.careCancelOptions{display:grid;gap:10px;margin:10px 0 19px}
+.careCancelOption{display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid #e1e8dd;border-radius:14px;background:#f9fbf7;cursor:pointer;font-size:15px}
+.careCancelOption:has(input:checked){border-color:#82ac89;background:#edf6ec;color:#27593b;font-weight:700}
+.careCancelOption input{accent-color:#4b8c5b;width:18px;height:18px;margin:0}
+.careCancelDialog textarea{box-sizing:border-box;width:100%;min-height:76px;resize:vertical;padding:12px;border:1px solid #d9e4d8;border-radius:12px;font:inherit;font-size:14px;background:#fff}
+.careCancelDialog label.careCancelNoteLabel{display:block;margin:0 0 8px;font-weight:600;font-size:14px}
+.careCancelActions{display:flex;gap:10px;justify-content:flex-end;margin-top:21px}
+.careCancelActions button{border:0;border-radius:13px;padding:12px 20px;font:inherit;font-weight:700;cursor:pointer}
+.careCancelBack{background:#eef1eb;color:#55675b}
+.careCancelSubmit{background:#497f5b;color:#fff}
+.careCancelSubmit:disabled{opacity:.5;cursor:not-allowed}
+.careCancelError{color:#a33b3b;font-size:13px;min-height:17px;margin-top:8px}
 </style>
 </head>
 
@@ -3502,20 +3520,45 @@ function requestChildName(childId){const child=children.find(item=>item.id===chi
 function requestAftercareName(code){return code?(AFTERCARE_CLASS_MAP[code]||code):"";}
 
 async function cancelCareRequest(requestId){
-  const options={pickup_change:"接送時間調整",family:"家庭因素",leave:"幼兒當日請假",other:"其他原因"};
-  const reason=window.prompt("取消原因（必填）\n1. 接送時間調整\n2. 家庭因素\n3. 幼兒當日請假\n4. 其他原因\n請輸入 1～4：", "1");
-  if(reason===null)return;
-  const code=({"1":"pickup_change","2":"family","3":"leave","4":"other"})[reason.trim()];
-  if(!code){alert("請選擇 1～4 的取消原因。");return;}
-  const note=window.prompt(code==="other"?"請填寫其他取消原因（必填，最多 300 字）：":"補充說明（可留空，最多 300 字）：", "");
-  if(note===null)return;
-  if(note.trim().length>300 || (code==="other"&&!note.trim())){alert("其他原因須填寫內容，且補充說明不可超過 300 字。");return;}
-  if(!window.confirm("確定取消這筆延托／臨托嗎？\n取消原因："+options[code]+(note.trim()?"\n補充："+note.trim():"")+"\n取消後如仍需托育，必須重新申請。"))return;
-  const {data,error}=await supabaseClient.rpc("guardian_cancel_care_with_reason",{p_request_id:requestId,p_cancel_reason:code,p_cancel_note:note.trim()});
-  if(error){alert("取消失敗："+error.message+"\n如已涉及收費，請直接聯絡園方。");return;}
-  if(!data?.ok){alert("取消未完成，請重新整理確認。");return;}
-  alert("已取消此筆申請。取消時間："+new Date(data.cancelled_at).toLocaleString("zh-TW",{timeZone:"Asia/Taipei",hour12:false})+"\n園方將收到取消通知。");
-  await loadMyRequests();
+  if(document.getElementById("careCancelOverlay"))return;
+  const overlay=document.createElement("div");
+  overlay.id="careCancelOverlay";
+  overlay.className="careCancelOverlay";
+  overlay.innerHTML=`<section class="careCancelDialog" role="dialog" aria-modal="true" aria-labelledby="careCancelTitle">
+    <h3 id="careCancelTitle">🌷 取消托育申請</h3>
+    <p>計畫有變動也沒關係，請選擇這次取消的原因，讓老師能及時調整照顧安排。</p>
+    <div style="font-size:14px;font-weight:700">想取消的原因 <span style="color:#b25a4b">＊</span></div>
+    <div class="careCancelOptions" role="radiogroup" aria-label="取消原因">
+      <label class="careCancelOption"><input type="radio" name="careCancelReason" value="pickup_change"> 🚗 接送時間已調整</label>
+      <label class="careCancelOption"><input type="radio" name="careCancelReason" value="leave"> 🌿 請假</label>
+      <label class="careCancelOption"><input type="radio" name="careCancelReason" value="other"> 💬 其他</label>
+    </div>
+    <label class="careCancelNoteLabel" for="careCancelNote">想補充告訴老師的話 <span style="color:#879688;font-weight:400">（選填）</span></label>
+    <textarea id="careCancelNote" maxlength="300" placeholder="有需要再填寫就好，最多 300 字"></textarea>
+    <div id="careCancelError" class="careCancelError" aria-live="polite"></div>
+    <div class="careCancelActions"><button class="careCancelBack" type="button">先不取消</button><button class="careCancelSubmit" type="button" disabled>確認取消</button></div>
+  </section>`;
+  document.body.appendChild(overlay);
+  const close=()=>overlay.remove();
+  overlay.querySelector(".careCancelBack").addEventListener("click",close);
+  overlay.addEventListener("click",e=>{if(e.target===overlay)close();});
+  const submit=overlay.querySelector(".careCancelSubmit");
+  overlay.querySelectorAll('input[name="careCancelReason"]').forEach(r=>r.addEventListener("change",()=>{submit.disabled=false;}));
+  submit.addEventListener("click",async()=>{
+    const code=overlay.querySelector('input[name="careCancelReason"]:checked')?.value;
+    const note=overlay.querySelector("#careCancelNote").value.trim();
+    if(!code){overlay.querySelector("#careCancelError").textContent="請先選擇一項取消原因。";return;}
+    submit.disabled=true;
+    submit.textContent="處理中…";
+    const {data,error}=await supabaseClient.rpc("guardian_cancel_care_with_reason",{p_request_id:requestId,p_cancel_reason:code,p_cancel_note:note});
+    if(error || !data?.ok){
+      overlay.querySelector("#careCancelError").textContent="取消未完成："+(error?.message||"請稍後再試");
+      submit.disabled=false;submit.textContent="確認取消";return;
+    }
+    close();
+    alert("已為您取消這筆托育申請 🌷\n園方將同步收到通知，謝謝您提前告知。");
+    await loadMyRequests();
+  });
 }
 function canCancelLeYeCare(row){
  if(!["extended","temporary"].includes(row.request_type))return false;
@@ -3535,7 +3578,7 @@ async function cancelLeaveRequest(requestId){
  if(!data?.ok){alert("取消未完成。");return;}
  await loadMyRequests();alert("已取消該日請假。");
 }
-function renderRequestCard(row){const status=requestStatusInfo(row.status),className=requestAftercareName(row.assigned_aftercare_class_code),reason=row.reason?String(row.reason).trim():"",adminNote=row.admin_note?String(row.admin_note).trim():"";const classHtml=(row.status==="approved"&&className)?`<div class="requestClassBox">🏫 今日課後班：${escapeHtml(className)}</div>`:"";const noteHtml=adminNote?`<div class="requestNote">🌼 <b>本園備註</b><br>${escapeHtml(adminNote)}</div>`:"";const cancelInfo=row.status==="cancelled"&&row.cancelled_at?`<div class="requestNote">↩️ 取消時間：${escapeHtml(new Date(row.cancelled_at).toLocaleString("zh-TW",{timeZone:"Asia/Taipei",hour12:false}))}${row.cancel_reason?`<br>取消原因：${escapeHtml(({pickup_change:"接送時間調整",family:"家庭因素",leave:"幼兒當日請假",other:"其他原因"})[row.cancel_reason]||row.cancel_reason)}`:""}${row.cancel_note?`<br>補充：${escapeHtml(row.cancel_note)}`:""}</div>`:"";const proxyHtml=row.staff_proxy_by?`<div class="requestNote">👩‍🏫 此筆由園方老師協助登記，托育仍須依園方審核流程安排。</div>`:"";return `<div class="requestCard"><div class="requestCardTop"><div class="requestType">${requestTypeLabel(row.request_type)}</div><div class="requestStatus ${status.className}">${status.icon} ${escapeHtml(status.text)}</div></div><div class="requestCardBody"><div class="requestChild">👶 ${escapeHtml(requestChildName(row.child_id))}</div><div class="requestMetaGrid"><div class="requestMeta"><div class="requestLabel">📅 日期</div><div class="requestValue">${escapeHtml(requestDateText(row.request_date))}</div></div><div class="requestMeta"><div class="requestLabel">⏰ 時段</div><div class="requestValue">${escapeHtml(requestTimeText(row))}</div></div>${reason?`<div class="requestMeta requestMetaFull"><div class="requestLabel">📝 申請內容</div><div class="requestValue">${escapeHtml(reason)}</div></div>`:""}</div>${classHtml}${noteHtml}${proxyHtml}${cancelInfo}</div>${row.request_type==="leave"&&["submitted","pending","approved"].includes(row.status)&&row.request_date>=today()?`<button class="btn btnGray" type="button" onclick="cancelLeaveRequest(\'${row.id}\')">↩ 取消此日請假</button>`:""}${canCancelLeYeCare(row)?`<button class="btn btnGray" type="button" onclick="cancelCareRequest('${row.id}')">↩ 取消延托／臨托（需在截止時間前）</button>`:""}${row.created_at?`<div class="requestFoot">送出時間：${escapeHtml(requestCreatedText(row.created_at))}</div>`:""}</div>`;}
+function renderRequestCard(row){const status=requestStatusInfo(row.status),className=requestAftercareName(row.assigned_aftercare_class_code),reason=row.reason?String(row.reason).trim():"",adminNote=row.admin_note?String(row.admin_note).trim():"";const classHtml=(row.status==="approved"&&className)?`<div class="requestClassBox">🏫 今日課後班：${escapeHtml(className)}</div>`:"";const noteHtml=adminNote?`<div class="requestNote">🌼 <b>本園備註</b><br>${escapeHtml(adminNote)}</div>`:"";const cancelInfo=row.status==="cancelled"&&row.cancelled_at?`<div class="requestNote">↩️ 取消時間：${escapeHtml(new Date(row.cancelled_at).toLocaleString("zh-TW",{timeZone:"Asia/Taipei",hour12:false}))}${row.cancel_reason?`<br>取消原因：${escapeHtml(({pickup_change:"接送時間已調整",leave:"請假",other:"其他"})[row.cancel_reason]||row.cancel_reason)}`:""}${row.cancel_note?`<br>補充：${escapeHtml(row.cancel_note)}`:""}</div>`:"";const proxyHtml=row.staff_proxy_by?`<div class="requestNote">👩‍🏫 此筆由園方老師協助登記，托育仍須依園方審核流程安排。</div>`:"";return `<div class="requestCard"><div class="requestCardTop"><div class="requestType">${requestTypeLabel(row.request_type)}</div><div class="requestStatus ${status.className}">${status.icon} ${escapeHtml(status.text)}</div></div><div class="requestCardBody"><div class="requestChild">👶 ${escapeHtml(requestChildName(row.child_id))}</div><div class="requestMetaGrid"><div class="requestMeta"><div class="requestLabel">📅 日期</div><div class="requestValue">${escapeHtml(requestDateText(row.request_date))}</div></div><div class="requestMeta"><div class="requestLabel">⏰ 時段</div><div class="requestValue">${escapeHtml(requestTimeText(row))}</div></div>${reason?`<div class="requestMeta requestMetaFull"><div class="requestLabel">📝 申請內容</div><div class="requestValue">${escapeHtml(reason)}</div></div>`:""}</div>${classHtml}${noteHtml}${proxyHtml}${cancelInfo}</div>${row.request_type==="leave"&&["submitted","pending","approved"].includes(row.status)&&row.request_date>=today()?`<button class="btn btnGray" type="button" onclick="cancelLeaveRequest(\'${row.id}\')">↩ 取消此日請假</button>`:""}${canCancelLeYeCare(row)?`<button class="btn btnGray" type="button" onclick="cancelCareRequest('${row.id}')">↩ 取消延托／臨托（需在截止時間前）</button>`:""}${row.created_at?`<div class="requestFoot">送出時間：${escapeHtml(requestCreatedText(row.created_at))}</div>`:""}</div>`;}
 async function loadMyRequests(){
 
   const box =
