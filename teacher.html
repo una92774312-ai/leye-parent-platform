@@ -1179,6 +1179,17 @@
 .countCard{min-height:56px;padding:7px 6px;border-radius:11px}
 .countNum{font-size:19px}.countLabel{margin-top:3px;font-size:12px}
 @media(max-width:360px){.rosterChildActions{grid-template-columns:1fr}.rosterChildSummaryBadges{max-width:45%}}
+
+/* 今日接送統計下方：獨立、收合的取消紀錄入口 */
+.cancelledMiniFold{margin:0 0 12px;border:1px solid #e2e7e2;border-radius:13px;background:#f8faf8;overflow:hidden}
+.cancelledMiniSummary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;cursor:pointer;list-style:none;font-size:13px;color:#60716a;font-weight:600}
+.cancelledMiniSummary::-webkit-details-marker{display:none}
+.cancelledMiniRight{display:flex;align-items:center;gap:9px}
+.cancelledMiniCount{min-width:23px;height:23px;display:inline-flex;align-items:center;justify-content:center;border-radius:99px;background:#e9eee9;color:#53665b;font-size:12px}
+.cancelledMiniChevron{font-size:17px;transition:transform .2s}
+.cancelledMiniFold[open] .cancelledMiniChevron{transform:rotate(180deg)}
+.cancelledMiniBody{padding:0 10px 10px}
+
 </style>
 
 <style>
@@ -1381,6 +1392,15 @@
                   <div class="countLabel">今日接送</div></button>
               </div>
 
+
+              <details class="cancelledMiniFold" id="cancelledCareFold">
+                <summary class="cancelledMiniSummary">
+                  <span>↩️ 已取消紀錄</span>
+                  <span class="cancelledMiniRight"><span id="cancelledCareGroupCount" class="cancelledMiniCount">0</span><span class="cancelledMiniChevron" aria-hidden="true">⌄</span></span>
+                </summary>
+                <div id="cancelledCareItems" class="itemList cancelledMiniBody"></div>
+              </details>
+
               <div id="todayItemsStatus" class="status show info">
                 正在讀取今日學生事項…
               </div>
@@ -1395,7 +1415,6 @@
                   <summary class="teacherFoldHeading"><span>🧸 課後照顧安排</span><span id="careGroupCount" class="groupCount">0</span><span class="teacherFoldToggle" aria-hidden="true"></span></summary>
                   <div id="careItems" class="itemList teacherFoldContent"></div>
                 </details>
-
                 <details class="itemGroup teacherFoldGroup" id="pickupFold">
                   <summary class="teacherFoldHeading"><span>🚗 接送小提醒</span><span id="pickupGroupCount" class="groupCount">0</span><span class="teacherFoldToggle" aria-hidden="true"></span></summary>
                   <div id="pickupItems" class="itemList teacherFoldContent"></div>
@@ -3471,7 +3490,9 @@ async function loadTeacherWeekItems(){
   const today = leyeTaipeiDay();
   const isToday = item => String(item?.request_date || item?.pickup_date || item?.date || "").slice(0,10) === today;
   const todayLeave = leave.filter(isToday);
-  const todayCare = (Array.isArray(data?.care) ? data.care : []).filter(isToday);
+  const allTodayCare = (Array.isArray(data?.care) ? data.care : []).filter(isToday);
+  const cancelledCare = allTodayCare.filter(x => String(x?.status || "").toLowerCase() === "cancelled");
+  const todayCare = allTodayCare.filter(x => String(x?.status || "").toLowerCase() !== "cancelled");
   const todayPickup = (Array.isArray(data?.pickup) ? data.pickup : []).filter(isToday);
   const todayLeaveCount = groupConsecutiveLeaves(todayLeave).length;
   const todayTemporaryCount = todayCare.filter(x => String(x.type || x.request_type || x.care_type || "").toLowerCase().includes("temporary")).length;
@@ -3485,9 +3506,11 @@ async function loadTeacherWeekItems(){
   setText("pickupCount", todayPickup.length);
   setText("leaveGroupCount", todayLeaveCount);
   setText("careGroupCount", todayCare.length);
+  setText("cancelledCareGroupCount", cancelledCare.length);
   setText("pickupGroupCount", todayPickup.length);
   renderItemList("leaveItems", todayLeave, "leave");
   renderItemList("careItems", todayCare, "care");
+  renderItemList("cancelledCareItems", cancelledCare, "care");
   renderItemList("pickupItems", todayPickup, "pickup");
   el("todayItemsContent")
     .classList.remove(
@@ -3498,7 +3521,7 @@ async function loadTeacherWeekItems(){
     "status show ok";
 
   statusBox.textContent = todayTotal > 0 ? `今日有 ${todayTotal} 件孩子們的事項，辛苦您留意了 🌱` : "今日目前沒有新事項 🌿";
-  [["leave",todayLeave.length],["care",todayCare.length],["pickup",todayPickup.length]].forEach(([kind,n])=>{const elem=el(kind+"Items")?.closest(".itemGroup");if(elem)elem.style.display=n?"":"none";});
+  [["leave",todayLeave.length],["care",todayCare.length],["pickup",todayPickup.length],["cancelledCare",cancelledCare.length]].forEach(([kind,n])=>{const elem=el(kind+"Items")?.closest(".itemGroup, .cancelledMiniFold");if(elem)elem.style.display=n?"":"none";});
 
   return data;
 }
