@@ -3502,11 +3502,19 @@ function requestChildName(childId){const child=children.find(item=>item.id===chi
 function requestAftercareName(code){return code?(AFTERCARE_CLASS_MAP[code]||code):"";}
 
 async function cancelCareRequest(requestId){
-  if(!window.confirm("確定取消這筆延托／臨托嗎？取消後若仍需要托育，必須重新提出申請。"))return;
-  const {data,error}=await supabaseClient.rpc("guardian_cancel_care",{p_request_id:requestId});
+  const options={pickup_change:"接送時間調整",family:"家庭因素",leave:"幼兒當日請假",other:"其他原因"};
+  const reason=window.prompt("取消原因（必填）\n1. 接送時間調整\n2. 家庭因素\n3. 幼兒當日請假\n4. 其他原因\n請輸入 1～4：", "1");
+  if(reason===null)return;
+  const code=({"1":"pickup_change","2":"family","3":"leave","4":"other"})[reason.trim()];
+  if(!code){alert("請選擇 1～4 的取消原因。");return;}
+  const note=window.prompt(code==="other"?"請填寫其他取消原因（必填，最多 300 字）：":"補充說明（可留空，最多 300 字）：", "");
+  if(note===null)return;
+  if(note.trim().length>300 || (code==="other"&&!note.trim())){alert("其他原因須填寫內容，且補充說明不可超過 300 字。");return;}
+  if(!window.confirm("確定取消這筆延托／臨托嗎？\n取消原因："+options[code]+(note.trim()?"\n補充："+note.trim():"")+"\n取消後如仍需托育，必須重新申請。"))return;
+  const {data,error}=await supabaseClient.rpc("guardian_cancel_care_with_reason",{p_request_id:requestId,p_cancel_reason:code,p_cancel_note:note.trim()});
   if(error){alert("取消失敗："+error.message+"\n如已涉及收費，請直接聯絡園方。");return;}
   if(!data?.ok){alert("取消未完成，請重新整理確認。");return;}
-  alert("已取消此筆申請，請留意園方安排。");
+  alert("已取消此筆申請。取消時間："+new Date(data.cancelled_at).toLocaleString("zh-TW",{timeZone:"Asia/Taipei",hour12:false})+"\n園方將收到取消通知。");
   await loadMyRequests();
 }
 function canCancelLeYeCare(row){
@@ -3527,7 +3535,7 @@ async function cancelLeaveRequest(requestId){
  if(!data?.ok){alert("取消未完成。");return;}
  await loadMyRequests();alert("已取消該日請假。");
 }
-function renderRequestCard(row){const status=requestStatusInfo(row.status),className=requestAftercareName(row.assigned_aftercare_class_code),reason=row.reason?String(row.reason).trim():"",adminNote=row.admin_note?String(row.admin_note).trim():"";const classHtml=(row.status==="approved"&&className)?`<div class="requestClassBox">🏫 今日課後班：${escapeHtml(className)}</div>`:"";const noteHtml=adminNote?`<div class="requestNote">🌼 <b>本園備註</b><br>${escapeHtml(adminNote)}</div>`:"";const proxyHtml=row.staff_proxy_by?`<div class="requestNote">👩‍🏫 此筆由園方老師協助登記，托育仍須依園方審核流程安排。</div>`:"";return `<div class="requestCard"><div class="requestCardTop"><div class="requestType">${requestTypeLabel(row.request_type)}</div><div class="requestStatus ${status.className}">${status.icon} ${escapeHtml(status.text)}</div></div><div class="requestCardBody"><div class="requestChild">👶 ${escapeHtml(requestChildName(row.child_id))}</div><div class="requestMetaGrid"><div class="requestMeta"><div class="requestLabel">📅 日期</div><div class="requestValue">${escapeHtml(requestDateText(row.request_date))}</div></div><div class="requestMeta"><div class="requestLabel">⏰ 時段</div><div class="requestValue">${escapeHtml(requestTimeText(row))}</div></div>${reason?`<div class="requestMeta requestMetaFull"><div class="requestLabel">📝 申請內容</div><div class="requestValue">${escapeHtml(reason)}</div></div>`:""}</div>${classHtml}${noteHtml}${proxyHtml}</div>${row.request_type==="leave"&&["submitted","pending","approved"].includes(row.status)&&row.request_date>=today()?`<button class="btn btnGray" type="button" onclick="cancelLeaveRequest(\'${row.id}\')">↩ 取消此日請假</button>`:""}${canCancelLeYeCare(row)?`<button class="btn btnGray" type="button" onclick="cancelCareRequest('${row.id}')">↩ 取消延托／臨托（需在截止時間前）</button>`:""}${row.created_at?`<div class="requestFoot">送出時間：${escapeHtml(requestCreatedText(row.created_at))}</div>`:""}</div>`;}
+function renderRequestCard(row){const status=requestStatusInfo(row.status),className=requestAftercareName(row.assigned_aftercare_class_code),reason=row.reason?String(row.reason).trim():"",adminNote=row.admin_note?String(row.admin_note).trim():"";const classHtml=(row.status==="approved"&&className)?`<div class="requestClassBox">🏫 今日課後班：${escapeHtml(className)}</div>`:"";const noteHtml=adminNote?`<div class="requestNote">🌼 <b>本園備註</b><br>${escapeHtml(adminNote)}</div>`:"";const cancelInfo=row.status==="cancelled"&&row.cancelled_at?`<div class="requestNote">↩️ 取消時間：${escapeHtml(new Date(row.cancelled_at).toLocaleString("zh-TW",{timeZone:"Asia/Taipei",hour12:false}))}${row.cancel_reason?`<br>取消原因：${escapeHtml(({pickup_change:"接送時間調整",family:"家庭因素",leave:"幼兒當日請假",other:"其他原因"})[row.cancel_reason]||row.cancel_reason)}`:""}${row.cancel_note?`<br>補充：${escapeHtml(row.cancel_note)}`:""}</div>`:"";const proxyHtml=row.staff_proxy_by?`<div class="requestNote">👩‍🏫 此筆由園方老師協助登記，托育仍須依園方審核流程安排。</div>`:"";return `<div class="requestCard"><div class="requestCardTop"><div class="requestType">${requestTypeLabel(row.request_type)}</div><div class="requestStatus ${status.className}">${status.icon} ${escapeHtml(status.text)}</div></div><div class="requestCardBody"><div class="requestChild">👶 ${escapeHtml(requestChildName(row.child_id))}</div><div class="requestMetaGrid"><div class="requestMeta"><div class="requestLabel">📅 日期</div><div class="requestValue">${escapeHtml(requestDateText(row.request_date))}</div></div><div class="requestMeta"><div class="requestLabel">⏰ 時段</div><div class="requestValue">${escapeHtml(requestTimeText(row))}</div></div>${reason?`<div class="requestMeta requestMetaFull"><div class="requestLabel">📝 申請內容</div><div class="requestValue">${escapeHtml(reason)}</div></div>`:""}</div>${classHtml}${noteHtml}${proxyHtml}${cancelInfo}</div>${row.request_type==="leave"&&["submitted","pending","approved"].includes(row.status)&&row.request_date>=today()?`<button class="btn btnGray" type="button" onclick="cancelLeaveRequest(\'${row.id}\')">↩ 取消此日請假</button>`:""}${canCancelLeYeCare(row)?`<button class="btn btnGray" type="button" onclick="cancelCareRequest('${row.id}')">↩ 取消延托／臨托（需在截止時間前）</button>`:""}${row.created_at?`<div class="requestFoot">送出時間：${escapeHtml(requestCreatedText(row.created_at))}</div>`:""}</div>`;}
 async function loadMyRequests(){
 
   const box =
@@ -3568,7 +3576,7 @@ async function loadMyRequests(){
           "requests"
         )
         .select(
-          "id,request_date,child_id,request_type,status,requested_start_time,requested_end_time,reason,assigned_aftercare_class_code,admin_note,created_at,staff_proxy_by,fee_status,fee_collected_at"
+          "id,request_date,child_id,request_type,status,requested_start_time,requested_end_time,reason,assigned_aftercare_class_code,admin_note,created_at,staff_proxy_by,fee_status,fee_collected_at,cancelled_at,cancel_reason,cancel_note"
         )
         .in(
           "child_id",

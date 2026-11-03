@@ -3235,9 +3235,13 @@ function makeStudentItem(
     }
 
     if(item?.reason){
-      rows.push(
-        `原因：${item.reason}`
-      );
+      rows.push(`申請原因：${item.reason}`);
+    }
+    if(item?.status==="cancelled"){
+      const labels={pickup_change:"接送時間調整",family:"家庭因素",leave:"幼兒當日請假",other:"其他原因"};
+      if(item?.cancelled_at) rows.push(`取消時間：${formatDateTime(item.cancelled_at)}`);
+      if(item?.cancel_reason) rows.push(`取消原因：${labels[item.cancel_reason]||item.cancel_reason}`);
+      if(item?.cancel_note) rows.push(`取消補充：${item.cancel_note}`);
     }
 
     if(item?.admin_note){
@@ -3289,7 +3293,7 @@ function makeStudentItem(
   card.appendChild(top);
   card.appendChild(detail);
 
-  if(type === "care"){
+  if(type === "care" && item?.status !== "cancelled"){
     appendCareFeeControls(
       card,
       item
@@ -3297,7 +3301,7 @@ function makeStudentItem(
   }
 
   // 收到通知／標記處理與實際接送是不同作業；下方另外顯示已接送時段。
-  appendTeacherActionControls(
+  if(item?.status !== "cancelled") appendTeacherActionControls(
     card,
     item
   );
