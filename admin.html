@@ -1560,6 +1560,11 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 </div>
 
 
+  <details class="panel" id="adminCancelledCareFold" style="margin-bottom:16px;border:1px solid #e3eae4;padding:13px 16px">
+    <summary style="cursor:pointer;font-weight:800;color:#607d70">↩️ 今日已取消托育 <span id="adminCancelledCareCount">0</span> 筆 <span style="font-weight:400;font-size:.82rem">（點選查看）</span></summary>
+    <div id="adminCancelledCareList" style="display:grid;gap:8px;margin-top:12px"></div>
+  </details>
+
 <!-- 行政人員查看家長 LINE 綁定進度：唯讀，不提供綁定碼或個人 LINE 資訊 -->
 <section id="parentBindingOverview" class="panel" hidden style="display:none" aria-labelledby="parentBindingOverviewTitle">
   <div id="parentBindingOverviewTitle" class="panelTitle">🔗 試行家長 LINE 綁定進度</div>
@@ -3835,6 +3840,9 @@ async function completePickupRecord(
           care_group,
           assigned_aftercare_class_code,
           admin_note,
+          cancelled_at,
+          cancel_reason,
+          cancel_note,
           created_at
         `
       )
@@ -3941,6 +3949,7 @@ async function completePickupRecord(
 
   updateCounts();
 
+  renderAdminCancelledCare();
   renderRequests();
 
 
@@ -3953,6 +3962,28 @@ async function completePickupRecord(
 
 }
 
+
+function renderAdminCancelledCare(){
+  const today=getTaiwanDateString();
+  const list=requests.filter(r=>r.request_date===today && r.status==="cancelled" && ["temporary","extended"].includes(r.request_type));
+  const count=$("adminCancelledCareCount"),body=$("adminCancelledCareList");
+  if(!count||!body)return;
+  count.textContent=String(list.length);
+  if(!list.length){body.innerHTML='<div class="helper">今天還沒有取消的托育申請。</div>';return;}
+  const reasons={pickup_change:"接送時間已調整",leave:"請假",other:"其他",family:"家庭因素"};
+  body.innerHTML=list.map(r=>{
+    const child=childrenMap[r.child_id];
+    const who=child?pilotChildShortName(child.name):"幼兒";
+    const why=reasons[r.cancel_reason]||r.cancel_reason||"當時未提供原因";
+    const when=r.cancelled_at?formatDateTime(r.cancelled_at):"歷史紀錄未保留時間";
+    const extra=r.cancel_note?'<div style="margin-top:5px">💬 家長補充：'+escapeHtml(r.cancel_note)+'</div>':'';
+    return '<div style="padding:12px;background:#f7faf8;border:1px solid #e2e9e4;border-radius:12px;line-height:1.7;font-size:.86rem">'
+      +'<b>'+escapeHtml(who)+'｜'+escapeHtml(requestTypeText(r.request_type))+'</b>'
+      +'<div>原訂時段：'+escapeHtml(requestTimeText(r))+'</div>'
+      +'<div>取消時間：'+escapeHtml(when)+'</div>'
+      +'<div>取消原因：'+escapeHtml(why)+'</div>'+extra+'</div>';
+  }).join("");
+}
 
 /*
 ==================================================
@@ -3987,6 +4018,10 @@ function updateCounts(){
         r =>
         r.request_type === "leave"
         &&
+        r.status !== "cancelled"
+        &&
+        r.status !== "rejected"
+        &&
         r.request_date === today
       )
       .length;
@@ -3998,6 +4033,10 @@ function updateCounts(){
         r =>
         r.request_type === "temporary"
         &&
+        r.status !== "cancelled"
+        &&
+        r.status !== "rejected"
+        &&
         r.request_date === today
       )
       .length;
@@ -4008,6 +4047,10 @@ function updateCounts(){
         .filter(
           r =>
           r.request_type === "extended"
+          &&
+          r.status !== "cancelled"
+          &&
+          r.status !== "rejected"
           &&
           r.request_date === today
         )
@@ -4161,9 +4204,7 @@ function setFilter(
 function renderRequests(){
 
   let list =
-    [
-      ...requests
-    ];
+    requests.filter(r => r.status !== "cancelled");
 
 
   if(
