@@ -2296,7 +2296,11 @@ function rosterListHtml(
 
 let currentRosterStaffRole="";
 // 僅用於前端顯示；真正的存取限制仍須由後端 RPC 實施。
-function canDisplayLeaveDetails(){return currentRosterStaffRole !== "aftercare_teacher";}
+function canDisplayLeaveDetails(){return ["admin","admin_viewer","class_teacher"].includes(currentRosterStaffRole);}
+function leaveCategoryLabel(reason){
+  const value=String(reason||"").split(/[｜|]/)[0].trim();
+  return ["病假","事假","家庭因素","其他"].includes(value)?value:"未填寫";
+}
 let completedPilotPickupIds=new Set();
 
 
@@ -3173,14 +3177,7 @@ function makeStudentItem(
   const rows = [];
 
   if(type === "leave"){
-    if(!canDisplayLeaveDetails()){
-      rows.push("今日請假（詳細原因僅供班導及授權行政查看）");
-    }
-    if(canDisplayLeaveDetails() && item?.reason){
-      rows.push(
-        `原因：${item.reason}`
-      );
-    }
+    rows.push(`請假類別：${leaveCategoryLabel(item?.reason)}`);
 
     if(canDisplayLeaveDetails() && item?.note){
       rows.push(
@@ -3356,7 +3353,7 @@ function makeGroupedLeaveItem(items){
  const badge=document.createElement("div");badge.className="itemBadge leave";badge.textContent=items.length+" 天請假";
  top.append(left,badge);card.appendChild(top);
  const d=document.createElement("div");d.className="itemDetail";d.style.whiteSpace="pre-line";
- d.textContent=(canDisplayLeaveDetails()?"原因："+(first.reason||"未填寫"):"今日請假")+"\n每日進度："+items.map(x=>formatDateText(x.request_date)+" "+(["confirmed","handled"].includes(x.teacher_action_status)?"✓ 已確認":"待確認")).join("、");
+ d.textContent="請假類別："+leaveCategoryLabel(first.reason)+"\n每日進度："+items.map(x=>formatDateText(x.request_date)+" "+(["confirmed","handled"].includes(x.teacher_action_status)?"✓ 已確認":"待確認")).join("、");
  card.appendChild(d);
  const actionable=items.filter(x=>x.can_act!==false);
  const toConfirm=actionable.filter(x=>!["confirmed","handled"].includes(x.teacher_action_status));
