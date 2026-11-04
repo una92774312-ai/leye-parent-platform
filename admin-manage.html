@@ -1553,7 +1553,19 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 <!-- ====================================== -->
 
 <div id="parent-binding" class="panel adminSecondaryPanel">
-  <div class="panelTitle">🔗 試行家長 LINE 綁定管理</div>
+
+<section id="classGuardianLinkPanel" style="border:2px solid #bcd8c5;border-radius:14px;padding:16px;margin:18px 0;background:#f7fcf8">
+  <div class="panelTitle">🏫 全園逐班家長綁定連結</div>
+  <p class="helper">選擇班級，查看綁定進度，再為該班尚未綁定且「沒有有效舊碼」的名額建立新連結。<b>已綁定的手足帳號及現有有效連結均保留。</b></p>
+  <p class="helper" style="color:#8d5b18">家長名額 1／2 不代表爸爸或媽媽；請核對幼兒及家長身分後，以私訊個別傳送，勿將整份清單貼到公開群組。</p>
+  <div id="classBindingCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0"></div>
+  <div id="classBindingSummary" class="helper" aria-live="polite">登入後按「重新讀取班級進度」。</div>
+  <button type="button" class="btn btnBlue" onclick="loadClassBindingProgress()" style="margin:10px 4px 10px 0">↻ 重新讀取班級進度</button>
+  <button type="button" class="btn btnGreen" onclick="issueSelectedClassLinks()" style="margin:10px 0">🔗 為所選班級產生新連結</button>
+  <div id="classBindingResult" style="display:grid;gap:9px;margin-top:12px" aria-live="polite"></div>
+</section>
+
+  <div class="panelTitle">🔗 家長 LINE 綁定管理（舊試行名額）</div>
   <p class="helper">
     以幼兒姓名區分家長帳號，不保存爸爸、媽媽的真實姓名。
     同一位家長若對應多位幼兒，仍只需一組專屬連結。
@@ -8189,6 +8201,70 @@ async function issueSingleGuardianCode(){
     copy.onclick=async()=>{try{await navigator.clipboard.writeText(url);alert("已複製，請私訊正確家長。");}catch(e){link.select();alert("請長按上方連結複製。");}};
     output.append(info,link,copy);
   }catch(e){output.textContent="產生失敗："+(e?.message||String(e));}
+}
+
+
+/* 全園班級綁定管理。連結與 16 碼僅在管理員當次產生時回傳；不會從雜湊值還原舊碼。 */
+const LEYE_BINDING_CLASSES=[
+  ['C01','🍒 櫻桃班'],['C02','🍎 蘋果班'],['C03','🦋 蝴蝶班'],
+  ['C04','🐰 白兔班'],['C05','🐝 蜜蜂班'],['C06','🦘 袋鼠班'],
+  ['C07','🐑 綿羊班'],['C08','🐧 企鵝班']
+];
+let selectedBindingClass='C05';
+let generatedBindingRows=[];
+function bindingSafeText(value){return String(value??'');}
+function renderBindingLinkCards(stats){
+ const target=document.getElementById('classBindingCards');if(!target)return;
+ target.replaceChildren();
+ for(const [id,name] of LEYE_BINDING_CLASSES){
+  const item=(stats||[]).find(x=>x.class_id===id)||{};
+  const btn=document.createElement('button');btn.type='button';btn.className='btn';
+  btn.style.cssText='text-align:left;white-space:normal;background:'+(id===selectedBindingClass?'#dceee0':'#fff')+';border:1px solid #a5c0ac;border-radius:10px;padding:11px;line-height:1.65;color:#204d35';
+  btn.textContent=name+'\n'+(item.bound??'?')+'/'+(item.slots??'?')+' 名額已綁定';
+  btn.onclick=()=>{selectedBindingClass=id;renderBindingLinkCards(stats);document.getElementById('classBindingSummary').textContent='目前選擇：'+name+'｜'+(item.children??'?')+' 位幼兒、'+(item.bound??'?')+' 個已綁定名額、'+(item.valid_unclaimed_codes??'?')+' 個未使用有效碼。';document.getElementById('classBindingResult').replaceChildren();};
+  target.appendChild(btn);
+ }
+}
+async function loadClassBindingProgress(){
+ const status=document.getElementById('classBindingSummary');if(!status)return;
+ if(!currentStaff||!['admin','admin_viewer'].includes(currentStaff.role)){status.textContent='請先以行政帳號登入。';return;}
+ status.textContent='查詢中…';
+ const {data,error}=await supabaseClient.rpc('admin_class_binding_progress');
+ if(error){status.textContent='查詢失敗：'+error.message;return;}
+ const stats=Array.isArray(data)?data:[];renderBindingLinkCards(stats);
+ const selected=stats.find(x=>x.class_id===selectedBindingClass)||{};
+ status.textContent='已選 '+(LEYE_BINDING_CLASSES.find(x=>x[0]===selectedBindingClass)||[])[1]+'｜幼兒 '+(selected.children??0)+' 位、已綁定 '+(selected.bound??0)+'／'+(selected.slots??0)+'、未使用有效碼 '+(selected.valid_unclaimed_codes??0)+' 個。跨班手足可能共用已綁定帳號。';
+}
+async function issueSelectedClassLinks(){
+ const target=document.getElementById('classBindingResult');if(!target)return;
+ if(!currentStaff||currentStaff.role!=='admin'){alert('只有行政管理員能產生連結。');return;}
+ const name=(LEYE_BINDING_CLASSES.find(x=>x[0]===selectedBindingClass)||[])[1]||selectedBindingClass;
+ if(!confirm('確認為 '+name+' 的未綁定、且無有效綁定碼的家長名額產生連結？\n\n舊的有效連結不會被重設。產生後請立即下載本次清單。'))return;
+ target.textContent='正在產生連結…';
+ const {data,error}=await supabaseClient.rpc('admin_issue_class_guardian_links',{p_class_id:selectedBindingClass,p_valid_days:14});
+ if(error){target.textContent='產碼失敗：'+error.message;return;}
+ generatedBindingRows=Array.isArray(data?.rows)?data.rows:[];
+ target.replaceChildren();
+ const note=document.createElement('p');note.textContent=name+'：新產生 '+generatedBindingRows.length+' 組；另外 '+(data?.already_has_valid_code??0)+' 個名額已有有效舊碼，未重設。';target.appendChild(note);
+ if(generatedBindingRows.length){
+  const download=document.createElement('button');download.type='button';download.className='btn btnGreen';download.textContent='⬇️ 立即下載本班專屬連結 CSV';download.onclick=()=>downloadClassBindingCsv(name);target.appendChild(download);
+  for(let i=0;i<generatedBindingRows.length;i++){
+   const row=generatedBindingRows[i];const div=document.createElement('div');div.style.cssText='padding:10px;border:1px solid #d8e7da;border-radius:9px;background:#fff';
+   const title=document.createElement('b');title.textContent=(i+1)+'. '+bindingSafeText(row.child_summary)+'｜家長名額（請核對領取者）';
+   const field=document.createElement('textarea');field.readOnly=true;field.rows=2;field.style.cssText='width:100%;box-sizing:border-box;margin:6px 0';field.value=row.binding_link;
+   const copy=document.createElement('button');copy.type='button';copy.className='btn btnBlue';copy.textContent='複製此專屬連結';copy.onclick=async()=>{try{await navigator.clipboard.writeText(row.binding_link);alert('已複製，請私訊該名額的正確家長。');}catch(e){field.focus();field.select();alert('無法自動複製，請複製文字框內容。');}};
+   div.append(title,field,copy);target.appendChild(div);
+  }
+ }else{const p=document.createElement('p');p.textContent='沒有需要新產碼的名額。已發出但未過期的舊連結不能從資料庫還原；可請家長使用原連結，或從單一家長補發功能重產。';target.appendChild(p);}
+ await loadClassBindingProgress();
+ // loadClassBindingProgress 不會清除本次產碼結果。
+}
+function downloadClassBindingCsv(name){
+ if(!generatedBindingRows.length)return;
+ const quote=s=>'"'+String(s??'').replaceAll('"','""')+'"';
+ const rows=[['幼兒','家長專屬連結','16碼綁定碼','請核對發放對象'],...generatedBindingRows.map(r=>[r.child_summary,r.binding_link,r.binding_code,'尚未發送'])];
+ const blob=new Blob(['\uFEFF'+rows.map(row=>row.map(quote).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='樂業附幼_'+name.replace(/[^\u4e00-\u9fa5]/g,'')+'_家長綁定連結.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
 </script>
