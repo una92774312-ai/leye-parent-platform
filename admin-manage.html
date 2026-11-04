@@ -1588,9 +1588,10 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
   <div class="bindCleanToolbar">
     <input id="classBindingSearch" type="search" autocomplete="off" placeholder="搜尋幼兒姓名或座號" oninput="renderClassGuardianList()" aria-label="搜尋本班幼兒">
     <select id="classBindingFilter" onchange="renderClassGuardianList()" aria-label="篩選綁定狀態">
-      <option value="all">全部名額</option><option value="unbound">有未綁定名額</option><option value="bound">全部已綁定</option><option value="pending">已有有效綁定碼</option>
+      <option value="all">全部名額</option><option value="unbound">有未綁定名額</option><option value="bound">全部已綁定</option><option value="pending">已有有效綁定碼</option><option value="sent">已確認發送／待綁定</option><option value="unknown_delivery">發送狀態待確認</option>
     </select>
   </div>
+  <p class="helper">「有有效碼」不代表已傳送。收到家長已成功綁定的資訊，不需要再發送。確認曾私訊該名額的有效網址後，才點「標記已發送」；若不確定就保持「待確認」。</p>
   <div id="classBindingListSummary" class="helper" aria-live="polite">請先選擇班級。</div>
   <div id="classBindingList" class="bindCleanList" aria-live="polite"></div>
   <details class="bindCleanBatch"><summary>批次產生本班尚未綁定的專屬連結</summary>
@@ -8317,6 +8318,7 @@ function downloadClassBindingCsv(name){
 }
 
 
+let classBindingDeliveryById=new Map();
 let classBindingDetailRows=[];
 let classBindingDetailsLoadedFor='';
 let classBindingCurrentStats=[];
@@ -8335,6 +8337,8 @@ function renderClassGuardianList(){
   if(filter==='unbound')return gs.some(g=>!g.bound);
   if(filter==='bound')return gs.length>0&&gs.every(g=>g.bound);
   if(filter==='pending')return gs.some(g=>!g.bound&&g.has_valid_code);
+  if(filter==='sent')return gs.some(g=>!g.bound&&classBindingDeliveryById.get(String(g.guardian_id))?.delivery_status==='sent');
+  if(filter==='unknown_delivery')return gs.some(g=>!g.bound&&g.has_valid_code&&classBindingDeliveryById.get(String(g.guardian_id))?.delivery_status!=='sent');
   return true;
  });
  const total=document.getElementById('classBindingListSummary');
@@ -8354,7 +8358,23 @@ function renderClassGuardianList(){
    const label=document.createElement('strong');label.textContent='家長名額 '+String(guardian.slot||'?')+(guardian.caregiver_role?' · '+guardian.caregiver_role:'');slot.append(label);
    const chip=document.createElement('div');chip.style.marginTop='7px';
    const state=document.createElement('span');state.className='bindCleanChip '+(guardian.bound?'ok':guardian.has_valid_code?'wait':'');
-   state.textContent=guardian.bound?'✓ 已綁定 LINE':guardian.has_valid_code?'已發有效碼，待綁定':'尚未綁定／未發有效碼';chip.append(state);slot.append(chip);
+   state.textContent=guardian.bound?'✓ 已綁定 LINE':guardian.has_valid_code?'已有有效綁定碼（不代表已發送）':'尚未綁定／未發有效碼';chip.append(state);slot.append(chip);
+   const delivery=classBindingDeliveryById.get(String(guardian.guardian_id))||{};
+   if(!guardian.bound){
+     const deliveryInfo=document.createElement('div');deliveryInfo.className='bindCleanSibling';
+     deliveryInfo.textContent=delivery.delivery_status==='sent'
+       ? '✉️ 已確認發送'+(delivery.sent_at?'（'+new Date(delivery.sent_at).toLocaleString('zh-TW',{timeZone:'Asia/Taipei',hour12:false})+'）':'')
+       : '❔ 發送狀態：待確認（不能由有碼推定已傳送）';
+     slot.append(deliveryInfo);
+     if(currentStaff?.role==='admin'&&guardian.has_valid_code){
+       const row=document.createElement('div');row.className='bindCleanSlotActions';
+       const sent=delivery.delivery_status==='sent';
+       const button=document.createElement('button');button.type='button';button.className='btn btnBlue';
+       button.textContent=sent?'改回待確認':'確認已私訊 → 標記已發送';
+       button.onclick=()=>markGuardianLinkDelivered(child,guardian,sent?'unknown':'sent',button);
+       row.append(button);slot.append(row);
+     }
+   }
    const siblings=parseBindingSiblingItems(guardian.siblings);
    if(siblings.length){const info=document.createElement('div');info.className='bindCleanSibling';info.textContent='👨‍👩‍👧 手足共用：'+siblings.map(x=>x.class_name+' '+x.name).join('、');slot.append(info)}
    if(!guardian.bound&&!guardian.has_valid_code&&currentStaff?.role==='admin'){
@@ -8370,14 +8390,38 @@ function renderClassGuardianList(){
 async function loadSelectedClassGuardianStatus(){
  const box=document.getElementById('classBindingList');if(!box)return;
  const requested=selectedBindingClass;
- classBindingDetailRows=[];classBindingDetailsLoadedFor='';
+ classBindingDetailRows=[];classBindingDeliveryById=new Map();classBindingDetailsLoadedFor='';
  box.textContent='正在讀取本班幼兒名單…';
  const {data,error}=await supabaseClient.rpc('admin_class_guardian_status',{p_class_id:requested});
  if(requested!==selectedBindingClass)return;
  if(error){box.textContent='名單讀取失敗：'+error.message;return;}
  classBindingDetailRows=Array.isArray(data)?data:[];classBindingDetailsLoadedFor=requested;
+ const deliveryRes=await supabaseClient.rpc('admin_class_binding_delivery_status',{p_class_id:requested});
+ if(requested!==selectedBindingClass)return;
+ if(deliveryRes.error){
+   const summary=document.getElementById('classBindingListSummary');
+   if(summary)summary.textContent='發送紀錄讀取失敗：'+deliveryRes.error.message;
+   // Keep the list visible, but never present unknown delivery as confirmed.
+ }
+ classBindingDeliveryById=new Map((Array.isArray(deliveryRes.data)?deliveryRes.data:[]).map(x=>[String(x.guardian_id),x]));
  renderClassGuardianList();
 }
+async function markGuardianLinkDelivered(child,guardian,newStatus,button){
+ if(currentStaff?.role!=='admin'||guardian.bound)return;
+ const msg=newStatus==='sent'
+  ? '你是否已經確認把「'+child.child_name+'／家長名額 '+guardian.slot+'」目前有效的專屬網址私訊給正確家長？\n\n「複製網址」或「產生網址」本身不算已發送。'
+  : '要將這個家長名額改回「發送狀態待確認」嗎？';
+ if(!confirm(msg))return;
+ button.disabled=true;
+ try{
+   const {error}=await supabaseClient.rpc('admin_mark_guardian_binding_delivery',{
+     p_guardian_id:guardian.guardian_id,p_status:newStatus
+   });
+   if(error)throw error;
+   await loadSelectedClassGuardianStatus();
+ }catch(e){button.disabled=false;alert('更新發送狀態失敗：'+(e.message||String(e)));}
+}
+
 async function issueClassGuardianSingleLink(child,guardian,container,button){
  if(currentStaff?.role!=='admin'||guardian.bound)return;
  if(!confirm('確定產生「'+child.child_name+'／家長名額 '+guardian.slot+'」的專屬連結？\n請先核對領取連結的家長身分。'))return;
