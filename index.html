@@ -1487,6 +1487,86 @@ details.rules summary{
 .todayPickupError{padding:13px;border-radius:13px;background:#fff3e9;color:#855d47;font-size:.86rem;line-height:1.7}
 @media(max-width:390px){.todayPickupPanel{padding:12px}.todayPickupTime{font-size:1.42rem}.todayPickupName{font-size:.9rem}.todayPickupChild{padding:11px}}
 
+
+/* 2026-11-06 家長首頁精簡視覺：只調整排版，不更改既有身份、請假或托育權限。 */
+.header{padding:16px 17px 14px;background:linear-gradient(140deg,#f3f5ed,#faf8f1)}
+.schoolLogo{width:49px;height:49px;border-radius:15px;padding:5px;box-shadow:none}
+.brand{font-size:1.25rem;letter-spacing:0}
+.schoolName{font-size:.72rem;margin-top:3px;line-height:1.35}
+.headerRequestsBtn{box-shadow:none;padding:8px 11px}
+.user{margin-top:11px;padding:8px 10px;border-radius:13px;gap:9px;box-shadow:none;background:rgba(255,255,255,.62)}
+.avatar{width:32px;height:32px;border-width:1px;box-shadow:none}
+.userText{font-size:.79rem;line-height:1.38}
+#lineStatus b{font-size:.81rem}
+#boundSummary{font-size:.75rem;line-height:1.4;margin-top:1px}
+.supabaseState{font-size:.69rem;margin-top:2px}
+#guardianIdentityCard{margin:10px 14px 6px;padding:11px 12px;border:1px solid #dbe5d7;border-radius:14px;background:#f5f8f2;box-shadow:none}
+#guardianIdentityText{font-size:.88rem;font-weight:750;line-height:1.4;color:#456146}
+#guardianIdentityCard .guardianIdentityHelp{display:none}
+#guardianRoleEdit{width:auto;display:inline-flex;align-items:center;margin:5px 0 0;padding:3px 9px;border-radius:10px;min-height:0;font-size:.75rem;box-shadow:none;background:#e7efe3;color:#537052}
+#guardianRoleEdit.hidden{display:none!important}
+#guardianRolePicker:not(.hidden) + #guardianRoleEdit{display:none}
+#guardianRolePicker:not(.hidden) ~ .guardianIdentityHelp{display:block}
+.todayPickupPanel{margin:12px 14px 14px;padding:13px;background:#fffdfa;border-radius:18px;border:1px solid #dde6d8;box-shadow:none}
+.todayPickupHead{margin-bottom:9px}
+.todayPickupHeading{font-size:1rem}
+.todayPickupRefresh{padding:7px 9px;font-size:.73rem;background:#eef5eb}
+.todayPickupChild{padding:11px 12px;border-radius:12px;background:#f7faf6}
+.todayPickupTime{font-size:1.5rem}
+.todayPickupTimeSub{font-size:.69rem}
+.todayPickupHelp{margin:9px 2px 0;font-size:.76rem;line-height:1.5;color:#71816e}
+.todayPickupNote{margin-top:8px;padding-top:8px;font-size:.78rem;line-height:1.5}
+.page{padding:18px 17px 23px}
+.pageTitle{font-size:1.18rem;margin-bottom:4px}
+.pageDesc{margin-bottom:13px;font-size:.81rem;line-height:1.55}
+.group{margin-bottom:15px}
+label.title{font-size:.87rem;margin-bottom:7px}
+.childList{gap:8px}
+.choicesCompact{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.choicesCompact .choice{display:flex;align-items:center;justify-content:center;padding:11px 6px;min-height:52px;font-size:.84rem;font-weight:750;text-align:center;box-shadow:none}
+.choicesCompact .choice:last-child{grid-column:1/-1}
+.pickupCalmNote{margin:9px 1px 0;font-size:.76rem;line-height:1.5;color:#768575}
+#pickupPage .box{padding:12px;border-radius:12px}
+#pickupPage #pickerNotice{font-size:.8rem;line-height:1.5}
+.compactCareInfo{padding:11px 12px;margin-bottom:15px;font-size:.82rem;line-height:1.55}
+.simpleDetails{margin:10px 0 16px;padding:10px 12px;border:1px solid #e3e9df;border-radius:12px;color:#6b7a68;font-size:.8rem;background:#fbfcf9}
+.simpleDetails summary{cursor:pointer;font-weight:700}
+.simpleDetails p{margin:8px 0 0;line-height:1.55}
+/* 先隱藏未選異動類型的明細，避免家長把預設 16:00 誤認為今天的時間。 */
+@media(max-width:360px){.choicesCompact{grid-template-columns:1fr}.choicesCompact .choice:last-child{grid-column:auto}}
+
+
+/* 家長介面：固定導覽不消失；服務受限時柔和轉成說明狀態。 */
+.quickTabs{gap:7px;padding:9px 10px calc(9px + env(safe-area-inset-bottom));
+  background:rgba(255,254,249,.94);box-shadow:0 -4px 26px rgba(63,79,61,.11)}
+.quickTab{position:relative;min-height:62px;border-radius:13px;transition:background-color .24s ease,color .24s ease,opacity .24s ease,transform .2s ease}
+.quickTab:active{transform:scale(.96)}
+.quickTab.isUnavailable{color:#96a093;background:#f2f4ef;box-shadow:inset 0 0 0 1px #e8ece5;opacity:.86}
+.quickTab.isUnavailable::after{content:'暫不適用';display:block;margin-top:1px;font-size:.57rem;letter-spacing:.01em;color:#8b958a}
+.quickTab.isUnavailable.active{background:#f2f4ef;color:#96a093;font-weight:400}
+.careNavToast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));
+  width:calc(100% - 42px);max-width:460px;box-sizing:border-box;padding:11px 15px;
+  border:1px solid #dce5d5;border-radius:15px;background:#fffef9;
+  color:#566e56;font-size:.81rem;line-height:1.6;box-shadow:0 8px 30px rgba(61,82,61,.15);
+  z-index:1001;opacity:0;visibility:hidden;pointer-events:none;
+  transform:translate(-50%,10px);transition:opacity .25s ease,transform .3s ease,visibility 0s linear .3s}
+.careNavToast.isVisible{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .25s ease,transform .3s ease,visibility 0s}
+.page:not(.hidden){animation:pageGentleEnter .3s cubic-bezier(.18,.82,.32,1) both}
+@keyframes pageGentleEnter{from{opacity:.55;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+#pickupPage .pickupDynamicSection{display:block;overflow:hidden;max-height:900px;opacity:1;visibility:visible;
+  transform:translateY(0);transition:max-height .38s cubic-bezier(.22,.8,.22,1),opacity .28s ease,transform .38s ease,margin .38s ease,padding .38s ease,border .38s ease,visibility 0s}
+#pickupPage .pickupDynamicSection.is-collapsed{max-height:0!important;opacity:0;visibility:hidden;transform:translateY(-8px);
+  margin-top:0!important;margin-bottom:0!important;padding-top:0!important;padding-bottom:0!important;
+  border-top-width:0!important;border-bottom-width:0!important;pointer-events:none;transition: max-height .32s ease,opacity .22s ease,transform .32s ease,margin .32s ease,padding .32s ease,border .32s ease,visibility 0s linear .32s}
+#pickupPage .pickupIdleHint{display:flex;gap:11px;align-items:center;margin:13px 0 0;padding:12px 13px;
+  border-radius:13px;border:1px dashed #d5e1cf;background:#f8faf5;color:#61765e;
+  font-size:.79rem;line-height:1.55;overflow:hidden;max-height:170px;opacity:1;
+  transition: max-height .3s ease,opacity .2s ease,margin .3s ease,padding .3s ease,border .3s ease}
+.pickupIdleHint p{margin:2px 0 0;color:#8a9587;font-size:.73rem;line-height:1.5}
+.pickupIdleIcon{font-size:1.35rem}
+#pickupPage .pickupIdleHint.is-collapsed{max-height:0;opacity:0;margin:0;padding-top:0;padding-bottom:0;border-width:0;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.quickTab,.careNavToast,.page:not(.hidden),#pickupPage .pickupDynamicSection,#pickupPage .pickupIdleHint{animation:none!important;transition:none!important}}
+
 </style>
 </head>
 
@@ -1528,12 +1608,7 @@ details.rules summary{
 
   </div>
 
-  <div class="sub">
-
-    🌷 家長服務平台
-    <br>
-    接送、請假與托育需求，都可以在這裡快速完成。
-  </div>
+  <!-- 精簡版：移除與下方功能列重複的家長服務平台說明 -->
 
   <div class="user">
 
@@ -1576,13 +1651,13 @@ details.rules summary{
 <section id="todayPickupPanel" class="todayPickupPanel hidden" aria-label="今日接送時間">
   <div class="todayPickupHead">
     <div>
-      <div class="todayPickupHeading">🕓 今天孩子幾點接回？</div>
+      <div class="todayPickupHeading">🕓 今日接回時間</div>
       <div id="todayPickupDate" class="todayPickupDate"></div>
     </div>
     <button id="todayPickupRefreshBtn" type="button" class="todayPickupRefresh" onclick="refreshTodayPickupOverview()">↻ 更新時間</button>
   </div>
   <div id="todayPickupList" class="todayPickupList" aria-live="polite"></div>
-  <p id="todayPickupHelp" class="todayPickupHelp">正常依園方原訂時間接回，不需要重複送出接送通知。如需提早接回、延遲抵達或更換接送人，再使用下方「接孩子」功能通知本園。</p>
+  <p id="todayPickupHelp" class="todayPickupHelp">依照上方時間正常接回，無須登記；時間或接送人有異動時再通知園方。</p>
 </section>
 
 <div id="parentExperienceNotice" class="notice noticeBlue hidden" role="status" style="margin:14px auto;max-width:900px;line-height:1.7;padding:15px;border:2px solid #b8d0e5">
@@ -1592,7 +1667,7 @@ details.rules summary{
 </div>
 <div id="guardianIdentityCard" class="notice noticeBlue hidden" aria-live="polite">
   <div id="guardianIdentityText" class="guardianIdentityHeadline">您的身分：確認中...</div>
-  <p class="guardianIdentityHelp">每位照顧者使用自己的專屬綁定連結；同一位幼兒的申請紀錄由已授權的家人共同查看。</p>
+  <p class="guardianIdentityHelp">家人的申請紀錄可以共同查看；每位照顧者仍使用自己的 LINE 身分。</p>
   <div id="guardianRolePicker" class="guardianRolePicker hidden">
     <label for="guardianRoleSelect">請確認您與孩子的關係</label>
     <select id="guardianRoleSelect">
@@ -1605,7 +1680,7 @@ details.rules summary{
     </select>
     <button type="button" class="btn btnPrimary" onclick="saveGuardianCaregiverRole()">確認並儲存身分</button>
   </div>
-  <button type="button" id="guardianRoleEdit" class="btn btnGray hidden" onclick="editGuardianCaregiverRole()">更改身分稱謂</button>
+  <button type="button" id="guardianRoleEdit" class="btn btnGray hidden" onclick="editGuardianCaregiverRole()">修改稱謂</button>
 </div>
 
 <!-- ====================================== -->
@@ -1698,7 +1773,7 @@ details.rules summary{
   </div>
 
   <div class="pageDesc">
-    上方已顯示孩子今天園方原訂接回時間。若依原訂時間與接送人接回，不需要重複通知；如需提早、晚到或變更接送人，再使用本頁通知本園。
+    只有接送時間或接送人有變動，才需要在這裡通知老師。
   </div>
 
   <div class="group">
@@ -1720,49 +1795,21 @@ details.rules summary{
       ⏰ 接送方式
     </label>
 
-    <div class="choices">
-
-      <div
-        class="choice"
-        onclick="setPickupMode(this,'提早接孩子')"
-      >
-        ☀️ 提早接孩子
-      </div>
-
-      <div
-        class="choice active"
-        onclick="setPickupMode(this,'正常放學16:00')"
-      >
-        ✅ 正常放學 16:00
-      </div>
-
-      <div
-        class="choice"
-        onclick="setPickupMode(this,'第一梯17:00')"
-      >
-        🎒 第一梯 17:00
-      </div>
-
-      <div
-        class="choice"
-        onclick="setPickupMode(this,'第二梯18:00')"
-      >
-        🌙 第二梯 18:00
-      </div>
-
-      <div
-        class="choice delay"
-        onclick="setPickupMode(this,'我會晚到')"
-      >
-        🟠 我會晚到
-      </div>
-
+    <div class="choices choicesCompact" aria-label="接送異動類型">
+      <button type="button" class="choice" onclick="setPickupMode(this,'提早接孩子')">☀️ 提早接回</button>
+      <button type="button" class="choice delay" onclick="setPickupMode(this,'我會晚到')">🟠 我會晚到</button>
+      <button type="button" class="choice" onclick="setPickupMode(this,'變更接送人')">👤 只更換接送人</button>
+    </div>
+    <div class="pickupCalmNote">正常依照上方原訂時間接回，不需要再按任何選項。</div>
+    <div id="pickupIdleHint" class="pickupIdleHint" aria-live="polite">
+      <span class="pickupIdleIcon" aria-hidden="true">🌿</span>
+      <div><b>今天沒有異動就不用填表</b><p>若要提早接、晚到或更換接送人，點上方選項後再填寫即可。</p></div>
     </div>
 
 
     <div
       id="earlyBox"
-      class="box"
+      class="box pickupDynamicSection is-collapsed"
     >
 
       <label class="title">
@@ -1798,7 +1845,7 @@ details.rules summary{
 
     <div
       id="delayBox"
-      class="box"
+      class="box pickupDynamicSection is-collapsed"
     >
 
       <div class="notice noticeYellow">
@@ -1874,7 +1921,7 @@ details.rules summary{
   </div>
 
 
-  <div class="group">
+  <div class="group pickupDynamicSection is-collapsed" id="pickupPersonGroup">
 
     <label class="title">
       👤 今日接送人員
@@ -1901,7 +1948,7 @@ details.rules summary{
 
   <button
     id="pickupSubmitBtn"
-    class="btn btnPrimary"
+    class="btn btnPrimary pickupDynamicSection is-collapsed"
     type="button"
     data-guardian-submit onclick="submitPickup()"
   >
@@ -2155,13 +2202,7 @@ details.rules summary{
     僅適用原本已參加第一梯至 17:00 的幼兒，臨時延長至 18:00。
   </div>
 
-  <div class="notice noticeOrange">
-    ⚠️ 如果孩子原本 16:00 就要放學，請不要使用延長托育，應改用「臨時托育」。
-  </div>
-
-  <div class="notice noticeBlue">
-    📌 第一梯原訂 17:00 接回，如需延長至 18:00，請最晚於 16:30 前完成通知。
-  </div>
+  <div class="notice noticeBlue compactCareInfo">只適用固定 17:00 接回的幼兒；當天申請請於 <b>16:30 前</b>送出，待園方確認。</div>
 
   <div class="group">
 
@@ -2269,25 +2310,7 @@ details.rules summary{
     孩子原本沒有固定課後照顧，家長臨時有托育需求時，可在這裡提出申請。
   </div>
 
-  <div class="notice noticeBlue">
-
-    🌼 <b>申請說明</b>
-
-    <br><br>
-
-    臨時托育採申請制，
-    <b>送出申請不代表已核准。</b>
-
-    <br><br>
-
-    本園將依當日人力及課後班級實際情形進行確認。
-
-    <br><br>
-
-    完成審核後，將透過 LINE 通知申請結果；
-    如核准，也會一併告知寶貝當日安排的課後班級。
-
-  </div>
+  <div class="notice noticeBlue compactCareInfo">🌷 送出後由園方審核；<b>送出不代表核准</b>，結果會透過 LINE 通知。</div>
 
   <div class="group">
 
@@ -2358,49 +2381,7 @@ details.rules summary{
 
   </div>
 
-  <div class="group">
-
-    <label class="title">
-      📋 申請流程
-    </label>
-
-    <div class="assignmentBox">
-
-      <b>送出申請</b>
-
-      <br>
-
-      ↓
-
-      <br>
-
-      <b>本園確認安排</b>
-
-      <br>
-
-      ↓
-
-      <br>
-
-      <b>LINE 通知申請結果</b>
-
-      <br><br>
-
-      核准後，通知中也會顯示寶貝當日的課後班級。
-
-    </div>
-
-  </div>
-
-  <div class="notice noticeGreen">
-
-    🌷 送出後會建立臨時托育申請紀錄。
-
-    <br>
-
-    請等待本園完成確認，不需要重複送出。
-
-  </div>
+  <details class="simpleDetails"><summary>了解申請與審核流程</summary><p>送出申請 → 園方確認安排 → LINE 通知審核結果及核准的課後班級。請勿重複送出。</p></details>
 
   <button
     id="temporarySubmitBtn"
@@ -2435,11 +2416,12 @@ details.rules summary{
 <!-- ====================================== -->
 <!-- 固定底部功能 -->
 <!-- ====================================== -->
-<div class="quickTabs">
+<div id="careNavToast" class="careNavToast" role="status" aria-live="polite" aria-atomic="true"></div>
+<div class="quickTabs" aria-label="家長服務選單">
   <button id="tabPickup" class="quickTab" onclick="showPage('pickup')">🚗<br>接孩子</button>
   <button id="tabLeave" class="quickTab" onclick="showPage('leave')">❌<br>請假</button>
-  <button id="tabExtended" class="quickTab" onclick="showPage('extended')">⏰<br>延托</button>
-  <button id="tabTemporary" class="quickTab" onclick="showPage('temporary')">🧸<br>臨托</button>
+  <button id="tabExtended" class="quickTab" onclick="openCareNavTab('extended')" aria-disabled="false">⏰<br>延托</button>
+  <button id="tabTemporary" class="quickTab" onclick="openCareNavTab('temporary')" aria-disabled="false">🧸<br>臨托</button>
 </div>
 
 <div
@@ -2612,7 +2594,7 @@ let currentPage =
   "pickup";
 
 let currentPickupMode =
-  "正常放學16:00";
+  "";
 
 let children =
   [];
@@ -3553,23 +3535,61 @@ document.addEventListener('change',event=>{
   if(event.target?.id==='temporaryDate')void refreshCareTimeEligibility('temporary');
 });
 function parentExperienceMode(){return children.length>0 && !children.some(isPilotApplicationChild);}
+
+let careNavToastTimer;
+function announceCareNav(message){
+  const toast=$('careNavToast');
+  if(!toast)return;
+  toast.textContent=message;
+  toast.classList.add('isVisible');
+  clearTimeout(careNavToastTimer);
+  careNavToastTimer=setTimeout(()=>toast.classList.remove('isVisible'),4700);
+}
+function openCareNavTab(type){
+  const locked=children.length>0 && hasCareTimeResult(type) && !hasUnrestrictedCareChild(type);
+  if(locked){
+    const originals=careTimeEligibility[type]?.times;
+    const times=[...new Set(children.map(c=>originals?.get(String(c.id))).filter(Boolean))];
+    const only18=times.length===1&&times[0]==='18:00';
+    const only17=times.length===1&&times[0]==='17:00';
+    const only16=times.length===1&&times[0]==='16:00';
+    const service=type==='temporary'?'臨時托育':'延長托育';
+    const reason=only18?'孩子已有固定 18:00 托育，不必再申請臨托或延托。':
+      only17 && type==='temporary'?'孩子固定 17:00 接回，只需要使用「延托」申請延至 18:00。':
+      only16 && type==='extended'?'孩子原訂 16:00 接回，需要課後照顧時請選「臨托」。':
+      '此服務目前不適用於這位幼兒；其他符合資格的孩子不受影響。';
+    announceCareNav('🔒 '+service+'暫不適用｜'+reason);
+    return;
+  }
+  if(!hasCareTimeResult(type) || !restrictedCareServicesReady){
+    announceCareNav('⏳ 正在核對托育資格與接回時間，請稍後再選取。');
+    return;
+  }
+  showPage(type);
+}
+
 function updateExperienceNotice(){
   const notice=document.getElementById('parentExperienceNotice');
   if(!notice)return;
   const isPreview=parentExperienceMode();
   notice.classList.toggle('hidden',!isPreview);
-  // 只有受限制的孩子：直接隱藏這兩種服務入口；混合家庭仍可選其他孩子。
+  // 四個底部入口固定保留；不符合服務資格時以淡色標示並提供原因，混合家庭仍可選其他孩子。
   for(const type of ['extended','temporary']){
     const tab=$(type==='extended'?'tabExtended':'tabTemporary');
     const cannotUse=hasCareTimeResult(type) && children.length>0 && !hasUnrestrictedCareChild(type);
-    if(tab)tab.classList.toggle('hidden',cannotUse);
+    if(tab){
+      tab.classList.remove('hidden');
+      tab.classList.toggle('isUnavailable',cannotUse);
+      tab.setAttribute('aria-disabled',String(cannotUse));
+      tab.title=cannotUse?'此服務不適用於家中目前所選幼兒，點一下查看原因':'';
+    }
   }
   // 預覽期間或資格無法確認時不允許提交；請假與接送不受個別托育限制影響。
   for(const button of document.querySelectorAll('[data-guardian-submit]')){
     const type=button.id==='extendedSubmitBtn'?'extended':button.id==='temporarySubmitBtn'?'temporary':null;
     const unavailable=type && (!restrictedCareServicesReady || !hasCareTimeResult(type) ||
       (children.length>0 && !hasUnrestrictedCareChild(type)));
-    button.disabled=Boolean(isPreview||unavailable);
+    button.disabled=Boolean(isPreview||unavailable||(button.id==='pickupSubmitBtn' && !currentPickupMode));
     button.title=isPreview?'12/1 起開放正式送出；目前僅供瀏覽與練習':
       unavailable?'目前沒有符合本服務時段的幼兒，或正在核對日期與接回時間':'';
   }
@@ -3897,38 +3917,60 @@ function setPickupMode(
   currentPickupMode =
     mode;
 
-  $("earlyBox").style.display =
+  $("pickupPersonGroup")?.classList.remove("hidden");
+  $("pickupSubmitBtn")?.classList.remove("hidden");
 
-    mode === "提早接孩子"
+  for(const [id,open] of [
+    ['earlyBox',mode==='提早接孩子'],
+    ['delayBox',mode==='我會晚到'],
+    ['pickupPersonGroup',true],
+    ['pickupSubmitBtn',true],
+  ]){
+    const el=$(id);
+    if(!el)continue;
+    el.classList.toggle('is-collapsed',!open);
+    el.setAttribute('aria-hidden',String(!open));
+    if(id==='earlyBox'||id==='delayBox')el.style.display='';
+  }
+  $('pickupIdleHint')?.classList.add('is-collapsed');
 
-    ?
-
-    "block"
-
-    :
-
-    "none";
-
-  $("delayBox").style.display =
-
-    mode === "我會晚到"
-
-    ?
-
-    "block"
-
-    :
-
-    "none";
-
-  if(
-    mode === "我會晚到"
-  ){
-    refreshLateNotice();
+  if(mode === "我會晚到"){
+    void syncDelayOriginalTimeFromChildren();
   }
   if(mode === "提早接孩子")refreshEarlyOriginalHint();
+  updateExperienceNotice();
 
 }
+
+
+let delaySyncSequence=0;
+async function syncDelayOriginalTimeFromChildren(){
+  if(currentPickupMode!=="我會晚到")return;
+  const seq=++delaySyncSequence;
+  const chosen=[...document.querySelectorAll('input[name="pickupChild"]:checked')]
+    .filter(el=>!el.disabled).map(el=>el.value);
+  if(!chosen.length)return;
+  try{
+    const times=await Promise.all(chosen.map(getOriginalPickupTime));
+    if(seq!==delaySyncSequence || currentPickupMode!=="我會晚到")return;
+    if(new Set(times).size!==1)return; // 不替不同原訂時間的兄弟姊妹擅自選同一時段。
+    const original=times[0];
+    if(!["16:00","17:00","18:00"].includes(original))return;
+    $("delayOriginalTime").value=original;
+    const arrival=$("delayArrivalTime");
+    if(arrival){
+      const [hours,mins]=original.split(':').map(Number);
+      const total=hours*60+mins+20;
+      arrival.value=String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0');
+    }
+    refreshLateNotice();
+  }catch(err){console.warn('無法自動帶入原訂接回時間',err);}
+}
+document.addEventListener('change',event=>{
+  if(event.target?.name==='pickupChild' && currentPickupMode==='我會晚到'){
+    void syncDelayOriginalTimeFromChildren();
+  }
+});
 
 
 function refreshLateNotice(){
@@ -4552,6 +4594,28 @@ async function submitPickup(){
 
   }
 
+
+  else if(currentPickupMode === "變更接送人"){
+    let officialTimes;
+    try{
+      officialTimes=await Promise.all(list.map(child=>getOriginalPickupTime(child.id)));
+    }catch(err){
+      alert('無法核對園方原訂接回時間，請稍後重試：'+(err.message||err));
+      return;
+    }
+    const oneTime=[...new Set(officialTimes)];
+    if(oneTime.length!==1){
+      alert('所選幼兒的原訂接送時間不同，請分別選擇幼兒通知接送人變更。');
+      return;
+    }
+    scheduledTime=oneTime[0];
+    pickupModeCode=({'16:00':'normal_1600','17:00':'first_1700','18:00':'second_1800'})[scheduledTime]||'';
+    if(!pickupModeCode){
+      alert('目前無法辨識園方原訂接回時間，請聯絡老師確認。');
+      return;
+    }
+    displayText='只更換接送人（原訂 '+scheduledTime+' 接回）';
+  }
 
   else{
 
