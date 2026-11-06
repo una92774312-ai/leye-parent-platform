@@ -3574,12 +3574,12 @@ function openCareNavTab(type){
     const allBlocked=blocked.length===children.length;
     const reason=blocked.length ? (
       allBlocked
-        ? '依寶貝目前的班級服務安排，臨托與延托暫不適用。如有特殊接送需求，歡迎與班級老師聯繫。'
-        : '此項服務會依每位寶貝的班級與接送安排個別判斷；目前沒有可選擇的寶貝。如需協助，歡迎與老師聯繫。'
+        ? '依寶貝目前的班級服務安排，臨托與延托暫不適用。'
+        : '此項服務會依每位寶貝的班級與接送安排個別判斷，目前沒有可選擇的寶貝。'
     ) : only18?'孩子已安排至 18:00 接回，無須另外申請臨托或延托。':
       only17 && type==='temporary'?'孩子固定 17:00 接回，如需延長至 18:00，可使用「延托」申請。':
       only16 && type==='extended'?'孩子原訂 16:00 接回，如有課後托育需求，可使用「臨托」提出申請。':
-      '此服務需依寶貝原訂接回時間與班級安排申請；如需協助，歡迎聯繫老師。';
+      '此項服務會依寶貝原訂接回時間與班級安排判斷，目前暫不適用。';
     announceCareNav('🌷 '+service+'暫不適用｜'+reason);
     return;
   }
@@ -3638,7 +3638,7 @@ function renderPickerList(targetId,prefix){
       originalTime==='17:00' && prefix==='temporary'?'🚫 已有 17:00 課後托育，只能申請延托至 18:00':
       originalTime==='16:00' && prefix==='extended'?'🚫 16:00 一般放學，若需托育請選「臨托」':
       originalTime && !careTimeAllows(c,prefix)?'🚫 此接回時間不符合本服務資格':'';
-    const reason=serviceBlocked?'🌷 依這位寶貝目前的班級服務安排，臨托與延托暫不適用；如有接送需求，歡迎與班級老師聯繫。':
+    const reason=serviceBlocked?'🌷 依這位寶貝目前的班級服務安排，臨托與延托暫不適用。':
       needsEligibility?'⏳ 正在核對接送時間，請稍後查看':
       !isPilotApplicationChild(c)?'🌷 體驗模式｜12/1 起開放此班正式申請':
       timeReason;
