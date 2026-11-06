@@ -2204,6 +2204,7 @@ details.rules summary{
     <div class="fixedTime">
       17:00 → 18:00
     </div>
+    <div class="helper">僅限原訂 17:00 接回、已有第一時段課後托育的幼兒。原訂 18:00 的孩子不需再申請。</div>
 
   </div>
 
@@ -2314,7 +2315,7 @@ details.rules summary{
     >
 
     <div class="helper">
-      僅可選擇本園上課日。
+      僅可選擇本園上課日。臨托僅供原訂 16:00 一般放學、沒有固定課後托育的幼兒使用；17:00／18:00 固定托育幼兒不能申請。
     </div>
 
   </div>
@@ -2619,6 +2620,12 @@ let children =
 // 依 Supabase 幼兒個別權限控制臨托／延托；讀取失敗時暫時停用，不影響請假及接送。
 let restrictedCareServices = new Set();
 let restrictedCareServicesReady = false;
+
+// 每次依申請日期查詢園方當日原訂接回時間；查詢未完成時臨托／延托一律不可送出。
+const careTimeEligibility = {
+  temporary: {date:'',ready:false,times:new Map(),sequence:0},
+  extended: {date:'',ready:false,times:new Map(),sequence:0}
+};
 
 let todayPickupOverviewSequence = 0;
 
@@ -3465,6 +3472,11 @@ function renderChildrenEverywhere(){
 
   renderGuardianIdentityCard();
   updateExperienceNotice();
+  // 親子關聯與個別權限都讀取完成後，再按日期查詢 16／17／18 時段資格。
+  if(supabaseUser && currentGuardianId && children.length && restrictedCareServicesReady){
+    void refreshCareTimeEligibility('temporary');
+    void refreshCareTimeEligibility('extended');
+  }
 }
 
 
@@ -3481,13 +3493,65 @@ function isCareServiceType(type){return type==="extended" || type==="temporary";
 function isChildCareRestricted(child,type){
   return isCareServiceType(type) && restrictedCareServices.has(String(child.id)+"|"+type);
 }
+function careDateForType(type){
+  return $(type==='extended'?'extendedDate':'temporaryDate')?.value||'';
+}
+function hasCareTimeResult(type){
+  const state=careTimeEligibility[type];
+  return !!state && state.ready && state.date===careDateForType(type);
+}
+function careTimeAllows(child,type){
+  if(!hasCareTimeResult(type))return false;
+  const time=careTimeEligibility[type].times.get(String(child.id));
+  return (type==='temporary' && time==='16:00') || (type==='extended' && time==='17:00');
+}
 function canSelectForRequest(child,type){
   return isPilotApplicationChild(child) &&
-    (!isCareServiceType(type) || (restrictedCareServicesReady && !isChildCareRestricted(child,type)));
+    (!isCareServiceType(type) || (
+      restrictedCareServicesReady && !isChildCareRestricted(child,type) && careTimeAllows(child,type)
+    ));
 }
 function hasUnrestrictedCareChild(type){
-  return children.some(c => !isChildCareRestricted(c,type));
+  return children.some(c => !isChildCareRestricted(c,type) && careTimeAllows(c,type));
 }
+async function refreshCareTimeEligibility(type){
+  if(!isCareServiceType(type))return;
+  const state=careTimeEligibility[type];
+  const sequence=++state.sequence;
+  const date=careDateForType(type);
+  state.date=date;
+  state.ready=false;
+  state.times=new Map();
+  renderPickerList(type+'Children',type);
+  updateExperienceNotice();
+  if(!supabaseUser || !currentGuardianId || !children.length || !restrictedCareServicesReady ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(date) || isSchoolClosedDate(date))return;
+  try{
+    const result=await Promise.all(children.map(async child=>{
+      const {data,error}=await supabaseClient.rpc('guardian_original_pickup_time',{
+        p_child_id:child.id,p_pickup_date:date
+      });
+      if(error || !data)throw error||new Error('接回時間尚未設定');
+      return [String(child.id),String(data).slice(0,5)];
+    }));
+    if(sequence!==state.sequence || date!==careDateForType(type))return;
+    state.times=new Map(result);
+    state.ready=true;
+  }catch(e){
+    if(sequence!==state.sequence)return;
+    console.warn('無法確認臨托／延托時段資格，已禁止送出：',e);
+    state.times=new Map();
+    state.ready=false;
+  }
+  if(sequence!==state.sequence)return;
+  renderPickerList(type+'Children',type);
+  updateExperienceNotice();
+}
+// 日期改變時重新核對，不能沿用另一日的托育資格。
+document.addEventListener('change',event=>{
+  if(event.target?.id==='extendedDate')void refreshCareTimeEligibility('extended');
+  if(event.target?.id==='temporaryDate')void refreshCareTimeEligibility('temporary');
+});
 function parentExperienceMode(){return children.length>0 && !children.some(isPilotApplicationChild);}
 function updateExperienceNotice(){
   const notice=document.getElementById('parentExperienceNotice');
@@ -3497,16 +3561,17 @@ function updateExperienceNotice(){
   // 只有受限制的孩子：直接隱藏這兩種服務入口；混合家庭仍可選其他孩子。
   for(const type of ['extended','temporary']){
     const tab=$(type==='extended'?'tabExtended':'tabTemporary');
-    const cannotUse=restrictedCareServicesReady && children.length>0 && !hasUnrestrictedCareChild(type);
+    const cannotUse=hasCareTimeResult(type) && children.length>0 && !hasUnrestrictedCareChild(type);
     if(tab)tab.classList.toggle('hidden',cannotUse);
   }
   // 預覽期間或資格無法確認時不允許提交；請假與接送不受個別托育限制影響。
   for(const button of document.querySelectorAll('[data-guardian-submit]')){
     const type=button.id==='extendedSubmitBtn'?'extended':button.id==='temporarySubmitBtn'?'temporary':null;
-    const unavailable=type && (!restrictedCareServicesReady || (children.length>0 && !hasUnrestrictedCareChild(type)));
+    const unavailable=type && (!restrictedCareServicesReady || !hasCareTimeResult(type) ||
+      (children.length>0 && !hasUnrestrictedCareChild(type)));
     button.disabled=Boolean(isPreview||unavailable);
     button.title=isPreview?'12/1 起開放正式送出；目前僅供瀏覽與練習':
-      unavailable?'此家長名下幼兒目前無法使用這項托育服務':'';
+      unavailable?'目前沒有符合本服務時段的幼兒，或正在核對日期與接回時間':'';
   }
 }
 
@@ -3524,10 +3589,17 @@ function renderPickerList(targetId,prefix){
   box.innerHTML=children.map(c=>{
     const canApply=canSelectForRequest(c,prefix);
     const serviceBlocked=isChildCareRestricted(c,prefix);
-    const needsEligibility=isCareServiceType(prefix) && !restrictedCareServicesReady;
+    const needsEligibility=isCareServiceType(prefix) &&
+      (!restrictedCareServicesReady || !hasCareTimeResult(prefix));
+    const originalTime=isCareServiceType(prefix) ? careTimeEligibility[prefix].times.get(String(c.id)) : null;
+    const timeReason=originalTime==='18:00'?'🚫 已有 18:00 課後托育，無需申請臨托／延托':
+      originalTime==='17:00' && prefix==='temporary'?'🚫 已有 17:00 課後托育，只能申請延托至 18:00':
+      originalTime==='16:00' && prefix==='extended'?'🚫 16:00 一般放學，若需托育請選「臨托」':
+      originalTime && !careTimeAllows(c,prefix)?'🚫 此接回時間不符合本服務資格':'';
     const reason=serviceBlocked?'🚫 本園未提供此幼兒臨托／延托服務':
-      needsEligibility?'⚠️ 服務資格讀取失敗，暫時無法申請':
-      !isPilotApplicationChild(c)?'🌷 體驗模式｜12/1 起開放此班正式申請':'';
+      needsEligibility?'⏳ 正在核對接送時間，暫時不能送出':
+      !isPilotApplicationChild(c)?'🌷 體驗模式｜12/1 起開放此班正式申請':
+      timeReason;
     return `
       <label class="childPick ${canApply ? '' : 'childPickReadonly'}">
         <input type="checkbox" name="${prefix}Child" value="${escapeHtml(c.id)}"
@@ -3601,9 +3673,9 @@ function requireChildren(prefix){
   }
 
   if(isCareServiceType(prefix) && (
-    !restrictedCareServicesReady || list.some(c=>!canSelectForRequest(c,prefix))
+    !restrictedCareServicesReady || !hasCareTimeResult(prefix) || list.some(c=>!canSelectForRequest(c,prefix))
   )){
-    alert("此幼兒目前不開放臨托／延托申請，請洽本園確認。　");
+    alert("此幼兒的原訂接回時間不符合此項托育資格。16:00 可申請臨托；17:00 只能申請延托至 18:00；18:00 不可再申請臨托／延托。請洽本園確認。");
     return null;
   }
 
@@ -3800,7 +3872,7 @@ async function loadMyRequests(){
   }
 
 }
-function showPage(page,updateUrl=true){const valid=["pickup","leave","extended","temporary","requests"];if(!valid.includes(page))page="pickup";if(isCareServiceType(page) && restrictedCareServicesReady && children.length && !hasUnrestrictedCareChild(page))page="pickup";currentPage=page;valid.forEach(p=>{const pageEl=$(p+"Page");if(pageEl)pageEl.classList.toggle("hidden",p!==page);const tabEl=$("tab"+p[0].toUpperCase()+p.slice(1));if(tabEl)tabEl.classList.toggle("active",p===page);});const headerRequestsBtn=$("headerRequestsBtn");if(headerRequestsBtn)headerRequestsBtn.classList.toggle("active",page==="requests");if(page==="requests")loadMyRequests();if(updateUrl){const u=new URL(window.location.href);u.searchParams.set("page",page);u.searchParams.delete("code");u.searchParams.delete("state");u.searchParams.delete("liffClientId");u.searchParams.delete("liffRedirectUri");history.replaceState(null,"",u.toString());}window.scrollTo({top:0,behavior:"smooth"});}
+function showPage(page,updateUrl=true){const valid=["pickup","leave","extended","temporary","requests"];if(!valid.includes(page))page="pickup";if(isCareServiceType(page) && hasCareTimeResult(page) && children.length && !hasUnrestrictedCareChild(page))page="pickup";currentPage=page;valid.forEach(p=>{const pageEl=$(p+"Page");if(pageEl)pageEl.classList.toggle("hidden",p!==page);const tabEl=$("tab"+p[0].toUpperCase()+p.slice(1));if(tabEl)tabEl.classList.toggle("active",p===page);});const headerRequestsBtn=$("headerRequestsBtn");if(headerRequestsBtn)headerRequestsBtn.classList.toggle("active",page==="requests");if(page==="requests")loadMyRequests();if(updateUrl){const u=new URL(window.location.href);u.searchParams.set("page",page);u.searchParams.delete("code");u.searchParams.delete("state");u.searchParams.delete("liffClientId");u.searchParams.delete("liffRedirectUri");history.replaceState(null,"",u.toString());}window.scrollTo({top:0,behavior:"smooth"});}
 
 function setPickupMode(
   el,
