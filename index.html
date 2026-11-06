@@ -1464,6 +1464,29 @@ details.rules summary{
 .careCancelSubmit{background:#497f5b;color:#fff}
 .careCancelSubmit:disabled{opacity:.5;cursor:not-allowed}
 .careCancelError{color:#a33b3b;font-size:13px;min-height:17px;margin-top:8px}
+
+/* 家長首頁｜今日接送時間（僅顯示本人已授權幼兒） */
+.todayPickupPanel{margin:15px 0 20px;padding:16px;background:#fffdf8;border:1px solid #dfe8d9;border-radius:21px;box-shadow:0 7px 24px rgba(63,90,67,.07)}
+.todayPickupHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.todayPickupHeading{font-size:1.06rem;font-weight:800;color:#335e43;line-height:1.35}
+.todayPickupDate{color:#788376;font-size:.78rem;margin-top:3px}
+.todayPickupRefresh{background:#eaf3e8;border:0;color:#376949;font:inherit;font-size:.77rem;font-weight:700;padding:8px 11px;border-radius:12px;cursor:pointer;white-space:nowrap}
+.todayPickupRefresh:disabled{opacity:.55;cursor:wait}
+.todayPickupList{display:grid;gap:10px}
+.todayPickupChild{padding:13px 14px;border:1px solid #e2e8e1;border-radius:15px;background:#f9fbf7}
+.todayPickupChildTop{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.todayPickupIdentity{min-width:0;line-height:1.4}
+.todayPickupName{font-size:.96rem;font-weight:750;color:#354b39;overflow-wrap:anywhere}
+.todayPickupClass{font-size:.77rem;color:#82907f;margin-top:3px}
+.todayPickupTimeBox{text-align:right;flex-shrink:0}
+.todayPickupTime{display:block;font-weight:850;font-size:1.65rem;letter-spacing:-.03em;line-height:1.17;color:#277950;font-variant-numeric:tabular-nums}
+.todayPickupTimeSub{display:block;color:#758b79;font-size:.72rem;margin-top:3px}
+.todayPickupNote{margin-top:11px;padding-top:9px;border-top:1px dashed #dce5da;font-size:.83rem;line-height:1.65;color:#586958}
+.todayPickupNoteStrong{font-weight:800;color:#9a6241}
+.todayPickupHelp{margin:11px 1px 0;font-size:.79rem;line-height:1.75;color:#677a68}
+.todayPickupError{padding:13px;border-radius:13px;background:#fff3e9;color:#855d47;font-size:.86rem;line-height:1.7}
+@media(max-width:390px){.todayPickupPanel{padding:12px}.todayPickupTime{font-size:1.42rem}.todayPickupName{font-size:.9rem}.todayPickupChild{padding:11px}}
+
 </style>
 </head>
 
@@ -1547,6 +1570,20 @@ details.rules summary{
 
 </div>
 
+
+
+<!-- 今日接送安排：以已授權幼兒的園方排班/固定托育計畫為準 -->
+<section id="todayPickupPanel" class="todayPickupPanel hidden" aria-label="今日接送時間">
+  <div class="todayPickupHead">
+    <div>
+      <div class="todayPickupHeading">🕓 今天孩子幾點接回？</div>
+      <div id="todayPickupDate" class="todayPickupDate"></div>
+    </div>
+    <button id="todayPickupRefreshBtn" type="button" class="todayPickupRefresh" onclick="refreshTodayPickupOverview()">↻ 更新時間</button>
+  </div>
+  <div id="todayPickupList" class="todayPickupList" aria-live="polite"></div>
+  <p id="todayPickupHelp" class="todayPickupHelp">正常依園方原訂時間接回，不需要重複送出接送通知。如需提早接回、延遲抵達或更換接送人，再使用下方「接孩子」功能通知本園。</p>
+</section>
 
 <div id="parentExperienceNotice" class="notice noticeBlue hidden" role="status" style="margin:14px auto;max-width:900px;line-height:1.7;padding:15px;border:2px solid #b8d0e5">
   <b>🌷 家長平台體驗期間｜12/1 正式啟用</b><br>
@@ -1661,7 +1698,7 @@ details.rules summary{
   </div>
 
   <div class="pageDesc">
-    請選擇孩子今天原訂接回時間。若預計無法準時接回，請使用「我會晚到」通知本園。
+    上方已顯示孩子今天園方原訂接回時間。若依原訂時間與接送人接回，不需要重複通知；如需提早、晚到或變更接送人，再使用本頁通知本園。
   </div>
 
   <div class="group">
@@ -2583,6 +2620,8 @@ let children =
 let restrictedCareServices = new Set();
 let restrictedCareServicesReady = false;
 
+let todayPickupOverviewSequence = 0;
+
 let guardianCaregiverRole = null;
 let guardianRoleEditing = false;
 
@@ -3375,6 +3414,8 @@ async function saveGuardianCaregiverRole(){
 
 function renderChildrenEverywhere(){
 
+  if(!children.length && $("todayPickupPanel"))$("todayPickupPanel").classList.add("hidden");
+
   const text =
 
     children.length
@@ -4021,6 +4062,124 @@ function pickerChange(){
 }
 
 
+
+
+// 家長首頁接回時間：使用既有、會驗證親子身分的 guardian_original_pickup_time RPC。
+// 異動通知與已核准的托育申請均獨立標註，避免誤把「原訂」與「預計到達」混為一談。
+function taipeiPickupToday(){
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const value=k=>parts.find(x=>x.type===k)?.value||'';
+  return value('year')+'-'+value('month')+'-'+value('day');
+}
+function pickupHomeClock(v){
+  const m=String(v||'').match(/^(\d\d):(\d\d)/);
+  return m?m[1]+':'+m[2]:null;
+}
+function pickupHomeLabel(time){
+  return ({'16:00':'一般放學','17:00':'課後第一梯','18:00':'課後第二梯'})[time]||'園方排定';
+}
+function renderTodayPickupChild(child, scheduled, requests, notice, statusError){
+  const approvedLeave=requests.find(r=>r.request_type==='leave'&&r.status==='approved');
+  const pendingLeave=requests.find(r=>r.request_type==='leave'&&['pending','submitted'].includes(r.status));
+  const approvedCare=requests.find(r=>['extended','temporary'].includes(r.request_type)&&r.status==='approved');
+  const pendingCare=requests.find(r=>['extended','temporary'].includes(r.request_type)&&['pending','submitted','waitlist'].includes(r.status));
+  const approvedTime=approvedCare?pickupHomeClock(approvedCare.requested_end_time||approvedCare.scheduled_pickup_time):null;
+  const effectiveTime=approvedTime||scheduled;
+  const isPickedUp=!!notice?.actual_pickup_at;
+  const textTime=approvedLeave?'請假':effectiveTime;
+  const notes=[];
+  if(approvedLeave){
+    notes.push('✅ 今日已核准請假，無需按原訂時間接回。');
+  }else{
+    if(approvedCare){
+      const title=approvedCare.request_type==='extended'?'延托':'臨托';
+      notes.push('✅ 今日'+title+'已核准'+(approvedTime?'，核准接回 '+approvedTime:'')+'。');
+    }
+    if(pendingLeave) notes.push('⏳ 今日請假申請待園方確認，尚勿視為已核准。');
+    if(pendingCare){
+      const title=pendingCare.request_type==='extended'?'延托':'臨托';
+      notes.push('⏳ 今日'+title+'申請待園方確認，尚勿視為已核准。');
+    }
+    if(notice?.pickup_mode==='early'&&pickupHomeClock(notice.expected_arrival_time)){
+      notes.push('📩 已通知提早接回：'+pickupHomeClock(notice.expected_arrival_time)+'（原訂 '+scheduled+'）');
+    }else if(notice?.pickup_mode==='late_notice'&&pickupHomeClock(notice.expected_arrival_time)){
+      notes.push('📩 已通知可能晚到，預計抵達：'+pickupHomeClock(notice.expected_arrival_time)+'（原訂 '+scheduled+'）');
+    }
+  }
+  if(isPickedUp){
+    const actual=new Date(notice.actual_pickup_at);
+    const tm=Number.isFinite(actual.getTime())?actual.toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour:'2-digit',minute:'2-digit',hour12:false}):'';
+    notes.push('✅ 今日已完成接送'+(tm?'（'+tm+'）':'')+'。');
+  }
+  if(statusError)notes.push('⚠️ 異動資訊暫時無法同步，請以老師確認為準。');
+  const noteHtml=notes.length?'<div class="todayPickupNote">'+notes.map(n=>escapeHtml(n)).join('<br>')+'</div>':'';
+  return `<article class="todayPickupChild">
+    <div class="todayPickupChildTop">
+      <div class="todayPickupIdentity"><div class="todayPickupName">${escapeHtml(parentChildShortName(child.name))}</div><div class="todayPickupClass">${escapeHtml(child.className)}</div></div>
+      <div class="todayPickupTimeBox"><span class="todayPickupTime">${escapeHtml(textTime||'待確認')}</span><span class="todayPickupTimeSub">${approvedLeave?'今日不用接回':(approvedCare?'已核准接回時間':'今日原訂接回 · '+pickupHomeLabel(effectiveTime))}</span></div>
+    </div>${noteHtml}</article>`;
+}
+async function refreshTodayPickupOverview(){
+  const panel=$('todayPickupPanel');
+  const list=$('todayPickupList');
+  const button=$('todayPickupRefreshBtn');
+  const dateLabel=$('todayPickupDate');
+  if(!panel||!list)return;
+  const seq=++todayPickupOverviewSequence;
+  if(!supabaseUser||!currentGuardianId||!children.length){
+    panel.classList.add('hidden');
+    return;
+  }
+  panel.classList.remove('hidden');
+  const date=taipeiPickupToday();
+  const dateObj=new Date(date+'T12:00:00+08:00');
+  dateLabel.textContent=new Intl.DateTimeFormat('zh-TW',{timeZone:'Asia/Taipei',month:'numeric',day:'numeric',weekday:'long'}).format(dateObj)+' · 園方登記資料';
+  list.innerHTML='<div class="todayPickupError">正在確認孩子今天的接送時間…</div>';
+  if(button)button.disabled=true;
+  if(isSchoolClosedDate(date)){
+    list.innerHTML='<div class="todayPickupError">🌿 今天是休園日，沒有一般接送安排。</div>';
+    if(button)button.disabled=false;
+    return;
+  }
+  try{
+    const ids=children.map(c=>c.id);
+    const [timeResults, noticeResult, requestsResult]=await Promise.all([
+      Promise.all(children.map(async c=>{
+        try{return {id:c.id,time:await getOriginalPickupTime(c.id)};}
+        catch(e){return {id:c.id,error:e};}
+      })),
+      supabaseClient.from('pickup_records')
+        .select('child_id,pickup_mode,expected_arrival_time,actual_pickup_at,updated_at')
+        .eq('pickup_date',date).in('child_id',ids),
+      supabaseClient.from('requests')
+        .select('child_id,request_type,status,requested_end_time,scheduled_pickup_time,updated_at')
+        .eq('request_date',date).in('child_id',ids).in('request_type',['leave','temporary','extended'])
+    ]);
+    if(seq!==todayPickupOverviewSequence)return;
+    const timeMap=new Map(timeResults.map(x=>[x.id,x]));
+    const notices=(!noticeResult.error&&noticeResult.data)||[];
+    const reqs=(!requestsResult.error&&requestsResult.data)||[];
+    const statusError=!!noticeResult.error||!!requestsResult.error;
+    if(statusError)console.warn('今日接送異動狀態讀取失敗：',noticeResult.error,requestsResult.error);
+    const html=children.map(c=>{
+      const t=timeMap.get(c.id);
+      const scheduled=pickupHomeClock(t?.time);
+      if(!scheduled){
+        return `<div class="todayPickupError">${escapeHtml(parentChildShortName(c.name))}（${escapeHtml(c.className)}）：園方接回時間暫時無法取得，請聯絡老師確認。</div>`;
+      }
+      const childRequests=reqs.filter(r=>r.child_id===c.id).sort((a,b)=>String(b.updated_at||'').localeCompare(String(a.updated_at||'')));
+      const childNotice=notices.filter(r=>r.child_id===c.id).sort((a,b)=>String(b.updated_at||'').localeCompare(String(a.updated_at||'')))[0];
+      return renderTodayPickupChild(c,scheduled,childRequests,childNotice,statusError);
+    }).join('');
+    list.innerHTML=html;
+  }catch(e){
+    if(seq!==todayPickupOverviewSequence)return;
+    console.error('首頁接送時間讀取失敗：',e);
+    list.innerHTML='<div class="todayPickupError">⚠️ 今天的接送時間暫時無法確認，請聯絡老師核對，不要自行推定為 16:00。</div>';
+  }finally{
+    if(seq===todayPickupOverviewSequence&&button)button.disabled=false;
+  }
+}
 
 // 依園方當日排班或固定托育計畫，讀取幼兒真正的原訂接回時間。
 async function getOriginalPickupTime(childId){
@@ -6506,6 +6665,9 @@ async function loginSupabaseWithLine(){
   await loadGuardianAndChildren();
 
   await loadSchoolClosedDates();
+
+  // 每次進入家長首頁，自動查詢今天每位幼兒的園方接回時間與異動。
+  await refreshTodayPickupOverview();
 
   const bindingPanel =
     $("bindingPanel");
