@@ -1538,8 +1538,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
   </div>
 
   <div class="summaryCard summaryAction" role="button" tabindex="0"
-       onclick="openRequestView('leave')"
-       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('leave')}">
+       onclick="openRequestView('leave_today')"
+       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('leave_today')}">
     <div class="summaryLabel">今日請假</div>
     <div id="leaveCount" class="summaryNumber blue">0</div>
     <div class="summaryOwner">原班老師確認</div>
@@ -1730,6 +1730,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
   </details>
 </div>
 
+<!-- 舊版家長綁定區塊於此關閉；後面的行政接送、請假頁面必須獨立顯示。 -->
+</div>
 
 <!-- ====================================== -->
 <!-- 老師與課後班排班管理 V16 -->
@@ -1992,6 +1994,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 
   </div>
 
+
+  <div id="requestScopeHint" class="helper" style="display:none;margin:4px 0 12px;color:#4e6e82" aria-live="polite"></div>
 
   <div
     id="requestList"
@@ -4152,13 +4156,14 @@ function setFilter(
   );
 
 
+  const visualFilter = filter === "leave_today" ? "leave" : filter;
   const selected =
     $(
       "tab"
       +
-      filter[0].toUpperCase()
+      visualFilter[0].toUpperCase()
       +
-      filter.slice(1)
+      visualFilter.slice(1)
     );
 
 
@@ -4189,6 +4194,17 @@ function renderRequests(){
   let list =
     requests.filter(r => r.status !== "cancelled");
 
+  const scopeHint = $("requestScopeHint");
+  if (scopeHint) {
+    const todayOnly = currentFilter === "leave_today";
+    scopeHint.style.display = todayOnly ? "block" : "none";
+    if (todayOnly) {
+      const today = getTaiwanDateString();
+      const count = requests.filter(r => r.request_type === "leave" && r.request_date === today && !["cancelled", "rejected"].includes(r.status)).length;
+      scopeHint.textContent = `📅 今日（${today}）請假共 ${count} 筆。若要查看其他日期，請點上方「請假」分頁。`;
+    }
+  }
+
 
   if(
     currentFilter === "pending"
@@ -4210,14 +4226,16 @@ function renderRequests(){
 
 
   if(
-    currentFilter === "leave"
+    currentFilter === "leave" || currentFilter === "leave_today"
   ){
 
-    list =
-      list.filter(
-        r =>
-        r.request_type === "leave"
-      );
+    const today = getTaiwanDateString();
+    list = list.filter(r =>
+      r.request_type === "leave"
+      && (currentFilter !== "leave_today" || (
+        r.request_date === today && r.status !== "rejected"
+      ))
+    );
 
   }
 
