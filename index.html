@@ -1567,6 +1567,14 @@ label.title{font-size:.87rem;margin-bottom:7px}
 #pickupPage .pickupIdleHint.is-collapsed{max-height:0;opacity:0;margin:0;padding-top:0;padding-bottom:0;border-width:0;pointer-events:none}
 @media(prefers-reduced-motion:reduce){.quickTab,.careNavToast,.page:not(.hidden),#pickupPage .pickupDynamicSection,#pickupPage .pickupIdleHint{animation:none!important;transition:none!important}}
 
+
+/* LINE 登入失敗時的簡潔復原入口 */
+.lineLoginRecovery{margin-top:10px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.lineLoginRetryBtn{appearance:none;border:1px solid #97b68e;background:#e2efdd;color:#2f683e;border-radius:11px;padding:9px 15px;font-size:.82rem;font-weight:750;cursor:pointer;min-height:40px}
+.lineLoginRetryBtn:focus-visible{outline:3px solid #6d9876;outline-offset:2px}
+.lineLoginRetryBtn:disabled{opacity:.65;cursor:wait}
+.lineLoginRecoveryHint{font-size:.72rem;color:#72766f;line-height:1.5}
+
 </style>
 </head>
 
@@ -1637,6 +1645,11 @@ label.title{font-size:.87rem;margin-bottom:7px}
         class="supabaseState"
       >
         系統：檢查家長身分中...
+      </div>
+
+      <div id="lineLoginRecovery" class="lineLoginRecovery hidden" aria-live="polite">
+        <button id="retryLineLoginBtn" class="lineLoginRetryBtn" type="button" onclick="retryLineLogin()">↻ 重新登入 LINE</button>
+        <span class="lineLoginRecoveryHint">已完成綁定的家長不需重新輸入綁定碼；若仍無法登入，請從 LINE 官方帳號重新開啟本平台。</span>
       </div>
 
     </div>
@@ -6850,6 +6863,41 @@ async function loginSupabaseWithLine(){
     "✅ 家長身分已驗證";
 
 }
+// 登入錯誤復原：LINE LIFF 內禁止手動執行 liff.login()，外部瀏覽器才重新啟動 OAuth。
+function showLineLoginRecovery(visible){
+  const panel = $("lineLoginRecovery");
+  if(panel) panel.classList.toggle("hidden", !visible);
+}
+
+async function retryLineLogin(){
+  const button = $("retryLineLoginBtn");
+  if(button?.disabled) return;
+  if(button){
+    button.disabled = true;
+    button.textContent = "↻ 正在重新登入...";
+  }
+  $("supabaseState").textContent = "正在重新連線 LINE...";
+  try{
+    // 此操作只清除本次網頁的登入狀態，不會解除園方資料庫中的 LINE 家長綁定。
+    await supabaseClient.auth.signOut({scope:"local"});
+  }catch(error){
+    console.warn("清理暫存登入狀態失敗，仍會重新啟動登入：",error);
+  }
+  try{
+    if(typeof liff !== "undefined" && typeof liff.isInClient === "function" &&
+       typeof liff.isLoggedIn === "function" && !liff.isInClient() &&
+       liff.isLoggedIn() && typeof liff.logout === "function"){
+      // 只有外部瀏覽器才登出舊 LINE session；頁面重新載入後由 main() 呼叫 liff.login()。
+      liff.logout();
+    }
+    window.location.reload();
+  }catch(error){
+    console.error("LINE 重新登入失敗：",error);
+    $("supabaseState").textContent = "重新登入失敗，請從 LINE 官方帳號重新開啟本平台。";
+    if(button){button.disabled=false;button.textContent="↻ 重新登入 LINE";}
+  }
+}
+
 async function main(){
 
   const initialSchoolDate =
@@ -7013,6 +7061,8 @@ async function main(){
     await loginSupabaseWithLine();
 
 
+    showLineLoginRecovery(false);
+
     $("lineStatus").innerHTML =
       `<b>LINE 身分已驗證</b>`;
 
@@ -7104,6 +7154,13 @@ async function main(){
       [];
 
     renderChildrenEverywhere();
+
+    // 登入未成功時不可誤顯示可填寫的家長申請表單。
+    ["pickupPage","leavePage","extendedPage","temporaryPage","requestsPage"]
+      .forEach(id => $(id)?.classList.add("hidden"));
+    $("bindingPanel")?.classList.add("hidden");
+    setPortalNavigationVisible(false);
+    showLineLoginRecovery(true);
 
   }
 
