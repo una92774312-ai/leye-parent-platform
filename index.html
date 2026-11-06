@@ -3507,7 +3507,8 @@ function canSelectForRequest(child,type){
     ));
 }
 function hasUnrestrictedCareChild(type){
-  return children.some(c => !isChildCareRestricted(c,type) && careTimeAllows(c,type));
+  // 家中有手足時仍依每位幼兒的送件開放班級、接送時段及個別限制判斷。
+  return children.some(c => canSelectForRequest(c,type));
 }
 async function refreshCareTimeEligibility(type){
   if(!isCareServiceType(type))return;
@@ -3567,11 +3568,19 @@ function openCareNavTab(type){
     const only17=times.length===1&&times[0]==='17:00';
     const only16=times.length===1&&times[0]==='16:00';
     const service=type==='temporary'?'臨時托育':'延長托育';
-    const reason=only18?'孩子已有固定 18:00 托育，不必再申請臨托或延托。':
-      only17 && type==='temporary'?'孩子固定 17:00 接回，只需要使用「延托」申請延至 18:00。':
-      only16 && type==='extended'?'孩子原訂 16:00 接回，需要課後照顧時請選「臨托」。':
-      '此服務目前不適用於這位幼兒；其他符合資格的孩子不受影響。';
-    announceCareNav('🔒 '+service+'暫不適用｜'+reason);
+    // 個別托育限制必須優先於 16／17／18 接送時段說明，
+    // 避免企鵝班幼兒被錯誤提示改申請另一項同樣不適用的服務。
+    const blocked=children.filter(c=>isChildCareRestricted(c,type));
+    const allBlocked=blocked.length===children.length;
+    const reason=blocked.length ? (
+      allBlocked
+        ? '依寶貝目前的班級服務安排，臨托與延托暫不適用。如有特殊接送需求，歡迎與班級老師聯繫。'
+        : '此項服務會依每位寶貝的班級與接送安排個別判斷；目前沒有可選擇的寶貝。如需協助，歡迎與老師聯繫。'
+    ) : only18?'孩子已安排至 18:00 接回，無須另外申請臨托或延托。':
+      only17 && type==='temporary'?'孩子固定 17:00 接回，如需延長至 18:00，可使用「延托」申請。':
+      only16 && type==='extended'?'孩子原訂 16:00 接回，如有課後托育需求，可使用「臨托」提出申請。':
+      '此服務需依寶貝原訂接回時間與班級安排申請；如需協助，歡迎聯繫老師。';
+    announceCareNav('🌷 '+service+'暫不適用｜'+reason);
     return;
   }
   if(!hasCareTimeResult(type) || !restrictedCareServicesReady){
@@ -3594,7 +3603,7 @@ function updateExperienceNotice(){
       tab.classList.remove('hidden');
       tab.classList.toggle('isUnavailable',cannotUse);
       tab.setAttribute('aria-disabled',String(cannotUse));
-      tab.title=cannotUse?'此服務不適用於家中目前所選幼兒，點一下查看原因':'';
+      tab.title=cannotUse?'依各位寶貝的班級與接送安排判斷，點一下了解服務說明':'';
     }
   }
   // 預覽期間或資格無法確認時不允許提交；請假與接送不受個別托育限制影響。
@@ -3629,8 +3638,8 @@ function renderPickerList(targetId,prefix){
       originalTime==='17:00' && prefix==='temporary'?'🚫 已有 17:00 課後托育，只能申請延托至 18:00':
       originalTime==='16:00' && prefix==='extended'?'🚫 16:00 一般放學，若需托育請選「臨托」':
       originalTime && !careTimeAllows(c,prefix)?'🚫 此接回時間不符合本服務資格':'';
-    const reason=serviceBlocked?'🚫 本園未提供此幼兒臨托／延托服務':
-      needsEligibility?'⏳ 正在核對接送時間，暫時不能送出':
+    const reason=serviceBlocked?'🌷 依這位寶貝目前的班級服務安排，臨托與延托暫不適用；如有接送需求，歡迎與班級老師聯繫。':
+      needsEligibility?'⏳ 正在核對接送時間，請稍後查看':
       !isPilotApplicationChild(c)?'🌷 體驗模式｜12/1 起開放此班正式申請':
       timeReason;
     return `

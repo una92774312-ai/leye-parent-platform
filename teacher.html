@@ -1135,6 +1135,34 @@
 .todayClassRosters{margin-top:15px}.todayClassHeading{font-size:16px;font-weight:800;color:#365840;margin-bottom:10px}
 .todayClassRosters .rosterClassDetails{margin-bottom:9px;background:#f9fcf8}
 .todayClassRosters .rosterClassDetails>summary{min-height:48px}
+/* 今日班級預設收合；提供清楚的展開標示，不影響其他名冊 */
+.todayClassRosters .rosterClassDetails>summary::after{
+  content:"⌄";
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 30px;
+  width:30px;
+  height:30px;
+  border-radius:999px;
+  background:#eaf3e8;
+  color:#4b7354;
+  font-size:21px;
+  font-weight:600;
+  line-height:1;
+  transition:transform .2s ease,background-color .2s ease;
+}
+.todayClassRosters .rosterClassDetails[open]>summary::after{
+  transform:rotate(180deg);
+  background:#deebdc;
+}
+.todayClassRosters .rosterClassDetails>summary:focus-visible{
+  outline:2px solid #5c9368;
+  outline-offset:-3px;
+}
+@media(prefers-reduced-motion:reduce){
+  .todayClassRosters .rosterClassDetails>summary::after{transition:none}
+}
 .adminMorningSupport{border:1px solid #dfebdc;border-radius:16px;background:#f7fbf5;padding:14px;margin-top:15px;color:#395b40}
 .adminSupportHeader{display:flex;flex-wrap:wrap;gap:6px;font-size:16px;margin-bottom:11px}.adminSupportHeader strong{color:#315d3b}
 .adminSupportControls{display:grid;grid-template-columns:1fr;gap:8px}.adminSupportControls label{font-size:13px;color:#6b806e}
@@ -2414,15 +2442,23 @@ function renderTeacherRoster(data,todayScope={}){
   const aftercareIds=new Set(todayScope.aftercare_ids||[]);
   const ownMorning=morning.filter(group=>morningIds.has(group.class_id));
   const ownAftercare=aftercare.filter(group=>aftercareIds.has(group.aftercare_class_id));
+  // 首次進入預設收合；更新資料時保留老師已手動展開的班級。
+  const todayBox=el("todayClassRosters");
+  const expandedTodayClasses=new Set(
+    Array.from(todayBox.querySelectorAll('.rosterClassDetails[open][data-roster-key]'))
+      .map(details=>details.dataset.rosterKey)
+  );
   const todayGroups=[];
   for(const group of ownMorning){
-    todayGroups.push('<details class="rosterClassDetails" open><summary><span>🏫 '+escapeHtmlText(group.class_name||group.class_id)+'・班級幼兒</span><span class="rosterClassCount">'+Number(group.child_count||0)+' 人</span></summary><div class="rosterClassBody">'+rosterListHtml(group.children,"morning")+'</div></details>');
+    todayGroups.push('<details class="rosterClassDetails" data-roster-key="morning:'+escapeHtmlText(String(group.class_id||''))+'"><summary><span>🏫 '+escapeHtmlText(group.class_name||group.class_id)+'・班級幼兒</span><span class="rosterClassCount">'+Number(group.child_count||0)+' 人</span></summary><div class="rosterClassBody">'+rosterListHtml(group.children,"morning")+'</div></details>');
   }
   for(const group of ownAftercare){
-    todayGroups.push('<details class="rosterClassDetails" open><summary><span>🌙 '+escapeHtmlText(group.aftercare_class_name||group.aftercare_class_id)+'・今日課後班</span><span class="rosterClassCount">課後 '+Number(group.regular_count||0)+'｜臨托 '+Number(group.temporary_count||0)+'</span></summary><div class="rosterClassBody"><div class="rosterSubTitle">固定課後幼兒</div>'+rosterListHtml(group.regular_children,"regular",true)+'<div class="rosterSubTitle">今日臨托</div>'+rosterListHtml(group.temporary_children,"temporary")+'</div></details>');
+    todayGroups.push('<details class="rosterClassDetails" data-roster-key="aftercare:'+escapeHtmlText(String(group.aftercare_class_id||''))+'"><summary><span>🌙 '+escapeHtmlText(group.aftercare_class_name||group.aftercare_class_id)+'・今日課後班</span><span class="rosterClassCount">課後 '+Number(group.regular_count||0)+'｜臨托 '+Number(group.temporary_count||0)+'</span></summary><div class="rosterClassBody"><div class="rosterSubTitle">固定課後幼兒</div>'+rosterListHtml(group.regular_children,"regular",true)+'<div class="rosterSubTitle">今日臨托</div>'+rosterListHtml(group.temporary_children,"temporary")+'</div></details>');
   }
-  const todayBox=el("todayClassRosters");
   todayBox.innerHTML='<div class="todayClassHeading">🌿 今天的班級幼兒</div>'+(todayGroups.length?todayGroups.join(""):'<div class="rosterEmpty">今天沒有安排需要帶班的課程。</div>');
+  todayBox.querySelectorAll('.rosterClassDetails[data-roster-key]').forEach(details=>{
+    details.open=expandedTodayClasses.has(details.dataset.rosterKey);
+  });
   const isAdmin=role==="admin"||role==="admin_viewer";
   el("rosterDetails").style.display=isAdmin?"":"none";
   el("rosterDetails").open=false;
