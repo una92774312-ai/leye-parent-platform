@@ -491,6 +491,30 @@ button{
   color:#546e7a;
 }
 
+/* 行政端：申請／接送來源標籤 */
+.sourceLine{
+  margin-top:7px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  align-items:center;
+}
+.sourceTag{
+  display:inline-flex;
+  align-items:center;
+  max-width:100%;
+  padding:4px 9px;
+  border-radius:999px;
+  font-size:.76rem;
+  font-weight:800;
+  line-height:1.45;
+  overflow-wrap:anywhere;
+}
+.sourceTag.teacher{background:#e9f0fa;color:#315c88}
+.sourceTag.parent{background:#eaf4ec;color:#2f7447}
+.sourceTag.both{background:#fff2dd;color:#8b5b22}
+.sourceTag.unknown{background:#f1f3f3;color:#697679}
+
 .requestBody{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -2156,6 +2180,9 @@ let currentFilter =
 let pickupRecords =
   [];
 
+// 顯示申請／接送的實際登記來源。僅查詢有教師代辦註記的教師名稱。
+let proxyStaffNameMap = Object.create(null);
+
 
 let staffList =
   [];
@@ -2672,6 +2699,58 @@ function pickupStatusBadge(
 
 /*
 ==================================================
+行政端：確認資料來源（不以原因文字猜測來源）
+==================================================
+*/
+async function loadProxyStaffNames(rows){
+  const ids=[...new Set((rows||[])
+    .map(row=>row?.staff_proxy_by)
+    .filter(Boolean)
+    .map(String))];
+
+  if(!ids.length)return;
+
+  // 接送與申請可能同時重新整理；各自等候查詢完成後才繪製卡片，避免姓名偶爾消失。
+  const {data,error}=await supabaseClient.from('staff')
+    .select('id,display_name').in('id',ids);
+  if(error){
+    console.warn('教師代辦姓名讀取受限，仍會顯示教師代辦標籤：',error.message);
+    return;
+  }
+  (data||[]).forEach(staff=>{
+    if(staff.id)proxyStaffNameMap[String(staff.id)]=String(staff.display_name||'').trim();
+  });
+}
+
+function recordSourceHtml(row,kind){
+  const staffId=row?.staff_proxy_by?String(row.staff_proxy_by):'';
+  const byGuardian=!!row?.guardian_id;
+  const byStaff=!!staffId;
+  const kindName=kind==='pickup'?'通知':'申請';
+  let text='',cls='unknown';
+  if(byStaff){
+    const teacherName=proxyStaffNameMap[staffId]
+      ||(String(currentStaff?.id||'')===staffId?currentStaff?.display_name:'')
+      ||'';
+    const teacher=teacherName?`｜${teacherName}老師`:'';
+    if(byGuardian){
+      text=`家長與教師皆有登記${teacher}`;
+      cls='both';
+    }else{
+      text=`教師代辦${teacher}`;
+      cls='teacher';
+    }
+  }else if(byGuardian){
+    text=`家長自行${kindName}`;
+    cls='parent';
+  }else{
+    text='來源未註明（舊紀錄）';
+  }
+  return `<div class="sourceLine"><span class="sourceTag ${cls}">登記來源：${escapeHtml(text)}</span></div>`;
+}
+
+/*
+==================================================
 讀取今日接送
 ==================================================
 */
@@ -2735,6 +2814,7 @@ async function refreshPickupRecords(){
           pickup_date,
           child_id,
           guardian_id,
+          staff_proxy_by,
           pickup_person,
           pickup_mode,
           scheduled_pickup_time,
@@ -2787,6 +2867,7 @@ async function refreshPickupRecords(){
   pickupRecords =
     records || [];
 
+  await loadProxyStaffNames(pickupRecords);
 
   const childIds =
     [
@@ -3461,6 +3542,7 @@ function renderPickupCard(
               className
             )}
           </div>
+          ${recordSourceHtml(row,'pickup')}
 
         </div>
 
@@ -3523,13 +3605,13 @@ function renderPickupCard(
         <div class="info">
 
           <div class="infoLabel">
-            家長通知時間
+            ${row.guardian_notice_at ? '家長通知時間' : '登記時間'}
           </div>
 
           <div class="infoValue">
             ${escapeHtml(
               formatDateTime(
-                row.guardian_notice_at
+                row.guardian_notice_at || row.created_at
               )
             )}
           </div>
@@ -3819,6 +3901,7 @@ async function completePickupRecord(
           request_date,
           child_id,
           guardian_id,
+          staff_proxy_by,
           request_type,
           status,
           requested_start_time,
@@ -3859,6 +3942,7 @@ async function completePickupRecord(
   requests =
     requestData || [];
 
+  await loadProxyStaffNames(requests);
 
   const childIds =
     [
@@ -4397,6 +4481,7 @@ function requestCardHtml(
             }
 
           </div>
+          ${recordSourceHtml(r,'request')}
 
         </div>
 
@@ -4523,7 +4608,7 @@ function requestCardHtml(
       <div class="reasonBox">
 
         <b>
-          📝 家長原因／備註
+          📝 申請原因／備註
         </b>
 
         <br>
