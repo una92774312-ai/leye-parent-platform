@@ -1548,6 +1548,11 @@ details.rules summary{
 </div>
 
 
+<div id="parentExperienceNotice" class="notice noticeBlue hidden" role="status" style="margin:14px auto;max-width:900px;line-height:1.7;padding:15px;border:2px solid #b8d0e5">
+  <b>🌷 家長平台體驗期間｜12/1 正式啟用</b><br>
+  目前可以綁定 LINE、確認幼兒資料、瀏覽平台並練習填寫。<b>尚未開放正式送出</b>，練習內容不會送給老師，也不會產生費用或正式紀錄。<br>
+  如需請假、臨托、延托或接送異動，請先依本園原有方式通知老師。
+</div>
 <div id="guardianIdentityCard" class="notice noticeBlue hidden" aria-live="polite">
   <div id="guardianIdentityText" class="guardianIdentityHeadline">您的身分：確認中...</div>
   <p class="guardianIdentityHelp">每位照顧者使用自己的專屬綁定連結；同一位幼兒的申請紀錄由已授權的家人共同查看。</p>
@@ -1861,7 +1866,7 @@ details.rules summary{
     id="pickupSubmitBtn"
     class="btn btnPrimary"
     type="button"
-    onclick="submitPickup()"
+    data-guardian-submit onclick="submitPickup()"
   >
     📢 確認通知老師
   </button>
@@ -2088,7 +2093,7 @@ details.rules summary{
     id="leaveSubmitBtn"
     class="btn btnOrange"
     type="button"
-    onclick="submitLeave()"
+    data-guardian-submit onclick="submitLeave()"
   >
     ❌ 確認送出請假
   </button>
@@ -2201,7 +2206,7 @@ details.rules summary{
     id="extendedSubmitBtn"
     class="btn btnBlue"
     type="button"
-    onclick="submitExtended()"
+    data-guardian-submit onclick="submitExtended()"
   >
     ⏰ 申請延長至 18:00
   </button>
@@ -2363,7 +2368,7 @@ details.rules summary{
     id="temporarySubmitBtn"
     class="btn btnPurple"
     type="button"
-    onclick="submitTemporary()"
+    data-guardian-submit onclick="submitTemporary()"
   >
     🧸 送出臨時托育申請
   </button>
@@ -2573,6 +2578,10 @@ let currentPickupMode =
 
 let children =
   [];
+
+// 依 Supabase 幼兒個別權限控制臨托／延托；讀取失敗時暫時停用，不影響請假及接送。
+let restrictedCareServices = new Set();
+let restrictedCareServicesReady = false;
 
 let guardianCaregiverRole = null;
 let guardianRoleEditing = false;
@@ -3051,6 +3060,8 @@ async function loadSchoolClosedDates(){
 
 
 async function loadGuardianAndChildren(){
+  restrictedCareServices = new Set();
+  restrictedCareServicesReady = false;
 
   $("boundSummary").textContent =
     "正在從資料庫讀取幼兒資料...";
@@ -3274,6 +3285,19 @@ async function loadGuardianAndChildren(){
 
     );
 
+  // 每次登入後重新取得此家長名下幼兒的服務限制，禁止使用舊快取。
+  const {data:careBlocks,error:careBlocksError} = await supabaseClient
+    .rpc("guardian_my_care_service_blocks");
+  if(careBlocksError){
+    console.error("讀取臨托／延托限制失敗：",careBlocksError);
+    showStatus("⚠️ 臨托／延托資格暫時無法讀取，已暫停這兩種申請；請假及接送不受影響。請重新開啟平台。");
+  }else{
+    restrictedCareServices = new Set((careBlocks||[]).map(row =>
+      String(row.child_id)+"|"+String(row.request_type)
+    ));
+    restrictedCareServicesReady = true;
+  }
+
   guardianCaregiverRole = null;
   const {data:guardianData,error:guardianError} = await supabaseClient
     .from("guardians")
@@ -3399,13 +3423,50 @@ function renderChildrenEverywhere(){
   );
 
   renderGuardianIdentityCard();
+  updateExperienceNotice();
 }
 
 
-// 櫻桃、蘋果試行期間，其他班級手足僅展示，不列入線上申請。
-// 真正的送出權限同步由資料庫的 guardian_child_rollout_enabled 限制。
+// 2026/12/1 前，只有櫻桃、蘋果、企鵝班能正式送出；之後全園啟用。
+// Supabase guardian_child_rollout_enabled 仍負責最終後端授權。
 function isPilotApplicationChild(child){
-  return child && (child.classId === "C01" || child.classId === "C02");
+  if(!child)return false;
+  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const get=type=>parts.find(x=>x.type===type)?.value||'';
+  const localDate=get('year')+'-'+get('month')+'-'+get('day');
+  return localDate >= '2026-12-01' || ['C01','C02','C08'].includes(child.classId);
+}
+function isCareServiceType(type){return type==="extended" || type==="temporary";}
+function isChildCareRestricted(child,type){
+  return isCareServiceType(type) && restrictedCareServices.has(String(child.id)+"|"+type);
+}
+function canSelectForRequest(child,type){
+  return isPilotApplicationChild(child) &&
+    (!isCareServiceType(type) || (restrictedCareServicesReady && !isChildCareRestricted(child,type)));
+}
+function hasUnrestrictedCareChild(type){
+  return children.some(c => !isChildCareRestricted(c,type));
+}
+function parentExperienceMode(){return children.length>0 && !children.some(isPilotApplicationChild);}
+function updateExperienceNotice(){
+  const notice=document.getElementById('parentExperienceNotice');
+  if(!notice)return;
+  const isPreview=parentExperienceMode();
+  notice.classList.toggle('hidden',!isPreview);
+  // 只有受限制的孩子：直接隱藏這兩種服務入口；混合家庭仍可選其他孩子。
+  for(const type of ['extended','temporary']){
+    const tab=$(type==='extended'?'tabExtended':'tabTemporary');
+    const cannotUse=restrictedCareServicesReady && children.length>0 && !hasUnrestrictedCareChild(type);
+    if(tab)tab.classList.toggle('hidden',cannotUse);
+  }
+  // 預覽期間或資格無法確認時不允許提交；請假與接送不受個別托育限制影響。
+  for(const button of document.querySelectorAll('[data-guardian-submit]')){
+    const type=button.id==='extendedSubmitBtn'?'extended':button.id==='temporarySubmitBtn'?'temporary':null;
+    const unavailable=type && (!restrictedCareServicesReady || (children.length>0 && !hasUnrestrictedCareChild(type)));
+    button.disabled=Boolean(isPreview||unavailable);
+    button.title=isPreview?'12/1 起開放正式送出；目前僅供瀏覽與練習':
+      unavailable?'此家長名下幼兒目前無法使用這項托育服務':'';
+  }
 }
 
 function renderPickerList(targetId,prefix){
@@ -3418,18 +3479,23 @@ function renderPickerList(targetId,prefix){
     box.innerHTML='<div class="empty">此家長帳號目前沒有已綁定幼兒。請洽本園確認家長與幼兒的綁定資料。</div>';
     return;
   }
-  const pilotChildrenCount=children.filter(isPilotApplicationChild).length;
+  const selectableCount=children.filter(c=>canSelectForRequest(c,prefix)).length;
   box.innerHTML=children.map(c=>{
-    const canApply=isPilotApplicationChild(c);
+    const canApply=canSelectForRequest(c,prefix);
+    const serviceBlocked=isChildCareRestricted(c,prefix);
+    const needsEligibility=isCareServiceType(prefix) && !restrictedCareServicesReady;
+    const reason=serviceBlocked?'🚫 本園未提供此幼兒臨托／延托服務':
+      needsEligibility?'⚠️ 服務資格讀取失敗，暫時無法申請':
+      !isPilotApplicationChild(c)?'🌷 體驗模式｜12/1 起開放此班正式申請':'';
     return `
       <label class="childPick ${canApply ? '' : 'childPickReadonly'}">
         <input type="checkbox" name="${prefix}Child" value="${escapeHtml(c.id)}"
           ${canApply ? '' : 'disabled'}
-          ${canApply && pilotChildrenCount === 1 ? 'checked' : ''}>
+          ${canApply && selectableCount === 1 ? 'checked' : ''}>
         <div>
           <div class="childName">${escapeHtml(parentChildShortName(c.name))}</div>
           <div class="childClass">原班級：${escapeHtml(c.className)}</div>
-          ${canApply ? '' : '<div class="childReadOnlyNote">🔒 已連結的手足｜此班尚未開放線上申請</div>'}
+          ${canApply ? '' : `<div class="childReadOnlyNote">${reason}</div>`}
         </div>
       </label>`;
   }).join('');
@@ -3491,6 +3557,13 @@ function requireChildren(prefix){
 
     return null;
 
+  }
+
+  if(isCareServiceType(prefix) && (
+    !restrictedCareServicesReady || list.some(c=>!canSelectForRequest(c,prefix))
+  )){
+    alert("此幼兒目前不開放臨托／延托申請，請洽本園確認。　");
+    return null;
   }
 
   return list;
@@ -3686,7 +3759,7 @@ async function loadMyRequests(){
   }
 
 }
-function showPage(page,updateUrl=true){const valid=["pickup","leave","extended","temporary","requests"];if(!valid.includes(page))page="pickup";currentPage=page;valid.forEach(p=>{const pageEl=$(p+"Page");if(pageEl)pageEl.classList.toggle("hidden",p!==page);const tabEl=$("tab"+p[0].toUpperCase()+p.slice(1));if(tabEl)tabEl.classList.toggle("active",p===page);});const headerRequestsBtn=$("headerRequestsBtn");if(headerRequestsBtn)headerRequestsBtn.classList.toggle("active",page==="requests");if(page==="requests")loadMyRequests();if(updateUrl){const u=new URL(window.location.href);u.searchParams.set("page",page);u.searchParams.delete("code");u.searchParams.delete("state");u.searchParams.delete("liffClientId");u.searchParams.delete("liffRedirectUri");history.replaceState(null,"",u.toString());}window.scrollTo({top:0,behavior:"smooth"});}
+function showPage(page,updateUrl=true){const valid=["pickup","leave","extended","temporary","requests"];if(!valid.includes(page))page="pickup";if(isCareServiceType(page) && restrictedCareServicesReady && children.length && !hasUnrestrictedCareChild(page))page="pickup";currentPage=page;valid.forEach(p=>{const pageEl=$(p+"Page");if(pageEl)pageEl.classList.toggle("hidden",p!==page);const tabEl=$("tab"+p[0].toUpperCase()+p.slice(1));if(tabEl)tabEl.classList.toggle("active",p===page);});const headerRequestsBtn=$("headerRequestsBtn");if(headerRequestsBtn)headerRequestsBtn.classList.toggle("active",page==="requests");if(page==="requests")loadMyRequests();if(updateUrl){const u=new URL(window.location.href);u.searchParams.set("page",page);u.searchParams.delete("code");u.searchParams.delete("state");u.searchParams.delete("liffClientId");u.searchParams.delete("liffRedirectUri");history.replaceState(null,"",u.toString());}window.scrollTo({top:0,behavior:"smooth"});}
 
 function setPickupMode(
   el,
@@ -3982,6 +4055,11 @@ document.addEventListener('change',e=>{
 });
 
 async function submitPickup(){
+  if(parentExperienceMode()){
+    alert('目前是家長平台體驗期間，12/1 起才開放正式送出。現在填寫不會送達老師；如有實際需求請先依原方式通知本園。');
+    return;
+  }
+
 
   const list =
     requireChildren(
@@ -4448,6 +4526,11 @@ function getSelectedLeaveDates(){
 }
 
 async function submitLeave(){
+  if(parentExperienceMode()){
+    alert('目前是家長平台體驗期間，12/1 起才開放正式送出。現在填寫不會送達老師；如有實際需求請先依原方式通知本園。');
+    return;
+  }
+
 
   const list =
     requireChildren(
@@ -4889,6 +4972,11 @@ async function submitLeave(){
 
 
 async function submitExtended(){
+  if(parentExperienceMode()){
+    alert('目前是家長平台體驗期間，12/1 起才開放正式送出。現在填寫不會送達老師；如有實際需求請先依原方式通知本園。');
+    return;
+  }
+
 
   const list =
     requireChildren(
@@ -5273,6 +5361,11 @@ async function submitExtended(){
 
 
 async function submitTemporary(){
+  if(parentExperienceMode()){
+    alert('目前是家長平台體驗期間，12/1 起才開放正式送出。現在填寫不會送達老師；如有實際需求請先依原方式通知本園。');
+    return;
+  }
+
 
   const list =
     requireChildren(
