@@ -3427,7 +3427,7 @@ function makeGroupedLeaveItem(items){
  const badge=document.createElement("div");badge.className="itemBadge leave";badge.textContent=items.length+" 天請假";
  top.append(left,badge);card.appendChild(top);
  const d=document.createElement("div");d.className="itemDetail";d.style.whiteSpace="pre-line";
- d.textContent="請假類別："+leaveCategoryLabel(first.reason)+"\n每日進度："+items.map(x=>formatDateText(x.request_date)+" "+(["confirmed","handled"].includes(x.teacher_action_status)?"✓ 已確認":"待確認")).join("、");
+ d.textContent="請假類別："+leaveCategoryLabel(first.reason)+"\n請假時段："+(first.requested_start_time&&first.requested_end_time?String(first.requested_start_time).slice(0,5)+"－"+String(first.requested_end_time).slice(0,5):"整日")+"\n每日進度："+items.map(x=>formatDateText(x.request_date)+" "+(["confirmed","handled"].includes(x.teacher_action_status)?"✓ 已確認":"待確認")).join("、");
  card.appendChild(d);
  const actionable=items.filter(x=>x.can_act!==false);
  const toConfirm=actionable.filter(x=>!["confirmed","handled"].includes(x.teacher_action_status));

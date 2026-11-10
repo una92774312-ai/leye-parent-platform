@@ -1591,36 +1591,30 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 </div>
 
 
-<!-- 行政逾時接送管理：跨月總覽、班級選幼兒、歷史補登 -->
+<!-- 行政逾時接送管理：只有 admin 可編輯，所有儲存由資料庫 RPC 驗證並稽核 -->
 <div class="panel" id="latePickupAdminPanel">
-  <div class="panelTitle">⏰ 逾時接送總覽與歷史補登</div>
-  <div class="helper">可查看 9 月起的逾時接送紀錄，依班級篩選並補登過去日期。只有行政老師能修改；帳務已處理的紀錄不可直接更改。</div>
-  <div class="pickupToolbar" style="align-items:end;flex-wrap:wrap;gap:10px">
-    <label>開始日期<br><input type="date" id="latePickupFrom" onchange="loadLatePickupAdmin()"></label>
-    <label>結束日期<br><input type="date" id="latePickupTo" onchange="loadLatePickupAdmin()"></label>
-    <label>班級<br><select id="latePickupFilterClass" onchange="renderLatePickupOverview()"><option value="">全部班級</option></select></label>
-    <button type="button" class="btn btnBlue" onclick="loadLatePickupAdmin()">↻ 更新逾時名單</button>
+  <div class="panelTitle">⏰ 逾時接送登記與更正</div>
+  <div class="helper">只有行政老師可修改；已收費或待退款的紀錄須先核對帳務。修改需填寫原因，系統保留修改紀錄。</div>
+  <div class="pickupToolbar">
+    <label>日期 <input type="date" id="latePickupDate" onchange="loadLatePickupAdmin()"></label>
+    <button type="button" class="btn btnBlue" onclick="loadLatePickupAdmin()">↻ 查詢接送紀錄</button>
   </div>
-  <div id="latePickupSummary" class="helper" aria-live="polite">正在準備逾時紀錄……</div>
+  <div id="latePickupSummary" class="helper" aria-live="polite">選擇日期後查詢。</div>
   <div id="latePickupList" style="display:grid;gap:8px;margin:12px 0"></div>
   <details id="latePickupEditFold" style="border-top:1px solid #dfe7e9;padding-top:12px">
-    <summary style="cursor:pointer;font-weight:800">✏️ 新增歷史逾時／更正接送紀錄</summary>
-    <div class="helper" style="margin:10px 0">請先選補登日期，再選班級及幼兒；系統會自動查詢該日期的原訂回家時間（仍可人工修正）。9 月起的歷史資料可補登；若同一天已有紀錄會直接載入。</div>
-    <div class="pickupToolbar" style="align-items:end;flex-wrap:wrap;gap:10px">
-      <label>接送日期<br><input type="date" id="latePickupDate" onchange="loadLatePickupEditorRecord()"></label>
-      <label>班級<br><select id="latePickupClass" onchange="filterLatePickupChildren()"><option value="">請選擇班級</option></select></label>
-      <label>幼兒<br><select id="latePickupChild" style="min-width:170px" onchange="loadLatePickupEditorRecord()"><option value="">請先選擇班級</option></select></label>
-    </div>
-    <div class="pickupToolbar" style="align-items:end;flex-wrap:wrap;gap:10px">
-      <label>原訂接送<br><select id="latePickupScheduled" onchange="recalcLatePickupSuggestion()"><option value="">請先選擇幼兒</option><option value="16:00">16:00</option><option value="17:00">17:00</option><option value="18:00">18:00</option></select></label>
+    <summary style="cursor:pointer;font-weight:800">✏️ 登記／修正接送紀錄</summary>
+    <div class="helper" style="margin:10px 0">選擇幼兒後，可補登當日紀錄或更正既有資料。費用需依園方核定標準確認。</div>
+    <div class="pickupToolbar" style="align-items:end;flex-wrap:wrap">
+      <label>幼兒<br><select id="latePickupChild" style="min-width:160px" onchange="fillLatePickupEditor()"><option value="">請選擇幼兒</option></select></label>
+      <label>原訂接送<br><select id="latePickupScheduled" onchange="recalcLatePickupSuggestion()"><option value="16:00">16:00</option><option value="17:00">17:00</option><option value="18:00">18:00</option></select></label>
       <label>實際接走<br><input id="latePickupActual" type="time" value="18:00" onchange="recalcLatePickupSuggestion()"></label>
-      <label>是否延遲／逾時<br><select id="latePickupIsLate" onchange="recalcLatePickupSuggestion(false)"><option value="false">正常接送</option><option value="true">延遲／逾時接送</option></select></label>
     </div>
-    <div class="pickupToolbar" style="align-items:end;flex-wrap:wrap;gap:10px">
+    <div class="pickupToolbar" style="align-items:end;flex-wrap:wrap">
+      <label>是否延遲／逾時<br><select id="latePickupIsLate" onchange="recalcLatePickupSuggestion(false)"><option value="false">正常接送</option><option value="true">延遲／逾時接送</option></select></label>
       <label>無故延遲記點<br><select id="latePickupUnexcused"><option value="false">否</option><option value="true">是</option></select></label>
       <label>費用（元）<br><input id="latePickupFee" type="number" min="0" max="10000" step="1" value="0" style="width:100px"></label>
     </div>
-    <label style="display:block;margin:12px 0">修改／補登原因（必填）<br><textarea id="latePickupReason" rows="2" maxlength="500" placeholder="例如：補登 9 月紙本逾時紀錄、老師接走時間補登" style="width:100%;box-sizing:border-box"></textarea></label>
+    <label style="display:block;margin:12px 0">修改／補登原因（必填）<br><textarea id="latePickupReason" rows="2" maxlength="500" placeholder="例如：接送完成時間補登、行政核對後更正" style="width:100%;box-sizing:border-box"></textarea></label>
     <div id="latePickupEditHint" class="helper" aria-live="polite"></div>
     <button class="btn btnGreen" type="button" id="latePickupSaveBtn" onclick="saveLatePickupAdmin()">✓ 儲存逾時接送紀錄</button>
   </details>
@@ -8269,217 +8263,97 @@ function installPanelCollapsers(){
 
 
 
-// === 行政逾時管理：分開載入班級/幼兒與跨日期總覽 ===
+// === 行政逾時管理（須由具 admin 權限的 RPC 執行修改） ===
 let latePickupRows=[];
 let latePickupChildren=[];
-let latePickupClassNames=new Map();
-let latePickupEditorRecord=null;
 const lateVal=id=>document.getElementById(id)?.value||"";
 const lateTime=v=>String(v||"").slice(0,5);
 function lateActualTime(iso){return iso?new Date(iso).toLocaleTimeString("en-GB",{timeZone:"Asia/Taipei",hour:"2-digit",minute:"2-digit",hour12:false}):"";}
+function lateGetRecord(id){return latePickupRows.find(r=>r.child_id===id)||null;}
 function lateFeeSuggestion(s,t){
   if(!t)return 0;
   if(s==="16:00")return t>"18:05"?130:t>"17:05"?100:t>"16:10"?50:0;
   if(s==="17:00")return t>"18:05"?65:t>"17:05"?35:0;
   return t>"18:05"?30:0;
 }
-function lateClassName(id){return latePickupClassNames.get(id)||id||"未分班";}
-function lateChild(id){return latePickupChildren.find(c=>c.id===id);}
-async function loadLatePickupDirectory(){
-  if(currentStaff?.role!=="admin")return;
-  const hint=document.getElementById("latePickupEditHint");
-  const [cr,cl]=await Promise.all([
-    supabaseClient.from("children").select("id,name,morning_class_id,active").eq("active",true).order("name"),
-    supabaseClient.from("classes").select("id,name").order("name")
-  ]);
-  if(cr.error||cl.error){
-    if(hint)hint.textContent="幼兒名單載入失敗："+(cr.error||cl.error).message;
-    return;
-  }
-  latePickupChildren=cr.data||[];
-  latePickupClassNames=new Map((cl.data||[]).map(c=>[c.id,c.name]));
-  const classIds=[...new Set(latePickupChildren.map(c=>c.morning_class_id).filter(Boolean))].sort((a,b)=>lateClassName(a).localeCompare(lateClassName(b),"zh-Hant"));
-  for(const [id,initial] of [["latePickupClass","請選擇班級"],["latePickupFilterClass","全部班級"]]){
-    const el=document.getElementById(id);if(!el)continue;
-    const previous=el.value;el.replaceChildren(new Option(initial,""));
-    classIds.forEach(cid=>el.add(new Option(lateClassName(cid),cid)));
-    if(classIds.includes(previous))el.value=previous;
-  }
-  filterLatePickupChildren();
-  if(hint)hint.textContent=`已載入 ${classIds.length} 個班級、${latePickupChildren.length} 位幼兒，請先選班級再選幼兒。`;
-}
-function filterLatePickupChildren(){
-  const select=document.getElementById("latePickupChild");if(!select)return;
-  const old=select.value,cls=lateVal("latePickupClass");
-  select.replaceChildren(new Option(cls?"請選擇幼兒":"請先選擇班級",""));
-  if(cls){
-    latePickupChildren.filter(c=>c.morning_class_id===cls).sort((a,b)=>a.name.localeCompare(b.name,"zh-Hant"))
-      .forEach(c=>select.add(new Option(c.name,c.id)));
-    if([...select.options].some(o=>o.value===old))select.value=old;
-  }
-  if(select.value!==old)resetLatePickupEditor();
-}
-function resetLatePickupEditor(){
-  latePickupEditorRecord=null;
-  document.getElementById("latePickupScheduled").value="";
-  document.getElementById("latePickupActual").value="";
-  document.getElementById("latePickupIsLate").value="false";
-  document.getElementById("latePickupUnexcused").value="false";
-  document.getElementById("latePickupFee").value="0";
-  document.getElementById("latePickupReason").value="";
-}
 function recalcLatePickupSuggestion(updateDecision=true){
-  const fee=lateFeeSuggestion(lateVal("latePickupScheduled"),lateVal("latePickupActual"));
+  const sch=lateVal("latePickupScheduled"),act=lateVal("latePickupActual");
+  const fee=lateFeeSuggestion(sch,act);
+  const status=lateVal("latePickupIsLate");
   if(updateDecision)document.getElementById("latePickupIsLate").value=fee>0?"true":"false";
-  const isLate=lateVal("latePickupIsLate")==="true";
+  const isLate=updateDecision?fee>0:status==="true";
   document.getElementById("latePickupFee").value=isLate?fee:0;
   if(!isLate)document.getElementById("latePickupUnexcused").value="false";
-  document.getElementById("latePickupEditHint").textContent="依目前時間計算建議費用 NT$"+fee+"。若人工免收或調整，請填寫原因；逾時及無故遲接為不同判定。";
+  document.getElementById("latePickupEditHint").textContent="系統費用建議：NT$"+fee+"；人工調整時請填寫原因。逾時與無故遲接分別判定。";
 }
-// 原訂回家時間按「所選日期」查找，不以目前時段替代歷史時段。
-// 無可靠紀錄時讓行政手動選擇，不靜默套用 17:00。
-async function latePickupFindScheduledTime(id,date){
-  const [assignment,request,plan,arrangement]=await Promise.all([
-    supabaseClient.from("aftercare_assignments")
-      .select("scheduled_pickup_time,assignment_status,updated_at")
-      .eq("child_id",id).eq("assignment_date",date)
-      .in("assignment_status",["assigned","active","completed"])
-      .order("updated_at",{ascending:false}).limit(1),
-    supabaseClient.from("requests")
-      .select("request_type,scheduled_pickup_time,requested_end_time,status,updated_at")
-      .eq("child_id",id).eq("request_date",date)
-      .in("status",["approved","completed"])
-      .in("request_type",["pickup_early","pickup_normal","pickup_late","extended","temporary"])
-      .order("updated_at",{ascending:false}).limit(15),
-    supabaseClient.from("aftercare_plans")
-      .select("scheduled_pickup_time,start_date,end_date,active,updated_at")
-      .eq("child_id",id).lte("start_date",date)
-      .or(`end_date.is.null,end_date.gte.${date}`)
-      .order("start_date",{ascending:false}).limit(10),
-    supabaseClient.from("teacher_pickup_arrangements")
-      .select("original_pickup_time,state")
-      .eq("child_id",id).eq("pickup_date",date).limit(1)
-  ]);
-  const errors=[assignment,request,plan,arrangement].filter(r=>r.error);
-  if(errors.length)throw Error("部分歷史來源查詢失敗："+errors.map(r=>r.error.message).join("；"));
-  const valid=t=>["16:00","17:00","18:00"].includes(lateTime(t))?lateTime(t):"";
-  const dayAssignment=(assignment.data||[]).find(r=>valid(r.scheduled_pickup_time));
-  if(dayAssignment)return {time:valid(dayAssignment.scheduled_pickup_time),source:"當日課後安排"};
-  const reqs=request.data||[];
-  const requestPriority=["temporary","extended","pickup_late","pickup_early","pickup_normal"];
-  for(const type of requestPriority){
-    const r=reqs.find(x=>x.request_type===type && valid(x.requested_end_time||x.scheduled_pickup_time));
-    if(r)return {time:valid(r.requested_end_time||r.scheduled_pickup_time),source:"當日已核准申請"};
-  }
-  const dayArrangement=(arrangement.data||[]).find(r=>valid(r.original_pickup_time));
-  if(dayArrangement)return {time:valid(dayArrangement.original_pickup_time),source:"當日教師原訂時間"};
-  const activePlan=(plan.data||[]).find(r=>r.active===true && valid(r.scheduled_pickup_time));
-  if(activePlan)return {time:valid(activePlan.scheduled_pickup_time),source:"該日期適用的課後方案"};
-  return {time:"",source:"查無該日期的可確認回家時間，請以當時紙本或實際排班資料手動選擇"};
-}
-async function loadLatePickupEditorRecord(){
-  const id=lateVal("latePickupChild"),date=lateVal("latePickupDate");
-  resetLatePickupEditor();
-  if(!id||!date)return;
-  const hint=document.getElementById("latePickupEditHint");
-  hint.textContent="查詢這位幼兒當天的紀錄……";
-  const {data,error}=await supabaseClient.from("pickup_records")
-    .select("id,child_id,pickup_date,scheduled_pickup_time,actual_pickup_at,pickup_status,fee_amount,fee_status,fee_collected_at,unexcused_late,correction_reason")
-    .eq("child_id",id).eq("pickup_date",date).maybeSingle();
-  if(id!==lateVal("latePickupChild")||date!==lateVal("latePickupDate"))return;
-  if(error){hint.textContent="讀取接送紀錄失敗："+error.message;return;}
-  latePickupEditorRecord=data;
-  if(data){
-    document.getElementById("latePickupScheduled").value=lateTime(data.scheduled_pickup_time);
-    document.getElementById("latePickupActual").value=lateActualTime(data.actual_pickup_at)||lateTime(data.scheduled_pickup_time);
-    document.getElementById("latePickupIsLate").value=String(["late_pickup","delayed_pickup"].includes(data.pickup_status));
-    document.getElementById("latePickupUnexcused").value=String(!!data.unexcused_late);
-    document.getElementById("latePickupFee").value=Number(data.fee_amount||0);
-    hint.textContent="已找到原紀錄，可更正。"+(data.fee_collected_at||["paid","waived","refund_required"].includes(data.fee_status)?"⚠️ 帳務已處理，請先核對帳務。":"修改將保留歷程。");
+function fillLatePickupEditor(){
+  const r=lateGetRecord(lateVal("latePickupChild"));
+  if(r){
+    document.getElementById("latePickupScheduled").value=lateTime(r.scheduled_pickup_time);
+    document.getElementById("latePickupActual").value=lateActualTime(r.actual_pickup_at)||lateTime(r.scheduled_pickup_time);
+    document.getElementById("latePickupIsLate").value=["delayed_pickup","late_pickup"].includes(r.pickup_status)?"true":"false";
+    document.getElementById("latePickupUnexcused").value=String(!!r.unexcused_late);
+    document.getElementById("latePickupFee").value=Number(r.fee_amount||0);
+    document.getElementById("latePickupEditHint").textContent="已有紀錄；此操作會保留變更前後內容。";
   }else{
-    hint.textContent="正在查詢這位幼兒在 "+date+" 的原訂回家時間……";
-    try{
-      const resolved=await latePickupFindScheduledTime(id,date);
-      if(id!==lateVal("latePickupChild")||date!==lateVal("latePickupDate"))return;
-      document.getElementById("latePickupScheduled").value=resolved.time;
-      hint.textContent=resolved.time
-        ?`自動帶入原訂接送 ${resolved.time}（來源：${resolved.source}）。實際接走時間請自行填寫；原訂時間仍可修正。`
-        :resolved.source;
-    }catch(e){
-      if(id!==lateVal("latePickupChild")||date!==lateVal("latePickupDate"))return;
-      hint.textContent="自動查詢回家時間失敗，請手動確認："+(e.message||String(e));
-    }
+    document.getElementById("latePickupScheduled").value="17:00";
+    document.getElementById("latePickupActual").value="17:00";
+    document.getElementById("latePickupUnexcused").value="false";
+    recalcLatePickupSuggestion();
   }
-}
-function renderLatePickupOverview(){
-  const summary=document.getElementById("latePickupSummary"),list=document.getElementById("latePickupList");
-  if(!summary||!list)return;
-  list.replaceChildren();
-  const cls=lateVal("latePickupFilterClass");
-  const rows=latePickupRows.filter(r=>!cls||lateChild(r.child_id)?.morning_class_id===cls);
-  const sum=rows.reduce((n,r)=>n+Number(r.fee_amount||0),0);
-  summary.textContent=`符合條件 ${rows.length} 筆延遲／逾時｜登記費用合計 NT$${sum}（非已收金額）`;
-  if(!rows.length){list.textContent="此期間沒有逾時接送紀錄。可展開下方『新增歷史逾時』，先選日期、班級及幼兒補登。";return;}
-  for(const r of rows){
-    const c=lateChild(r.child_id)||{};
-    const card=document.createElement("div");card.className="staffRow";
-    const title=document.createElement("div");title.style.fontWeight="800";
-    title.textContent=`${r.pickup_date}｜${lateClassName(c.morning_class_id)}｜${c.name||"幼兒"}`;
-    const details=document.createElement("div");details.className="helper";
-    details.textContent=`原訂 ${lateTime(r.scheduled_pickup_time)}｜實際 ${lateActualTime(r.actual_pickup_at)||"未記錄"}｜費用 NT$${Number(r.fee_amount||0)}${r.unexcused_late?"｜無故延遲":""}${r.fee_collected_at||["paid","waived","refund_required"].includes(r.fee_status)?"｜帳務已處理":""}`;
-    const btn=document.createElement("button");btn.type="button";btn.className="btn btnBlue";btn.textContent="查看／更正";
-    btn.onclick=async()=>{
-      document.getElementById("latePickupEditFold").open=true;
-      document.getElementById("latePickupDate").value=r.pickup_date;
-      document.getElementById("latePickupClass").value=c.morning_class_id||"";
-      filterLatePickupChildren();
-      document.getElementById("latePickupChild").value=r.child_id;
-      await loadLatePickupEditorRecord();
-      document.getElementById("latePickupEditFold").scrollIntoView({behavior:"smooth",block:"center"});
-    };
-    card.append(title,details,btn);list.append(card);
-  }
+  document.getElementById("latePickupReason").value="";
 }
 async function loadLatePickupAdmin(){
-  if(currentStaff?.role!=="admin")return;
-  const from=lateVal("latePickupFrom"),to=lateVal("latePickupTo"),summary=document.getElementById("latePickupSummary");
-  if(!from||!to){summary.textContent="請選擇開始與結束日期。";return;}
-  if(from>to){summary.textContent="開始日期不能晚於結束日期。";return;}
-  summary.textContent="正在查詢逾時紀錄……";
-  let all=[];
-  // 分頁讀取；查詢僅限逾時紀錄，避免載入整學期所有正常接送
-  for(let start=0;start<10000;start+=500){
-    const {data,error}=await supabaseClient.from("pickup_records")
-      .select("id,child_id,pickup_date,scheduled_pickup_time,actual_pickup_at,pickup_status,fee_amount,fee_status,fee_collected_at,unexcused_late,correction_reason")
-      .gte("pickup_date",from).lte("pickup_date",to).in("pickup_status",["late_pickup","delayed_pickup"])
-      .order("pickup_date",{ascending:false}).order("created_at",{ascending:false}).range(start,start+499);
-    if(error){summary.textContent="查詢失敗："+error.message;return;}
-    all.push(...(data||[]));if((data||[]).length<500)break;
+  if(!currentStaff||currentStaff.role!=="admin")return;
+  const date=lateVal("latePickupDate")||getTaiwanDateString();
+  const summary=document.getElementById("latePickupSummary"),list=document.getElementById("latePickupList");
+  if(!summary||!list)return;
+  summary.textContent="正在查詢……";list.replaceChildren();
+  const [recordResult,childResult]=await Promise.all([
+    supabaseClient.from("pickup_records").select("id,child_id,pickup_date,scheduled_pickup_time,actual_pickup_at,pickup_status,fee_amount,fee_status,fee_collected_at,unexcused_late,correction_reason").eq("pickup_date",date).order("created_at",{ascending:false}),
+    supabaseClient.from("children").select("id,name,morning_class_id,active").eq("active",true).order("morning_class_id").order("name")
+  ]);
+  if(recordResult.error||childResult.error){summary.textContent="查詢失敗："+(recordResult.error||childResult.error).message;return;}
+  latePickupRows=recordResult.data||[];latePickupChildren=childResult.data||[];
+  const select=document.getElementById("latePickupChild");
+  const old=select.value;select.replaceChildren(new Option("請選擇幼兒",""));
+  for(const child of latePickupChildren)select.add(new Option((child.morning_class_id||"未分班")+"｜"+child.name,child.id));
+  if(latePickupChildren.some(c=>c.id===old))select.value=old;
+  const completed=latePickupRows.filter(r=>r.actual_pickup_at);
+  const late=completed.filter(r=>["late_pickup","delayed_pickup"].includes(r.pickup_status));
+  summary.textContent=`當日完成 ${completed.length} 筆｜延遲／逾時 ${late.length} 筆｜逾時費用紀錄 NT$${late.reduce((s,r)=>s+Number(r.fee_amount||0),0)}（非收款總額）`;
+  if(!completed.length){list.textContent="當日尚無已完成的接送紀錄。可在下方補登。";return;}
+  const names=new Map(latePickupChildren.map(c=>[c.id,c]));
+  for(const r of completed){
+    const c=names.get(r.child_id)||{};
+    const div=document.createElement("div");div.className="staffRow";
+    const header=document.createElement("div");header.style.fontWeight="700";
+    header.textContent=(c.morning_class_id||"未分班")+"｜"+(c.name||"幼兒")+"｜"+(["late_pickup","delayed_pickup"].includes(r.pickup_status)?"⚠️ 延遲／逾時":"✅ 正常");
+    const info=document.createElement("div");info.className="helper";
+    info.textContent="原訂 "+lateTime(r.scheduled_pickup_time)+"｜實際 "+lateActualTime(r.actual_pickup_at)+"｜費用 NT$"+Number(r.fee_amount||0)+(r.unexcused_late?"｜無故延遲 1 次":"")+(r.fee_collected_at||["collected","refunded","refund_required"].includes(r.fee_status)?"｜帳務已處理，須先核對":"");
+    const btn=document.createElement("button");btn.type="button";btn.className="btn btnBlue";btn.textContent="編輯";
+    btn.addEventListener("click",()=>{select.value=r.child_id;fillLatePickupEditor();document.getElementById("latePickupEditFold").open=true;document.getElementById("latePickupEditFold").scrollIntoView({behavior:"smooth",block:"center"});});
+    div.append(header,info,btn);list.append(div);
   }
-  latePickupRows=all;renderLatePickupOverview();
 }
 async function saveLatePickupAdmin(){
   if(currentStaff?.role!=="admin"){alert("只有行政老師可以修改");return;}
-  const reason=lateVal("latePickupReason").trim(),child=lateVal("latePickupChild"),date=lateVal("latePickupDate");
-  if(!child||!date||reason.length<3){alert("請選擇日期、班級及幼兒，並填寫至少 3 個字的修改原因。");return;}
-  if(!lateVal("latePickupScheduled")){alert("請先確認原訂接送時間（16:00、17:00 或 18:00）");return;}
+  const reason=lateVal("latePickupReason").trim(),child=lateVal("latePickupChild");
+  if(!child||reason.length<3){alert("請選擇幼兒，並填寫至少 3 個字的修改原因。");return;}
   if(!lateVal("latePickupActual")){alert("請填寫實際接走時間");return;}
-  if(date>getTaiwanDateString()){alert("不可以補登未來日期");return;}
   const fee=Number(lateVal("latePickupFee"));
-  if(!Number.isInteger(fee)||fee<0||fee>10000){alert("請輸入正確費用");return;}
-  const isLate=lateVal("latePickupIsLate")==="true",unexcused=lateVal("latePickupUnexcused")==="true";
-  if(!isLate&&(fee!==0||unexcused)){alert("正常接送不得設定逾時費用或無故延遲");return;}
-  if(!confirm(`確認${latePickupEditorRecord?"更正":"新增"} ${date} 的接送紀錄？系統會保留操作歷程。`))return;
+  if(!Number.isInteger(fee)||fee<0){alert("請輸入正確費用");return;}
+  if(!confirm("確認儲存本筆接送更正？系統將保留修改歷程。"))return;
   const btn=document.getElementById("latePickupSaveBtn");btn.disabled=true;
   try{
-    const {error}=await supabaseClient.rpc("admin_save_late_pickup",{
-      p_child_id:child,p_pickup_date:date,p_scheduled_time:lateVal("latePickupScheduled"),
-      p_actual_time:lateVal("latePickupActual"),p_is_late:isLate,
-      p_unexcused:unexcused,p_fee:fee,p_reason:reason
+    const {data,error}=await supabaseClient.rpc("admin_save_late_pickup",{
+      p_child_id:child,p_pickup_date:lateVal("latePickupDate"),p_scheduled_time:lateVal("latePickupScheduled"),
+      p_actual_time:lateVal("latePickupActual"),p_is_late:lateVal("latePickupIsLate")==="true",
+      p_unexcused:lateVal("latePickupUnexcused")==="true",p_fee:fee,p_reason:reason
     });
     if(error)throw error;
-    alert("已儲存接送紀錄，並保留修改歷程。");
-    await Promise.all([loadLatePickupAdmin(),loadLatePickupEditorRecord()]);
+    alert("已儲存接送更正，修改紀錄已保留。");
+    await loadLatePickupAdmin();
     if(typeof refreshPickupRecords==="function")await refreshPickupRecords();
   }catch(e){alert("儲存失敗："+(e.message||String(e)));}
   finally{btn.disabled=false;}
@@ -8586,15 +8460,7 @@ async function main(){
 
   await restoreSession();
   if(document.getElementById("dailyCareFeeDate"))document.getElementById("dailyCareFeeDate").value=getTaiwanDateString();
-  if(document.getElementById("latePickupDate")){
-    document.getElementById("latePickupDate").value=getTaiwanDateString();
-    document.getElementById("latePickupFrom").value="2026-09-01";
-    document.getElementById("latePickupTo").value=getTaiwanDateString();
-    if(currentStaff?.role==="admin"){
-      await loadLatePickupDirectory();
-      await loadLatePickupAdmin();
-    }
-  }
+  if(document.getElementById("latePickupDate"))document.getElementById("latePickupDate").value=getTaiwanDateString();
 
 }
 
