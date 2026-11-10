@@ -1983,10 +1983,6 @@ label.title{font-size:.87rem;margin-bottom:7px}
 
         <br>
 
-        16:01 若仍未完成接送，正式系統將自動提醒家長。
-
-        <br>
-
         16:11－17:05 完成接送：臨時延長照顧 1 小時，系統試算 50 元。<br>
         17:06－18:05 完成接送：臨時延長照顧 2 小時，系統試算 100 元。<br>
         18:06 起：系統試算為臨時延長照顧 100 元＋逾時照顧半小時 30 元（合計 130 元）。
@@ -2523,7 +2519,7 @@ const LATE_RULES = {
   "16:00":{
     name:"16:00 正常放學",
     statusName:"延遲接回",
-    reminderAt:"16:01",
+    reminderAt:null,
     noticeDeadline:null,
     lateAfter:"16:10",
     fee:50,
@@ -4029,10 +4025,6 @@ function refreshLateNotice(){
     html +=
 
     `
-      <div class="ruleLine">
-        🔔 16:01 尚未完成接送，正式系統將提醒家長
-      </div>
-
       <div class="ruleLine">
         ⏰ ${rule.lateAfter} 過後完成接送：${rule.statusName}
       </div>
