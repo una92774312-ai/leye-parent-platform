@@ -3381,12 +3381,12 @@ function makeStudentItem(
 
 
 function groupConsecutiveLeaves(items){
-  // A parent's multi-day submission creates one request per date, sharing created_at.
-  // Do not group separate submissions simply because dates/reasons match.
+  // 多日請假使用每筆共同的 notice_time；created_at 可能因逐筆 INSERT 而不同。
+  // 不可因日期連續、原因相同就合併不同次的申請。
   const ordered=[...items].sort((a,b)=>String(a.request_date||"").localeCompare(String(b.request_date||"")));
   const groups=new Map();
   for(const item of ordered){
-    const stamp=String(item.created_at||"");
+    const stamp=String(item.notice_time||"") || (item.created_at ? String(item.created_at).slice(0,16) : "");
     const identity=String(item.child_id||"");
     const key=stamp && identity
       ? identity+"|"+stamp+"|"+String(item.reason||"")+"|"+String(item.note||"")
@@ -3402,16 +3402,17 @@ async function actOnLeaveGroup(items,actionType,card){
  if(!pending.length)return;
  if(!confirm("確認將這 "+pending.length+" 天請假一次"+(actionType==="confirmed"?"確認收到":"標記已處理")+"？"))return;
  card.classList.add("actionBusy");
- let done=0;
  try{
-  for(const item of pending){
-   const {error}=await teacherSupabase.rpc("teacher_act_on_item",{p_source_type:item.source_type,p_source_id:item.source_id,p_action_type:actionType,p_note:null});
-   if(error)throw error;
-   done++;
-  }
+  const ids=pending.map(x=>x.source_id||x.request_id).filter(Boolean);
+  if(ids.length!==pending.length)throw new Error("申請資料缺少 ID");
+  const {data,error}=await teacherSupabase.rpc("teacher_act_on_leave_group",{
+   p_request_ids:ids,p_action_type:actionType
+  });
+  if(error)throw error;
+  if(!data?.ok||Number(data.updated)!==ids.length)throw new Error("整組確認回傳異常");
   await loadTeacherWeekItems();
  }catch(e){
-  alert("已完成 "+done+"／"+pending.length+" 天；剩餘日期未完成："+(e.message||"請稍後重試"));
+  alert("整組確認未完成："+(e.message||"請稍後重試"));
   await loadTeacherWeekItems();
  }finally{card.classList.remove("actionBusy");}
 }
