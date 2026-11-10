@@ -1218,6 +1218,15 @@
 .cancelledMiniFold[open] .cancelledMiniChevron{transform:rotate(180deg)}
 .cancelledMiniBody{padding:0 10px 10px}
 
+
+/* 取消請假確認：與原請假狀態分開顯示 */
+.cancelAckSection{margin:14px 0;padding:12px;background:#fffdf5;border:1px solid #dce4d9;border-radius:14px}
+.cancelAckList{display:grid;gap:9px;margin-top:10px}
+.cancelAckCard{padding:12px;background:white;border:1px solid #d7dfd6;border-radius:10px;font-size:13px;line-height:1.7}
+.cancelAckCard strong{font-size:14px}
+.cancelAckCard button{border:0;background:#26743d;color:white;border-radius:10px;padding:9px 12px;font-weight:750;margin-top:7px;cursor:pointer}
+.cancelAckCard button:disabled{opacity:.55;cursor:default}
+.cancelAckDetail{color:#647267;margin-top:4px}
 </style>
 
 <style>
@@ -1439,6 +1448,11 @@
                   <div id="leaveItems" class="itemList teacherFoldContent"></div>
                 </details>
 
+
+      <details class="itemGroup teacherFoldGroup" id="cancelAckTeacherFold">
+        <summary class="teacherFoldHeading"><span>↩️ 取消請假待確認</span><span id="cancelAckTeacherCount" class="groupCount">0</span><span class="teacherFoldToggle" aria-hidden="true"></span></summary>
+        <div id="cancelAckTeacherList" class="itemList teacherFoldContent"></div>
+      </details>
                 <details class="itemGroup teacherFoldGroup" id="careFold">
                   <summary class="teacherFoldHeading"><span>🧸 課後照顧安排</span><span id="careGroupCount" class="groupCount">0</span><span class="teacherFoldToggle" aria-hidden="true"></span></summary>
                   <div id="careItems" class="itemList teacherFoldContent"></div>
@@ -3563,6 +3577,7 @@ async function loadTeacherWeekItems(){
   statusBox.textContent = todayTotal > 0 ? `今日有 ${todayTotal} 件孩子們的事項，辛苦您留意了 🌱` : "今日目前沒有新事項 🌿";
   [["leave",todayLeave.length],["care",todayCare.length],["pickup",todayPickup.length],["cancelledCare",cancelledCare.length]].forEach(([kind,n])=>{const elem=el(kind+"Items")?.closest(".itemGroup, .cancelledMiniFold");if(elem)elem.style.display=n?"":"none";});
 
+  try{await loadTeacherCancelAcks();}catch(e){console.warn("取消請假確認清單讀取失敗",e);}
   return data;
 }
 
@@ -4432,6 +4447,51 @@ el("lineReloginBtn")
     "click",
     forceLineRelogin
   );
+
+
+function makeCancelAckCard(row,refresh){
+ const el=document.createElement('div');el.className='cancelAckCard';
+ const title=document.createElement('strong');
+ title.textContent=(row.class_name||'')+' '+(row.child_name||'')+'｜'+row.request_date;
+ el.append(title);
+ const meta=document.createElement('div');meta.className='cancelAckDetail';
+ const duty=row.duty==='morning'?'班導確認（一般上課）':'蔡青蓓確認（課後）';
+ const confirmed=row.confirmed_at?'✓ 已由 '+(row.confirmed_by||'授權人員')+' 確認':'● 尚待確認';
+ meta.textContent=duty+'｜'+confirmed;
+ el.append(meta);
+ if(!row.confirmed_at && row.can_confirm){
+   const b=document.createElement('button');b.type='button';b.textContent='✓ 確認收到取消請假';
+   b.onclick=async()=>{
+     if(!confirm('確認已知悉 '+(row.child_name||'該幼兒')+' '+row.request_date+' 取消請假？'))return;
+     b.disabled=true;b.textContent='確認中…';
+     try{
+       const {data,error}=await cancelAckClient().rpc('acknowledge_leave_cancellation',{
+         p_request_id:row.request_id,p_duty:row.duty
+       });
+       if(error)throw error;
+       if(!data?.ok)throw new Error('未成功寫入');
+       await refresh();
+     }catch(e){b.disabled=false;b.textContent='✓ 確認收到取消請假';alert('確認失敗：'+(e.message||String(e)));}
+   };
+   el.append(b);
+ }
+ return el;
+}
+
+function cancelAckClient(){return teacherSupabase;}
+async function loadTeacherCancelAcks(){
+ const list=document.getElementById('cancelAckTeacherList');
+ if(!list)return;
+ const {data,error}=await teacherSupabase.rpc('get_leave_cancellation_ack_items');
+ if(error){list.textContent='無法讀取取消確認事項：'+error.message;return;}
+ const rows=Array.isArray(data)?data:[];
+ const pending=rows.filter(x=>!x.confirmed_at);
+ const count=document.getElementById('cancelAckTeacherCount');
+ if(count)count.textContent=String(pending.length);
+ list.replaceChildren();
+ if(!rows.length){list.textContent='目前沒有取消請假確認事項。';return;}
+ for(const x of rows)list.append(makeCancelAckCard(x,loadTeacherCancelAcks));
+}
 
 init();
 </script>
