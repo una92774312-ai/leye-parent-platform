@@ -1238,6 +1238,19 @@
 .leyeActionBtn{border:1px solid #c9dbc5;background:#f0f9eb;border-radius:8px;padding:7px 9px;font-size:12px;margin:3px;cursor:pointer;color:#32623c}
 .leyeActionBtn.warn{background:#fff6e7;border-color:#e9d09e;color:#825500}
 .leyeCurrentBadge{display:inline-flex;background:#eff4eb;color:#355c38;border-radius:8px;padding:5px 8px;font-size:12px;margin:3px 3px 3px 0}
+
+/* 右上角輪值入口及手機版對話框 */
+.leyeRotationHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.leyeRotationOpen{border:1px solid #b9d2be;background:#f1f7f0;color:#28583a;border-radius:999px;padding:8px 12px;font-size:13px;font-weight:750;cursor:pointer;white-space:nowrap}
+.leyeRotationOpen:focus-visible{outline:3px solid #438d57;outline-offset:2px}
+.leyeRotationDialog{border:0;border-radius:18px;padding:20px;width:min(92vw,480px);max-height:85dvh;overflow:auto;box-sizing:border-box;color:#263a2d}
+.leyeRotationDialog::backdrop{background:#0008}
+.leyeRotationDialog label{display:block;margin:12px 0 5px;font-weight:700;font-size:13px}
+.leyeRotationDialog select,.leyeRotationDialog input{width:100%;min-height:44px;border:1px solid #cdd9ca;border-radius:10px;padding:9px;box-sizing:border-box;font-size:16px}
+.leyeRotationDialog button{min-height:42px;border:0;border-radius:10px;padding:10px 14px;cursor:pointer}
+.leyeRotationDialog .saveRotation{background:#295a3c;color:white;font-weight:700}
+.leyeRotationDialog .rotationSection{padding:12px 0;border-top:1px solid #e5ece4}
+.leyeRotationDialog .rotationStatus{font-size:13px;color:#526957;line-height:1.6;white-space:pre-wrap}
 </style>
 </head>
 
@@ -1303,7 +1316,7 @@
           </div>
 
           <div id="workEntry" class="workBox hidden">
-            <div class="workTitle" id="teacherGreeting">🌿 今天也辛苦了，老師！</div>
+            <div class="leyeRotationHead"><div class="workTitle" id="teacherGreeting">🌿 今天也辛苦了，老師！</div><button type="button" id="leyeRotationOpen" class="leyeRotationOpen" onclick="openTeacherRotation()">📅 教師輪值</button></div>
 
             <div class="workSub">
               孩子們今天需要留意的事，都幫您整理在這裡了。
@@ -1626,6 +1639,34 @@
     </footer>
   </main>
 
+<dialog id="leyeRotationDialog" class="leyeRotationDialog" aria-labelledby="leyeRotationTitle">
+  <h3 id="leyeRotationTitle">📅 每週導師輪值</h3>
+  <p class="rotationStatus">每班兩位導師，每週一自動交替；臨時代班不影響下週順序。</p>
+  <label for="leyeRotationClass">班級</label><select id="leyeRotationClass" onchange="loadTeacherRotation()"></select>
+  <p id="leyeRotationStatus" class="rotationStatus" role="status">讀取中…</p>
+  <div class="rotationSection"><strong>首次設定／重設未來輪值</strong>
+    <label for="leyeRotationStart">起始週（一）</label><input type="date" id="leyeRotationStart" />
+    <label for="leyeRotationFirst">第一週主責</label><select id="leyeRotationFirst"></select>
+    <button type="button" class="saveRotation" onclick="saveTeacherRotation()">儲存輪值設定</button>
+  </div>
+  <div class="rotationSection"><strong>整週手動修正</strong>
+    <label for="leyeRotationOverrideWeek">指定週（一）</label><input type="date" id="leyeRotationOverrideWeek" />
+    <label for="leyeRotationSubstitute">該週主責導師</label><select id="leyeRotationSubstitute"></select>
+    <button type="button" class="saveRotation" onclick="saveTeacherRotationOverride()">指定該週代班</button>
+    <button type="button" onclick="clearTeacherRotationOverride()">取消該週代班，恢復自動輪值</button>
+  </div>
+  <div class="rotationSection"><strong>臨時請假代班（可指定單日或連續日期）</strong>
+    <p class="rotationStatus">選擇請假起訖日期，系統由另一位導師接手指定期間；結束後恢復原定輪值。</p>
+    <label for="leyeRotationLeaveStart">請假開始日期</label><input type="date" id="leyeRotationLeaveStart" />
+    <label for="leyeRotationLeaveEnd">請假結束日期</label><input type="date" id="leyeRotationLeaveEnd" />
+    <label for="leyeRotationLeaveTeacher">代班導師</label><select id="leyeRotationLeaveTeacher"></select>
+    <button type="button" class="saveRotation" onclick="saveTeacherRotationLeave()">確認指定日期代班</button>
+    <button type="button" onclick="clearTeacherRotationLeave()">取消指定日期代班</button>
+    <p id="leyeRotationLeaveStatus" class="rotationStatus" role="status"></p>
+  </div>
+  <p class="rotationStatus">僅可調整自己任教班級；代班不影響下一週的輪值，也不會補發歷史 LINE 通知。</p>
+  <button type="button" onclick="document.getElementById('leyeRotationDialog').close()">關閉</button>
+</dialog>
 <script>
 const LIFF_ID =
   "2011987947-mIbgSMNU";
@@ -4492,6 +4533,94 @@ async function loadTeacherCancelAcks(){
  list.replaceChildren();
  if(!rows.length){list.textContent='目前沒有取消請假確認事項。';return;}
  for(const x of rows)list.append(makeCancelAckCard(x,loadTeacherCancelAcks));
+}
+
+
+// 教師輪值設定：透過授權 RPC 讀寫，絕不讓瀏覽器直接操作輪值資料表。
+let teacherRotationClasses=[];
+function rotationMondayISO(date=new Date()){
+ const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
+ const part=k=>parts.find(x=>x.type===k)?.value;
+ const d=new Date(`${part('year')}-${part('month')}-${part('day')}T12:00:00Z`);
+ const day=d.getUTCDay();d.setUTCDate(d.getUTCDate()-((day+6)%7));return d.toISOString().slice(0,10);
+}
+function rotationTodayISO(){const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const get=k=>parts.find(x=>x.type===k)?.value;return `${get('year')}-${get('month')}-${get('day')}`;}
+function rotationMessage(message){el('leyeRotationStatus').textContent=message;}
+function rotationClassId(){return el('leyeRotationClass').value;}
+function validMonday(value){return /^\d{4}-\d{2}-\d{2}$/.test(value)&&new Date(value+'T12:00:00Z').getUTCDay()===1;}
+async function openTeacherRotation(){
+ const dialog=el('leyeRotationDialog');dialog.showModal();rotationMessage('正在讀取可管理班級…');
+ el('leyeRotationStart').value=rotationMondayISO();el('leyeRotationOverrideWeek').value=rotationMondayISO();const today=rotationTodayISO();el('leyeRotationLeaveStart').value=today;el('leyeRotationLeaveEnd').value=today;
+ try{
+  const {data,error}=await teacherSupabase.rpc('teacher_rotation_my_classes');if(error)throw error;
+  teacherRotationClasses=Array.isArray(data)?data:[];
+  el('leyeRotationClass').replaceChildren();
+  for(const c of teacherRotationClasses){const opt=document.createElement('option');opt.value=c.class_id;opt.textContent=c.class_name||c.class_id;el('leyeRotationClass').appendChild(opt);}
+  if(!teacherRotationClasses.length){rotationMessage('目前沒有可設定輪值的原班，請聯絡行政確認兩位導師的班級權限。');return;}
+  await loadTeacherRotation();
+ }catch(err){rotationMessage('尚無法讀取輪值設定：'+(err.message||'請稍後重試')+'。請確認教師登入狀態及班級權限。');}
+}
+async function loadTeacherRotation(){
+ const classId=rotationClassId();if(!classId)return;
+ rotationMessage('正在讀取輪值…');
+ try{
+  const {data,error}=await teacherSupabase.rpc('teacher_rotation_get',{p_class_id:classId});if(error)throw error;
+  const row=typeof data==='string'?JSON.parse(data):data;
+  for(const id of ['leyeRotationFirst','leyeRotationSubstitute','leyeRotationLeaveTeacher']){
+   const select=el(id);select.replaceChildren();
+   for(const m of (row.teachers||[])){const option=document.createElement('option');option.value=m.id;option.textContent=m.name;select.appendChild(option);}
+  }
+  if(row.anchor_week)el('leyeRotationStart').value=row.anchor_week;
+  if(row.first_staff_id)el('leyeRotationFirst').value=row.first_staff_id;
+  if(row.this_week_staff_id)el('leyeRotationSubstitute').value=row.this_week_staff_id;const other=(row.teachers||[]).find(t=>t.id!==row.this_week_staff_id);if(other)el('leyeRotationLeaveTeacher').value=other.id;
+  rotationMessage(`本週：${row.this_week_name||'尚未設定'}\n下週：${row.next_week_name||'尚未設定'}\n${row.teachers?.length===2?'兩位導師已確認':'需要兩位有效導師才能設定'}`);
+ }catch(err){rotationMessage('讀取失敗：'+(err.message||'未知錯誤'));}
+}
+function rotationLeaveValues(){
+ const start=el('leyeRotationLeaveStart').value,end=el('leyeRotationLeaveEnd').value,staff=el('leyeRotationLeaveTeacher').value;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end)||start>end)throw new Error('請選擇正確的請假起訖日期。');
+ const days=Math.round((Date.parse(end+'T00:00:00Z')-Date.parse(start+'T00:00:00Z'))/86400000)+1;
+ if(days>31)throw new Error('單次代班最多 31 天，請分次設定。');
+ if(!staff)throw new Error('請先選擇代班導師。');
+ return {p_class_id:rotationClassId(),p_start_date:start,p_end_date:end,p_staff_id:staff};
+}
+async function saveTeacherRotationLeave(){
+ const status=el('leyeRotationLeaveStatus');let args;
+ try{args=rotationLeaveValues();}catch(e){status.textContent=e.message;return;}
+ if(!window.confirm(`確定由指定導師在 ${args.p_start_date} 至 ${args.p_end_date} 代班？其他日期仍依原本輪值。`))return;
+ status.textContent='正在儲存代班設定…';
+ const {error}=await teacherSupabase.rpc('teacher_rotation_set_date_substitute',args);
+ if(error){status.textContent='未儲存成功：'+error.message;return;}
+ status.textContent='代班已儲存。';await loadTeacherRotation();
+}
+async function clearTeacherRotationLeave(){
+ const status=el('leyeRotationLeaveStatus');let args;
+ try{args=rotationLeaveValues();}catch(e){status.textContent=e.message;return;}
+ if(!window.confirm(`確定取消 ${args.p_start_date} 至 ${args.p_end_date} 的代班？`))return;
+ status.textContent='正在取消代班…';
+ const {error}=await teacherSupabase.rpc('teacher_rotation_clear_date_substitute',{p_class_id:args.p_class_id,p_start_date:args.p_start_date,p_end_date:args.p_end_date});
+ if(error){status.textContent='取消失敗：'+error.message;return;}
+ status.textContent='指定日期已恢復自動輪值。';await loadTeacherRotation();
+}
+async function saveTeacherRotation(){
+ const cls=rotationClassId(),week=el('leyeRotationStart').value,first=el('leyeRotationFirst').value;
+ if(!validMonday(week)){rotationMessage('起始週必須是星期一。');return;}
+ if(!first||!window.confirm('確認重新設定此班輪值？這會改變後續每週的自動輪替。'))return;
+ const {error}=await teacherSupabase.rpc('teacher_rotation_set_anchor',{p_class_id:cls,p_week_start:week,p_first_staff_id:first});
+ if(error){rotationMessage('儲存失敗：'+error.message);return;}await loadTeacherRotation();
+}
+async function saveTeacherRotationOverride(){
+ const cls=rotationClassId(),week=el('leyeRotationOverrideWeek').value,staff=el('leyeRotationSubstitute').value;
+ if(!validMonday(week)){rotationMessage('指定週必須是星期一。');return;}
+ if(!staff||!window.confirm('確定由所選導師代班整週？下一週仍依原本順序輪替。'))return;
+ const {error}=await teacherSupabase.rpc('teacher_rotation_set_override',{p_class_id:cls,p_week_start:week,p_staff_id:staff});
+ if(error){rotationMessage('設定失敗：'+error.message);return;}await loadTeacherRotation();
+}
+async function clearTeacherRotationOverride(){
+ const week=el('leyeRotationOverrideWeek').value;if(!validMonday(week))return;
+ if(!window.confirm('取消該週手動指定，恢復自動輪值？'))return;
+ const {error}=await teacherSupabase.rpc('teacher_rotation_clear_override',{p_class_id:rotationClassId(),p_week_start:week});
+ if(error){rotationMessage('取消失敗：'+error.message);return;}await loadTeacherRotation();
 }
 
 init();
