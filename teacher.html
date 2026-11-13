@@ -1251,6 +1251,25 @@
 .leyeRotationDialog .saveRotation{background:#295a3c;color:white;font-weight:700}
 .leyeRotationDialog .rotationSection{padding:12px 0;border-top:1px solid #e5ece4}
 .leyeRotationDialog .rotationStatus{font-size:13px;color:#526957;line-height:1.6;white-space:pre-wrap}
+
+/* 教師輪值：固定關閉入口、第一層折疊選單、第二層設定內容 */
+.leyeRotationDialog{position:relative;padding:18px 20px 22px}
+.rotationDialogHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:-18px;background:#fff;z-index:2;padding:8px 0 12px;border-bottom:1px solid #e5ece4}
+.rotationDialogHeader h3{margin:0;font-size:19px}
+.leyeRotationDialog .rotationClose{flex:0 0 42px;width:42px;height:42px;min-height:42px;padding:0;border-radius:50%;background:#f1f4f0;color:#24382a;font-size:29px;line-height:1}
+.leyeRotationDialog .rotationClose:hover{background:#e2e9df}
+.leyeRotationDialog .rotationClose:focus-visible,.leyeRotationDialog summary:focus-visible{outline:3px solid #388456;outline-offset:3px}
+.leyeRotationDialog .rotationSection{padding:0;border:1px solid #dce7db;border-radius:12px;margin:12px 0;overflow:hidden;background:#fff}
+.leyeRotationDialog .rotationSection summary{display:flex;flex-direction:column;gap:5px;position:relative;cursor:pointer;list-style:none;padding:17px 42px 17px 15px;min-height:48px;justify-content:center}
+.leyeRotationDialog .rotationSection summary::-webkit-details-marker{display:none}
+.leyeRotationDialog .rotationSection summary::after{content:'⌄';position:absolute;right:17px;top:50%;transform:translateY(-50%);font-size:24px;color:#356044}
+.leyeRotationDialog .rotationSection[open] summary::after{content:'⌃'}
+.leyeRotationDialog .rotationSection[open] summary{background:#f1f7f1;border-bottom:1px solid #dce7db}
+.rotationSectionTitle{font-weight:750;font-size:15px;color:#234c33}
+.leyeRotationDialog .rotationSection summary small{font-size:12px;color:#647668;line-height:1.45}
+.rotationSectionBody{padding:4px 15px 17px}
+.rotationSectionBody button{width:100%;margin-top:10px}
+@media(max-width:420px){.leyeRotationDialog{padding:14px}.rotationDialogHeader{top:-14px}}
 </style>
 </head>
 
@@ -1640,22 +1659,22 @@
   </main>
 
 <dialog id="leyeRotationDialog" class="leyeRotationDialog" aria-labelledby="leyeRotationTitle">
-  <h3 id="leyeRotationTitle">📅 每週導師輪值</h3>
+  <div class="rotationDialogHeader"><h3 id="leyeRotationTitle">📅 每週導師輪值</h3><button type="button" class="rotationClose" onclick="document.getElementById('leyeRotationDialog').close()" aria-label="關閉教師輪值視窗" title="關閉">×</button></div>
   <p class="rotationStatus">每班兩位導師，每週一自動交替；臨時代班不影響下週順序。</p>
-  <label for="leyeRotationClass">班級</label><select id="leyeRotationClass" onchange="loadTeacherRotation()"></select>
+  <div id="leyeRotationClassPicker"><label for="leyeRotationClass">班級</label><select id="leyeRotationClass" onchange="loadTeacherRotation()"></select></div><p id="leyeRotationOwnClass" class="rotationStatus" hidden></p>
   <p id="leyeRotationStatus" class="rotationStatus" role="status">讀取中…</p>
-  <div class="rotationSection"><strong>首次設定／重設未來輪值</strong>
+  <details class="rotationSection"><summary><span class="rotationSectionTitle">首次設定／重設未來輪值</span><small>設定每週自動輪替的起點</small></summary><div class="rotationSectionBody">
     <label for="leyeRotationStart">起始週（一）</label><input type="date" id="leyeRotationStart" />
     <label for="leyeRotationFirst">第一週主責</label><select id="leyeRotationFirst"></select>
     <button type="button" class="saveRotation" onclick="saveTeacherRotation()">儲存輪值設定</button>
-  </div>
-  <div class="rotationSection"><strong>整週手動修正</strong>
+  </div></details>
+  <details class="rotationSection"><summary><span class="rotationSectionTitle">整週手動修正</span><small>僅調整指定的一週</small></summary><div class="rotationSectionBody">
     <label for="leyeRotationOverrideWeek">指定週（一）</label><input type="date" id="leyeRotationOverrideWeek" />
     <label for="leyeRotationSubstitute">該週主責導師</label><select id="leyeRotationSubstitute"></select>
     <button type="button" class="saveRotation" onclick="saveTeacherRotationOverride()">指定該週代班</button>
     <button type="button" onclick="clearTeacherRotationOverride()">取消該週代班，恢復自動輪值</button>
-  </div>
-  <div class="rotationSection"><strong>臨時請假代班（可指定單日或連續日期）</strong>
+  </div></details>
+  <details class="rotationSection"><summary><span class="rotationSectionTitle">臨時請假代班（可指定單日或連續日期）</span><small>只調整選定日期</small></summary><div class="rotationSectionBody">
     <p class="rotationStatus">選擇請假起訖日期，系統由另一位導師接手指定期間；結束後恢復原定輪值。</p>
     <label for="leyeRotationLeaveStart">請假開始日期</label><input type="date" id="leyeRotationLeaveStart" />
     <label for="leyeRotationLeaveEnd">請假結束日期</label><input type="date" id="leyeRotationLeaveEnd" />
@@ -1663,9 +1682,9 @@
     <button type="button" class="saveRotation" onclick="saveTeacherRotationLeave()">確認指定日期代班</button>
     <button type="button" onclick="clearTeacherRotationLeave()">取消指定日期代班</button>
     <p id="leyeRotationLeaveStatus" class="rotationStatus" role="status"></p>
-  </div>
+  </div></details>
   <p class="rotationStatus">僅可調整自己任教班級；代班不影響下一週的輪值，也不會補發歷史 LINE 通知。</p>
-  <button type="button" onclick="document.getElementById('leyeRotationDialog').close()">關閉</button>
+
 </dialog>
 <script>
 const LIFF_ID =
@@ -4549,13 +4568,17 @@ function rotationMessage(message){el('leyeRotationStatus').textContent=message;}
 function rotationClassId(){return el('leyeRotationClass').value;}
 function validMonday(value){return /^\d{4}-\d{2}-\d{2}$/.test(value)&&new Date(value+'T12:00:00Z').getUTCDay()===1;}
 async function openTeacherRotation(){
- const dialog=el('leyeRotationDialog');dialog.showModal();rotationMessage('正在讀取可管理班級…');
+ const dialog=el('leyeRotationDialog');dialog.querySelectorAll('details.rotationSection').forEach(section=>section.open=false);dialog.showModal();rotationMessage('正在讀取可管理班級…');
  el('leyeRotationStart').value=rotationMondayISO();el('leyeRotationOverrideWeek').value=rotationMondayISO();const today=rotationTodayISO();el('leyeRotationLeaveStart').value=today;el('leyeRotationLeaveEnd').value=today;
  try{
   const {data,error}=await teacherSupabase.rpc('teacher_rotation_my_classes');if(error)throw error;
   teacherRotationClasses=Array.isArray(data)?data:[];
   el('leyeRotationClass').replaceChildren();
   for(const c of teacherRotationClasses){const opt=document.createElement('option');opt.value=c.class_id;opt.textContent=c.class_name||c.class_id;el('leyeRotationClass').appendChild(opt);}
+  const single=teacherRotationClasses.length===1;
+  el('leyeRotationClassPicker').hidden=single;
+  el('leyeRotationOwnClass').hidden=!single;
+  if(single)el('leyeRotationOwnClass').textContent='所屬班級：'+(teacherRotationClasses[0].class_name||teacherRotationClasses[0].class_id);
   if(!teacherRotationClasses.length){rotationMessage('目前沒有可設定輪值的原班，請聯絡行政確認兩位導師的班級權限。');return;}
   await loadTeacherRotation();
  }catch(err){rotationMessage('尚無法讀取輪值設定：'+(err.message||'請稍後重試')+'。請確認教師登入狀態及班級權限。');}
