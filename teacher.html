@@ -1135,9 +1135,9 @@
 .todayClassRosters{margin-top:15px}.todayClassHeading{font-size:16px;font-weight:800;color:#365840;margin-bottom:10px}
 .todayClassRosters .rosterClassDetails{margin-bottom:9px;background:#f9fcf8}
 .todayClassRosters .rosterClassDetails>summary{min-height:48px}
-/* 今日班級預設收合；提供清楚的展開標示，不影響其他名冊 */
+/* 今日班級與全園班級統一使用 + / − 展開提示 */
 .todayClassRosters .rosterClassDetails>summary::after{
-  content:"⌄";
+  content:"＋";
   display:inline-flex;
   align-items:center;
   justify-content:center;
@@ -1146,14 +1146,13 @@
   height:30px;
   border-radius:999px;
   background:#eaf3e8;
-  color:#4b7354;
-  font-size:21px;
-  font-weight:600;
+  color:#31533a;
+  font-size:18px;
+  font-weight:900;
   line-height:1;
-  transition:transform .2s ease,background-color .2s ease;
 }
 .todayClassRosters .rosterClassDetails[open]>summary::after{
-  transform:rotate(180deg);
+  content:"－";
   background:#deebdc;
 }
 .todayClassRosters .rosterClassDetails>summary:focus-visible{
