@@ -2470,7 +2470,17 @@ label.title{font-size:.87rem;margin-bottom:7px}
 <div id="lateHistoryPage" class="page hidden">
   <div class="pageTitle">🕒 逾時接送紀錄</div>
   <div class="pageDesc">每位幼兒分開計算，每學期重新累計。</div>
-  <div class="notice noticeBlue">請家長如會晚到，務必提前告知老師，避免老師空等。17:00 梯次應提前 30 分鐘（16:30）提醒；17:05 後若未事先提醒才計 1 點。18:05 後不論是否提醒均計 1 點。累計達 3 點，經行政確認及通知後，取消延長照顧資格一學期。</div>
+  <div class="notice noticeBlue" aria-label="逾時接送規則">
+    <div style="font-weight:700;margin-bottom:8px">逾時接送規則</div>
+    <ul style="margin:0;padding-left:1.35em;line-height:1.85">
+      <li><strong>請家長務必提前告知老師</strong>，避免孩子無故久候。</li>
+      <li><strong>17:00 梯次：</strong>應提前 30 分鐘（16:30）提醒老師。</li>
+      <li><strong>17:05 後：</strong>若未事先提醒，記 1 點。</li>
+      <li><strong>18:05 後：</strong>不論是否提前提醒，一律記 1 點。</li>
+      <li><strong>累計方式：</strong>每位幼兒獨立計算，每學期重新累計。</li>
+      <li><strong>累計滿 3 點：</strong>經行政確認及通知後，取消延長照顧資格一學期。</li>
+    </ul>
+  </div>
   <div class="requestToolbar"><button class="refreshRequestsBtn" type="button" onclick="loadLateHistory()">↻ 更新逾時紀錄</button></div>
   <div id="lateHistoryList" class="requestList"><div class="empty">正在載入逾時紀錄...</div></div>
 </div>
