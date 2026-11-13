@@ -1066,6 +1066,31 @@ details.rules summary{
 
 }
 
+
+/* 逾時接送紀錄：統一標題、內容行距與手足卡片間距 */
+#lateHistoryList .late-history-card {
+  margin: 0;
+  padding: 16px 15px;
+  line-height: 1.65;
+}
+#lateHistoryList .late-history-card + .late-history-card { margin-top: 16px; }
+#lateHistoryList .late-history-title {
+  display: block;
+  margin: 0 0 12px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+#lateHistoryList .late-history-card .empty {
+  margin: 0;
+  padding: 15px 16px;
+  line-height: 1.75;
+}
+#lateHistoryList .late-history-entry {
+  padding: 11px 2px;
+  line-height: 1.7;
+  border-top: 1px solid #eee;
+}
+
 .ruleCard b{
   color:var(--sage-dark);
 }
@@ -3958,8 +3983,8 @@ async function loadLateHistory(){
       const own=rows.filter(r=>String(r.child_id)===String(child.id));
       const total=own.reduce((n,r)=>n+Number(r.points||0),0);
       const title=escapeHtml(child.nickname||child.name||'寶貝');
-      const items=own.length?own.map(r=>'<div style="padding:9px 0;border-top:1px solid #eee">'+escapeHtml(r.violation_date)+'　逾時接送 '+Number(r.points||0)+' 點</div>').join(''):'<div class="empty">本學期沒有逾時接送記點紀錄。</div>';
-      return '<div class="ruleCard" style="margin:12px 0"><b>'+title+'｜本學期 '+total+' 點</b>'+items+'</div>';
+      const items=own.length?own.map(r=>'<div class="late-history-entry">'+escapeHtml(r.violation_date)+'　逾時接送 '+Number(r.points||0)+' 點</div>').join(''):'<div class="empty">本學期沒有逾時接送記點紀錄。</div>';
+      return '<div class="ruleCard late-history-card"><b class="late-history-title">'+title+'｜本學期 '+total+' 點</b>'+items+'</div>';
     }).join('');
   }catch(e){console.error('逾時接送紀錄讀取失敗',e);box.innerHTML='<div class="notice noticeRed">目前無法讀取逾時紀錄，請稍後再試或聯繫行政老師。</div>';}
 }
