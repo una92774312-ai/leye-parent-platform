@@ -14,6 +14,7 @@
 <title>樂業附幼｜行政設定 V17</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
+
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
 <style>
@@ -1479,6 +1480,33 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 
 
 
+
+<!-- 教師每週主責輪值：需先完成對應資料庫遷移，未啟用時不會修改正式資料 -->
+<section id="weeklyLeadPanel" class="panel adminSecondaryPanel" aria-labelledby="weeklyLeadTitle">
+ <h2 id="weeklyLeadTitle" class="panelTitle">📅 每週主責教師輪值</h2>
+ <p class="helper">每週一依台灣時間輪替。手動指定僅影響所選週的新通知，不會補發舊訊息。</p>
+ <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:end">
+  <label>班級<select id="weeklyLeadClass" onchange="loadWeeklyLead()"><option value="">請選班級</option></select></label>
+  <label>週一日期<input type="date" id="weeklyLeadWeek" onchange="loadWeeklyLead()"></label>
+  <label>指定主責<select id="weeklyLeadStaff"><option value="">請先選擇班級</option></select></label>
+  <button type="button" class="btn btnBlue" onclick="saveWeeklyLead()">儲存本週指定</button>
+  <button type="button" class="btn btnGray" onclick="clearWeeklyLead()">恢復自動輪值</button>
+  <button type="button" class="btn btnGray" onclick="loadWeeklyLead()">重新整理</button>
+ </div>
+ <p id="weeklyLeadStatus" class="helper" role="status" aria-live="polite">登入後可查看輪值狀態。</p>
+ <details id="weeklyRosterEditor" style="margin-top:14px;border-top:1px solid #ddd;padding-top:12px">
+  <summary style="cursor:pointer;font-weight:600">管理本班輪值教師與順序</summary>
+  <p class="helper">先選擇班級。從有效教師名單加入輪值，使用上下移動調整順序；儲存後才會更新。每班最多 10 位。</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+   <label>加入教師<select id="weeklyRosterCandidate"><option value="">請先選班級</option></select></label>
+   <button type="button" class="btn btnGray" onclick="weeklyRosterAdd()">加入</button>
+  </div>
+  <ol id="weeklyRosterList" aria-label="輪值教師順序"></ol>
+  <button type="button" class="btn btnBlue" id="weeklyRosterSave" onclick="weeklyRosterSave()">儲存輪值名單</button>
+  <p id="weeklyRosterStatus" class="helper" role="status" aria-live="polite">尚未選擇班級。</p>
+ </details>
+</section>
+
 <!-- ====================================== -->
 <!-- 每月延托 / 臨托 / 逾時統計 -->
 <!-- ====================================== -->
@@ -1580,7 +1608,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 
 <div class="bindCleanShell" id="bindCleanShell">
   <div class="bindCleanTop">
-    <div><div class="bindCleanEyebrow">家長 LINE 綁定管理</div><div class="bindCleanTitle">全園綁定總覽</div><p class="helper">選班查看每位幼兒的家長名額。綁定與是否能正式送出申請是不同權限。</p></div>
+    <div><div class="bindCleanEyebrow">家長 LINE 綁定管理</div><div class="bindCleanTitle">全園綁定總覽</div><p class="helper">完成率以幼兒人數計算：每位幼兒只要一位家長完成 LINE 綁定即算完成，第二位家長可自行選擇是否綁定。</p></div>
     <button type="button" class="btn btnBlue" onclick="loadClassBindingProgress()">↻ 更新進度</button>
   </div>
   <div id="classBindingCards" class="bindCleanClasses"></div>
@@ -1947,6 +1975,39 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 
 
 <script>
+
+// Read-only on page open; decision is written only on explicit button click.
+async function showPendingPickupPointReviews(){
+ const modal=document.getElementById('pickupPointReviewModal');
+ const list=document.getElementById('pickupPointReviewList');
+ if(!modal||!list||currentStaff?.role!=='admin')return;
+ if(!['蔡青蓓','蔡妤瑄','蓓蓓','妤瑄'].includes(String(currentStaff.display_name||'')))return;
+ const {data,error}=await supabaseClient.rpc('admin_pending_pickup_points');
+ if(error){console.warn('逾時待確認讀取失敗：',error.message);return;}
+ const rows=Array.isArray(data)?data:[];
+ if(!rows.length){modal.style.display='none';return;}
+ modal.style.display='block';list.replaceChildren();
+ for(const r of rows){
+  const line=document.createElement('div');line.style.cssText='padding:12px 0;border-top:1px solid #ddd';
+  const info=document.createElement('div');info.textContent=String(r.violation_date)+'｜'+String(r.child_name||'幼兒')+'（'+String(r.source_count||1)+' 筆原始紀錄）';line.append(info);
+  for(const [label,decision] of [['確認記 1 點',true],['確認不記點',false]]){
+   const btn=document.createElement('button');btn.type='button';btn.textContent=label;
+   btn.style.cssText='margin:8px 8px 0 0;padding:9px 12px';
+   btn.onclick=async()=>{
+    if(!confirm('確定'+label+'？同一天只能核定一次。'))return;
+    const buttons=line.querySelectorAll('button');buttons.forEach(x=>x.disabled=true);
+    const {data:done,error:err}=await supabaseClient.rpc('admin_review_pickup_point',{p_child_id:r.child_id,p_violation_date:r.violation_date,p_count_point:decision});
+    if(err){alert('確認失敗：'+err.message);buttons.forEach(x=>x.disabled=false);return;}
+    if(done===false)alert('這筆已由另一位行政老師確認，將重新整理。');
+    await showPendingPickupPointReviews();
+   };line.append(btn);
+  }list.append(line);
+ }
+}
+
+
+</script>
+<script>
     const SUPABASE_URL =
   "https://cqtvrpiapssjjctwqivn.supabase.co";
 
@@ -2200,6 +2261,8 @@ async function validateAdmin(){
 
 
   await refreshAll();
+  if(currentStaff?.role==='admin') await initWeeklyLead();
+  await showPendingPickupPointReviews();
 
   if(
     window.location.hash ===
@@ -8255,14 +8318,14 @@ function renderBindingLinkCards(stats){
  target.replaceChildren();classBindingCurrentStats=Array.isArray(stats)?stats:[];
  for(const [id,name] of LEYE_BINDING_CLASSES){
    const item=classBindingCurrentStats.find(x=>x.class_id===id)||{};
-   const bound=Number(item.bound||0),slots=Number(item.slots||0);
+   const bound=Number(item.children_bound||0),slots=Number(item.children||0);
    const btn=document.createElement('button');btn.type='button';
    btn.className='bindCleanClass'+(id===selectedBindingClass?' selected':'');
    const heading=document.createElement('strong');heading.textContent=name;
-   const n=document.createElement('small');n.textContent=bound+'／'+slots+' 名額已綁定';
+   const n=document.createElement('small');n.textContent=bound+'／'+slots+' 位幼兒已綁定';
    const bar=document.createElement('div');bar.className='bindCleanBar';
    const fill=document.createElement('i');fill.style.width=(slots?Math.round(bound/slots*100):0)+'%';bar.append(fill);
-   const ratio=document.createElement('small');ratio.textContent=slots?Math.round(bound/slots*100)+'% 完成':'尚無名額';
+   const ratio=document.createElement('small');ratio.textContent=slots?Math.round(bound/slots*100)+'% 完成':'尚無幼兒';
    btn.append(heading,n,bar,ratio);
    btn.onclick=()=>{selectedBindingClass=id;renderBindingLinkCards(classBindingCurrentStats);
      const result=document.getElementById('classBindingResult');if(result)result.replaceChildren();
@@ -8274,7 +8337,7 @@ function updateSelectedBindingSummary(){
  const status=document.getElementById('classBindingSummary');if(!status)return;
  const selected=classBindingCurrentStats.find(x=>x.class_id===selectedBindingClass)||{};
  const name=(LEYE_BINDING_CLASSES.find(x=>x[0]===selectedBindingClass)||[])[1]||selectedBindingClass;
- status.textContent=name+'｜'+(selected.children??0)+' 位幼兒｜'+(selected.bound??0)+'／'+(selected.slots??0)+' 名額已綁定｜'+(selected.valid_unclaimed_codes??0)+' 個名額有有效待使用綁定碼';
+ status.textContent=name+'｜'+(selected.children_bound??0)+'／'+(selected.children??0)+' 位幼兒已綁定｜'+(selected.valid_unclaimed_codes??0)+' 個家長名額有有效待使用綁定碼';
 }
 async function loadClassBindingProgress(options={}){
  const status=document.getElementById('classBindingSummary');if(!status)return;
@@ -8442,7 +8505,114 @@ async function issueClassGuardianSingleLink(child,guardian,container,button){
  }catch(e){button.disabled=false;button.textContent='產生此名額連結';alert('產生失敗：'+(e.message||String(e)))}
 }
 
+
+/* 第八輪：行政端每週主責輪值，所有讀寫透過驗證行政身分的 RPC */
+function weeklyMonday(date=new Date()){
+ const d=new Date(date.getTime()+8*3600000),day=d.getUTCDay();
+ d.setUTCDate(d.getUTCDate()-((day+6)%7));
+ return d.toISOString().slice(0,10);
+}
+function weeklyStatus(message){const el=document.getElementById('weeklyLeadStatus');if(el)el.textContent=message;}
+async function initWeeklyLead(){
+ if(currentStaff?.role!=='admin')return;
+ const panel=document.getElementById('weeklyLeadPanel');if(!panel)return;
+ document.getElementById('weeklyLeadWeek').value=weeklyMonday();
+ try{
+  const {data,error}=await supabaseClient.rpc('admin_weekly_rotation_options');if(error)throw error;
+  const sel=document.getElementById('weeklyLeadClass');sel.replaceChildren(new Option('請選班級',''));
+  for(const cls of data?.classes||[])sel.add(new Option(cls,cls));
+  window.weeklyRotationStaff=data?.staff||[];weeklyStatus((data?.classes||[]).length?'選擇班級後可查看當週主責。':'尚未設定輪值成員，請先由行政核對班級與老師名單。');
+ }catch(e){weeklyStatus('輪值資料尚未啟用或權限不足：'+(e.message||String(e)));}
+}
+async function loadWeeklyLead(){
+ if(currentStaff?.role!=='admin')return;
+ const klass=document.getElementById('weeklyLeadClass')?.value;const week=document.getElementById('weeklyLeadWeek')?.value;
+ const staffSelect=document.getElementById('weeklyLeadStaff');if(staffSelect)staffSelect.replaceChildren(new Option('請先選擇班級',''));
+ weeklyRosterReset();
+ if(!klass||!week)return;
+ if(weeklyMonday(new Date(week+'T12:00:00+08:00'))!==week){weeklyStatus('請選擇星期一日期。');return;}
+ weeklyStatus('正在讀取…');
+ try{
+  const {data,error}=await supabaseClient.rpc('admin_weekly_rotation_status',{p_class:klass,p_week_start:week});if(error)throw error;
+  const sel=document.getElementById('weeklyLeadStaff');sel.replaceChildren(new Option('請選擇老師',''));
+  for(const staff of data?.members||[])sel.add(new Option(staff.display_name,staff.staff_id));
+  weeklyRosterLoad(data?.members||[]);
+  sel.value=data?.override_staff_id||data?.lead_staff_id||'';
+  weeklyStatus('本週主責：'+(data?.lead_name||'未設定')+(data?.override_staff_id?'（行政指定）':'（自動輪值）')+'。輪值成員：'+(data?.members?.length||0)+' 人。'+(!(data?.members?.length)?'尚無成員，無法指定。':''));
+ }catch(e){weeklyStatus('讀取失敗：'+(e.message||String(e)));}
+}
+/* 第十一輪：班級輪值名單編輯，僅透過行政權限 RPC 寫入 */
+let weeklyRosterDraft=[];
+function weeklyRosterMessage(message){const el=document.getElementById('weeklyRosterStatus');if(el)el.textContent=message;}
+function weeklyRosterReset(){weeklyRosterDraft=[];weeklyRosterRender();weeklyRosterMessage('尚未載入本班輪值名單。');}
+function weeklyRosterLoad(members){
+ weeklyRosterDraft=members.map(m=>({id:m.staff_id,name:m.display_name}));
+ weeklyRosterRender();weeklyRosterMessage('目前 '+weeklyRosterDraft.length+' 位教師；調整後請按儲存。');
+}
+function weeklyRosterRender(){
+ const list=document.getElementById('weeklyRosterList'),candidate=document.getElementById('weeklyRosterCandidate');
+ if(!list||!candidate)return;
+ list.replaceChildren();
+ weeklyRosterDraft.forEach((member,i)=>{
+  const li=document.createElement('li');li.style.margin='8px 0';
+  const name=document.createElement('span');name.textContent=member.name+'　';li.append(name);
+  for(const [label,action,disabled] of [['↑',()=>weeklyRosterMove(i,-1),i===0],['↓',()=>weeklyRosterMove(i,1),i===weeklyRosterDraft.length-1],['移除',()=>weeklyRosterRemove(i),false]]){
+   const b=document.createElement('button');b.type='button';b.textContent=label;b.disabled=disabled;b.className='btn btnGray';b.style.marginRight='5px';b.addEventListener('click',action);li.append(b);
+  }
+  list.append(li);
+ });
+ candidate.replaceChildren(new Option('選擇教師',''));
+ for(const staff of window.weeklyRotationStaff||[]){if(!weeklyRosterDraft.some(x=>x.id===staff.id))candidate.add(new Option(staff.name,staff.id));}
+}
+function weeklyRosterAdd(){
+ const select=document.getElementById('weeklyRosterCandidate');const id=select?.value;
+ if(!id)return;
+ if(weeklyRosterDraft.length>=10){weeklyRosterMessage('每班最多 10 位教師。');return;}
+ const staff=(window.weeklyRotationStaff||[]).find(x=>x.id===id);
+ if(!staff||weeklyRosterDraft.some(x=>x.id===id))return;
+ weeklyRosterDraft.push({id:staff.id,name:staff.name});weeklyRosterRender();weeklyRosterMessage('尚未儲存，請檢查輪值順序。');
+}
+function weeklyRosterMove(i,delta){const j=i+delta;if(j<0||j>=weeklyRosterDraft.length)return;[weeklyRosterDraft[i],weeklyRosterDraft[j]]=[weeklyRosterDraft[j],weeklyRosterDraft[i]];weeklyRosterRender();weeklyRosterMessage('順序已調整，尚未儲存。');}
+function weeklyRosterRemove(i){weeklyRosterDraft.splice(i,1);weeklyRosterRender();weeklyRosterMessage('已從草稿移除，尚未儲存。');}
+async function weeklyRosterSave(){
+ if(currentStaff?.role!=='admin')return;
+ const klass=document.getElementById('weeklyLeadClass')?.value;
+ if(!klass){weeklyRosterMessage('請先選擇班級。');return;}
+ if(weeklyRosterDraft.length<1){weeklyRosterMessage('至少需要一位輪值教師，不能儲存空名單。');return;}
+ if(!confirm('確認儲存 '+klass+' 的 '+weeklyRosterDraft.length+' 位輪值教師及順序？可能影響未來週次的主責。'))return;
+ const button=document.getElementById('weeklyRosterSave');button.disabled=true;
+ try{
+  const {error}=await supabaseClient.rpc('admin_replace_weekly_rotation_members',{p_class:klass,p_staff_ids:weeklyRosterDraft.map(x=>x.id)});
+  if(error)throw error;
+  await loadWeeklyLead();weeklyRosterMessage('輪值名單已儲存。');
+ }catch(e){weeklyRosterMessage('儲存失敗，資料未確認更新：'+(e.message||String(e)));}
+ finally{button.disabled=false;}
+}
+async function saveWeeklyLead(){
+ if(currentStaff?.role!=='admin')return;
+ const klass=document.getElementById('weeklyLeadClass').value,week=document.getElementById('weeklyLeadWeek').value,staff=document.getElementById('weeklyLeadStaff').value;
+ if(!klass||!week||!staff){weeklyStatus('請選擇班級、週一日期及主責教師。');return;}
+ if(!confirm('確定指定此週主責教師？已發送通知不會重送。'))return;
+ try{const {error}=await supabaseClient.rpc('admin_set_weekly_rotation_override',{p_class:klass,p_week_start:week,p_staff_id:staff});if(error)throw error;await loadWeeklyLead();}catch(e){weeklyStatus('儲存失敗：'+(e.message||String(e)));}
+}
+async function clearWeeklyLead(){
+ if(currentStaff?.role!=='admin')return;
+ const klass=document.getElementById('weeklyLeadClass').value,week=document.getElementById('weeklyLeadWeek').value;
+ if(!klass||!week)return;if(!confirm('恢復此週自動輪值？'))return;
+ try{const {error}=await supabaseClient.rpc('admin_clear_weekly_rotation_override',{p_class:klass,p_week_start:week});if(error)throw error;await loadWeeklyLead();}catch(e){weeklyStatus('恢復失敗：'+(e.message||String(e)));}
+}
+
 </script>
 
+
+<!-- 逾時記點確認：平台內提醒，不發 LINE。只有核定後家長端才累計點數。 -->
+<div id="pickupPointReviewModal" role="dialog" aria-modal="true" aria-labelledby="pickupPointReviewTitle" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.46);padding:20px;overflow:auto">
+ <section style="background:white;border-radius:14px;max-width:570px;margin:7vh auto;padding:22px;color:#243047;box-shadow:0 8px 30px #0003">
+  <h2 id="pickupPointReviewTitle">逾時接送｜待確認記點</h2>
+  <p>請由蓓蓓或妤瑄確認是否記點。同一幼兒同一天最多 1 點，關閉視窗不代表完成審核。</p>
+  <div id="pickupPointReviewList" aria-live="polite">讀取中…</div>
+  <button type="button" onclick="document.getElementById('pickupPointReviewModal').style.display='none'" style="margin-top:16px;padding:10px 16px">稍後處理</button>
+ </section>
+</div>
 </body>
 </html>
