@@ -1613,6 +1613,7 @@ label.title{font-size:.87rem;margin-bottom:7px}
     >
       📋 我的申請
     </button>
+    <button id="headerLateHistoryBtn" class="headerRequestsBtn" type="button" onclick="showPage('lateHistory')">🕒 逾時接送紀錄</button>
 
   </div>
 
@@ -2046,19 +2047,27 @@ label.title{font-size:.87rem;margin-bottom:7px}
 
       <div class="ruleCard">
 
-        <b>⚠️ 無故延遲接回</b>
-
-        <br>
-
-        僅適用第一梯及第二梯延長照顧。
+        <b>⚠️ 逾時接送與計點提醒</b>
 
         <br><br>
 
-        若實際發生逾時接送，且家長未於原訂接回時間前 30 分鐘完成通知，即列為一次「無故延遲接回」。
+        請家長如預計晚到，務必提前告知老師，避免老師在現場空等。
 
         <br><br>
 
-        無故延遲接回累計達三次，將依本園規定處理延長照顧服務資格。
+        17:00 接送梯次：請於 16:30 前提醒；17:05 後接回且未事先提醒者，記逾時接送 1 點。
+
+        <br><br>
+
+        18:05 後接回：不論是否已提醒，皆記逾時接送 1 點。
+
+        <br><br>
+
+        每位幼兒各自按學期累計；累計達 3 點，經行政確認並通知後，取消延長照顧資格一學期。
+
+        <br><br>
+
+        實際計點以本園後台確認之紀錄為準。
 
       </div>
 
@@ -2430,6 +2439,15 @@ label.title{font-size:.87rem;margin-bottom:7px}
   <div class="notice noticeBlue">🌷 本園完成處理後，申請狀態會同步更新在這裡。<br>臨時托育或延長托育核准後，如有安排課後班級，也會一併顯示。</div>
   <div class="requestToolbar"><button class="refreshRequestsBtn" type="button" onclick="loadMyRequests()">↻ 更新申請狀態</button></div>
   <div id="myRequestsList" class="requestList"><div class="empty">正在載入申請紀錄...</div></div>
+</div>
+
+<!-- 每位幼兒獨立的逾時接送紀錄：由權限檢查 RPC 讀取 -->
+<div id="lateHistoryPage" class="page hidden">
+  <div class="pageTitle">🕒 逾時接送紀錄</div>
+  <div class="pageDesc">每位幼兒分開計算，每學期重新累計。</div>
+  <div class="notice noticeBlue">請家長如會晚到，務必提前告知老師，避免老師空等。17:00 梯次應提前 30 分鐘（16:30）提醒；17:05 後若未事先提醒才計 1 點。18:05 後不論是否提醒均計 1 點。累計達 3 點，經行政確認及通知後，取消延長照顧資格一學期。</div>
+  <div class="requestToolbar"><button class="refreshRequestsBtn" type="button" onclick="loadLateHistory()">↻ 更新逾時紀錄</button></div>
+  <div id="lateHistoryList" class="requestList"><div class="empty">正在載入逾時紀錄...</div></div>
 </div>
 
 </div>
@@ -3926,7 +3944,27 @@ async function loadMyRequests(){
   }
 
 }
-function showPage(page,updateUrl=true){const valid=["pickup","leave","extended","temporary","requests"];if(!valid.includes(page))page="pickup";if(isCareServiceType(page) && hasCareTimeResult(page) && children.length && !hasUnrestrictedCareChild(page))page="pickup";currentPage=page;valid.forEach(p=>{const pageEl=$(p+"Page");if(pageEl)pageEl.classList.toggle("hidden",p!==page);const tabEl=$("tab"+p[0].toUpperCase()+p.slice(1));if(tabEl)tabEl.classList.toggle("active",p===page);});const headerRequestsBtn=$("headerRequestsBtn");if(headerRequestsBtn)headerRequestsBtn.classList.toggle("active",page==="requests");if(page==="requests")loadMyRequests();if(updateUrl){const u=new URL(window.location.href);u.searchParams.set("page",page);u.searchParams.delete("code");u.searchParams.delete("state");u.searchParams.delete("liffClientId");u.searchParams.delete("liffRedirectUri");history.replaceState(null,"",u.toString());}window.scrollTo({top:0,behavior:"smooth"});}
+
+async function loadLateHistory(){
+  const box=$("lateHistoryList");if(!box)return;
+  if(!supabaseUser||!currentGuardianId||!children.length){box.innerHTML='<div class="empty">請先登入並完成幼兒綁定。</div>';return;}
+  box.innerHTML='<div class="empty">正在讀取逾時接送紀錄...</div>';
+  try{
+    const ids=children.map(c=>c.id);
+    const {data,error}=await supabaseClient.rpc('guardian_late_pickup_history',{p_child_ids:ids});
+    if(error)throw error;
+    const rows=Array.isArray(data)?data:[];
+    box.innerHTML=children.map(child=>{
+      const own=rows.filter(r=>String(r.child_id)===String(child.id));
+      const total=own.reduce((n,r)=>n+Number(r.points||0),0);
+      const title=escapeHtml(child.nickname||child.name||'寶貝');
+      const items=own.length?own.map(r=>'<div style="padding:9px 0;border-top:1px solid #eee">'+escapeHtml(r.violation_date)+'　逾時接送 '+Number(r.points||0)+' 點</div>').join(''):'<div class="empty">本學期沒有逾時接送記點紀錄。</div>';
+      return '<div class="ruleCard" style="margin:12px 0"><b>'+title+'｜本學期 '+total+' 點</b>'+items+'</div>';
+    }).join('');
+  }catch(e){console.error('逾時接送紀錄讀取失敗',e);box.innerHTML='<div class="notice noticeRed">目前無法讀取逾時紀錄，請稍後再試或聯繫行政老師。</div>';}
+}
+
+function showPage(page,updateUrl=true){const valid=["pickup","leave","extended","temporary","requests","lateHistory"];if(!valid.includes(page))page="pickup";if(isCareServiceType(page) && hasCareTimeResult(page) && children.length && !hasUnrestrictedCareChild(page))page="pickup";currentPage=page;valid.forEach(p=>{const pageEl=$(p+"Page");if(pageEl)pageEl.classList.toggle("hidden",p!==page);const tabEl=$("tab"+p[0].toUpperCase()+p.slice(1));if(tabEl)tabEl.classList.toggle("active",p===page);});const headerRequestsBtn=$("headerRequestsBtn");if(headerRequestsBtn)headerRequestsBtn.classList.toggle("active",page==="requests");if(page==="requests")loadMyRequests();if(page==="lateHistory")loadLateHistory();const lateBtn=$("headerLateHistoryBtn");if(lateBtn)lateBtn.classList.toggle("active",page==="lateHistory");if(updateUrl){const u=new URL(window.location.href);u.searchParams.set("page",page);u.searchParams.delete("code");u.searchParams.delete("state");u.searchParams.delete("liffClientId");u.searchParams.delete("liffRedirectUri");history.replaceState(null,"",u.toString());}window.scrollTo({top:0,behavior:"smooth"});}
 
 function setPickupMode(
   el,
@@ -6251,6 +6289,9 @@ function setPortalNavigationVisible(
       "none";
 
   }
+
+  const lateHistoryBtn = $("headerLateHistoryBtn");
+  if (lateHistoryBtn) lateHistoryBtn.style.display = visible ? "" : "none";
 
   const requestsBtn =
     $("headerRequestsBtn");
