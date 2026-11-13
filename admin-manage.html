@@ -1587,7 +1587,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 .bindCleanShell{border:1px solid #d7e3da;border-radius:18px;padding:20px;background:#fff;margin:14px 0;color:#264637}
 .bindCleanTop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
 .bindCleanEyebrow{font-size:12px;font-weight:750;letter-spacing:.08em;color:#5d806d}.bindCleanTitle{font-weight:800;font-size:22px;margin:5px 0}
-.bindCleanClasses{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px;margin:15px 0}
+.bindCleanClasses{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:15px 0}
 .bindCleanClass{border:1px solid #dce7df;background:#fafcfb;border-radius:12px;padding:12px;text-align:left;cursor:pointer;white-space:normal;line-height:1.5;color:inherit}
 .bindCleanClass.selected{background:#e8f5ed;border-color:#469269;box-shadow:inset 0 0 0 1px #469269}
 .bindCleanClass strong{display:block;font-size:15px}.bindCleanClass small{display:block;font-size:12px;color:#637d6d}
@@ -1602,6 +1602,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 .bindCleanSlotActions{margin-top:8px}.bindCleanSlotActions .btn{font-size:12px;padding:7px 9px}
 .bindCleanSibling{font-size:12px;color:#547366;margin-top:7px;word-break:break-word}
 .bindCleanBatch,.bindCleanLegacy{border-top:1px solid #e1e9e2;padding-top:13px;margin-top:16px}.bindCleanBatch summary,.bindCleanLegacy summary{font-weight:750;cursor:pointer}
+@media(min-width:561px) and (max-width:900px){.bindCleanClasses{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.bindCleanShell{padding:12px}.bindCleanSlots{grid-template-columns:1fr}.bindCleanClasses{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 
