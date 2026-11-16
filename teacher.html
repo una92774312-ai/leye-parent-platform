@@ -1,28 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="zh-Hant">
 <head>
-<meta name="referrer" content="no-referrer">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
-  <title>樂業附幼｜教職員平台 V16</title>
-
-  <script
-    charset="utf-8"
-    src="https://static.line-scdn.net/liff/edge/2/sdk.js"
-  ></script>
-
-  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"
-  ></script>
-
-  <style>
+<meta content="no-referrer" name="referrer"/>
+<meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
+<meta content="no-cache" http-equiv="Pragma"/>
+<meta content="0" http-equiv="Expires"/>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+<title>樂業附幼｜教職員平台 V16</title>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
+<style>
     :root{
       --bg:#f5f7f4;
       --card:#ffffff;
@@ -1227,7 +1216,6 @@
 .cancelAckCard button:disabled{opacity:.55;cursor:default}
 .cancelAckDetail{color:#647267;margin-top:4px}
 </style>
-
 <style>
 .leyeTeacherDialog{border:0;border-radius:18px;padding:22px;width:min(94vw,450px);max-height:85dvh;overflow:auto;background:#fff;color:#263a2d;box-shadow:0 14px 70px #0003}
 .leyeTeacherDialog::backdrop{background:#0007}
@@ -1270,420 +1258,302 @@
 .rotationSectionBody button{width:100%;margin-top:10px}
 @media(max-width:420px){.leyeRotationDialog{padding:14px}.rotationDialogHeader{top:-14px}}
 </style>
-</head>
-
+</meta></meta><style>#adminSupportToggle{width:100%;border:0;background:transparent;color:#395b40;text-align:left;cursor:pointer;padding:3px;font:inherit;display:flex;gap:6px;align-items:center}#adminMorningSupport:not(.adminSupportExpanded) .adminSupportExpandable{display:none!important}#adminSupportToggle:focus-visible{outline:2px solid #26743d}</style></head>
 <body>
-  <main class="wrap">
-
-    <div class="brand">
-      <h1>樂業附幼教職員平台</h1>
-      <p id="pageIntro">
+<main class="wrap">
+<div class="brand">
+<h1>樂業附幼教職員平台</h1>
+<p id="pageIntro">
         正在確認您的 LINE 與教職員身分。
       </p>
-    </div>
-
-    <section class="card">
-
-      <div id="loading" class="loading">
+</div>
+<section class="card">
+<div class="loading" id="loading">
         正在登入教職員平台…
       </div>
-
-      <div id="content" class="hidden">
-
-        <div class="profile">
-          <img
-            id="avatar"
-            class="avatar"
-            alt="LINE 頭像"
-          />
-
-          <div>
-            <div
-              id="lineName"
-              class="profileName"
-            >
+<div class="hidden" id="content">
+<div class="profile">
+<img alt="LINE 頭像" class="avatar" id="avatar"/>
+<div>
+<div class="profileName" id="lineName">
               —
             </div>
-
-            <div class="profileSub">
+<div class="profileSub">
               目前登入的 LINE 帳號
             </div>
-          </div>
-        </div>
-
-        <div id="boundSection" class="hidden">
-
-          <div class="identityBox">
-            <div class="identityTitle">
+</div>
+</div>
+<div class="hidden" id="boundSection">
+<div class="identityBox">
+<div class="identityTitle">
               ✓ 教職員身分已確認
             </div>
-
-            <div>
+<div>
               老師：
               <strong id="boundStaffName">—</strong>
-            </div>
-
-            <div>
+</div>
+<div>
               LINE：
               <strong id="boundLineName">—</strong>
-            </div>
-          </div>
-
-          <div id="loginStatus" class="status show info">
+</div>
+</div>
+<div class="status show info" id="loginStatus">
             正在建立老師系統登入狀態…
           </div>
-
-          <div id="workEntry" class="workBox hidden">
-            <div class="leyeRotationHead"><div class="workTitle" id="teacherGreeting">🌿 今天也辛苦了，老師！</div><button type="button" id="leyeRotationOpen" class="leyeRotationOpen" onclick="openTeacherRotation()">📅 教師輪值</button></div>
-
-            <div class="workSub">
+<div class="workBox hidden" id="workEntry">
+<div class="leyeRotationHead"><div class="workTitle" id="teacherGreeting">🌿 今天也辛苦了，老師！</div><button class="leyeRotationOpen" id="leyeRotationOpen" onclick="openTeacherRotation()" type="button">📅 教師輪值</button></div>
+<div class="workSub">
               孩子們今天需要留意的事，都幫您整理在這裡了。
             </div>
-
-            <div id="roleBadge" class="roleBadge">—</div>
-            <section class="warmQuote" aria-label="每天給老師的一點溫柔">
-              
-              <div id="warmQuoteText" class="warmQuoteText">今天也辛苦了，記得好好照顧自己。</div>
-              <div id="warmQuoteAuthor" class="warmQuoteAuthor">—— 樂業附幼・暖心小語</div>
-
-            </section>
-
-            <a
-              id="adminPortalBtn"
-              class="adminPortalBtn hidden"
-              href="admin.html?v=19"
-              onclick="prepareAdminPortal(event)"
-            >
+<div class="roleBadge" id="roleBadge">—</div>
+<section aria-label="每天給老師的一點溫柔" class="warmQuote">
+<div class="warmQuoteText" id="warmQuoteText">今天也辛苦了，記得好好照顧自己。</div>
+<div class="warmQuoteAuthor" id="warmQuoteAuthor">—— 樂業附幼・暖心小語</div>
+</section>
+<a class="adminPortalBtn hidden" href="admin.html?v=19" id="adminPortalBtn" onclick="prepareAdminPortal(event)">
               ⚙️ 進入行政管理平台
             </a>
-
-            <div class="scopeGrid" id="teacherScopeGrid">
-              <div class="scopeCard" id="morningScopeCard">
-                <div class="scopeLabel">班級幼兒概況</div>
-                <div id="morningScope" class="scopeValue">讀取中…</div>              </div>
-
-              <div class="scopeCard" id="aftercareScopeCard">
-                <div class="scopeLabel">今天負責的課後班</div>
-                <div id="aftercareScope" class="scopeValue">讀取中…</div>
-              </div>
-
-              <div class="scopeCard" id="specialScopeCard">
-                <div class="scopeLabel">協助照顧的班級</div>
-                <div id="specialScope" class="scopeValue">讀取中…</div>
-              </div>
-            </div>
-
-            <div id="scopeStatus" class="status show info">
+<div class="scopeGrid" id="teacherScopeGrid">
+<div class="scopeCard" id="morningScopeCard">
+<div class="scopeLabel">班級幼兒概況</div>
+<div class="scopeValue" id="morningScope">讀取中…</div> </div>
+<div class="scopeCard" id="aftercareScopeCard">
+<div class="scopeLabel">今天負責的課後班</div>
+<div class="scopeValue" id="aftercareScope">讀取中…</div>
+</div>
+<div class="scopeCard" id="specialScopeCard">
+<div class="scopeLabel">協助照顧的班級</div>
+<div class="scopeValue" id="specialScope">讀取中…</div>
+</div>
+</div>
+<div class="status show info" id="scopeStatus">
               正在讀取老師可查看範圍…
             </div>
-
-            <section id="adminMorningSupport" class="adminMorningSupport hidden" aria-label="今日補休代班">
-  <div class="adminSupportHeader"><span>🌿 今日補休代班：</span><strong id="adminSupportCurrent">無代班</strong></div>
-  <div class="adminSupportControls">
-    <label for="adminSupportClass">選擇今天支援的原班</label>
-    <select id="adminSupportClass"><option value="">請選擇班級</option></select>
-    <div class="adminSupportTimes"><label>開始時間<select id="adminSupportStart"></select></label><label>結束時間<select id="adminSupportEnd"></select></label></div>
-    <div id="adminSupportList"></div>
-    <button type="button" id="adminSupportSave" onclick="saveAdminMorningSupport()">新增時段</button>
-  </div>
-  <p id="adminSupportStatus" class="adminSupportStatus" aria-live="polite">每次安排半小時為單位，可新增多個不重疊時段。</p>
+<section aria-label="今日補休代班" class="adminMorningSupport hidden" id="adminMorningSupport">
+<button aria-expanded="false" class="adminSupportHeader" id="adminSupportToggle" onclick="toggleAdminSupportPanel()" type="button"><span>🌿 今日補休代班：</span><strong id="adminSupportCurrent">無代班</strong>　＋</button>
+<div class="adminSupportControls adminSupportExpandable">
+<label for="adminSupportClass">選擇今天支援的原班</label>
+<select id="adminSupportClass"><option value="">請選擇班級</option></select>
+<div class="adminSupportTimes"><label>開始時間<select id="adminSupportStart"></select></label><label>結束時間<select id="adminSupportEnd"></select></label></div>
+<div id="adminSupportList"></div>
+<button id="adminSupportSave" onclick="saveAdminMorningSupport()" type="button">新增時段</button>
+</div>
+<p aria-live="polite" class="adminSupportStatus adminSupportExpandable" id="adminSupportStatus">每次安排半小時為單位，可新增多個不重疊時段。</p>
 </section>
-            <div id="todayClassRosters" class="todayClassRosters"></div>
-            <section id="leyeProvisionalSection" class="todayBox" style="display:none;margin-top:10px" aria-label="16點尚未接回待安排">
-              <div class="todayTitle">⏰ 16:00 未接回｜暫列17:00／18:00</div>
-              <div id="leyeProvisionalList" style="padding:10px"></div>
-              <small>這是待確認的照顧名單，不代表臨托已核准；不處理收費。</small>
-            </section>
-            <dialog id="leyeTeacherDialog" class="leyeTeacherDialog">
-              <form method="dialog" onsubmit="return false">
-                <h3 id="leyeDialogTitle">今日接送操作</h3>
-                <p id="leyeDialogHint" style="font-size:13px;color:#647367"></p>
-                <div id="leyeDialogTypeWrap"><label for="leyeDialogType">操作類別</label>
-                  <select id="leyeDialogType" onchange="updateLeYeActionFields()">
-                    <option value="leave">今日請假</option><option value="early">提早接送</option>
-                    <option value="extended">延長托育（17:00→18:00）</option>
-                    <option value="temporary">臨時托育</option>
-                  </select></div>
-                <div id="leyeDialogTimeWrap"><label for="leyeDialogTime">時間或時段</label><select id="leyeDialogTime"></select></div>
-                <div id="leyeDialogDateWrap"><label for="leyeDialogDate">日期（老師代辦可選未來 30 天）</label><input type="date" id="leyeDialogDate"></div>
-                <label for="leyeDialogReason">原因／備註（如家長口頭告知）</label>
-                <textarea id="leyeDialogReason" rows="2" maxlength="250" placeholder="請簡短填寫原因或家長確認情況"></textarea>
-                <div id="leyeDialogError" aria-live="polite" style="color:#a93529;font-size:13px"></div>
-                <div class="leyeDialogButtons"><button type="button" onclick="document.getElementById('leyeTeacherDialog').close()">返回</button>
-                  <button type="button" id="leyeDialogSubmit" onclick="saveLeYeTeacherAction()">儲存登記</button></div>
-              </form>
-            </dialog>
-
-            <details id="rosterDetails" class="rosterDetails">
-              <summary>
-                <span id="rosterTitle">👥 我的班級幼兒</span>
-                <span id="rosterSummary" class="rosterSummaryText">讀取中…</span>
-              </summary>
-
-              <div class="rosterBody">
-                <div id="rosterStatus" class="status show info">
+<div class="todayClassRosters" id="todayClassRosters"></div>
+<section aria-label="16點尚未接回待安排" class="todayBox" id="leyeProvisionalSection" style="display:none;margin-top:10px">
+<div class="todayTitle">⏰ 16:00 未接回｜暫列17:00／18:00</div>
+<div id="leyeProvisionalList" style="padding:10px"></div>
+<small>這是待確認的照顧名單，不代表臨托已核准；不處理收費。</small>
+</section>
+<dialog class="leyeTeacherDialog" id="leyeTeacherDialog">
+<form method="dialog" onsubmit="return false">
+<h3 id="leyeDialogTitle">今日接送操作</h3>
+<p id="leyeDialogHint" style="font-size:13px;color:#647367"></p>
+<div id="leyeDialogTypeWrap"><label for="leyeDialogType">操作類別</label>
+<select id="leyeDialogType" onchange="updateLeYeActionFields()">
+<option value="leave">今日請假</option><option value="early">提早接送</option>
+<option value="extended">延長托育（17:00→18:00）</option>
+<option value="temporary">臨時托育</option>
+</select></div>
+<div id="leyeDialogTimeWrap"><label for="leyeDialogTime">時間或時段</label><select id="leyeDialogTime"></select></div>
+<div id="leyeDialogDateWrap"><label for="leyeDialogDate">日期（老師代辦可選未來 30 天）</label><input id="leyeDialogDate" type="date"/></div>
+<label for="leyeDialogReason">原因／備註（如家長口頭告知）</label>
+<textarea id="leyeDialogReason" maxlength="250" placeholder="請簡短填寫原因或家長確認情況" rows="2"></textarea>
+<div aria-live="polite" id="leyeDialogError" style="color:#a93529;font-size:13px"></div>
+<div class="leyeDialogButtons"><button onclick="document.getElementById('leyeTeacherDialog').close()" type="button">返回</button>
+<button id="leyeDialogSubmit" onclick="saveLeYeTeacherAction()" type="button">儲存登記</button></div>
+</form>
+</dialog>
+<details class="rosterDetails" id="rosterDetails">
+<summary>
+<span id="rosterTitle">👥 我的班級幼兒</span>
+<span class="rosterSummaryText" id="rosterSummary">讀取中…</span>
+</summary>
+<div class="rosterBody">
+<div class="status show info" id="rosterStatus">
                   正在讀取班級名冊…
                 </div>
-                <div id="rosterContent"></div>
-              </div>
-            </details>
-
-            <div id="todayItemsSection" class="todayBox">
-              <div class="todayHeader">
-                <div>
-                  <div class="todayTitle">🌷 今日孩子們的大小事</div>
-                  <div id="todayItemsDate" class="todayDate">讀取中…</div>
-                </div>
-
-                <div id="todayTotalBadge" class="totalBadge">0</div>
-              </div>
-
-              <button
-                class="weekUtilityBtn"
-                type="button"
-                onclick="openTeacherHistory()"
-              >
+<div id="rosterContent"></div>
+</div>
+</details>
+<div class="todayBox" id="todayItemsSection">
+<div class="todayHeader">
+<div>
+<div class="todayTitle">🌷 今日孩子們的大小事</div>
+<div class="todayDate" id="todayItemsDate">讀取中…</div>
+</div>
+<div class="totalBadge" id="todayTotalBadge">0</div>
+</div>
+<button class="weekUtilityBtn" onclick="openTeacherHistory()" type="button">
                 🔎 查詢其他日期的紀錄
               </button>
-
-              <div class="todayCounts" id="teacherWeekCounts">
-                <button class="countCard" type="button" onclick="jumpToTeacherItems('leaveItems')" aria-label="跳到今日請假紀錄"><div id="leaveCount" class="countNum">0</div>
-                  <div class="countLabel">今日請假</div></button>
-
-                <button class="countCard" type="button" onclick="jumpToTeacherItems('careItems')" aria-label="跳到今日臨托紀錄"><div id="temporaryCount" class="countNum">0</div>
-                  <div class="countLabel">今日臨托</div></button>
-
-                <button class="countCard" type="button" onclick="jumpToTeacherItems('careItems')" aria-label="跳到今日延托紀錄"><div id="extendedCount" class="countNum">0</div>
-                  <div class="countLabel">今日延托</div></button>
-
-                <button class="countCard" type="button" onclick="jumpToTeacherItems('pickupItems')" aria-label="跳到今日接送紀錄"><div id="pickupCount" class="countNum">0</div>
-                  <div class="countLabel">今日接送</div></button>
-              </div>
-
-
-              <details class="cancelledMiniFold" id="cancelledCareFold">
-                <summary class="cancelledMiniSummary">
-                  <span>↩️ 已取消紀錄</span>
-                  <span class="cancelledMiniRight"><span id="cancelledCareGroupCount" class="cancelledMiniCount">0</span><span class="cancelledMiniChevron" aria-hidden="true">⌄</span></span>
-                </summary>
-                <div id="cancelledCareItems" class="itemList cancelledMiniBody"></div>
-              </details>
-
-              <div id="todayItemsStatus" class="status show info">
+<div class="todayCounts" id="teacherWeekCounts">
+<button aria-label="跳到今日請假紀錄" class="countCard" onclick="jumpToTeacherItems('leaveItems')" type="button"><div class="countNum" id="leaveCount">0</div>
+<div class="countLabel">今日請假</div></button>
+<button aria-label="跳到今日臨托紀錄" class="countCard" onclick="jumpToTeacherItems('careItems')" type="button"><div class="countNum" id="temporaryCount">0</div>
+<div class="countLabel">今日臨托</div></button>
+<button aria-label="跳到今日延托紀錄" class="countCard" onclick="jumpToTeacherItems('careItems')" type="button"><div class="countNum" id="extendedCount">0</div>
+<div class="countLabel">今日延托</div></button>
+<button aria-label="跳到今日接送紀錄" class="countCard" onclick="jumpToTeacherItems('pickupItems')" type="button"><div class="countNum" id="pickupCount">0</div>
+<div class="countLabel">今日接送</div></button>
+</div>
+<details class="cancelledMiniFold" id="cancelledCareFold">
+<summary class="cancelledMiniSummary">
+<span>↩️ 已取消紀錄</span>
+<span class="cancelledMiniRight"><span class="cancelledMiniCount" id="cancelledCareGroupCount">0</span><span aria-hidden="true" class="cancelledMiniChevron">⌄</span></span>
+</summary>
+<div class="itemList cancelledMiniBody" id="cancelledCareItems"></div>
+</details>
+<div class="status show info" id="todayItemsStatus">
                 正在讀取今日學生事項…
               </div>
-
-              <div id="todayItemsContent" class="hidden teacherWeeklyGroups">
-                <details class="itemGroup teacherFoldGroup" id="leaveFold">
-                  <summary class="teacherFoldHeading"><span>🌷 請假通知</span><span id="leaveGroupCount" class="groupCount">0</span><span class="teacherFoldToggle" aria-hidden="true"></span></summary>
-                  <div id="leaveItems" class="itemList teacherFoldContent"></div>
-                </details>
-
-
-      <details class="itemGroup teacherFoldGroup" id="cancelAckTeacherFold">
-        <summary class="teacherFoldHeading"><span>↩️ 取消請假待確認</span><span id="cancelAckTeacherCount" class="groupCount">0</span><span class="teacherFoldToggle" aria-hidden="true"></span></summary>
-        <div id="cancelAckTeacherList" class="itemList teacherFoldContent"></div>
-      </details>
-                <details class="itemGroup teacherFoldGroup" id="careFold">
-                  <summary class="teacherFoldHeading"><span>🧸 課後照顧安排</span><span id="careGroupCount" class="groupCount">0</span><span class="teacherFoldToggle" aria-hidden="true"></span></summary>
-                  <div id="careItems" class="itemList teacherFoldContent"></div>
-                </details>
-                <details class="itemGroup teacherFoldGroup" id="pickupFold">
-                  <summary class="teacherFoldHeading"><span>🚗 接送小提醒</span><span id="pickupGroupCount" class="groupCount">0</span><span class="teacherFoldToggle" aria-hidden="true"></span></summary>
-                  <div id="pickupItems" class="itemList teacherFoldContent"></div>
-                </details>
-              </div>
-            </div>
-
-            <div id="historyPanel" class="historyOverlay hidden" aria-hidden="true">
-              <div class="historySheet">
-                <div class="historyHeader">
-                  <div>
-                    <div class="historyTitle">🔎 查詢過去紀錄</div>
-                    <div class="todayDate">僅顯示您有權限查看的幼兒資料</div>
-                  </div>
-                  <button
-                    class="historyCloseBtn"
-                    type="button"
-                    aria-label="關閉"
-                    onclick="closeTeacherHistory()"
-                  >×</button>
-                </div>
-
-                <div class="historyBody">
-                  <div class="historyForm">
-                    <div class="historyField full">
-                      <label for="historyKeyword">幼兒暱稱</label>
-                      <input
-                        id="historyKeyword"
-                        type="search"
-                        maxlength="50"
-                        placeholder="輸入暱稱搜尋；留白則顯示全部"
-                      >
-                    </div>
-
-                    <div class="historyField">
-                      <label for="historyStart">開始日期</label>
-                      <input id="historyStart" type="date">
-                    </div>
-
-                    <div class="historyField">
-                      <label for="historyEnd">結束日期</label>
-                      <input id="historyEnd" type="date">
-                    </div>
-
-                    <div class="historyField full">
-                      <label for="historyType">類型</label>
-                      <select id="historyType">
-                        <option value="all">全部</option>
-                        <option value="leave">請假</option>
-                        <option value="extended">延托</option>
-                        <option value="temporary">臨托</option>
-                      </select>
-                    </div>
-
-                    <button
-                      class="historySearchBtn"
-                      type="button"
-                      onclick="searchTeacherHistory()"
-                    >
+<div class="hidden teacherWeeklyGroups" id="todayItemsContent">
+<details class="itemGroup teacherFoldGroup" id="leaveFold">
+<summary class="teacherFoldHeading"><span>🌷 請假通知</span><span class="groupCount" id="leaveGroupCount">0</span><span aria-hidden="true" class="teacherFoldToggle"></span></summary>
+<div class="itemList teacherFoldContent" id="leaveItems"></div>
+</details>
+<details class="itemGroup teacherFoldGroup" id="cancelAckTeacherFold">
+<summary class="teacherFoldHeading"><span>↩️ 取消請假待確認</span><span class="groupCount" id="cancelAckTeacherCount">0</span><span aria-hidden="true" class="teacherFoldToggle"></span></summary>
+<div class="itemList teacherFoldContent" id="cancelAckTeacherList"></div>
+</details>
+<details class="itemGroup teacherFoldGroup" id="careFold">
+<summary class="teacherFoldHeading"><span>🧸 課後照顧安排</span><span class="groupCount" id="careGroupCount">0</span><span aria-hidden="true" class="teacherFoldToggle"></span></summary>
+<div class="itemList teacherFoldContent" id="careItems"></div>
+</details>
+<details class="itemGroup teacherFoldGroup" id="pickupFold">
+<summary class="teacherFoldHeading"><span>🚗 接送小提醒</span><span class="groupCount" id="pickupGroupCount">0</span><span aria-hidden="true" class="teacherFoldToggle"></span></summary>
+<div class="itemList teacherFoldContent" id="pickupItems"></div>
+</details>
+</div>
+</div>
+<div aria-hidden="true" class="historyOverlay hidden" id="historyPanel">
+<div class="historySheet">
+<div class="historyHeader">
+<div>
+<div class="historyTitle">🔎 查詢過去紀錄</div>
+<div class="todayDate">僅顯示您有權限查看的幼兒資料</div>
+</div>
+<button aria-label="關閉" class="historyCloseBtn" onclick="closeTeacherHistory()" type="button">×</button>
+</div>
+<div class="historyBody">
+<div class="historyForm">
+<div class="historyField full">
+<label for="historyKeyword">幼兒暱稱</label>
+<input id="historyKeyword" maxlength="50" placeholder="輸入暱稱搜尋；留白則顯示全部" type="search"/>
+</div>
+<div class="historyField">
+<label for="historyStart">開始日期</label>
+<input id="historyStart" type="date"/>
+</div>
+<div class="historyField">
+<label for="historyEnd">結束日期</label>
+<input id="historyEnd" type="date"/>
+</div>
+<div class="historyField full">
+<label for="historyType">類型</label>
+<select id="historyType">
+<option value="all">全部</option>
+<option value="leave">請假</option>
+<option value="extended">延托</option>
+<option value="temporary">臨托</option>
+</select>
+</div>
+<button class="historySearchBtn" onclick="searchTeacherHistory()" type="button">
                       查詢紀錄
                     </button>
-                  </div>
-
-                  <div id="historyStatus" class="status show info">
+</div>
+<div class="status show info" id="historyStatus">
                     可依暱稱、日期與類型查詢。
                   </div>
-
-                  <div id="historyMeta" class="historyMeta"></div>
-                  <div id="historyResults" class="historyResults"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <div id="pendingSection" class="hidden">
-
-          <div class="status show warn">
+<div class="historyMeta" id="historyMeta"></div>
+<div class="historyResults" id="historyResults"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="hidden" id="pendingSection">
+<div class="status show warn">
             LINE 綁定申請已送出，目前正在等待行政人員確認。
           </div>
-
-          <div class="identityBox">
-            <div>
+<div class="identityBox">
+<div>
               申請老師：
               <strong id="pendingStaffName">—</strong>
-            </div>
-
-            <div>
+</div>
+<div>
               LINE：
               <strong id="pendingLineName">—</strong>
-            </div>
-          </div>
-
-          <div class="note">
+</div>
+</div>
+<div class="note">
             行政確認完成後，重新開啟本頁即可自動登入老師平台。
           </div>
-
-        </div>
-
-        <div id="bindSection" class="hidden">
-
-          <label for="staffBindingCode">
+</div>
+<div class="hidden" id="bindSection">
+<label for="staffBindingCode">
             教職員綁定碼
           </label>
-
-          <input
-            id="staffBindingCode"
-            type="text"
-            inputmode="text"
-            autocomplete="one-time-code"
-            maxlength="16"
-            placeholder="請輸入 16 碼綁定碼"
-            oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,16)"
-          >
-
-          <label style="display:flex;gap:8px;align-items:flex-start;margin:12px 0;cursor:pointer;font-size:.86rem;line-height:1.5">
-            <input id="teacherPrivacyAck" type="checkbox" style="width:auto;margin-top:4px">
-            <span>
+<input autocomplete="one-time-code" id="staffBindingCode" inputmode="text" maxlength="16" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,16)" placeholder="請輸入 16 碼綁定碼" type="text"/>
+<label style="display:flex;gap:8px;align-items:flex-start;margin:12px 0;cursor:pointer;font-size:.86rem;line-height:1.5">
+<input id="teacherPrivacyAck" style="width:auto;margin-top:4px" type="checkbox"/>
+<span>
               我已閱讀
-              <a href="privacy.html" target="_blank" rel="noopener">個人資料蒐集告知暨隱私權說明</a>，
+              <a href="privacy.html" rel="noopener" target="_blank">個人資料蒐集告知暨隱私權說明</a>，
               並了解本平台僅供教職員職務使用。
             </span>
-          </label>
-
-          <button
-            id="submitBtn"
-            class="primary"
-            type="button"
-            disabled
-          >
+</label>
+<button class="primary" disabled="" id="submitBtn" type="button">
             送出 LINE 綁定申請
           </button>
-
-          <div id="status" class="status"></div>
-
-          <div class="note">
+<div class="status" id="status"></div>
+<div class="note">
             為保護教職員個資，本平台不公開教職員名單。
             請輸入行政人員提供的一次性綁定碼。
             綁定碼驗證後仍需由行政人員確認，才會正式啟用。
           </div>
-
-        </div>
-
-        <button
-          id="reloadBtn"
-          class="secondary hidden"
-          type="button"
-        >
+</div>
+<button class="secondary hidden" id="reloadBtn" type="button">
           重新載入
         </button>
-
-        <button
-          id="lineReloginBtn"
-          class="primary hidden"
-          type="button"
-        >
+<button class="primary hidden" id="lineReloginBtn" type="button">
           重新登入 LINE
         </button>
-
-      </div>    </section>
-    <div style="text-align:center;margin:18px 0 0;font-size:12px;color:#7d847c">
-      <a href="privacy.html" target="_blank" rel="noopener" style="color:#52644e">個人資料蒐集告知暨隱私權說明</a>
-    </div>
-  <footer class="backToTopFooter">
-      <button class="backToTopBtn" type="button" onclick="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})" aria-label="回到網頁頂部">↑ 回到頂部</button>
-    </footer>
-  </main>
-
-<dialog id="leyeRotationDialog" class="leyeRotationDialog" aria-labelledby="leyeRotationTitle">
-  <div class="rotationDialogHeader"><h3 id="leyeRotationTitle">📅 每週導師輪值</h3><button type="button" class="rotationClose" onclick="document.getElementById('leyeRotationDialog').close()" aria-label="關閉教師輪值視窗" title="關閉">×</button></div>
-  <p class="rotationStatus">每班兩位導師，每週一自動交替；臨時代班不影響下週順序。</p>
-  <div id="leyeRotationClassPicker"><label for="leyeRotationClass">班級</label><select id="leyeRotationClass" onchange="loadTeacherRotation()"></select></div><p id="leyeRotationOwnClass" class="rotationStatus" hidden></p>
-  <p id="leyeRotationStatus" class="rotationStatus" role="status">讀取中…</p>
-  <details class="rotationSection"><summary><span class="rotationSectionTitle">首次設定／重設未來輪值</span><small>設定每週自動輪替的起點</small></summary><div class="rotationSectionBody">
-    <label for="leyeRotationStart">起始週（一）</label><input type="date" id="leyeRotationStart" />
-    <label for="leyeRotationFirst">第一週主責</label><select id="leyeRotationFirst"></select>
-    <button type="button" class="saveRotation" onclick="saveTeacherRotation()">儲存輪值設定</button>
-  </div></details>
-  <details class="rotationSection"><summary><span class="rotationSectionTitle">整週手動修正</span><small>僅調整指定的一週</small></summary><div class="rotationSectionBody">
-    <label for="leyeRotationOverrideWeek">指定週（一）</label><input type="date" id="leyeRotationOverrideWeek" />
-    <label for="leyeRotationSubstitute">該週主責導師</label><select id="leyeRotationSubstitute"></select>
-    <button type="button" class="saveRotation" onclick="saveTeacherRotationOverride()">指定該週代班</button>
-    <button type="button" onclick="clearTeacherRotationOverride()">取消該週代班，恢復自動輪值</button>
-  </div></details>
-  <details class="rotationSection"><summary><span class="rotationSectionTitle">臨時請假代班（可指定單日或連續日期）</span><small>只調整選定日期</small></summary><div class="rotationSectionBody">
-    <p class="rotationStatus">選擇請假起訖日期，系統由另一位導師接手指定期間；結束後恢復原定輪值。</p>
-    <label for="leyeRotationLeaveStart">請假開始日期</label><input type="date" id="leyeRotationLeaveStart" />
-    <label for="leyeRotationLeaveEnd">請假結束日期</label><input type="date" id="leyeRotationLeaveEnd" />
-    <label for="leyeRotationLeaveTeacher">代班導師</label><select id="leyeRotationLeaveTeacher"></select>
-    <button type="button" class="saveRotation" onclick="saveTeacherRotationLeave()">確認指定日期代班</button>
-    <button type="button" onclick="clearTeacherRotationLeave()">取消指定日期代班</button>
-    <p id="leyeRotationLeaveStatus" class="rotationStatus" role="status"></p>
-  </div></details>
-  <p class="rotationStatus">僅可調整自己任教班級；代班不影響下一週的輪值，也不會補發歷史 LINE 通知。</p>
-
+</div> </section>
+<div style="text-align:center;margin:18px 0 0;font-size:12px;color:#7d847c">
+<a href="privacy.html" rel="noopener" style="color:#52644e" target="_blank">個人資料蒐集告知暨隱私權說明</a>
+</div>
+<footer class="backToTopFooter">
+<button aria-label="回到網頁頂部" class="backToTopBtn" onclick="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})" type="button">↑ 回到頂部</button>
+</footer>
+</main>
+<dialog aria-labelledby="leyeRotationTitle" class="leyeRotationDialog" id="leyeRotationDialog">
+<div class="rotationDialogHeader"><h3 id="leyeRotationTitle">📅 每週導師輪值</h3><button aria-label="關閉教師輪值視窗" class="rotationClose" onclick="document.getElementById('leyeRotationDialog').close()" title="關閉" type="button">×</button></div>
+<p class="rotationStatus">每班兩位導師，每週一自動交替；臨時代班不影響下週順序。</p>
+<div id="leyeRotationClassPicker"><label for="leyeRotationClass">班級</label><select id="leyeRotationClass" onchange="loadTeacherRotation()"></select></div><p class="rotationStatus" hidden="" id="leyeRotationOwnClass"></p>
+<p class="rotationStatus" id="leyeRotationStatus" role="status">讀取中…</p>
+<details class="rotationSection"><summary><span class="rotationSectionTitle">首次設定／重設未來輪值</span><small>設定每週自動輪替的起點</small></summary><div class="rotationSectionBody">
+<label for="leyeRotationStart">起始週（一）</label><input id="leyeRotationStart" type="date">
+<label for="leyeRotationFirst">第一週主責</label><select id="leyeRotationFirst"></select>
+<button class="saveRotation" onclick="saveTeacherRotation()" type="button">儲存輪值設定</button>
+</input></div></details>
+<details class="rotationSection"><summary><span class="rotationSectionTitle">整週手動修正</span><small>僅調整指定的一週</small></summary><div class="rotationSectionBody">
+<label for="leyeRotationOverrideWeek">指定週（一）</label><input id="leyeRotationOverrideWeek" type="date">
+<label for="leyeRotationSubstitute">該週主責導師</label><select id="leyeRotationSubstitute"></select>
+<button class="saveRotation" onclick="saveTeacherRotationOverride()" type="button">指定該週代班</button>
+<button onclick="clearTeacherRotationOverride()" type="button">取消該週代班，恢復自動輪值</button>
+</input></div></details>
+<details class="rotationSection"><summary><span class="rotationSectionTitle">臨時請假代班（可指定單日或連續日期）</span><small>只調整選定日期</small></summary><div class="rotationSectionBody">
+<p class="rotationStatus">選擇請假起訖日期，系統由另一位導師接手指定期間；結束後恢復原定輪值。</p>
+<label for="leyeRotationLeaveStart">請假開始日期</label><input id="leyeRotationLeaveStart" type="date">
+<label for="leyeRotationLeaveEnd">請假結束日期</label><input id="leyeRotationLeaveEnd" type="date">
+<label for="leyeRotationLeaveTeacher">代班導師</label><select id="leyeRotationLeaveTeacher"></select>
+<button class="saveRotation" onclick="saveTeacherRotationLeave()" type="button">確認指定日期代班</button>
+<button onclick="clearTeacherRotationLeave()" type="button">取消指定日期代班</button>
+<p class="rotationStatus" id="leyeRotationLeaveStatus" role="status"></p>
+</input></input></div></details>
+<p class="rotationStatus">僅可調整自己任教班級；代班不影響下一週的輪值，也不會補發歷史 LINE 通知。</p>
 </dialog>
 <script>
 const LIFF_ID =
@@ -4647,6 +4517,5 @@ async function clearTeacherRotationOverride(){
 
 init();
 </script>
-
-</body>
+<script>function toggleAdminSupportPanel(){const p=document.getElementById('adminMorningSupport');if(!p)return;const open=p.classList.toggle('adminSupportExpanded');const b=document.getElementById('adminSupportToggle');if(b){b.setAttribute('aria-expanded',String(open));const tail=b.lastChild;if(tail&&tail.nodeType===3)tail.textContent=open?'　－':'　＋';}}</script></body>
 </html>
