@@ -1357,7 +1357,8 @@
 <option value="temporary">臨時托育</option>
 </select></div>
 <div id="leyeDialogTimeWrap"><label for="leyeDialogTime">時間或時段</label><select id="leyeDialogTime"></select></div>
-<div id="leyeDialogDateWrap"><label for="leyeDialogDate">日期（老師代辦可選未來 30 天）</label><input id="leyeDialogDate" type="date"/></div>
+<div id="leyeDialogDateWrap"><label for="leyeDialogDate">開始日期（老師代辦可選未來 30 天）</label><input id="leyeDialogDate" type="date"/></div>
+<div id="leyeDialogLongLeaveWrap" style="display:none"><label for="leyeDialogLeaveMode">請假方式</label><select id="leyeDialogLeaveMode" onchange="updateLeYeLongLeaveMode()"><option value="single">單日請假</option><option value="multi">連續多日請假</option></select><div id="leyeDialogLeaveEndWrap" style="display:none"><label for="leyeDialogLeaveEnd">請假結束日期</label><input id="leyeDialogLeaveEnd" type="date"/><p style="font-size:12px;color:#647367">最多連續31天；逐日登記，遇到休園日請依園方規則確認。</p></div></div>
 <label for="leyeDialogReason">原因／備註（如家長口頭告知）</label>
 <textarea id="leyeDialogReason" maxlength="250" placeholder="請簡短填寫原因或家長確認情況" rows="2"></textarea>
 <div aria-live="polite" id="leyeDialogError" style="color:#a93529;font-size:13px"></div>
@@ -2017,11 +2018,24 @@ function fillLeYeTimeOptions(opts){
  const elSel=document.getElementById("leyeDialogTime");
  elSel.innerHTML=opts.map(([value,label])=>`<option value="${value}">${label}</option>`).join("");
 }
+function updateLeYeLongLeaveMode(){
+ const multi=document.getElementById("leyeDialogLeaveMode").value==="multi";
+ document.getElementById("leyeDialogLeaveEndWrap").style.display=multi?"":"none";
+ if(multi && !document.getElementById("leyeDialogLeaveEnd").value)document.getElementById("leyeDialogLeaveEnd").value=document.getElementById("leyeDialogDate").value;
+}
+function leyeLongLeaveDates(start,end){
+ const parse=x=>{const [y,m,d]=x.split("-").map(Number);const v=new Date(Date.UTC(y,m-1,d));if(v.toISOString().slice(0,10)!==x)throw Error("日期格式不正確");return v;};
+ const a=parse(start),b=parse(end),days=Math.round((b-a)/86400000);
+ if(days<0)throw Error("結束日期不可早於開始日期");
+ if(days>30)throw Error("多日請假最多連續31天");
+ return Array.from({length:days+1},(_,i)=>new Date(a.getTime()+i*86400000).toISOString().slice(0,10));
+}
 function updateLeYeActionFields(){
  const type=leyeDialogAction==="proxy"?document.getElementById("leyeDialogType").value:leyeDialogAction;
  const timeWrap=document.getElementById("leyeDialogTimeWrap");
  const dateWrap=document.getElementById("leyeDialogDateWrap");
  dateWrap.style.display=leyeDialogAction==="proxy"?"":"none";
+ document.getElementById("leyeDialogLongLeaveWrap").style.display=leyeDialogAction==="proxy"&&type==="leave"?"":"none";
  timeWrap.style.display=type==="leave"?"none":"";
  const now=leyeTaipeiClock();
  if(type==="slot"){
@@ -2042,6 +2056,9 @@ async function openLeYeTeacherAction(childId,action){
   document.getElementById("leyeDialogError").textContent="";
   document.getElementById("leyeDialogReason").value="";
   document.getElementById("leyeDialogDate").value=leyeTaipeiDay();
+  document.getElementById("leyeDialogLeaveEnd").value=leyeTaipeiDay();
+  document.getElementById("leyeDialogLeaveMode").value="single";
+  updateLeYeLongLeaveMode();
   document.getElementById("leyeDialogTypeWrap").style.display=action==="proxy"?"":"none";
   document.getElementById("leyeDialogTitle").textContent=action==="slot"?"選擇已接送時段":action==="proxy"?"老師代家長登記":"16:00 未接回安排";
   document.getElementById("leyeDialogHint").textContent=action==="slot"?"請依現場實際接送時段登記。時段僅供接送核對，不自動產生或修改費用。":action==="proxy"?"紀錄操作老師，托育申請仍須依園方規定審核。":"先暫列17:00；確認後可改為18:00。未經確認不視為托育核准。";
@@ -2075,6 +2092,27 @@ async function saveLeYeTeacherAction(){
   }else if(leyeDialogAction==="proxy"){
     rpc="teacher_proxy_child_request";
     const type=document.getElementById("leyeDialogType").value;
+    if(type==="leave" && document.getElementById("leyeDialogLeaveMode").value==="multi"){
+      const end=document.getElementById("leyeDialogLeaveEnd").value;
+      if(!date||!end)throw Error("請選擇開始與結束日期");
+      const dates=leyeLongLeaveDates(date,end);
+      if(!confirm(`確認代家長登記長假？\n日期：${date} 至 ${end}\n共 ${dates.length} 個日曆日（系統將逐日檢查登記）`))return;
+      const {data:existing,error:existingError}=await teacherSupabase.from("requests")
+        .select("request_date").eq("child_id",leyeDialogChild).eq("request_type","leave")
+        .in("status",["submitted","pending","approved"]).gte("request_date",date).lte("request_date",end);
+      if(existingError)throw Error("無法確認既有請假，未開始新增："+existingError.message);
+      const occupied=new Set((existing||[]).map(x=>x.request_date));
+      let added=0,skipped=0,failed=[];
+      for(const day of dates){
+        if(occupied.has(day)){skipped++;continue;}
+        const result=await teacherSupabase.rpc("teacher_proxy_child_request",{p_child_id:leyeDialogChild,p_request_date:day,p_type:"leave",p_end_or_early_time:null,p_reason:reason||null});
+        if(result.error||!result.data?.ok){failed.push(day+"："+(result.error?.message||"登記未完成"));continue;}
+        added++;
+      }
+      if(added){document.getElementById("leyeTeacherDialog").close();await loadTeacherRoster();if(typeof loadTeacherWeekItems==="function")await loadTeacherWeekItems();}
+      alert(`長假登記結果：新增 ${added} 天、略過已請假 ${skipped} 天、失敗 ${failed.length} 天。`+(failed.length?"\n"+failed.join("\n"):""));
+      return;
+    }
     args={p_child_id:leyeDialogChild,p_request_date:date,p_type:type,p_end_or_early_time:type==="leave"?null:type==="extended"?"18:00":time,p_reason:reason||null};
   }else{
     rpc="teacher_provisional_late_pickup";
