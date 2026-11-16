@@ -1597,6 +1597,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 <!-- ====================================== -->
 
 <div id="parent-binding" class="panel adminSecondaryPanel">
+  <div class="panelTitle">🔗 全園綁定總覽</div>
+
 
 
 <style id="bindCleanCss">
@@ -8143,6 +8145,16 @@ function installPanelCollapsers(){
         );
       }
     );
+
+    title.setAttribute("role","button");
+    title.setAttribute("tabindex","0");
+    title.addEventListener("keydown", event=>{
+      if(event.target!==title) return;
+      if(event.key==="Enter" || event.key===" "){
+        event.preventDefault();
+        togglePanelAndFocus(panel,index);
+      }
+    });
 
     title.appendChild(btn);
 
