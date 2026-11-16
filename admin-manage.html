@@ -1,22 +1,13 @@
 <!DOCTYPE html>
+
 <html lang="zh-TW">
-
 <head>
-<meta name="referrer" content="no-referrer">
-
-<meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0, viewport-fit=cover"
->
-
+<meta content="no-referrer" name="referrer"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <title>樂業附幼｜行政設定 V17</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
-
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-
 <style>
 
 :root{
@@ -1369,238 +1360,171 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 @media(max-width:760px){.scheduleDbControls{width:100%}}
 
 </style>
-</head>
+<style>
+/* 行政介面分流：僅隱藏重複入口與不使用的接送提醒，不移除功能程式 */
+.pickupPanel{display:none !important;}
+.adminSectionNav{background:#fff;border:1px solid #dfe7e9;border-radius:18px;padding:16px 18px;margin:0 0 16px;box-shadow:0 6px 18px rgba(0,0,0,.04)}
+.adminSectionNav h2{margin:0 0 5px;font-size:1.13rem;color:#1b5e20}
+.adminSectionNav p{margin:0 0 12px;color:#607d8b;font-size:.85rem;line-height:1.6}
+.adminNavLinks{display:flex;flex-wrap:wrap;gap:9px}
+.adminNavLinks a{display:inline-flex;align-items:center;padding:9px 12px;border-radius:11px;background:#eef5ee;color:#1b5e20;text-decoration:none;font-weight:800;font-size:.86rem}
+.adminNavLinks a.primary{background:#1976d2;color:white}
+.adminSectionLabel{font-size:.82rem;color:#54705a;font-weight:900;letter-spacing:.04em;margin:18px 0 9px;padding-left:5px}
+.adminSectionNav a:focus-visible{outline:3px solid #1976d2;outline-offset:3px}
 
+#fees,.summaryGrid,#request-management{display:none !important;}
+</style></head>
 <body class="adminManagePage">
-
 <div class="app">
-
-
 <div class="header">
-
-  <div class="headerTop">
-
-    <div>
-
-      <a
-        class="brand brandHomeLink"
-        href="admin.html"
-        title="回到幼生請假、臨托、延托與接送處理頁"
-      >
+<div class="headerTop">
+<div>
+<a class="brand brandHomeLink" href="admin.html" title="回到幼生請假、臨托、延托與接送處理頁">
         樂業附幼｜行政管理平台
       </a>
-
-      <div class="subtitle">
+<div class="subtitle">
         行政設定與資料維護
       </div>
-
-    </div>
-
-
-    <div class="adminHeaderActions">
-      <a class="btn btnGray adminHeaderLink" href="admin.html">← 返回行政平台</a>
-      <button class="btn btnBlue" type="button" onclick="refreshAll()">↻ 更新資料</button>
-    </div>
-
-  </div>
-
-
-  <div
-    id="loginState"
-    class="loginState"
-  >
+</div>
+<div class="adminHeaderActions">
+<a class="btn btnGray adminHeaderLink" href="admin.html">← 返回行政平台</a>
+<button class="btn btnBlue" onclick="refreshAll()" type="button">↻ 更新資料</button>
+</div>
+</div>
+<div class="loginState" id="loginState">
     正在確認登入狀態…
   </div>
-
-
-  <div id="adminLoginBox" class="testBox">
-
-    <div class="testTitle">
+<div class="testBox" id="adminLoginBox">
+<div class="testTitle">
       🔐 行政登入
     </div>
-
-    <div class="helper">
+<div class="helper">
       正式環境不提供測試帳號密碼登入。
       請先從「樂業附幼｜教職員」LINE 官方帳號進入教職員平台，
       完成行政身分驗證後再開啟本頁。
     </div>
-
-    <a
-      class="btn btnGreen"
-      href="https://liff.line.me/2011987947-mIbgSMNU"
-      style="width:100%;margin-top:10px;text-decoration:none;display:flex;justify-content:center;align-items:center"
-    >
+<a class="btn btnGreen" href="https://liff.line.me/2011987947-mIbgSMNU" style="width:100%;margin-top:10px;text-decoration:none;display:flex;justify-content:center;align-items:center">
       開啟教職員平台
     </a>
-
-  </div>
-
 </div>
-
-
+</div><nav aria-label="行政功能分類" class="adminSectionNav"><h2>⚙️ 行政設定與資料管理</h2><p>管理休園日及家長 LINE 綁定；接送記點、收費與申請請至「行政平台」。</p><div class="adminNavLinks"><a href="#schoolClosedPanel">📅 休園日</a><a href="#parent-binding">🔗 家長綁定</a><a class="primary" href="admin.html">↩ 返回行政平台</a></div></nav>
 <div class="summaryGrid">
-
-  <div class="summaryCard summaryAction" role="button" tabindex="0"
-       onclick="openRequestView('pending')"
-       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('pending')}">
-    <div class="summaryLabel">待處理申請</div>
-    <div id="pendingCount" class="summaryNumber red">0</div>
-    <div class="summaryOwner">臨托、延托｜行政確認</div>
-  </div>
-
-  <div class="summaryCard summaryAction" role="button" tabindex="0"
-       onclick="openRequestView('temporary')"
-       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('temporary')}">
-    <div class="summaryLabel">今日臨托</div>
-    <div id="temporaryCount" class="summaryNumber purple">0</div>
-    <div class="summaryOwner">行政確認</div>
-  </div>
-
-  <div class="summaryCard summaryAction" role="button" tabindex="0"
-       onclick="openRequestView('extended')"
-       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('extended')}">
-    <div class="summaryLabel">今日延托</div>
-    <div id="extendedCount" class="summaryNumber green">0</div>
-    <div class="summaryOwner">行政確認</div>
-  </div>
-
-  <div class="summaryCard summaryAction" role="button" tabindex="0"
-       onclick="openRequestView('leave')"
-       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('leave')}">
-    <div class="summaryLabel">今日請假</div>
-    <div id="leaveCount" class="summaryNumber blue">0</div>
-    <div class="summaryOwner">原班老師確認</div>
-  </div>
-
+<div class="summaryCard summaryAction" onclick="openRequestView('pending')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('pending')}" role="button" tabindex="0">
+<div class="summaryLabel">待處理申請</div>
+<div class="summaryNumber red" id="pendingCount">0</div>
+<div class="summaryOwner">臨托、延托｜行政確認</div>
 </div>
-
+<div class="summaryCard summaryAction" onclick="openRequestView('temporary')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('temporary')}" role="button" tabindex="0">
+<div class="summaryLabel">今日臨托</div>
+<div class="summaryNumber purple" id="temporaryCount">0</div>
+<div class="summaryOwner">行政確認</div>
+</div>
+<div class="summaryCard summaryAction" onclick="openRequestView('extended')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('extended')}" role="button" tabindex="0">
+<div class="summaryLabel">今日延托</div>
+<div class="summaryNumber green" id="extendedCount">0</div>
+<div class="summaryOwner">行政確認</div>
+</div>
+<div class="summaryCard summaryAction" onclick="openRequestView('leave')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRequestView('leave')}" role="button" tabindex="0">
+<div class="summaryLabel">今日請假</div>
+<div class="summaryNumber blue" id="leaveCount">0</div>
+<div class="summaryOwner">原班老師確認</div>
+</div>
+</div>
 <div class="dashboardHint">
   點選上方卡片，即可查看詳情。
 </div>
-
-
-
-
 <!-- 教師每週主責輪值：需先完成對應資料庫遷移，未啟用時不會修改正式資料 -->
-<section id="weeklyLeadPanel" class="panel adminSecondaryPanel" aria-labelledby="weeklyLeadTitle">
- <h2 id="weeklyLeadTitle" class="panelTitle">📅 每週主責教師輪值</h2>
- <p class="helper">每週一依台灣時間輪替。手動指定僅影響所選週的新通知，不會補發舊訊息。</p>
- <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:end">
-  <label>班級<select id="weeklyLeadClass" onchange="loadWeeklyLead()"><option value="">請選班級</option></select></label>
-  <label>週一日期<input type="date" id="weeklyLeadWeek" onchange="loadWeeklyLead()"></label>
-  <label>指定主責<select id="weeklyLeadStaff"><option value="">請先選擇班級</option></select></label>
-  <button type="button" class="btn btnBlue" onclick="saveWeeklyLead()">儲存本週指定</button>
-  <button type="button" class="btn btnGray" onclick="clearWeeklyLead()">恢復自動輪值</button>
-  <button type="button" class="btn btnGray" onclick="loadWeeklyLead()">重新整理</button>
- </div>
- <p id="weeklyLeadStatus" class="helper" role="status" aria-live="polite">登入後可查看輪值狀態。</p>
- <details id="weeklyRosterEditor" style="margin-top:14px;border-top:1px solid #ddd;padding-top:12px">
-  <summary style="cursor:pointer;font-weight:600">管理本班輪值教師與順序</summary>
-  <p class="helper">先選擇班級。從有效教師名單加入輪值，使用上下移動調整順序；儲存後才會更新。每班最多 10 位。</p>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
-   <label>加入教師<select id="weeklyRosterCandidate"><option value="">請先選班級</option></select></label>
-   <button type="button" class="btn btnGray" onclick="weeklyRosterAdd()">加入</button>
-  </div>
-  <ol id="weeklyRosterList" aria-label="輪值教師順序"></ol>
-  <button type="button" class="btn btnBlue" id="weeklyRosterSave" onclick="weeklyRosterSave()">儲存輪值名單</button>
-  <p id="weeklyRosterStatus" class="helper" role="status" aria-live="polite">尚未選擇班級。</p>
- </details>
+<div class="adminSectionLabel">人員與輪值</div><section aria-labelledby="weeklyLeadTitle" class="panel adminSecondaryPanel" id="weeklyLeadPanel" style=";display:none!important;">
+<h2 class="panelTitle" id="weeklyLeadTitle">📅 每週主責教師輪值</h2>
+<p class="helper">每週一依台灣時間輪替。手動指定僅影響所選週的新通知，不會補發舊訊息。</p>
+<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:end">
+<label>班級<select id="weeklyLeadClass" onchange="loadWeeklyLead()"><option value="">請選班級</option></select></label>
+<label>週一日期<input id="weeklyLeadWeek" onchange="loadWeeklyLead()" type="date"/></label>
+<label>指定主責<select id="weeklyLeadStaff"><option value="">請先選擇班級</option></select></label>
+<button class="btn btnBlue" onclick="saveWeeklyLead()" type="button">儲存本週指定</button>
+<button class="btn btnGray" onclick="clearWeeklyLead()" type="button">恢復自動輪值</button>
+<button class="btn btnGray" onclick="loadWeeklyLead()" type="button">重新整理</button>
+</div>
+<p aria-live="polite" class="helper" id="weeklyLeadStatus" role="status">登入後可查看輪值狀態。</p>
+<details id="weeklyRosterEditor" style="margin-top:14px;border-top:1px solid #ddd;padding-top:12px">
+<summary style="cursor:pointer;font-weight:600">管理本班輪值教師與順序</summary>
+<p class="helper">先選擇班級。從有效教師名單加入輪值，使用上下移動調整順序；儲存後才會更新。每班最多 10 位。</p>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+<label>加入教師<select id="weeklyRosterCandidate"><option value="">請先選班級</option></select></label>
+<button class="btn btnGray" onclick="weeklyRosterAdd()" type="button">加入</button>
+</div>
+<ol aria-label="輪值教師順序" id="weeklyRosterList"></ol>
+<button class="btn btnBlue" id="weeklyRosterSave" onclick="weeklyRosterSave()" type="button">儲存輪值名單</button>
+<p aria-live="polite" class="helper" id="weeklyRosterStatus" role="status">尚未選擇班級。</p>
+</details>
 </section>
-
 <!-- ====================================== -->
 <!-- 每月延托 / 臨托 / 逾時統計 -->
 <!-- ====================================== -->
-
-<div id="fees" class="panel adminSecondaryPanel">
-  <div class="panelTitle">📊 每月收費統計</div>
-  <div class="helper">
+<div class="panel adminSecondaryPanel" id="fees">
+<div class="panelTitle">📊 每月收費統計</div>
+<div class="helper">
     僅行政人員可匯出。資料依「延托／臨托／逾時」三類統計，
     並依原班級、同一幼兒、日期集中排列。
   </div>
-  <div class="pickupToolbar">
-    <div class="pickupToolbarField">
-      <div class="helper">年份</div>
-      <input id="monthlyReportYear" type="number" min="2025" max="2100">
-    </div>
-    <div class="pickupToolbarField">
-      <div class="helper">月份</div>
-      <select id="monthlyReportMonth">
-        <option value="1">1 月</option><option value="2">2 月</option><option value="3">3 月</option><option value="4">4 月</option><option value="5">5 月</option><option value="6">6 月</option><option value="7">7 月</option><option value="8">8 月</option><option value="9">9 月</option><option value="10">10 月</option><option value="11">11 月</option><option value="12">12 月</option>
-      </select>
-    </div>
-    <button class="btn btnGreen" type="button" onclick="exportMonthlyCareReport()">
+<div class="pickupToolbar">
+<div class="pickupToolbarField">
+<div class="helper">年份</div>
+<input id="monthlyReportYear" max="2100" min="2025" type="number"/>
+</div>
+<div class="pickupToolbarField">
+<div class="helper">月份</div>
+<select id="monthlyReportMonth">
+<option value="1">1 月</option><option value="2">2 月</option><option value="3">3 月</option><option value="4">4 月</option><option value="5">5 月</option><option value="6">6 月</option><option value="7">7 月</option><option value="8">8 月</option><option value="9">9 月</option><option value="10">10 月</option><option value="11">11 月</option><option value="12">12 月</option>
+</select>
+</div>
+<button class="btn btnGreen" onclick="exportMonthlyCareReport()" type="button">
       ⬇️ 匯出月結 CSV
     </button>
-  </div>
-  <div class="helper">
+</div>
+<div class="helper">
     收費試算：延托 17:00–18:00＝35 元；臨托 16:00–17:00＝50 元；
     臨托 16:00–18:00＝100 元。18:05 後逾時＝30 元目前先作系統紀錄，
     正式收取須以本園核定並公告之規範及會計程序為準。
   </div>
 </div>
-
-
 <!-- 本學期逾時接送記點總覽（唯讀；不更動原有記點與收費流程） -->
-<section id="semesterPickupPointsPanel" class="panel adminSecondaryPanel" style="margin-bottom:16px" aria-labelledby="semesterPickupPointsTitle">
-  <div class="panelTitle" id="semesterPickupPointsTitle">📋 本學期逾時接送記點名單</div>
-  <p class="helper">依幼兒分別累計已成立的記點；同一幼兒同一天最多計 1 點。達 3 點請由行政確認後再依園方規定處理。</p>
-  <div class="pickupToolbar">
-    <div class="pickupToolbarField"><label class="helper" for="pointSemesterSelect">查詢學期</label><select id="pointSemesterSelect" onchange="loadSemesterPickupPoints()"></select></div>
-    <button type="button" class="btn btnBlue" onclick="loadSemesterPickupPoints()">↻ 更新記點名單</button>
-  </div>
-  <div class="pickupStats" id="pointSemesterStats" aria-live="polite"><span class="pickupStat">尚未載入</span></div>
-  <div class="pickupToolbar" style="margin-top:4px">
-    <div class="pickupToolbarField"><label class="helper" for="pointSemesterSearch">搜尋班級或幼兒</label><input id="pointSemesterSearch" type="search" placeholder="輸入姓名、班級" oninput="renderSemesterPickupPoints()"></div>
-    <div class="pickupToolbarField"><label class="helper" for="pointSemesterFilter">記點篩選</label><select id="pointSemesterFilter" onchange="renderSemesterPickupPoints()"><option value="all">全部</option><option value="1">1 點</option><option value="2">2 點</option><option value="3">3 點以上</option></select></div>
-  </div>
-  <div id="pointSemesterList" aria-live="polite" class="helper">登入後按「更新記點名單」即可查看。</div>
-</section>
 
 <!-- ====================================== -->
 <!-- 休園日 / 特殊停止服務日 -->
 <!-- ====================================== -->
-
-<details class="panel compactHolidayPanel adminSecondaryPanel" id="schoolClosedPanel">
-  <summary class="compactHolidaySummary">
-    <span class="panelTitle">📅 休園與停止服務日</span>
-  </summary>
-
-  <div class="compactHolidayBody">
-    <div class="helper">
+<div class="adminSectionLabel">園務設定</div><details class="panel compactHolidayPanel adminSecondaryPanel" id="schoolClosedPanel">
+<summary class="compactHolidaySummary">
+<span class="panelTitle">📅 休園與停止服務日</span>
+</summary>
+<div class="compactHolidayBody">
+<div class="helper">
       國定假日已依 115、116 年政府辦公日曆預載。
       如有本園自訂停止服務日、補休、消毒日或其他特殊休園日，請在這裡新增。
     </div>
-
-    <div class="pickupToolbar">
-      <div class="pickupToolbarField">
-        <div class="helper">日期</div>
-        <input id="schoolClosedDateInput" type="date">
-      </div>
-      <div class="pickupToolbarField">
-        <div class="helper">名稱</div>
-        <input id="schoolClosedNameInput" placeholder="例：園內消毒停止服務">
-      </div>
-      <button class="btn btnGreen" type="button" onclick="saveSchoolClosedDate()">
+<div class="pickupToolbar">
+<div class="pickupToolbarField">
+<div class="helper">日期</div>
+<input id="schoolClosedDateInput" type="date"/>
+</div>
+<div class="pickupToolbarField">
+<div class="helper">名稱</div>
+<input id="schoolClosedNameInput" placeholder="例：園內消毒停止服務"/>
+</div>
+<button class="btn btnGreen" onclick="saveSchoolClosedDate()" type="button">
         ＋ 新增／更新
       </button>
-    </div>
-
-    <div id="schoolClosedList" class="helper compactHolidayList">
+</div>
+<div class="helper compactHolidayList" id="schoolClosedList">
       尚未載入休園日。
     </div>
-  </div>
+</div>
 </details>
-
-
 <!-- ====================================== -->
 <!-- 試行家長 LINE 綁定碼 -->
 <!-- ====================================== -->
-
-<div id="parent-binding" class="panel adminSecondaryPanel">
-  <div class="panelTitle">🔗 全園綁定總覽</div>
-
-
-
+<div class="adminSectionLabel">家長綁定</div><div class="panel adminSecondaryPanel" id="parent-binding">
+<div class="panelTitle">🔗 全園綁定總覽</div>
 <style id="bindCleanCss">
 .bindCleanShell{border:1px solid #d7e3da;border-radius:18px;padding:20px;background:#fff;margin:14px 0;color:#264637}
 .bindCleanTop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
@@ -1623,376 +1547,262 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 @media(min-width:561px) and (max-width:900px){.bindCleanClasses{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.bindCleanShell{padding:12px}.bindCleanSlots{grid-template-columns:1fr}.bindCleanClasses{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
-
-
 <div class="bindCleanShell" id="bindCleanShell">
-  <div class="bindCleanTop">
-    <div><div class="bindCleanEyebrow">家長 LINE 綁定管理</div><div class="bindCleanTitle">全園綁定總覽</div><p class="helper">完成率以幼兒人數計算：每位幼兒只要一位家長完成 LINE 綁定即算完成，第二位家長可自行選擇是否綁定。</p></div>
-    <button type="button" class="btn btnBlue" onclick="loadClassBindingProgress()">↻ 更新進度</button>
-  </div>
-  <div id="classBindingCards" class="bindCleanClasses"></div>
-  <div id="classBindingSummary" class="helper" aria-live="polite">請登入行政帳號，載入全園綁定進度。</div>
-  <div class="bindCleanToolbar">
-    <input id="classBindingSearch" type="search" autocomplete="off" placeholder="搜尋幼兒姓名或座號" oninput="renderClassGuardianList()" aria-label="搜尋本班幼兒">
-    <select id="classBindingFilter" onchange="renderClassGuardianList()" aria-label="篩選綁定狀態">
-      <option value="all">全部名額</option><option value="unbound">有未綁定名額</option><option value="bound">全部已綁定</option><option value="pending">已有有效綁定碼</option><option value="sent">已確認發送／待綁定</option><option value="unknown_delivery">發送狀態待確認</option>
-    </select>
-  </div>
-  <p class="helper">「有有效碼」不代表已傳送。收到家長已成功綁定的資訊，不需要再發送。確認曾私訊該名額的有效網址後，才點「標記已發送」；若不確定就保持「待確認」。</p>
-  <div id="classBindingListSummary" class="helper" aria-live="polite">請先選擇班級。</div>
-  <div id="classBindingList" class="bindCleanList" aria-live="polite"></div>
-  <details class="bindCleanBatch"><summary>批次產生本班尚未綁定的專屬連結</summary>
-    <p class="helper">只為尚未綁定、且尚無有效綁定碼的名額產生。既有有效連結不會重設；請在產生後立即下載 CSV，並個別私訊正確家長。</p>
-    <button type="button" class="btn btnGreen" onclick="issueSelectedClassLinks()">產生本班未發碼名額連結</button>
-    <div id="classBindingResult" style="display:grid;gap:9px;margin-top:12px" aria-live="polite"></div>
-  </details>
-  <details class="bindCleanLegacy"><summary>舊版試行管理／補發與 CSV 工具</summary>
-  <div class="panelTitle">🔗 家長 LINE 綁定管理（舊試行名額）</div>
-  <p class="helper">
+<div class="bindCleanTop">
+<div><div class="bindCleanEyebrow">家長 LINE 綁定管理</div><div class="bindCleanTitle">全園綁定總覽</div><p class="helper">完成率以幼兒人數計算：每位幼兒只要一位家長完成 LINE 綁定即算完成，第二位家長可自行選擇是否綁定。</p></div>
+<button class="btn btnBlue" onclick="loadClassBindingProgress()" type="button">↻ 更新進度</button>
+</div>
+<div class="bindCleanClasses" id="classBindingCards"></div>
+<div aria-live="polite" class="helper" id="classBindingSummary">請登入行政帳號，載入全園綁定進度。</div>
+<div class="bindCleanToolbar">
+<input aria-label="搜尋本班幼兒" autocomplete="off" id="classBindingSearch" oninput="renderClassGuardianList()" placeholder="搜尋幼兒姓名或座號" type="search"/>
+<select aria-label="篩選綁定狀態" id="classBindingFilter" onchange="renderClassGuardianList()">
+<option value="unbound_child">未綁定幼兒（兩位家長皆未綁定）</option><option value="all">全部名額</option><option value="unbound">有未綁定名額</option><option value="bound">全部已綁定</option><option value="pending">已有有效綁定碼</option><option value="sent">已確認發送／待綁定</option><option value="unknown_delivery">發送狀態待確認</option>
+</select>
+</div>
+<p class="helper">「有有效碼」不代表已傳送。收到家長已成功綁定的資訊，不需要再發送。確認曾私訊該名額的有效網址後，才點「標記已發送」；若不確定就保持「待確認」。</p>
+<div aria-live="polite" class="helper" id="classBindingListSummary">請先選擇班級。</div>
+<div aria-live="polite" class="bindCleanList" id="classBindingList"></div>
+<details class="bindCleanBatch" style="display:none!important"><summary>批次產生本班尚未綁定的專屬連結</summary>
+<p class="helper">只為尚未綁定、且尚無有效綁定碼的名額產生。既有有效連結不會重設；請在產生後立即下載 CSV，並個別私訊正確家長。</p>
+<button class="btn btnGreen" onclick="issueSelectedClassLinks()" type="button">產生本班未發碼名額連結</button>
+<div aria-live="polite" id="classBindingResult" style="display:grid;gap:9px;margin-top:12px"></div>
+</details>
+<details class="bindCleanLegacy" style="display:none!important"><summary>舊版試行管理／補發與 CSV 工具</summary>
+<div class="panelTitle">🔗 家長 LINE 綁定管理（舊試行名額）</div>
+<p class="helper">
     以幼兒姓名區分家長帳號，不保存爸爸、媽媽的真實姓名。
     同一位家長若對應多位幼兒，仍只需一組專屬連結。
   </p>
-  <p class="helper" style="color:#8d5b18">
+<p class="helper" style="color:#8d5b18">
     ⚠️ 家長名額 1／2 只是資料編號，不能直接推定誰是爸爸、誰是媽媽。
     請先核對身分，避免把專屬連結發給錯誤的人。
   </p>
-  <button class="btn btnGreen" type="button" onclick="loadPilotGuardianRoles()" style="margin-top:8px">
+<button class="btn btnGreen" onclick="loadPilotGuardianRoles()" style="margin-top:8px" type="button">
     👨‍👩‍👧 查看並設定家長身分（不會重新產碼）
   </button>
-  <div id="pilotGuardianRolesStatus" class="helper" style="margin-top:10px" aria-live="polite">
+<div aria-live="polite" class="helper" id="pilotGuardianRolesStatus" style="margin-top:10px">
     點上方按鈕讀取幼兒對應的家長名額。
   </div>
-  <div id="pilotGuardianRolesTable" class="pilotGuardianRolesTable"></div>
-  <hr style="margin:20px 0;border:0;border-top:1px solid #e0e9e1">
-  <div class="panelTitle" style="font-size:1rem">🔗 單一家長補發綁定連結</div>
-  <p class="helper">僅處理選定家長名額，不影響其他家長。產生新碼後，該名額尚未使用的舊連結會失效；已綁定 LINE 的家長不需重新綁定。</p>
-  <button class="btn btnBlue" type="button" onclick="loadSingleGuardianOptions()" style="margin:8px 0">讀取可選家長名額</button>
-  <label class="helper" for="singleGuardianSelect">選擇幼兒及家長名額（請先核對身分）</label>
-  <select id="singleGuardianSelect"><option value="">請先讀取名額</option></select>
-  <button class="btn btnGreen" type="button" onclick="issueSingleGuardianCode()" style="margin-top:10px">產生此家長的 14 天專屬連結</button>
-  <div id="singleGuardianResult" class="helper" aria-live="polite" style="margin-top:10px"></div>
-  <hr style="margin:20px 0;border:0;border-top:1px solid #e0e9e1">
-  <div class="panelTitle" style="font-size:1rem">📄 保留目前 10/21 有效的專屬網址</div>
-  <p class="helper">選擇電腦原本下載的 10/21 CSV，系統在行政頁面核對有效綁定碼，重新整理「誰的爸爸／媽媽」標籤。<b>不會重設任何綁定碼。</b></p>
-  <input type="file" id="pilotOriginalCsv" accept=".csv,text/csv" aria-label="選擇既有家長綁定清單 CSV" style="width:100%;max-width:460px;margin-top:8px">
-  <div>
-    <button class="btn btnGreen" type="button" onclick="relabelExistingPilotBindingCodes()" style="margin-top:10px">
+<div class="pilotGuardianRolesTable" id="pilotGuardianRolesTable"></div>
+<hr style="margin:20px 0;border:0;border-top:1px solid #e0e9e1"/>
+<div class="panelTitle" style="font-size:1rem">🔗 單一家長補發綁定連結</div>
+<p class="helper">僅處理選定家長名額，不影響其他家長。產生新碼後，該名額尚未使用的舊連結會失效；已綁定 LINE 的家長不需重新綁定。</p>
+<button class="btn btnBlue" onclick="loadSingleGuardianOptions()" style="margin:8px 0" type="button">讀取可選家長名額</button>
+<label class="helper" for="singleGuardianSelect">選擇幼兒及家長名額（請先核對身分）</label>
+<select id="singleGuardianSelect"><option value="">請先讀取名額</option></select>
+<button class="btn btnGreen" onclick="issueSingleGuardianCode()" style="margin-top:10px" type="button">產生此家長的 14 天專屬連結</button>
+<div aria-live="polite" class="helper" id="singleGuardianResult" style="margin-top:10px"></div>
+<hr style="margin:20px 0;border:0;border-top:1px solid #e0e9e1"/>
+<div class="panelTitle" style="font-size:1rem">📄 保留目前 10/21 有效的專屬網址</div>
+<p class="helper">選擇電腦原本下載的 10/21 CSV，系統在行政頁面核對有效綁定碼，重新整理「誰的爸爸／媽媽」標籤。<b>不會重設任何綁定碼。</b></p>
+<input accept=".csv,text/csv" aria-label="選擇既有家長綁定清單 CSV" id="pilotOriginalCsv" style="width:100%;max-width:460px;margin-top:8px" type="file"/>
+<div>
+<button class="btn btnGreen" onclick="relabelExistingPilotBindingCodes()" style="margin-top:10px" type="button">
       ⬇️ 使用原綁定碼下載爸爸媽媽專屬清單
     </button>
-  </div>
-  <hr style="margin:20px 0;border:0;border-top:1px solid #e0e9e1">
-  <details>
-    <summary style="font-weight:650;cursor:pointer">找不到原始 CSV？最後備用：重新產生全新綁定碼</summary>
-    <p class="helper" style="margin-top:10px;color:#9c381f">
+</div>
+<hr style="margin:20px 0;border:0;border-top:1px solid #e0e9e1"/>
+<details>
+<summary style="font-weight:650;cursor:pointer">找不到原始 CSV？最後備用：重新產生全新綁定碼</summary>
+<p class="helper" style="margin-top:10px;color:#9c381f">
       這個功能會讓先前尚未使用的 58 組綁定碼立即失效。
       必須先完成全部家長身分核對，而且確認舊連結尚未發給家長後，才能操作。
     </p>
-    <button class="btn btnGreen" type="button" onclick="downloadPilotParentBindingCodes()" style="margin-top:12px">
+<button class="btn btnGreen" onclick="downloadPilotParentBindingCodes()" style="margin-top:12px" type="button">
       🔄 重新產生並下載全新家長綁定清單
     </button>
-  </details>
-  </details>
+</details>
+</details>
 </div>
-
-
 <section class="panel" id="substitutionPanel">
-  <div class="panelTitle">🔄 臨時代課安排（限行政管理）</div>
-  <p class="helper">選擇日期及班級後自動帶入當日負責老師；代課候選名單僅列出當天沒有課後班職務的人員。代課只調整指定日期，不變更固定排班。</p>
-  <div class="staffEditGrid">
-    <div><div class="helper">代課日期</div><input type="date" id="subDate" onchange="refreshSubstituteChoices()"></div>
-    <div><div class="helper">課後班</div><select id="subClass" onchange="refreshSubstituteChoices()"><option value="">選擇班級</option></select></div>
-    <div><div class="helper">請假老師（當日排班）</div><select id="subAbsent"><option value="">請先選擇日期與班級</option></select></div>
-    <div><div class="helper">代課老師（當日無課後班）</div><select id="subTeacher"><option value="">請先選擇日期與班級</option></select></div>
-  </div>
-  <div class="helper" style="margin-top:10px">若當天有兩位以上原排班老師，請確認要替換的是哪一位；沒有可用代課老師時不可送出。</div>
-  <div class="helper" style="margin-top:12px">代課原因（請勿填寫健康等敏感資訊）</div>
-  <input id="subNote" maxlength="300" placeholder="例：當日職務調整" style="width:100%;box-sizing:border-box">
-  <button type="button" class="btn btnGreen" id="subSave" onclick="submitAftercareSubstitution()" style="margin-top:12px">確認安排代課</button>
-  <p class="helper" id="subStatus" aria-live="polite"></p>
+<div class="panelTitle">🔄 臨時代課安排（限行政管理）</div>
+<p class="helper">選擇日期及班級後自動帶入當日負責老師；代課候選名單僅列出當天沒有課後班職務的人員。代課只調整指定日期，不變更固定排班。</p>
+<div class="staffEditGrid">
+<div><div class="helper">代課日期</div><input id="subDate" onchange="refreshSubstituteChoices()" type="date"/></div>
+<div><div class="helper">課後班</div><select id="subClass" onchange="refreshSubstituteChoices()"><option value="">選擇班級</option></select></div>
+<div><div class="helper">請假老師（當日排班）</div><select id="subAbsent"><option value="">請先選擇日期與班級</option></select></div>
+<div><div class="helper">代課老師（當日無課後班）</div><select id="subTeacher"><option value="">請先選擇日期與班級</option></select></div>
+</div>
+<div class="helper" style="margin-top:10px">若當天有兩位以上原排班老師，請確認要替換的是哪一位；沒有可用代課老師時不可送出。</div>
+<div class="helper" style="margin-top:12px">代課原因（請勿填寫健康等敏感資訊）</div>
+<input id="subNote" maxlength="300" placeholder="例：當日職務調整" style="width:100%;box-sizing:border-box"/>
+<button class="btn btnGreen" id="subSave" onclick="submitAftercareSubstitution()" style="margin-top:12px" type="button">確認安排代課</button>
+<p aria-live="polite" class="helper" id="subStatus"></p>
 </section>
-
 <!-- ====================================== -->
 <!-- 老師與課後班排班管理 V16 -->
 <!-- ====================================== -->
-
-<div id="staff-management" class="panel adminManagePanel adminSecondaryPanel" style="display:none">
-  <div class="panelTitle">👩‍🏫 老師與課後班管理</div>
-  <div class="helper">正式啟用名單以 27 位人員為主；此處只顯示目前啟用中的教職員。</div>
-
-  <div class="manageTabs">
-    <button id="manageTabStaff" class="manageTab active" type="button" onclick="setManageTab('staff')">👩‍🏫 老師名單</button>
-    <button id="manageTabSchedule" class="manageTab" type="button" onclick="setManageTab('schedule')">📅 月排班匯入</button>
-    <button id="manageTabLine" class="manageTab" type="button" onclick="setManageTab('line')">🔗 LINE 綁定</button>
-  </div>
-
-  <div id="manageStaffSection" class="manageSection active">
-    <div class="staffTopBar">
-      <input id="staffSearch" class="staffSearch" placeholder="搜尋老師姓名" oninput="renderStaffManagement()">
-      <select id="staffRoleFilter" class="staffFilter" onchange="renderStaffManagement()">
-        <option value="all">全部身分</option>
-        <option value="admin">課後行政管理（蔡青蓓／蔡妤瑄）</option><option value="admin_viewer">行政老師（僅查看）</option>
-        <option value="class_teacher">原班導師</option>
-        <option value="aftercare_teacher">支援／外聘</option>
-      </select>
-      <button class="btn btnGreen" type="button" onclick="toggleAddStaffBox()">＋ 新增老師</button>
-    </div>
-
-    <div id="staffStats" class="staffStats"></div>
-
-    <div id="staffAddBox" class="staffAddBox">
-      <div class="manageCardTitle">新增老師</div>
-      <div class="staffEditGrid">
-        <div><div class="helper">姓名</div><input id="newStaffName" placeholder="例：王小美"></div>
-        <div><div class="helper">主要身分</div><select id="newStaffRole"><option value="class_teacher">原班導師</option><option value="aftercare_teacher">支援／外聘</option><option value="admin">課後行政管理（蔡青蓓／蔡妤瑄）</option><option value="admin_viewer">行政老師（僅查看）</option></select></div>
-        <div><div class="helper">固定原班</div><select id="newStaffHomeroom"><option value="">無</option><option value="C01">櫻桃班</option><option value="C02">蘋果班</option><option value="C03">蝴蝶班</option><option value="C04">白兔班</option><option value="C05">蜜蜂班</option><option value="C06">袋鼠班</option><option value="C07">綿羊班</option><option value="C08">企鵝班</option></select></div>
-        <div><div class="helper">固定課後班</div><select id="newStaffAftercare"><option value="">無</option><option value="AC01">蝴蝶班｜18:00</option><option value="AC02">白兔班｜17:00</option><option value="AC03">蜜蜂班｜18:00</option><option value="AC04">綿羊班｜17:00</option><option value="AC05">櫻桃班｜幼幼</option><option value="AC06">蘋果班｜幼幼</option></select></div>
-        <div><div class="helper">Excel 別名（選填）</div><input id="newStaffAliases" placeholder="例：小美, 美美"></div>
-      </div>
-      <div class="actionButtons"><button class="btn btnGreen" type="button" onclick="addStaffMember()">儲存新增</button><button class="btn btnGray" type="button" onclick="toggleAddStaffBox(false)">取消</button></div>
-    </div>
-
-    <div id="staffManageList"><div class="empty">請先登入行政帳號。</div></div>
-  </div>
-
-  <div id="manageScheduleSection" class="manageSection">
-    <div class="manageCard">
-      <div class="manageCardTitle">上傳每月 Excel 班表</div>
-      <div class="scheduleToolbar">
-        <div><div class="helper">Excel 檔案</div><input id="scheduleExcelFile" type="file" accept=".xlsx,.xls" onchange="loadScheduleExcel(event)"></div>
-        <div><div class="helper">工作表</div><select id="scheduleSheetSelect" onchange="parseSelectedScheduleSheet()"><option value="">請先選擇 Excel</option></select></div>
-        <button class="btn btnBlue" type="button" onclick="parseSelectedScheduleSheet()">🔎 解析班表</button>
-      </div>
-      <div id="scheduleFileState" class="helper">尚未選擇 Excel。</div>
-      <div id="scheduleClassDetection" class="helper" aria-live="polite">班級辨識：尚未解析。</div>
-      <div class="scheduleSummary">
-        <div class="scheduleSummaryItem"><div class="helper">月份</div><div id="scheduleMonthSummary" class="scheduleSummaryNumber">—</div></div>
-        <div class="scheduleSummaryItem"><div class="helper">正式老師排班</div><div id="scheduleStaffCount" class="scheduleSummaryNumber">0</div></div>
-        <div class="scheduleSummaryItem"><div class="helper">支援老師排班</div><div id="scheduleSupportCount" class="scheduleSummaryNumber">0</div></div>
-        <div class="scheduleSummaryItem"><div class="helper">未建檔支援提醒</div><div id="scheduleUnmatchedCount" class="scheduleSummaryNumber">0</div></div>
-        <div class="scheduleSummaryItem"><div class="helper">排班衝突／錯誤</div><div id="scheduleProblemCount" class="scheduleSummaryNumber red">0</div></div>
-      </div>
-      <div id="schedulePreview" class="previewBox" style="display:none"><div class="previewHeader">班表預覽與檢查</div><div id="schedulePreviewBody" class="previewBody"></div></div>
-      <div class="actionButtons"><button id="scheduleImportBtn" class="btn btnGreen" type="button" onclick="confirmScheduleImport()" disabled>✅ 確認匯入本月班表</button></div>
-      <div class="helper">園務會議當天的國小、巡輔等支援老師會按姓名匯入；其他未建檔的姓名也會列為「其他支援」，不需先建立帳號。請在預覽核對提醒；只有真正的排班衝突或格式錯誤會阻止匯入。</div>
-    </div>
-    <div id="currentScheduleBox" class="manageCard" style="margin-top:12px">
-      <div class="manageCardTitle">目前資料庫月排班</div>
-      <div class="scheduleToolbar" style="margin-top:10px">
-        <div>
-          <div class="helper">年份</div>
-          <input id="dbScheduleYear" type="number" min="2025" max="2100">
-        </div>
-        <div>
-          <div class="helper">月份</div>
-          <select id="dbScheduleMonth">
-            <option value="1">1 月</option><option value="2">2 月</option><option value="3">3 月</option><option value="4">4 月</option><option value="5">5 月</option><option value="6">6 月</option><option value="7">7 月</option><option value="8">8 月</option><option value="9">9 月</option><option value="10">10 月</option><option value="11">11 月</option><option value="12">12 月</option>
-          </select>
-        </div>
-        <button class="btn btnBlue" type="button" onclick="loadDatabaseScheduleView()">📋 查看資料庫班表</button>
-      </div>
-      <div id="currentScheduleList" class="empty">可直接選擇月份查看已匯入資料，不必先上傳 Excel。</div>
-    </div>
-  </div>
-
-  <div id="manageLineSection" class="manageSection">
-    <div class="manageCard">
-      <div class="manageCardTitle">LINE 綁定狀態</div>
-      <div class="helper">老師不需要自行找 LINE User ID；之後由老師平台送出綁定申請，行政只需確認。這裡先管理「已綁定／未綁定」與待審申請。</div>
-      <div class="helper">批次產生僅限未綁定、非待審核教職員。重新產生會使舊連結失效；匯出檔案請個別私訊，不可公開。</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button type="button" class="staffMiniBtn staffMiniGreen" id="bulkTeacherBtn" onclick="generateBulkTeacherLinks()">🔗 批次產生老師專屬連結</button><button type="button" class="staffMiniBtn" id="exportTeacherBtn" onclick="exportBulkTeacherLinks()" disabled>⬇️ 匯出 Excel</button></div><div id="bulkTeacherStatus" class="helper">尚未產生連結。</div><div id="lineBindingStats" class="staffStats"></div>
-      <div id="lineBindingList" class="lineBindingList"><div class="empty">尚未載入綁定資料。</div></div>
-    </div>
-  </div>
+<div class="panel adminManagePanel adminSecondaryPanel" id="staff-management" style="display:none">
+<div class="panelTitle">👩‍🏫 老師與課後班管理</div>
+<div class="helper">正式啟用名單以 27 位人員為主；此處只顯示目前啟用中的教職員。</div>
+<div class="manageTabs">
+<button class="manageTab active" id="manageTabStaff" onclick="setManageTab('staff')" type="button">👩‍🏫 老師名單</button>
+<button class="manageTab" id="manageTabSchedule" onclick="setManageTab('schedule')" type="button">📅 月排班匯入</button>
+<button class="manageTab" id="manageTabLine" onclick="setManageTab('line')" type="button">🔗 LINE 綁定</button>
 </div>
-
-<dialog id="staffEditDialog" class="staffEditDialog">
-  <div class="staffEditBody">
-    <div class="staffEditHeader"><div id="staffEditTitle" class="staffEditTitle">編輯老師</div><button class="staffMiniBtn" type="button" onclick="closeStaffEditor()">✕</button></div>
-    <input id="staffEditId" type="hidden">
-    <div class="staffEditGrid">
-      <div><div class="helper">姓名</div><input id="staffEditName"></div>
-      <div><div class="helper">主要身分</div><select id="staffEditRole"><option value="admin">課後行政管理（蔡青蓓／蔡妤瑄）</option><option value="admin_viewer">行政老師（僅查看）</option><option value="class_teacher">原班導師</option><option value="aftercare_teacher">支援／外聘</option></select></div>
-      <div><div class="helper">固定原班</div><select id="staffEditHomeroom"></select></div>
-      <div><div class="helper">固定課後班</div><select id="staffEditAftercare"></select></div>
-      <div><div class="helper">LINE 狀態</div><div id="staffEditLineState" style="padding:11px 0;font-weight:900"></div></div>
-    </div>
-    <details class="staffAdvanced"><summary>進階設定</summary><div style="margin-top:10px"><div class="helper">Excel 別名（逗號分隔）</div><input id="staffEditAliases"></div></details>
-    <div class="actionButtons"><button class="btn btnGreen" type="button" onclick="saveStaffFromDialog()">儲存修改</button><button id="staffEditUnbindBtn" class="btn btnOrange" type="button" onclick="unbindCurrentStaffLine()" style="display:none">解除 LINE 綁定</button><button id="staffEditToggleBtn" class="btn btnRed" type="button" onclick="toggleCurrentStaffActive()">停用老師</button><button class="btn btnGray" type="button" onclick="closeStaffEditor()">關閉</button></div>
-  </div>
+<div class="manageSection active" id="manageStaffSection">
+<div class="staffTopBar">
+<input class="staffSearch" id="staffSearch" oninput="renderStaffManagement()" placeholder="搜尋老師姓名"/>
+<select class="staffFilter" id="staffRoleFilter" onchange="renderStaffManagement()">
+<option value="all">全部身分</option>
+<option value="admin">課後行政管理（蔡青蓓／蔡妤瑄）</option><option value="admin_viewer">行政老師（僅查看）</option>
+<option value="class_teacher">原班導師</option>
+<option value="aftercare_teacher">支援／外聘</option>
+</select>
+<button class="btn btnGreen" onclick="toggleAddStaffBox()" type="button">＋ 新增老師</button>
+</div>
+<div class="staffStats" id="staffStats"></div>
+<div class="staffAddBox" id="staffAddBox">
+<div class="manageCardTitle">新增老師</div>
+<div class="staffEditGrid">
+<div><div class="helper">姓名</div><input id="newStaffName" placeholder="例：王小美"/></div>
+<div><div class="helper">主要身分</div><select id="newStaffRole"><option value="class_teacher">原班導師</option><option value="aftercare_teacher">支援／外聘</option><option value="admin">課後行政管理（蔡青蓓／蔡妤瑄）</option><option value="admin_viewer">行政老師（僅查看）</option></select></div>
+<div><div class="helper">固定原班</div><select id="newStaffHomeroom"><option value="">無</option><option value="C01">櫻桃班</option><option value="C02">蘋果班</option><option value="C03">蝴蝶班</option><option value="C04">白兔班</option><option value="C05">蜜蜂班</option><option value="C06">袋鼠班</option><option value="C07">綿羊班</option><option value="C08">企鵝班</option></select></div>
+<div><div class="helper">固定課後班</div><select id="newStaffAftercare"><option value="">無</option><option value="AC01">蝴蝶班｜18:00</option><option value="AC02">白兔班｜17:00</option><option value="AC03">蜜蜂班｜18:00</option><option value="AC04">綿羊班｜17:00</option><option value="AC05">櫻桃班｜幼幼</option><option value="AC06">蘋果班｜幼幼</option></select></div>
+<div><div class="helper">Excel 別名（選填）</div><input id="newStaffAliases" placeholder="例：小美, 美美"/></div>
+</div>
+<div class="actionButtons"><button class="btn btnGreen" onclick="addStaffMember()" type="button">儲存新增</button><button class="btn btnGray" onclick="toggleAddStaffBox(false)" type="button">取消</button></div>
+</div>
+<div id="staffManageList"><div class="empty">請先登入行政帳號。</div></div>
+</div>
+<div class="manageSection" id="manageScheduleSection">
+<div class="manageCard">
+<div class="manageCardTitle">上傳每月 Excel 班表</div>
+<div class="scheduleToolbar">
+<div><div class="helper">Excel 檔案</div><input accept=".xlsx,.xls" id="scheduleExcelFile" onchange="loadScheduleExcel(event)" type="file"/></div>
+<div><div class="helper">工作表</div><select id="scheduleSheetSelect" onchange="parseSelectedScheduleSheet()"><option value="">請先選擇 Excel</option></select></div>
+<button class="btn btnBlue" onclick="parseSelectedScheduleSheet()" type="button">🔎 解析班表</button>
+</div>
+<div class="helper" id="scheduleFileState">尚未選擇 Excel。</div>
+<div aria-live="polite" class="helper" id="scheduleClassDetection">班級辨識：尚未解析。</div>
+<div class="scheduleSummary">
+<div class="scheduleSummaryItem"><div class="helper">月份</div><div class="scheduleSummaryNumber" id="scheduleMonthSummary">—</div></div>
+<div class="scheduleSummaryItem"><div class="helper">正式老師排班</div><div class="scheduleSummaryNumber" id="scheduleStaffCount">0</div></div>
+<div class="scheduleSummaryItem"><div class="helper">支援老師排班</div><div class="scheduleSummaryNumber" id="scheduleSupportCount">0</div></div>
+<div class="scheduleSummaryItem"><div class="helper">未建檔支援提醒</div><div class="scheduleSummaryNumber" id="scheduleUnmatchedCount">0</div></div>
+<div class="scheduleSummaryItem"><div class="helper">排班衝突／錯誤</div><div class="scheduleSummaryNumber red" id="scheduleProblemCount">0</div></div>
+</div>
+<div class="previewBox" id="schedulePreview" style="display:none"><div class="previewHeader">班表預覽與檢查</div><div class="previewBody" id="schedulePreviewBody"></div></div>
+<div class="actionButtons"><button class="btn btnGreen" disabled="" id="scheduleImportBtn" onclick="confirmScheduleImport()" type="button">✅ 確認匯入本月班表</button></div>
+<div class="helper">園務會議當天的國小、巡輔等支援老師會按姓名匯入；其他未建檔的姓名也會列為「其他支援」，不需先建立帳號。請在預覽核對提醒；只有真正的排班衝突或格式錯誤會阻止匯入。</div>
+</div>
+<div class="manageCard" id="currentScheduleBox" style="margin-top:12px">
+<div class="manageCardTitle">目前資料庫月排班</div>
+<div class="scheduleToolbar" style="margin-top:10px">
+<div>
+<div class="helper">年份</div>
+<input id="dbScheduleYear" max="2100" min="2025" type="number"/>
+</div>
+<div>
+<div class="helper">月份</div>
+<select id="dbScheduleMonth">
+<option value="1">1 月</option><option value="2">2 月</option><option value="3">3 月</option><option value="4">4 月</option><option value="5">5 月</option><option value="6">6 月</option><option value="7">7 月</option><option value="8">8 月</option><option value="9">9 月</option><option value="10">10 月</option><option value="11">11 月</option><option value="12">12 月</option>
+</select>
+</div>
+<button class="btn btnBlue" onclick="loadDatabaseScheduleView()" type="button">📋 查看資料庫班表</button>
+</div>
+<div class="empty" id="currentScheduleList">可直接選擇月份查看已匯入資料，不必先上傳 Excel。</div>
+</div>
+</div>
+<div class="manageSection" id="manageLineSection">
+<div class="manageCard">
+<div class="manageCardTitle">LINE 綁定狀態</div>
+<div class="helper">老師不需要自行找 LINE User ID；之後由老師平台送出綁定申請，行政只需確認。這裡先管理「已綁定／未綁定」與待審申請。</div>
+<div class="helper">批次產生僅限未綁定、非待審核教職員。重新產生會使舊連結失效；匯出檔案請個別私訊，不可公開。</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button class="staffMiniBtn staffMiniGreen" id="bulkTeacherBtn" onclick="generateBulkTeacherLinks()" type="button">🔗 批次產生老師專屬連結</button><button class="staffMiniBtn" disabled="" id="exportTeacherBtn" onclick="exportBulkTeacherLinks()" type="button">⬇️ 匯出 Excel</button></div><div class="helper" id="bulkTeacherStatus">尚未產生連結。</div><div class="staffStats" id="lineBindingStats"></div>
+<div class="lineBindingList" id="lineBindingList"><div class="empty">尚未載入綁定資料。</div></div>
+</div>
+</div>
+</div>
+<dialog class="staffEditDialog" id="staffEditDialog">
+<div class="staffEditBody">
+<div class="staffEditHeader"><div class="staffEditTitle" id="staffEditTitle">編輯老師</div><button class="staffMiniBtn" onclick="closeStaffEditor()" type="button">✕</button></div>
+<input id="staffEditId" type="hidden"/>
+<div class="staffEditGrid">
+<div><div class="helper">姓名</div><input id="staffEditName"/></div>
+<div><div class="helper">主要身分</div><select id="staffEditRole"><option value="admin">課後行政管理（蔡青蓓／蔡妤瑄）</option><option value="admin_viewer">行政老師（僅查看）</option><option value="class_teacher">原班導師</option><option value="aftercare_teacher">支援／外聘</option></select></div>
+<div><div class="helper">固定原班</div><select id="staffEditHomeroom"></select></div>
+<div><div class="helper">固定課後班</div><select id="staffEditAftercare"></select></div>
+<div><div class="helper">LINE 狀態</div><div id="staffEditLineState" style="padding:11px 0;font-weight:900"></div></div>
+</div>
+<details class="staffAdvanced"><summary>進階設定</summary><div style="margin-top:10px"><div class="helper">Excel 別名（逗號分隔）</div><input id="staffEditAliases"/></div></details>
+<div class="actionButtons"><button class="btn btnGreen" onclick="saveStaffFromDialog()" type="button">儲存修改</button><button class="btn btnOrange" id="staffEditUnbindBtn" onclick="unbindCurrentStaffLine()" style="display:none" type="button">解除 LINE 綁定</button><button class="btn btnRed" id="staffEditToggleBtn" onclick="toggleCurrentStaffActive()" type="button">停用老師</button><button class="btn btnGray" onclick="closeStaffEditor()" type="button">關閉</button></div>
+</div>
 </dialog>
-
 <!-- ====================================== -->
 <!-- 今日接送 -->
 <!-- ====================================== -->
-
 <div class="panel pickupPanel">
-
-  <div class="panelTitle">
+<div class="panelTitle">
     🚗 接送提醒
   </div>
-
-
-  <div class="pickupToolbar">
-
-    <div class="pickupToolbarField">
-
-      <div class="helper">
+<div class="pickupToolbar">
+<div class="pickupToolbarField">
+<div class="helper">
         日期
       </div>
-
-      <input
-        id="pickupDateFilter"
-        type="date"
-        onchange="refreshPickupRecords()"
-      >
-
-    </div>
-
-
-    <button
-      class="btn btnBlue"
-      type="button"
-      onclick="refreshPickupRecords()"
-    >
+<input id="pickupDateFilter" onchange="refreshPickupRecords()" type="date"/>
+</div>
+<button class="btn btnBlue" onclick="refreshPickupRecords()" type="button">
       ↻ 更新接送資料
     </button>
-
-  </div>
-
-
-  <div class="pickupStats">
-
-    <div
-      id="pickupWaitingCount"
-      class="pickupStat waiting"
-    >
+</div>
+<div class="pickupStats">
+<div class="pickupStat waiting" id="pickupWaitingCount">
       等待接送 0
     </div>
-
-
-    <div
-      id="pickupDoneCount"
-      class="pickupStat done"
-    >
+<div class="pickupStat done" id="pickupDoneCount">
       已完成 0
     </div>
-
-  </div>
-
-
-  <div
-    id="pickupLastUpdated"
-    class="helper"
-  >
+</div>
+<div class="helper" id="pickupLastUpdated">
     尚未載入
   </div>
-
-
-  <div
-    id="pickupList"
-    class="pickupList"
-  >
-    <div class="empty">
+<div class="pickupList" id="pickupList">
+<div class="empty">
       尚未登入行政帳號。
     </div>
-  </div>
-
 </div>
-
-
+</div>
 <!-- ====================================== -->
 <!-- 家長申請 -->
 <!-- ====================================== -->
-
-<div id="request-management" class="panel">
-
-  <div class="panelTitle">
+<div class="panel" id="request-management">
+<div class="panelTitle">
     📋 申請處理
   </div>
-
-
-  <div
-    id="lastUpdated"
-    class="helper"
-  >
+<div class="helper" id="lastUpdated">
     尚未載入
   </div>
-
-
-  <div
-    id="errorBox"
-    class="errorBox"
-  ></div>
-
-
-  <div class="tabs">
-
-    <button
-      id="tabAll"
-      class="tab active"
-      onclick="setFilter('all')"
-    >
+<div class="errorBox" id="errorBox"></div>
+<div class="tabs">
+<button class="tab active" id="tabAll" onclick="setFilter('all')">
       全部
     </button>
-
-
-    <button
-      id="tabPending"
-      class="tab"
-      onclick="setFilter('pending')"
-    >
+<button class="tab" id="tabPending" onclick="setFilter('pending')">
       待處理申請
     </button>
-
-
-    <button
-      id="tabLeave"
-      class="tab"
-      onclick="setFilter('leave')"
-    >
+<button class="tab" id="tabLeave" onclick="setFilter('leave')">
       請假
     </button>
-
-
-    <button
-      id="tabTemporary"
-      class="tab"
-      onclick="setFilter('temporary')"
-    >
+<button class="tab" id="tabTemporary" onclick="setFilter('temporary')">
       臨時托育
     </button>
-
-
-    <button
-      id="tabExtended"
-      class="tab"
-      onclick="setFilter('extended')"
-    >
+<button class="tab" id="tabExtended" onclick="setFilter('extended')">
       延長托育
     </button>
-
-  </div>
-
-
-  <div
-    id="requestList"
-    class="requestList"
-  >
-    <div class="empty">
+</div>
+<div class="requestList" id="requestList">
+<div class="empty">
       尚未登入行政帳號。
     </div>
-  </div>
-
 </div>
-
-
 </div>
-
+</div>
 <div style="text-align:center;margin:0 auto 24px;font-size:12px;color:#78909c">
-  <a href="privacy.html" target="_blank" rel="noopener">個人資料蒐集告知暨隱私權說明</a>
-  ｜ <a href="terms.html" target="_blank" rel="noopener">平台使用說明</a>
+<a href="privacy.html" rel="noopener" target="_blank">個人資料蒐集告知暨隱私權說明</a>
+  ｜ <a href="terms.html" rel="noopener" target="_blank">平台使用說明</a>
 </div>
-
-
 <script>
 
 // Read-only on page open; decision is written only on explicit button click.
@@ -8047,46 +7857,8 @@ function setPanelCollapsed(panel,collapsed,index){
 }
 
 function togglePanelAndFocus(panel,index){
-  const willOpen=
-    panel.classList.contains(
-      "panelAutoCollapsed"
-    );
-
-  const panels=
-    [...document.querySelectorAll(".panel")]
-      .filter(
-        item =>
-          item.tagName !== "DETAILS"
-          &&
-          item.querySelector(":scope > .panelTitle")
-      );
-
-  if(willOpen){
-    panels.forEach((item,itemIndex)=>{
-      setPanelCollapsed(
-        item,
-        item !== panel,
-        itemIndex
-      );
-    });
-
-    setTimeout(
-      ()=>{
-        panel.scrollIntoView({
-          behavior:"smooth",
-          block:"start"
-        });
-      },
-      40
-    );
-  }
-  else{
-    setPanelCollapsed(
-      panel,
-      true,
-      index
-    );
-  }
+  const willOpen=panel.classList.contains("panelAutoCollapsed");
+  setPanelCollapsed(panel,!willOpen,index);
 }
 
 function installPanelCollapsers(){
@@ -8427,6 +8199,7 @@ function renderClassGuardianList(){
   const gs=Array.isArray(c.guardians)?c.guardians:[];
   const matches=!search||String(c.child_name).includes(search)||String(c.seat_no||'').includes(search);
   if(!matches)return false;
+  if(filter==='unbound_child')return gs.length>0&&gs.every(g=>!g.bound);
   if(filter==='unbound')return gs.some(g=>!g.bound);
   if(filter==='bound')return gs.length>0&&gs.every(g=>g.bound);
   if(filter==='pending')return gs.some(g=>!g.bound&&g.has_valid_code);
@@ -8633,16 +8406,14 @@ async function clearWeeklyLead(){
 }
 
 </script>
-
-
 <!-- 逾時記點確認：平台內提醒，不發 LINE。只有核定後家長端才累計點數。 -->
-<div id="pickupPointReviewModal" role="dialog" aria-modal="true" aria-labelledby="pickupPointReviewTitle" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.46);padding:20px;overflow:auto">
- <section style="background:white;border-radius:14px;max-width:570px;margin:7vh auto;padding:22px;color:#243047;box-shadow:0 8px 30px #0003">
-  <h2 id="pickupPointReviewTitle">逾時接送｜待確認記點</h2>
-  <p>請由蓓蓓或妤瑄確認是否記點。同一幼兒同一天最多 1 點，關閉視窗不代表完成審核。</p>
-  <div id="pickupPointReviewList" aria-live="polite">讀取中…</div>
-  <button type="button" onclick="document.getElementById('pickupPointReviewModal').style.display='none'" style="margin-top:16px;padding:10px 16px">稍後處理</button>
- </section>
+<div aria-labelledby="pickupPointReviewTitle" aria-modal="true" id="pickupPointReviewModal" role="dialog" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.46);padding:20px;overflow:auto">
+<section style="background:white;border-radius:14px;max-width:570px;margin:7vh auto;padding:22px;color:#243047;box-shadow:0 8px 30px #0003">
+<h2 id="pickupPointReviewTitle">逾時接送｜待確認記點</h2>
+<p>請由蓓蓓或妤瑄確認是否記點。同一幼兒同一天最多 1 點，關閉視窗不代表完成審核。</p>
+<div aria-live="polite" id="pickupPointReviewList">讀取中…</div>
+<button onclick="document.getElementById('pickupPointReviewModal').style.display='none'" style="margin-top:16px;padding:10px 16px" type="button">稍後處理</button>
+</section>
 </div>
 <script>
 /* 學期記點：直接讀取既有核定資料，不改動記點紀錄。 */
@@ -8722,6 +8493,5 @@ function renderSemesterPickupPoints(){
   target.innerHTML=`<div style="display:grid;gap:9px">${rows.map(r=>`<details style="border:1px solid #dfe7e9;border-radius:12px;padding:12px;background:#fff"><summary style="cursor:pointer;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span><strong>${escapeHtml(r.name)}</strong> <span style="color:#78909c">${escapeHtml(r.className)}</span></span><strong style="color:${r.points>=3?'#b71c1c':'#1b5e20'}">${r.points} 點${r.points>=3?'｜待行政確認':''}</strong></summary><div style="margin-top:10px;border-top:1px solid #edf1f2">${r.records.sort((a,b)=>b.date.localeCompare(a.date)).map(x=>`<div style="padding:9px 0;border-bottom:1px solid #edf1f2;line-height:1.6"><strong>${escapeHtml(x.date)}</strong>｜1 點<div style="font-size:.82rem;color:#607d8b">${x.sources.map(escapeHtml).join('；')}</div></div>`).join('')}</div></details>`).join('')}</div>`;
 }
 </script>
-
-</body>
+</div></body>
 </html>
