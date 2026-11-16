@@ -1540,6 +1540,22 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 </div>
 
 
+<!-- 本學期逾時接送記點總覽（唯讀；不更動原有記點與收費流程） -->
+<section id="semesterPickupPointsPanel" class="panel adminSecondaryPanel" style="margin-bottom:16px" aria-labelledby="semesterPickupPointsTitle">
+  <div class="panelTitle" id="semesterPickupPointsTitle">📋 本學期逾時接送記點名單</div>
+  <p class="helper">依幼兒分別累計已成立的記點；同一幼兒同一天最多計 1 點。達 3 點請由行政確認後再依園方規定處理。</p>
+  <div class="pickupToolbar">
+    <div class="pickupToolbarField"><label class="helper" for="pointSemesterSelect">查詢學期</label><select id="pointSemesterSelect" onchange="loadSemesterPickupPoints()"></select></div>
+    <button type="button" class="btn btnBlue" onclick="loadSemesterPickupPoints()">↻ 更新記點名單</button>
+  </div>
+  <div class="pickupStats" id="pointSemesterStats" aria-live="polite"><span class="pickupStat">尚未載入</span></div>
+  <div class="pickupToolbar" style="margin-top:4px">
+    <div class="pickupToolbarField"><label class="helper" for="pointSemesterSearch">搜尋班級或幼兒</label><input id="pointSemesterSearch" type="search" placeholder="輸入姓名、班級" oninput="renderSemesterPickupPoints()"></div>
+    <div class="pickupToolbarField"><label class="helper" for="pointSemesterFilter">記點篩選</label><select id="pointSemesterFilter" onchange="renderSemesterPickupPoints()"><option value="all">全部</option><option value="1">1 點</option><option value="2">2 點</option><option value="3">3 點以上</option></select></div>
+  </div>
+  <div id="pointSemesterList" aria-live="polite" class="helper">登入後按「更新記點名單」即可查看。</div>
+</section>
+
 <!-- ====================================== -->
 <!-- 休園日 / 特殊停止服務日 -->
 <!-- ====================================== -->
@@ -2311,7 +2327,8 @@ async function refreshAll(){
     refreshPickupRecords(),
     refreshRequests(),
     refreshStaffManagement(),
-    loadSchoolClosedAdmin()
+    loadSchoolClosedAdmin(),
+    loadSemesterPickupPoints()
   ]);
 
 }
@@ -8615,5 +8632,84 @@ async function clearWeeklyLead(){
   <button type="button" onclick="document.getElementById('pickupPointReviewModal').style.display='none'" style="margin-top:16px;padding:10px 16px">稍後處理</button>
  </section>
 </div>
+<script>
+/* 學期記點：直接讀取既有核定資料，不改動記點紀錄。 */
+let semesterPointRows=[];
+function semesterRange(year,term){
+  return term==='上' ? {start:`${year}-08-01`,end:`${year+1}-01-31`} : {start:`${year+1}-02-01`,end:`${year+1}-07-31`};
+}
+function setupSemesterPointSelect(){
+  const el=document.getElementById('pointSemesterSelect');if(!el||el.options.length)return;
+  const now=new Date();const today=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Taipei'}));
+  const y=today.getFullYear(),m=today.getMonth()+1;
+  const schoolYear=m>=8?y:m===1?y-1:y-1;
+  const term=m>=8||m===1?'上':'下';
+  for(let year=schoolYear;year>=schoolYear-3;year--){
+    for(const t of ['下','上']){
+      if(year===schoolYear&&t!==term)continue;
+      const label=`${year-1911} 學年度${t}學期`;
+      el.add(new Option(label,`${year}:${t}`));
+    }
+  }
+  el.value=`${schoolYear}:${term}`;
+}
+async function readAllSemesterPoints(table,fields,dateColumn,start,end,extra){
+  const all=[];const pageSize=500;
+  for(let offset=0;offset<10000;offset+=pageSize){
+    let q=supabaseClient.from(table).select(fields).gte(dateColumn,start).lte(dateColumn,end).order(dateColumn,{ascending:true}).range(offset,offset+pageSize-1);
+    if(extra)q=extra(q);
+    const {data,error}=await q;if(error)throw error;
+    all.push(...(data||[]));if((data||[]).length<pageSize)return all;
+  }
+  throw new Error('記點資料超過查詢上限，請聯絡管理員。');
+}
+async function loadSemesterPickupPoints(){
+  const target=document.getElementById('pointSemesterList');if(!target)return;
+  if(!currentStaff||!['admin','admin_viewer'].includes(currentStaff.role)){target.textContent='僅行政人員可以查看記點名單。';return;}
+  setupSemesterPointSelect();const val=document.getElementById('pointSemesterSelect').value;
+  const [year,term]=val.split(':');const {start,end}=semesterRange(Number(year),term);
+  target.textContent='正在載入本學期記點…';
+  try{
+    const [auto,manual]=await Promise.all([
+      readAllSemesterPoints('pickup_records','id,child_id,pickup_date,scheduled_pickup_time,actual_pickup_at,correction_reason,children(name,morning_class_id)', 'pickup_date',start,end,q=>q.eq('unexcused_late',true)),
+      readAllSemesterPoints('pickup_manual_unexcused_points','id,child_id,violation_date,points,reason,parent_notice_status,children(name,morning_class_id)','violation_date',start,end,q=>q.eq('status','active'))
+    ]);
+    const childIds=[...new Set([...auto,...manual].map(r=>r.child_id).filter(Boolean))];
+    const classIds=[...new Set([...auto,...manual].map(r=>r.children?.morning_class_id).filter(Boolean))];
+    let classMap={};
+    if(classIds.length){const {data,error}=await supabaseClient.from('classes').select('id,name').in('id',classIds);if(error)throw error;classMap=Object.fromEntries((data||[]).map(c=>[c.id,c.name]));}
+    const grouped=new Map();
+    for(const r of auto){
+      const child=r.children||{};const key=`${r.child_id}|${r.pickup_date}`;
+      if(!grouped.has(key))grouped.set(key,{childId:r.child_id,name:child.name||'未命名幼兒',className:classMap[child.morning_class_id]||child.morning_class_id||'未分類',date:r.pickup_date,points:1,sources:[]});
+      grouped.get(key).sources.push('接送紀錄'+(r.correction_reason?'（曾更正）':''));
+    }
+    for(const r of manual){
+      if(Number(r.points||0)<=0)continue;
+      const child=r.children||{};const key=`${r.child_id}|${r.violation_date}`;
+      if(!grouped.has(key))grouped.set(key,{childId:r.child_id,name:child.name||'未命名幼兒',className:classMap[child.morning_class_id]||child.morning_class_id||'未分類',date:r.violation_date,points:1,sources:[]});
+      const info='人工記點'+(r.reason?'：'+r.reason:'（原因待補）');grouped.get(key).sources.push(info);
+    }
+    const byChild=new Map();
+    for(const row of grouped.values()){
+      if(!byChild.has(row.childId))byChild.set(row.childId,{childId:row.childId,name:row.name,className:row.className,records:[],points:0});
+      const item=byChild.get(row.childId);item.records.push(row);item.points+=1;
+    }
+    semesterPointRows=[...byChild.values()].sort((a,b)=>b.points-a.points||a.className.localeCompare(b.className,'zh-Hant')||a.name.localeCompare(b.name,'zh-Hant'));
+    const total=semesterPointRows.reduce((n,r)=>n+r.points,0),three=semesterPointRows.filter(r=>r.points>=3).length;
+    document.getElementById('pointSemesterStats').innerHTML=`<span class="pickupStat">記點幼兒 ${semesterPointRows.length} 人</span><span class="pickupStat">本學期 ${total} 點</span><span class="pickupStat waiting">達 3 點 ${three} 人</span><span class="pickupStat">${start} ～ ${end}</span>`;
+    renderSemesterPickupPoints();
+  }catch(e){target.textContent='讀取失敗：'+(e.message||String(e));}
+}
+function renderSemesterPickupPoints(){
+  const target=document.getElementById('pointSemesterList');if(!target)return;
+  const search=(document.getElementById('pointSemesterSearch')?.value||'').trim().toLowerCase();
+  const filter=document.getElementById('pointSemesterFilter')?.value||'all';
+  const rows=semesterPointRows.filter(r=>(r.name+' '+r.className).toLowerCase().includes(search)&&(filter==='all'||(filter==='3'?r.points>=3:r.points===Number(filter))));
+  if(!rows.length){target.innerHTML='<div class="empty">這個條件下沒有記點幼兒。</div>';return;}
+  target.innerHTML=`<div style="display:grid;gap:9px">${rows.map(r=>`<details style="border:1px solid #dfe7e9;border-radius:12px;padding:12px;background:#fff"><summary style="cursor:pointer;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span><strong>${escapeHtml(r.name)}</strong> <span style="color:#78909c">${escapeHtml(r.className)}</span></span><strong style="color:${r.points>=3?'#b71c1c':'#1b5e20'}">${r.points} 點${r.points>=3?'｜待行政確認':''}</strong></summary><div style="margin-top:10px;border-top:1px solid #edf1f2">${r.records.sort((a,b)=>b.date.localeCompare(a.date)).map(x=>`<div style="padding:9px 0;border-bottom:1px solid #edf1f2;line-height:1.6"><strong>${escapeHtml(x.date)}</strong>｜1 點<div style="font-size:.82rem;color:#607d8b">${x.sources.map(escapeHtml).join('；')}</div></div>`).join('')}</div></details>`).join('')}</div>`;
+}
+</script>
+
 </body>
 </html>
