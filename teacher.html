@@ -2453,7 +2453,7 @@ function renderTeacherRoster(data,todayScope={}){
     todayGroups.push('<details class="rosterClassDetails" data-roster-key="morning:'+escapeHtmlText(String(group.class_id||''))+'"><summary><span>🏫 '+escapeHtmlText(group.class_name||group.class_id)+'・班級幼兒</span><span class="rosterClassCount">'+Number(group.child_count||0)+' 人</span></summary><div class="rosterClassBody">'+rosterListHtml(group.children,"morning")+'</div></details>');
   }
   for(const group of ownAftercare){
-    todayGroups.push('<details class="rosterClassDetails" data-roster-key="aftercare:'+escapeHtmlText(String(group.aftercare_class_id||''))+'"><summary><span>🌙 '+escapeHtmlText(group.aftercare_class_name||group.aftercare_class_id)+'・今日課後班</span><span class="rosterClassCount">課後 '+Number(group.regular_count||0)+'｜臨托 '+Number(group.temporary_count||0)+'</span></summary><div class="rosterClassBody"><div class="rosterSubTitle">固定課後幼兒</div>'+rosterListHtml(group.regular_children,"regular",true)+'<div class="rosterSubTitle">今日臨托</div>'+rosterListHtml(group.temporary_children,"temporary")+'</div></details>');
+    todayGroups.push('<details class="rosterClassDetails" data-roster-key="aftercare:'+escapeHtmlText(String(group.aftercare_class_id||''))+'"><summary><span>🌙 '+escapeHtmlText(group.aftercare_class_name||group.aftercare_class_id)+'・今日課後班</span><span class="rosterClassCount">課後 '+Number(group.regular_count||0)+'｜臨托 '+Number(group.temporary_count||0)+'</span></summary><div class="rosterClassBody"><div class="rosterSubTitle">固定課後幼兒</div>'+rosterListHtml(group.regular_children,"regular",true)+(group.aftercare_leave_children?.length?'<div class="rosterSubTitle">課後請假（16:00接回）</div>'+rosterListHtml(group.aftercare_leave_children,"regular",false):'')+'<div class="rosterSubTitle">今日臨托</div>'+rosterListHtml(group.temporary_children,"temporary")+'</div></details>');
   }
   todayBox.innerHTML='<div class="todayClassHeading">🌿 今天的班級幼兒</div>'+(todayGroups.length?todayGroups.join(""):'<div class="rosterEmpty">今天沒有安排需要帶班的課程。</div>');
   todayBox.querySelectorAll('.rosterClassDetails[data-roster-key]').forEach(details=>{
@@ -2538,6 +2538,26 @@ async function refreshLeYeProvisional(){
   target.innerHTML=data.map(x=>`<div class="rosterChildRow"><span>${escapeHtmlText(x.morning_class_name||"")}・${escapeHtmlText(staffChildNickname(x.child_name))}</span><span>${escapeHtmlText(String(x.provisional_end_time||"").slice(0,5))} 待確認 ${leyeTeacherActionButton(x.child_id,"late18","調整時間",true)}</span></div>`).join("");
 }
 
+async function leyeApplyAftercareLeaveToRoster(roster){
+ const day=roster?.date||leyeTaipeiDay();
+ const {data,error}=await teacherSupabase.rpc('leye_aftercare_leave_list',{p_start:day,p_end:day});
+ if(error){console.warn('課後請假名單未同步',error);return roster;}
+ const active=new Map((Array.isArray(data)?data:[]).filter(x=>x.status==='active').map(x=>[String(x.child_id),x]));
+ if(!active.size)return roster;
+ for(const group of roster.morning_groups||[]){
+  for(const child of group.children||[]){if(active.has(String(child.child_id))){child.aftercare_leave=true;child.scheduled_pickup_time='16:00:00';child.status_label='課後請假（16:00接回）';}}
+ }
+ for(const group of roster.aftercare_groups||[]){
+  const removed=[];
+  group.regular_children=(group.regular_children||[]).filter(child=>{
+   if(active.has(String(child.child_id))){removed.push({...child,aftercare_leave:true,status_label:'課後請假（16:00接回）',scheduled_pickup_time:'16:00:00'});return false;}
+   return true;
+  });
+  group.regular_count=group.regular_children.length;
+  group.aftercare_leave_children=removed;
+ }
+ return roster;
+}
 async function loadTeacherRoster(){
   const status=el("rosterStatus");
 
@@ -2565,8 +2585,9 @@ async function loadTeacherRoster(){
   completedPilotPickupIds=new Set(Array.isArray(pickupStatuses.data)?pickupStatuses.data.map(String):[]);
   const {data:todayScope,error:todayError}=await teacherSupabase.rpc("get_teacher_today_assigned_classes");
   if(todayError){console.error("today assigned classes error",todayError);status.className="status show error";status.textContent="當日班級資料讀取失敗。";return;}
-  await loadLeYeTodayStatus(data||{});
-  renderTeacherRoster(data||{},todayScope||{});
+  const syncedRoster=await leyeApplyAftercareLeaveToRoster(data||{});
+  await loadLeYeTodayStatus(syncedRoster);
+  renderTeacherRoster(syncedRoster,todayScope||{});
   await refreshLeYeProvisional();
   await loadAdminMorningSupport(data||{});
 

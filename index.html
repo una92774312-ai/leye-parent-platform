@@ -3965,6 +3965,8 @@ async function loadMyRequests(){
       ||
       [];
 
+    const aftercareCards=await leyeRenderAftercareLeaveHistory();
+    if(!rows.length && aftercareCards){box.innerHTML=aftercareCards;return;}
     if(
       !rows.length
     ){
@@ -3981,7 +3983,7 @@ async function loadMyRequests(){
         .map(
           renderRequestCard
         )
-        .join("");
+        .join("") + aftercareCards;
 
   }
   catch(e){
@@ -4919,6 +4921,22 @@ async function submitPickup(){
 }
 
 // 課後請假：獨立於一般 leave；後端須提供具家長身分驗證的 RPC。
+async function leyeRenderAftercareLeaveHistory(){
+ const {data,error}=await supabaseClient.rpc('leye_aftercare_leave_list',{});
+ if(error){console.warn('課後請假紀錄讀取失敗',error);return '<div class="notice noticeRed">課後請假紀錄暫時無法讀取，請稍後重試。</div>';}
+ const rows=Array.isArray(data)?data:[];
+ return rows.filter(r=>children.some(c=>String(c.id)===String(r.child_id))).map(r=>{
+  const child=children.find(c=>String(c.id)===String(r.child_id));
+  const canCancel=r.status==='active'&&r.leave_date>=today();
+  return `<div class="ruleCard"><b>🌙 課後照顧請假｜${escapeHtml(child?.name||'幼兒')}</b><p>${escapeHtml(r.leave_date)}　17:00 → 16:00</p><p>${r.status==='active'?'已登記':'已取消'}｜正常上課</p>${canCancel?`<button type="button" class="btn" onclick="leyeCancelAftercareLeave('${escapeHtml(r.id)}')">取消此日課後請假</button>`:''}</div>`;
+ }).join('');
+}
+async function leyeCancelAftercareLeave(id){
+ if(!confirm('確定取消這一天的課後照顧請假？'))return;
+ const {data,error}=await supabaseClient.rpc('leye_cancel_aftercare_leave',{p_id:id});
+ if(error||!data?.ok){alert('取消失敗：'+(error?.message||'請稍後再試'));return;}
+ await loadMyRequests();
+}
 function leyeToggleAftercareLeave(){
  const active=document.querySelector('input[name="leyeLeaveCategory"]:checked')?.value==="aftercare";
  $("leyeNormalLeaveForm").style.display=active?"none":"";
