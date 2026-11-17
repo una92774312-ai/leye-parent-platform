@@ -1352,13 +1352,13 @@
 <p id="leyeDialogHint" style="font-size:13px;color:#647367"></p>
 <div id="leyeDialogTypeWrap"><label for="leyeDialogType">操作類別</label>
 <select id="leyeDialogType" onchange="updateLeYeActionFields()">
-<option value="leave">今日請假</option><option value="early">提早接送</option>
+<option value="leave">一般請假</option><option value="aftercare_leave">課後照顧請假（僅課後時段）</option><option value="early">提早接送</option>
 <option value="extended">延長托育（17:00→18:00）</option>
 <option value="temporary">臨時托育</option>
 </select></div>
 <div id="leyeDialogTimeWrap"><label for="leyeDialogTime">時間或時段</label><select id="leyeDialogTime"></select></div>
 <div id="leyeDialogDateWrap"><label for="leyeDialogDate">開始日期（老師代辦可選未來 30 天）</label><input id="leyeDialogDate" type="date"/></div>
-<div id="leyeDialogLongLeaveWrap" style="display:none"><label for="leyeDialogLeaveMode">請假方式</label><select id="leyeDialogLeaveMode" onchange="updateLeYeLongLeaveMode()"><option value="single">單日請假</option><option value="multi">連續多日請假</option></select><div id="leyeDialogLeaveEndWrap" style="display:none"><label for="leyeDialogLeaveEnd">請假結束日期</label><input id="leyeDialogLeaveEnd" type="date"/><p style="font-size:12px;color:#647367">最多連續31天；逐日登記，遇到休園日請依園方規則確認。</p></div></div>
+<div id="leyeAftercareLeaveInfo" style="display:none;font-size:13px;color:#425c4b">正常上課不受影響；課後請假日改為16:00接回。僅適用原定17:00接送的孩子。</div><div id="leyeDialogLongLeaveWrap" style="display:none"><label for="leyeDialogLeaveMode">請假方式</label><select id="leyeDialogLeaveMode" onchange="updateLeYeLongLeaveMode()"><option value="single">單日請假</option><option value="multi">連續多日請假</option></select><div id="leyeDialogLeaveEndWrap" style="display:none"><label for="leyeDialogLeaveEnd">請假結束日期</label><input id="leyeDialogLeaveEnd" type="date"/><p style="font-size:12px;color:#647367">最多連續31天；逐日登記，遇到休園日請依園方規則確認。</p></div></div>
 <label for="leyeDialogReason">原因／備註（如家長口頭告知）</label>
 <textarea id="leyeDialogReason" maxlength="250" placeholder="請簡短填寫原因或家長確認情況" rows="2"></textarea>
 <div aria-live="polite" id="leyeDialogError" style="color:#a93529;font-size:13px"></div>
@@ -2035,8 +2035,9 @@ function updateLeYeActionFields(){
  const timeWrap=document.getElementById("leyeDialogTimeWrap");
  const dateWrap=document.getElementById("leyeDialogDateWrap");
  dateWrap.style.display=leyeDialogAction==="proxy"?"":"none";
- document.getElementById("leyeDialogLongLeaveWrap").style.display=leyeDialogAction==="proxy"&&type==="leave"?"":"none";
- timeWrap.style.display=type==="leave"?"none":"";
+ document.getElementById("leyeDialogLongLeaveWrap").style.display=leyeDialogAction==="proxy"&&(type==="leave"||type==="aftercare_leave")?"":"none";
+ document.getElementById("leyeAftercareLeaveInfo").style.display=type==="aftercare_leave"?"":"none";
+ timeWrap.style.display=(type==="leave"||type==="aftercare_leave")?"none":"";
  const now=leyeTaipeiClock();
  if(type==="slot"){
    timeWrap.style.display="";
@@ -2092,6 +2093,24 @@ async function saveLeYeTeacherAction(){
   }else if(leyeDialogAction==="proxy"){
     rpc="teacher_proxy_child_request";
     const type=document.getElementById("leyeDialogType").value;
+    if(type==="aftercare_leave"){
+      const multi=document.getElementById("leyeDialogLeaveMode").value==="multi";
+      const dates=leyeLongLeaveDates(date,multi?document.getElementById("leyeDialogLeaveEnd").value:date)
+        .filter(day=>new Date(day+"T12:00:00Z").getUTCDay()%6!==0);
+      if(!dates.length)throw Error("期間沒有平日服務日");
+      if(dates.some(day=>day<leyeTaipeiDay()))throw Error("不可登記過去日期");
+      if(!confirm(`確認課後照顧請假？\n${dates[0]} 至 ${dates[dates.length-1]}\n正常上課，課後改16:00接回。`))return;
+      const {data,error}=await teacherSupabase.rpc("leye_teacher_submit_aftercare_leave",{
+        p_child_id:leyeDialogChild,p_dates:dates,p_note:reason||null
+      });
+      if(error)throw Error("課後請假尚未完成後端設定或登記失敗："+error.message);
+      if(!data?.ok)throw Error(data?.message||"登記未完成");
+      document.getElementById("leyeTeacherDialog").close();
+      alert("課後照顧請假已登記。");
+      await loadTeacherRoster();
+      if(typeof loadTeacherWeekItems==="function")await loadTeacherWeekItems();
+      return;
+    }
     if(type==="leave" && document.getElementById("leyeDialogLeaveMode").value==="multi"){
       const end=document.getElementById("leyeDialogLeaveEnd").value;
       if(!date||!end)throw Error("請選擇開始與結束日期");

@@ -2120,10 +2120,13 @@ label.title{font-size:.87rem;margin-bottom:7px}
     ❌ 今日請假
   </div>
 
-  <div class="pageDesc">
-    孩子整天不到園時使用。送出後可在「我的申請」查看處理狀態。
+  <div class="pageDesc">請選擇一般請假或僅課後照顧請假；兩者互不混用。</div>
+  <div class="group" style="display:flex;gap:12px;flex-wrap:wrap">
+    <label><input type="radio" name="leyeLeaveCategory" value="normal" checked onchange="leyeToggleAftercareLeave()"> 一般上課請假</label>
+    <label><input type="radio" name="leyeLeaveCategory" value="aftercare" onchange="leyeToggleAftercareLeave()"> 課後照顧請假（僅16:00以後）</label>
   </div>
 
+  <div id="leyeNormalLeaveForm">
   <div class="notice noticeGreen">
     ✅ 送出後會建立請假申請紀錄，並由本園依流程處理。
   </div>
@@ -2240,6 +2243,20 @@ label.title{font-size:.87rem;margin-bottom:7px}
   >
     ❌ 確認送出請假
   </button>
+  </div>
+  <div id="leyeAftercareLeaveForm" style="display:none">
+    <div class="notice noticeBlue">僅取消指定日期的課後照顧，正常上課不受影響。原本17:00接送者，請假日改為16:00接回；原本18:00接送者需由園方確認安排。</div>
+    <div class="group"><label class="title">👶 選擇幼兒</label><div id="aftercareLeaveChildren" class="childList"></div></div>
+    <div class="group"><label class="title">📅 課後請假日期</label>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin:8px 0"><label><input type="radio" name="leyeAftercareMode" value="single" checked onchange="leyeToggleAftercareMode()"> 單日</label><label><input type="radio" name="leyeAftercareMode" value="multi" onchange="leyeToggleAftercareMode()"> 連續多日</label></div>
+      <label>開始日期 <input id="leyeAftercareStart" type="date"></label>
+      <label id="leyeAftercareEndWrap" style="display:none">結束日期 <input id="leyeAftercareEnd" type="date"></label>
+      <div class="helper">最多31個日曆日；週末及園方設定的休園日不建立課後請假。</div>
+    </div>
+    <div class="group"><label class="title">⏰ 接送安排</label><p>原定 17:00 → 請假日 16:00 接回（僅適用符合資格的幼兒）</p></div>
+    <div class="group"><label class="title">📝 備註（選填）</label><textarea id="leyeAftercareNote" maxlength="200" rows="2" placeholder="例如：11/17～11/30由家長16:00接回"></textarea></div>
+    <button id="leyeAftercareSubmitBtn" class="btn btnOrange" type="button" data-guardian-submit onclick="leyeSubmitAftercareLeave()">送出課後照顧請假</button>
+  </div>
 
 </div>
 
@@ -3519,6 +3536,7 @@ function renderChildrenEverywhere(){
     "leaveChildren",
     "leave"
   );
+  renderPickerList("aftercareLeaveChildren","aftercareLeave");
 
   renderPickerList(
     "extendedChildren",
@@ -4899,6 +4917,56 @@ async function submitPickup(){
   }
 
 }
+
+// 課後請假：獨立於一般 leave；後端須提供具家長身分驗證的 RPC。
+function leyeToggleAftercareLeave(){
+ const active=document.querySelector('input[name="leyeLeaveCategory"]:checked')?.value==="aftercare";
+ $("leyeNormalLeaveForm").style.display=active?"none":"";
+ $("leyeAftercareLeaveForm").style.display=active?"":"none";
+}
+function leyeToggleAftercareMode(){
+ const multi=document.querySelector('input[name="leyeAftercareMode"]:checked')?.value==="multi";
+ $("leyeAftercareEndWrap").style.display=multi?"block":"none";
+}
+function leyeAftercareDates(){
+ const start=$("leyeAftercareStart").value;
+ const multi=document.querySelector('input[name="leyeAftercareMode"]:checked')?.value==="multi";
+ const end=multi?$("leyeAftercareEnd").value:start;
+ if(!start||!end)throw Error("請選擇日期");
+ const a=ymdToLocalDate(start),b=ymdToLocalDate(end);
+ const span=Math.round((b-a)/86400000);
+ if(span<0||span>30)throw Error("日期須依序排列，且最多連續31天");
+ const dates=[];
+ for(let i=0;i<=span;i++){
+  const d=new Date(a);d.setDate(a.getDate()+i);
+  const ymd=dateToYMD(d);
+  if(!isSchoolClosedDate(ymd))dates.push(ymd);
+ }
+ if(!dates.length)throw Error("所選期間沒有課後服務日");
+ if(dates.some(x=>x<today()))throw Error("不能申請過去日期");
+ return dates;
+}
+async function leyeSubmitAftercareLeave(){
+ if(parentExperienceMode()){alert("目前家長平台尚未開放正式申請，請先聯繫園方。");return;}
+ const list=requireChildren("aftercareLeave");if(!list)return;
+ let dates;try{dates=leyeAftercareDates();}catch(e){alert(e.message);return;}
+ const note=$("leyeAftercareNote").value.trim();
+ if(!confirm(`確認課後照顧請假？\n${dates[0]} 至 ${dates[dates.length-1]}\n共 ${dates.length} 個服務日；正常上課不請假，請假日16:00接回。`))return;
+ const btn=$("leyeAftercareSubmitBtn");btn.disabled=true;
+ try{
+  const {data:auth,error:authErr}=await supabaseClient.auth.getUser();
+  if(authErr||!auth?.user)throw Error("請重新登入家長帳號");
+  const {data,error}=await supabaseClient.rpc("leye_submit_aftercare_leave",{
+   p_child_ids:list.map(c=>c.id),p_dates:dates,p_note:note||null
+  });
+  if(error)throw Error("課後請假尚未完成後端設定或送出失敗："+error.message);
+  if(!data?.ok)throw Error(data?.message||"未完成登記");
+  alert("課後照顧請假已送出，可至申請紀錄查看。");
+  if(typeof loadMyRequests==="function")await loadMyRequests();
+ }catch(e){alert(e.message||String(e));}
+ finally{btn.disabled=false;}
+}
+
 function updateLeaveMode(){
  const multi=document.querySelector('input[name="leaveMode"]:checked')?.value==="multi";
  $("leaveSingleDate").style.display=multi?"none":"block";
