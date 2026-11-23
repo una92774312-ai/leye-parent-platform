@@ -2077,6 +2077,34 @@ async function openLeYeTeacherAction(childId,action){
   if(action==="late18")document.getElementById("leyeDialogTime").value="18:00";
   dlg.showModal();
 }
+// 送出前檢查並在必要時更新 Supabase 登入憑證；不會寫入幼兒資料。
+async function ensureTeacherWriteSession(){
+  let {data:{session},error}=await teacherSupabase.auth.getSession();
+  if(error || !session?.access_token){
+    throw new Error("老師登入狀態已失效，請關閉頁面並從 LINE 重新開啟教師平台。");
+  }
+  if(session.expires_at && session.expires_at*1000<Date.now()+60000){
+    const refreshed=await teacherSupabase.auth.refreshSession();
+    if(refreshed.error || !refreshed.data?.session){
+      throw new Error("老師登入憑證已過期且無法更新，請從 LINE 重新開啟教師平台。");
+    }
+    session=refreshed.data.session;
+  }
+  let role="";
+  try{
+    const part=session.access_token.split(".")[1];
+    const encoded=part.replace(/-/g,"+").replace(/_/g,"/");
+    role=JSON.parse(atob(encoded)).role||"";
+  }catch(_){throw new Error("老師登入憑證格式異常，請從 LINE 重新開啟教師平台。");}
+  if(role!=="authenticated"){
+    throw new Error("請假送出權限異常（登入角色："+(role||"未知")+"），請從 LINE 重新開啟教師平台。");
+  }
+  const user=await teacherSupabase.auth.getUser();
+  if(user.error || !user.data?.user){
+    throw new Error("無法確認老師的 Supabase 身分，請從 LINE 重新開啟教師平台。");
+  }
+}
+
 async function saveLeYeTeacherAction(){
  const btn=document.getElementById("leyeDialogSubmit");
  const errorBox=document.getElementById("leyeDialogError");
@@ -2100,6 +2128,7 @@ async function saveLeYeTeacherAction(){
       if(!dates.length)throw Error("期間沒有平日服務日");
       if(dates.some(day=>day<leyeTaipeiDay()))throw Error("不可登記過去日期");
       if(!confirm(`確認課後照顧請假？\n${dates[0]} 至 ${dates[dates.length-1]}\n正常上課，課後改16:00接回。`))return;
+      await ensureTeacherWriteSession();
       const {data,error}=await teacherSupabase.rpc("leye_teacher_submit_aftercare_leave",{
         p_child_id:leyeDialogChild,p_dates:dates,p_note:reason||null
       });
@@ -2116,6 +2145,7 @@ async function saveLeYeTeacherAction(){
       if(!date||!end)throw Error("請選擇開始與結束日期");
       const dates=leyeLongLeaveDates(date,end);
       if(!confirm(`確認代家長登記長假？\n日期：${date} 至 ${end}\n共 ${dates.length} 個日曆日（系統將逐日檢查登記）`))return;
+      await ensureTeacherWriteSession();
       const {data:existing,error:existingError}=await teacherSupabase.from("requests")
         .select("request_date").eq("child_id",leyeDialogChild).eq("request_type","leave")
         .in("status",["submitted","pending","approved"]).gte("request_date",date).lte("request_date",end);
@@ -2137,8 +2167,13 @@ async function saveLeYeTeacherAction(){
     rpc="teacher_provisional_late_pickup";
     args={p_child_id:leyeDialogChild,p_pickup_date:leyeTaipeiDay(),p_end_time:time,p_reason:reason||null};
   }
+  await ensureTeacherWriteSession();
   const {data,error}=await teacherSupabase.rpc(rpc,args);
-  if(error)throw error;
+  if(error){
+    if(/permission denied for function/i.test(error.message||""))
+      throw new Error("一般請假函式拒絕執行：登入身分未正確傳遞。請將此訊息回報管理員，勿重複送出。");
+    throw error;
+  }
   if(!data?.ok)throw Error("登記未完成");
   document.getElementById("leyeTeacherDialog").close();
   alert("✓ 已儲存。需要審核的托育申請請由行政確認。");
