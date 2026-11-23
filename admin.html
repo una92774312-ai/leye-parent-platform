@@ -1536,7 +1536,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{margin:0;padding:0}
 <!-- ====================================== -->
 <div class="adminSectionLabel">每日收費與接送</div><div class="panel" id="dailyCareFeePanel">
 <div class="panelTitle">💰 今日臨托／延托收費查核</div>
-<div class="helper">此頁只核對收費，不會自動標記收款；實際收費仍由當日課後老師確認。</div>
+<div class="helper">行政老師可提前登記已實際收到的臨托／延托費用；課後老師亦可登記，兩端共用收費紀錄，避免重複收費。</div>
 <div class="pickupToolbar">
 <label>日期 <input id="dailyCareFeeDate" type="date"/></label>
 <button class="btn btnBlue" onclick="refreshDailyCareFees()" type="button">↻ 查詢收費</button>
@@ -8181,8 +8181,33 @@ async function refreshDailyCareFees(){
     const state=document.createElement("div");state.className="helper";
     const label=x.fee_status==="collected"?"✅ 已收款 NT$"+x.collected_amount:x.fee_status==="refund_required"?"⚠️ 待退款":x.status==="approved"?"⏳ 待收 NT$"+x.expected_amount:"申請狀態："+x.status;
     state.textContent=label+(x.collected_at?"｜"+new Date(x.collected_at).toLocaleString("zh-TW",{timeZone:"Asia/Taipei"}):"");
-    el.append(line,state);list.append(el);
+    el.append(line,state);
+    if(x.status==="approved" && x.fee_status!=="collected" && x.fee_status!=="refund_required"){
+      const btn=document.createElement("button");
+      btn.type="button";btn.className="btn btnGreen";
+      btn.style.marginTop="9px";
+      btn.textContent="✓ 確認已收費 NT$"+Number(x.expected_amount||0);
+      btn.addEventListener("click",()=>adminMarkCareFeeCollected(x,btn,date));
+      el.append(btn);
+    }
+    list.append(el);
   }
+}
+
+
+async function adminMarkCareFeeCollected(item,button,date){
+  const amount=Number(item.expected_amount||0);
+  if(!amount || !item.id){alert("收費資料不完整，請重新查詢。");return;}
+  const label=(item.morning_class||"未分班")+"｜"+pilotChildShortName(item.child_name)+"｜"+(item.type==="temporary"?"臨托":"延托");
+  if(!confirm("請確認已實際收到款項後再登記。\n\n"+label+"\n日期："+date+"\n金額：NT$"+amount+"\n\n登記後，課後老師也會看見已收費狀態。"))return;
+  button.disabled=true;button.textContent="儲存中…";
+  try{
+    const {data,error}=await supabaseClient.rpc("teacher_mark_care_fee_collected",{p_request_id:item.id});
+    if(error)throw error;
+    if(!data?.ok)throw new Error("資料庫未確認儲存成功");
+    alert(data.result==="already_collected"?"此筆費用已由其他老師登記，沒有重複收費。":"已登記收費 NT$"+Number(data.amount||amount)+"，課後老師可同步查詢。");
+  }catch(e){alert("收費登記失敗："+(e.message||String(e)));}
+  finally{await refreshDailyCareFees();}
 }
 
 
