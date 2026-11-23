@@ -1,0 +1,4623 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+<head>
+<meta content="no-referrer" name="referrer"/>
+<meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
+<meta content="no-cache" http-equiv="Pragma"/>
+<meta content="0" http-equiv="Expires"/>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+<title>樂業附幼｜教職員平台 V16</title>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
+<style>
+    :root{
+      --bg:#f5f7f4;
+      --card:#ffffff;
+      --text:#243126;
+      --muted:#6f7c71;
+      --green:#26743d;
+      --greenSoft:#eaf4ec;
+      --line:#dce5dd;
+      --blueSoft:#eef4ff;
+      --warnSoft:#fff6dd;
+      --errorSoft:#fff0f0;
+    }
+
+    *{
+      box-sizing:border-box;
+      min-width:0;
+    }
+
+    html,
+    body{
+      width:100%;
+      max-width:100%;
+      overflow-x:hidden;
+    }
+
+    body{
+      margin:0;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Microsoft JhengHei",
+        sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .wrap{
+      width:100%;
+      max-width:620px;
+      margin:0 auto;
+      padding:
+        max(14px,env(safe-area-inset-top))
+        max(12px,env(safe-area-inset-right))
+        max(28px,env(safe-area-inset-bottom))
+        max(12px,env(safe-area-inset-left));
+    }
+
+    .brand{
+      text-align:center;
+      margin-bottom:18px;
+    }
+
+    .brand h1{
+      margin:0 0 6px;
+      font-size:24px;
+    }
+
+    .brand p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.65;
+    }
+
+    .card{
+      width:100%;
+      max-width:100%;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+      box-shadow:0 8px 24px rgba(35,55,40,.06);
+      overflow:hidden;
+    }
+
+    .profile{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px;
+      border-radius:14px;
+      background:var(--greenSoft);
+      margin-bottom:18px;
+    }
+
+    .avatar{
+      width:50px;
+      height:50px;
+      border-radius:50%;
+      object-fit:cover;
+      background:#ddd;
+      flex:0 0 auto;
+    }
+
+    .profileName{
+      font-weight:700;
+      font-size:17px;
+    }
+
+    .profileSub{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:3px;
+    }
+
+    .identityBox{
+      background:var(--greenSoft);
+      border-radius:14px;
+      padding:15px;
+      line-height:1.75;
+      margin-top:14px;
+    }
+
+    .identityTitle{
+      font-weight:800;
+      color:#245e34;
+      margin-bottom:4px;
+    }
+
+    .workBox{
+      margin-top:16px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      background:#fff;
+    }
+
+    .workTitle{
+      font-weight:800;
+      font-size:17px;
+      margin-bottom:6px;
+    }
+
+    .workSub{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.65;
+    }
+
+    .roleBadge{
+      display:inline-flex;
+      margin-top:10px;
+      padding:5px 10px;
+      border-radius:999px;
+      background:#eef1ee;
+      font-size:12px;
+      font-weight:700;      color:#415046;
+    }
+
+    .adminPortalBtn{
+      display:flex;
+      width:100%;
+      align-items:center;
+      justify-content:center;
+      margin-top:14px;
+      padding:13px 14px;
+      border-radius:12px;
+      background:#243126;
+      color:#fff;
+      text-decoration:none;
+      font-size:15px;
+      font-weight:800;
+    }
+
+    .adminPortalBtn:hover{
+      opacity:.92;
+    }
+
+    .scopeGrid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .scopeCard{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:13px;
+      background:#fafcf9;
+    }
+
+    .scopeLabel{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+      margin-bottom:6px;
+    }
+
+    .scopeValue{
+      font-size:15px;
+      font-weight:700;
+      line-height:1.65;
+    }
+
+    .emptyText{
+      color:var(--muted);
+      font-weight:500;
+    }
+
+    .todayBox{
+      margin-top:18px;
+      border-top:1px solid var(--line);
+      padding-top:18px;
+    }
+
+    .todayHeader{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .todayTitle{
+      font-size:18px;
+      font-weight:800;
+      margin:0;
+    }
+
+    .todayDate{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .totalBadge{
+      min-width:42px;
+      height:32px;
+      padding:0 10px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      background:var(--green);
+      color:#fff;
+      font-weight:800;
+      font-size:14px;
+    }
+
+    .todayCounts{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:8px;
+      margin-bottom:14px;
+    }
+
+    .countCard{width:100%;font:inherit;cursor:pointer;color:inherit;-webkit-tap-highlight-color:transparent;}
+    .countCard:focus-visible{outline:3px solid #39865a;outline-offset:2px}
+    .countCard:active{background:#e7f1e9}
+    .itemGroup{scroll-margin-top:110px}
+    .countCard{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 8px;
+      background:#fafcf9;
+      text-align:center;
+    }
+
+    .countNum{
+      font-size:21px;
+      font-weight:800;
+      line-height:1.1;
+    }
+
+    .countLabel{
+      margin-top:5px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .itemGroup{
+      margin-top:14px;
+    }
+
+    .itemGroupHeader{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:15px;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    .groupCount{
+      display:inline-flex;
+      min-width:24px;
+      height:24px;
+      padding:0 7px;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      background:#eef1ee;
+      color:#46544a;
+      font-size:12px;
+    }
+
+    .itemList{
+      display:grid;
+      gap:10px;
+    }
+
+    .studentItem{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      background:#fff;
+    }
+
+    .studentTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .studentName{
+      font-size:16px;
+      font-weight:800;
+      overflow-wrap:anywhere;
+    }
+
+    .studentClass{
+      margin-top:2px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .itemBadge{
+      flex:0 0 auto;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+      background:#eef1ee;
+      color:#46544a;
+    }
+
+    .itemBadge.leave{
+      background:#f3edff;
+      color:#6941a5;
+    }
+
+    .itemBadge.early{
+      background:#fff0e8;
+      color:#a44f25;
+    }
+
+    .itemBadge.late{
+      background:#fff2dd;
+      color:#8a5b00;
+    }
+
+    .itemBadge.waiting{
+      background:#eaf3ff;
+      color:#315f91;
+    }
+
+    .itemBadge.temporary{
+      background:#f4edff;
+      color:#6941a5;
+    }
+
+    .itemBadge.extended{
+      background:#eaf6ed;
+      color:#236238;
+    }
+
+    .itemBadge.done{
+      background:#eef1ee;
+      color:#526056;
+    }
+
+    .weekUtilityBtn{
+      width:100%;
+      min-height:46px;
+      margin:0 0 14px;
+      border:1px solid #cad8cc;
+      border-radius:12px;
+      background:#f7faf7;
+      color:#31533a;
+      font-size:14px;
+      font-weight:800;
+    }
+
+    .historyOverlay{
+      position:fixed;
+      inset:0;
+      z-index:9999;
+      background:rgba(26,39,30,.34);
+      padding:
+        max(10px,env(safe-area-inset-top))
+        max(8px,env(safe-area-inset-right))
+        max(10px,env(safe-area-inset-bottom))
+        max(8px,env(safe-area-inset-left));
+      display:flex;
+      align-items:stretch;
+      justify-content:center;
+    }
+
+    .historySheet{
+      width:min(620px,100%);
+      height:100%;
+      max-height:100dvh;
+      background:#f7f9f6;
+      border-radius:18px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      box-shadow:0 18px 60px rgba(0,0,0,.24);
+    }
+
+    .historyHeader{
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      background:#fff;
+      border-bottom:1px solid var(--line);
+    }
+
+    .historyTitle{
+      font-size:17px;
+      font-weight:900;
+    }
+
+    .historyCloseBtn{
+      width:40px;
+      height:40px;
+      flex:0 0 40px;
+      margin:0;
+      padding:0;
+      border-radius:999px;
+      background:#eef1ee;
+      color:#344438;
+      font-size:20px;
+    }
+
+    .historyBody{
+      flex:1 1 auto;
+      min-height:0;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      padding:14px;
+    }
+
+    .historyForm{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      padding:14px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+    }
+
+    .historyField.full{
+      grid-column:1 / -1;
+    }
+
+    .historyField label{
+      margin-bottom:6px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .historyField input,
+    .historyField select{
+      width:100%;
+      min-width:0;
+      height:46px;
+      border:1px solid #cfd9d1;
+      border-radius:11px;
+      padding:0 11px;
+      background:#fff;
+      font-size:16px;
+    }
+
+    .historySearchBtn{
+      grid-column:1 / -1;
+      min-height:46px;
+      margin:0;
+      background:var(--green);
+      color:#fff;
+    }
+
+    .historyResults{
+      display:grid;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .historyMeta{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+      margin:0 2px 10px;
+    }
+
+    .historyCard{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:13px;
+    }
+
+    .historyCardTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .historyCardName{
+      font-weight:900;
+      overflow-wrap:anywhere;
+    }
+
+    .historyCardSub{
+      margin-top:3px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .historyCardDetail{
+      margin-top:9px;
+      display:grid;
+      gap:5px;
+      color:#3d4b40;
+      font-size:13px;
+      line-height:1.55;
+      overflow-wrap:anywhere;
+    }
+
+    .itemDetail{
+      margin-top:8px;
+      font-size:13px;
+      line-height:1.65;
+      color:#3d4b40;
+      overflow-wrap:anywhere;
+    }
+
+    .itemDetail strong{
+      font-weight:800;
+    }
+
+    .itemActionState{
+      margin-top:10px;
+      padding:10px 11px;
+      border-radius:10px;
+      font-size:12px;
+      line-height:1.65;
+      background:#f5f7f4;
+      color:#526056;
+      white-space:pre-line;
+    }
+
+    .itemActionState.confirmed{
+      background:#eef4ff;
+      color:#315278;
+    }
+
+    .itemActionState.handled{
+      background:#eaf6ed;
+      color:#236238;
+    }
+
+    .itemActionButtons{
+      display:flex;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .itemActionButtons button{
+      width:auto;
+      flex:1;
+      margin-top:0;
+      padding:10px 12px;
+      font-size:13px;
+    }
+
+    .feeCollectBox{
+      margin-top:10px;
+      padding:10px 11px;
+      border-radius:10px;
+      background:#fff8e8;
+      color:#74510c;
+      font-size:12px;
+      line-height:1.55;
+    }
+
+    .feeCollectBox.collected{
+      background:#eaf6ed;
+      color:#236238;
+    }
+
+    .feeCollectBtn{
+      width:100%;
+      min-height:44px;
+      margin:8px 0 0;
+      padding:10px 12px;
+      border-radius:10px;
+      background:#a36a00;
+      color:#fff;
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .confirmBtn{
+      background:#315f91;
+      color:#fff;
+    }
+
+    .handledBtn{
+      background:var(--green);
+      color:#fff;
+    }
+
+    .actionBusy{
+      opacity:.55;
+      pointer-events:none;
+    }
+
+    .todayEmpty{
+      border:1px dashed #cfd9d1;
+      border-radius:12px;
+      padding:18px 12px;
+      color:var(--muted);
+      text-align:center;
+      font-size:13px;
+      background:#fafcf9;
+    }
+
+    @media (max-width:480px){
+      .wrap{
+        padding-left:10px;
+        padding-right:10px;
+      }
+
+      .brand{
+        margin-bottom:12px;
+      }
+
+      .brand h1{
+        font-size:21px;
+      }
+
+      .brand p{
+        font-size:12px;
+      }
+
+      .card{
+        padding:13px;
+        border-radius:16px;
+      }
+
+      .profile{
+        padding:10px;
+        margin-bottom:12px;
+      }
+
+      .identityBox,
+      .workBox{
+        padding:12px;
+        border-radius:12px;
+      }
+
+      .scopeGrid{
+        gap:8px;
+      }
+
+      .scopeCard{
+        padding:11px;
+      }
+
+      .todayBox{
+        margin-top:14px;
+        padding-top:14px;
+      }
+
+      .todayHeader{
+        gap:8px;
+      }
+
+      .todayTitle{
+        font-size:17px;
+      }
+
+      .todayCounts{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:8px;
+      }
+
+      .countCard{
+        min-height:72px;
+        padding:10px 6px;
+      }
+
+      .countNum{
+        font-size:19px;
+      }
+
+      .countLabel{
+        font-size:11px;
+        line-height:1.35;
+      }
+
+      .studentItem{
+        padding:11px;
+      }
+
+      .studentTop{
+        gap:8px;
+      }
+
+      .itemBadge{
+        max-width:42%;
+        white-space:normal;
+        text-align:center;
+        line-height:1.25;
+      }
+
+      .itemActionButtons{
+        gap:7px;
+      }
+
+      .itemActionButtons button{
+        min-height:42px;
+        padding:9px 8px;
+        font-size:12px;
+      }
+
+      .historyForm{
+        grid-template-columns:1fr;
+        padding:12px;
+      }
+
+      .historyField.full,
+      .historySearchBtn{
+        grid-column:auto;
+      }
+
+      .historyBody{
+        padding:10px;
+      }
+    }
+
+    @media (max-width:360px){
+      .itemActionButtons{
+        flex-direction:column;
+      }
+
+      .itemActionButtons button{
+        width:100%;
+      }
+
+      .todayCounts{
+        grid-template-columns:1fr 1fr;
+      }
+    }
+
+    label{
+      display:block;
+      font-weight:700;
+      margin:0 0 8px;
+    }
+
+    input,
+    select{
+      width:100%;
+      max-width:100%;
+      min-width:0;
+      height:48px;
+      border:1px solid #cfd9d1;
+      border-radius:12px;
+      padding:0 12px;      font-size:16px;
+      background:#fff;
+    }
+
+    button{
+      width:100%;
+      border:0;
+      border-radius:12px;
+      padding:14px 16px;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:14px;
+    }
+
+    .primary{
+      background:var(--green);
+      color:#fff;
+    }
+
+    .primary:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+    }
+
+    .secondary{
+      background:#eef1ee;
+      color:#344438;
+    }
+
+    .status{
+      margin-top:16px;
+      padding:12px 14px;
+      border-radius:12px;
+      line-height:1.65;
+      font-size:14px;
+      display:none;
+      white-space:pre-line;
+    }
+
+    .status.show{display:block}
+    .status.info{background:var(--blueSoft);color:#315278}
+    .status.ok{background:var(--greenSoft);color:#236238}
+    .status.warn{background:var(--warnSoft);color:#805d00}
+    .status.error{background:var(--errorSoft);color:#992d2d}
+
+    .note{
+      margin-top:18px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .loading{
+      text-align:center;
+      padding:28px 10px;
+      color:var(--muted);
+    }
+
+    .hidden{
+      display:none !important;
+    }
+  
+    .rosterDetails{
+      margin-top:16px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .rosterDetails > summary{
+      list-style:none;
+      min-height:54px;
+      padding:13px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      cursor:pointer;
+      font-weight:900;
+      color:#344438;
+      user-select:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .rosterDetails > summary::-webkit-details-marker{
+      display:none;
+    }
+
+    .rosterDetails > summary::after{
+      content:"＋";
+      width:30px;
+      height:30px;
+      flex:0 0 30px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#eef4ea;
+      color:#31533a;
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .rosterDetails[open] > summary::after{
+      content:"－";
+    }
+
+    .rosterSummaryText{
+      margin-left:auto;
+      color:var(--muted);
+      font-size:11px;
+      font-weight:700;
+      text-align:right;
+    }
+
+    .rosterBody{
+      border-top:1px solid var(--line);
+      padding:12px;
+      background:#fafcf9;
+    }
+
+    .rosterSectionTitle{
+      margin:12px 0 7px;
+      font-size:13px;
+      font-weight:900;
+      color:#40513d;
+    }
+
+    .rosterClassDetails{
+      margin-bottom:9px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .rosterClassDetails > summary{
+      list-style:none;
+      min-height:46px;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      cursor:pointer;
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .rosterClassDetails > summary::-webkit-details-marker{
+      display:none;
+    }
+
+    .rosterClassCount{
+      color:var(--muted);
+      font-size:11px;
+      font-weight:700;
+    }
+
+    .rosterClassBody{
+      padding:0 10px 10px;
+      border-top:1px solid #edf1ed;
+    }
+
+    .rosterSubTitle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin:10px 0 6px;
+      font-size:12px;
+      font-weight:900;
+      color:#526056;
+    }
+
+    .rosterChildList{
+      display:grid;
+      gap:6px;
+    }
+
+    .rosterChildRow{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      align-items:center;
+      gap:8px;
+      padding:9px 10px;
+      border-radius:10px;
+      background:#f7f9f6;
+      border:1px solid #edf1ed;
+    }
+
+    .rosterChildRow.leavePriority{
+      order:-10;
+      background:#fff0f0;
+      border-color:#f4caca;
+    }
+
+    .rosterChildName{
+      min-width:0;
+      font-size:13px;
+      font-weight:900;
+      overflow-wrap:anywhere;
+    }
+
+    .rosterChildMeta{
+      margin-top:2px;
+      color:var(--muted);
+      font-size:10px;
+      line-height:1.4;
+      overflow-wrap:anywhere;
+    }
+
+    .rosterBadges{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      gap:4px;
+      max-width:48%;
+    }
+
+    .rosterBadge{
+      display:inline-flex;
+      align-items:center;
+      min-height:24px;
+      padding:3px 7px;
+      border-radius:999px;
+      background:#eef1ee;
+      color:#526056;
+      font-size:10px;
+      font-weight:900;
+      line-height:1.2;
+      text-align:center;
+    }
+
+    .rosterBadge.leave{
+      background:#ffe5e5;
+      color:#a32929;
+    }
+
+    .rosterBadge.extended{
+      background:#e7f5eb;
+      color:#236238;
+    }
+
+    .rosterBadge.temporary{
+      background:#f1e8ff;
+      color:#6941a5;
+    }
+
+    .rosterBadge.paid{
+      background:#e7f5eb;
+      color:#236238;
+    }
+
+    .rosterEmpty{
+      padding:10px;
+      color:var(--muted);
+      font-size:12px;
+      text-align:center;
+    }
+
+    .feeCollectBox.warning{
+      background:#fff0f0;
+      color:#9a2f2f;
+    }
+
+    .feeCorrectionBtn{
+      width:100%;
+      min-height:38px;
+      margin:7px 0 0;
+      border:1px solid #d2b57a;
+      border-radius:9px;
+      background:#fff;
+      color:#795514;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    @media(max-width:480px){
+      .rosterDetails > summary{
+        padding:12px;
+      }
+
+      .rosterSummaryText{
+        display:none;
+      }
+
+      .rosterBody{
+        padding:9px;
+      }
+
+      .rosterChildRow{
+        padding:9px;
+      }
+
+      .rosterBadges{
+        max-width:44%;
+      }
+    }
+
+#boundSection:has(#workEntry:not(.hidden)) .identityBox,#boundSection:has(#workEntry:not(.hidden)) #loginStatus,#boundSection:has(#workEntry:not(.hidden)) #scopeStatus{display:none!important}
+.workBox{background:#fffefa;border-color:#e8ebe3;border-radius:22px;padding:18px}
+.workTitle{font-size:21px;color:#355944;line-height:1.5}
+.workSub{font-size:14px;color:#758476}
+.scopeGrid{gap:9px}.scopeCard{background:#f5f9f3;border:1px solid #e3eae0;border-radius:16px;padding:14px}
+.todayBox{border-radius:20px}.todayTitle{font-size:18px;color:#375744}
+.todayCounts{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.itemGroup{border-radius:15px}
+@media(min-width:600px){.todayCounts{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.teacherFoldGroup{border:1px solid #e1e9e0;border-radius:16px;background:#fff;margin-top:12px;overflow:hidden}
+.teacherFoldHeading{display:flex;align-items:center;gap:9px;padding:14px 15px;cursor:pointer;list-style:none;font-weight:800;color:#385843;font-size:15px;min-height:24px}
+.teacherFoldHeading::-webkit-details-marker{display:none}
+.teacherFoldHeading:focus-visible{outline:3px solid #85a792;outline-offset:-3px}
+.teacherFoldToggle{margin-left:auto;background:#edf5ed;border-radius:50%;width:32px;height:32px;display:grid;place-items:center;color:#356345;font-size:23px;font-weight:600}
+.teacherFoldToggle:after{content:"+"}.teacherFoldGroup[open] .teacherFoldToggle:after{content:"−"}
+.teacherFoldContent{padding:0 12px 13px}
+.warmQuote{border:1px solid #e6eee3;background:#f4f8f1;padding:9px 13px;border-radius:17px;margin:10px 0 8px}
+.warmQuoteLabel{font-size:12px;font-weight:700;color:#69886d}
+@font-face{font-family:"LeYeChenyuHand";src:url("https://cdn.jsdelivr.net/gh/Chenyu-otf/chenyuluoyan_thin@main/ChenYuluoyan-2.0-Thin.ttf") format("truetype");font-style:normal;font-weight:400;font-display:swap}
+.warmQuoteText{font-family:"LeYeChenyuHand","DFKai-SB","BiauKai","Microsoft JhengHei",cursive;font-size:22px;line-height:1.6;letter-spacing:0;color:#344d39;margin:3px 0 4px;text-align:left;min-height:0;font-weight:400}
+.warmQuoteAuthor{font-size:11px;line-height:1.5;text-align:right;color:#718671}
+
+@media(prefers-reduced-motion:reduce){.warmQuote *{transition:none!important;animation:none!important}}
+.backToTopFooter{margin:28px 0 12px;display:flex;justify-content:center}
+.backToTopBtn{border:1px solid #dce9da;background:#f0f7ef;color:#346144;border-radius:999px;min-height:48px;padding:11px 28px;font-size:15px;font-weight:750;cursor:pointer;box-shadow:0 2px 8px rgba(40,70,45,.06)}
+.backToTopBtn:focus-visible{outline:3px solid #659877;outline-offset:3px}
+.warmQuoteText{line-height:1.6;overflow-wrap:anywhere}
+@media(max-width:600px){.warmQuoteText{font-size:24px;line-height:1.2}.warmQuote{padding:9px 13px}}
+.todayClassRosters{margin-top:15px}.todayClassHeading{font-size:16px;font-weight:800;color:#365840;margin-bottom:10px}
+.todayClassRosters .rosterClassDetails{margin-bottom:9px;background:#f9fcf8}
+.todayClassRosters .rosterClassDetails>summary{min-height:48px}
+/* 今日班級與全園班級統一使用 + / − 展開提示 */
+.todayClassRosters .rosterClassDetails>summary::after{
+  content:"＋";
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 30px;
+  width:30px;
+  height:30px;
+  border-radius:999px;
+  background:#eaf3e8;
+  color:#31533a;
+  font-size:18px;
+  font-weight:900;
+  line-height:1;
+}
+.todayClassRosters .rosterClassDetails[open]>summary::after{
+  content:"－";
+  background:#deebdc;
+}
+.todayClassRosters .rosterClassDetails>summary:focus-visible{
+  outline:2px solid #5c9368;
+  outline-offset:-3px;
+}
+@media(prefers-reduced-motion:reduce){
+  .todayClassRosters .rosterClassDetails>summary::after{transition:none}
+}
+.adminMorningSupport{border:1px solid #dfebdc;border-radius:16px;background:#f7fbf5;padding:14px;margin-top:15px;color:#395b40}
+.adminSupportHeader{display:flex;flex-wrap:wrap;gap:6px;font-size:16px;margin-bottom:11px}.adminSupportHeader strong{color:#315d3b}
+.adminSupportControls{display:grid;grid-template-columns:1fr;gap:8px}.adminSupportControls label{font-size:13px;color:#6b806e}
+.adminSupportControls select{min-height:43px;width:100%;border:1px solid #cfdccd;border-radius:10px;background:white;padding:8px;font-size:15px}
+.adminSupportControls button{min-height:44px;border:0;border-radius:10px;background:#577d5b;color:white;font-size:15px;font-weight:800}
+.adminSupportControls button:disabled{opacity:.55}.adminSupportStatus{font-size:12px;line-height:1.6;color:#687d6c;margin:9px 0 0}
+.adminSupportTimes{display:grid;grid-template-columns:1fr 1fr;gap:9px}.adminSupportTimes label{display:grid;gap:6px}.supportSlot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:5px 0;padding:9px 10px;border-radius:9px;background:#fff;font-size:14px}.supportSlot button{border:1px solid #d4a9a9;color:#9b3c3c;background:#fff;border-radius:8px;padding:6px 10px}
+
+/* V14 mobile roster layout */
+.rosterChildRow{grid-template-columns:minmax(0,1fr);gap:10px;align-items:start}
+.rosterChildName{overflow-wrap:normal;word-break:keep-all;white-space:normal;line-height:1.5}
+.rosterBadges{max-width:none;justify-content:flex-start;align-items:center;gap:7px}
+.rosterBadges .leyeActionBtn{margin:0;min-height:40px;padding:9px 11px;font-size:13px;flex:1 1 145px}
+.rosterBadges .rosterBadge,.rosterBadges .leyeCurrentBadge{flex:0 0 auto}
+@media(max-width:480px){.rosterBadges{max-width:none}.rosterChildRow{grid-template-columns:minmax(0,1fr)}}
+.teacherFoldGroup{margin-top:10px}.teacherFoldHeading{padding:11px 13px}
+.todayCounts{gap:7px}.countCard{min-height:64px;padding:8px 6px}
+
+/* V16 iPhone date-field overflow protection */
+.historySheet,.historyBody,.historyForm,.historyField{min-width:0;max-width:100%;box-sizing:border-box}
+.historyForm{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.historyField{width:100%;overflow:hidden}
+.historyField input[type="date"]{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;-webkit-appearance:none;appearance:none;font-size:16px;padding:0 8px}
+.historyField input[type="date"]::-webkit-date-and-time-value{min-width:0;text-align:left}
+@media(max-width:600px){.historyForm{grid-template-columns:minmax(0,1fr)}.historyField.full,.historySearchBtn{grid-column:1/-1}}
+/* V15 compact tap-to-expand roster */
+.rosterChildDisclosure{display:block;padding:0;overflow:hidden}
+.rosterChildSummary{list-style:none;display:flex;align-items:center;gap:9px;min-height:58px;padding:10px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rosterChildSummary::-webkit-details-marker{display:none}
+.rosterChildSummary:focus-visible{outline:3px solid #26743d;outline-offset:-3px}
+.rosterChildIdentity{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rosterChildName{display:block;white-space:normal;word-break:keep-all;overflow-wrap:normal;font-size:14px}
+.rosterChildMeta{display:block;margin:0}
+.rosterChildSummaryBadges{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:52%}
+.rosterChildChevron{flex:0 0 auto;width:9px;height:9px;border-right:2px solid #66806b;border-bottom:2px solid #66806b;transform:rotate(45deg);transition:transform .15s;margin:0 3px 4px}
+.rosterChildDisclosure[open] .rosterChildChevron{transform:rotate(225deg);margin:4px 3px 0}
+.rosterChildActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px 12px 12px;border-top:1px solid #e4ebe3}
+.rosterChildActions .leyeActionBtn{width:100%;min-width:0;min-height:44px;margin:0;padding:8px 5px;font-size:12px;line-height:1.35}
+.rosterChildActions .leyeCurrentBadge{grid-column:1/-1;justify-self:start}
+.rosterNoActions{font-size:12px;color:#6f7c71;grid-column:1/-1}
+.todayCounts{gap:7px;margin-bottom:10px}
+.countCard{min-height:56px;padding:7px 6px;border-radius:11px}
+.countNum{font-size:19px}.countLabel{margin-top:3px;font-size:12px}
+@media(max-width:360px){.rosterChildActions{grid-template-columns:1fr}.rosterChildSummaryBadges{max-width:45%}}
+
+/* 今日接送統計下方：獨立、收合的取消紀錄入口 */
+.cancelledMiniFold{margin:0 0 12px;border:1px solid #e2e7e2;border-radius:13px;background:#f8faf8;overflow:hidden}
+.cancelledMiniSummary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;cursor:pointer;list-style:none;font-size:13px;color:#60716a;font-weight:600}
+.cancelledMiniSummary::-webkit-details-marker{display:none}
+.cancelledMiniRight{display:flex;align-items:center;gap:9px}
+.cancelledMiniCount{min-width:23px;height:23px;display:inline-flex;align-items:center;justify-content:center;border-radius:99px;background:#e9eee9;color:#53665b;font-size:12px}
+.cancelledMiniChevron{font-size:17px;transition:transform .2s}
+.cancelledMiniFold[open] .cancelledMiniChevron{transform:rotate(180deg)}
+.cancelledMiniBody{padding:0 10px 10px}
+
+
+/* 取消請假確認：與原請假狀態分開顯示 */
+.cancelAckSection{margin:14px 0;padding:12px;background:#fffdf5;border:1px solid #dce4d9;border-radius:14px}
+.cancelAckList{display:grid;gap:9px;margin-top:10px}
+.cancelAckCard{padding:12px;background:white;border:1px solid #d7dfd6;border-radius:10px;font-size:13px;line-height:1.7}
+.cancelAckCard strong{font-size:14px}
+.cancelAckCard button{border:0;background:#26743d;color:white;border-radius:10px;padding:9px 12px;font-weight:750;margin-top:7px;cursor:pointer}
+.cancelAckCard button:disabled{opacity:.55;cursor:default}
+.cancelAckDetail{color:#647267;margin-top:4px}
+</style>
+<style>
+.leyeTeacherDialog{border:0;border-radius:18px;padding:22px;width:min(94vw,450px);max-height:85dvh;overflow:auto;background:#fff;color:#263a2d;box-shadow:0 14px 70px #0003}
+.leyeTeacherDialog::backdrop{background:#0007}
+.leyeTeacherDialog label{font-size:14px;font-weight:700;display:block;margin:10px 0 5px}
+.leyeTeacherDialog select,.leyeTeacherDialog input,.leyeTeacherDialog textarea{width:100%;min-height:42px;border:1px solid #cdd9ca;border-radius:10px;padding:8px;font-size:16px;box-sizing:border-box}
+.leyeDialogButtons{display:flex;gap:10px;margin-top:18px}.leyeDialogButtons button{flex:1;border:0;border-radius:10px;padding:13px;background:#e9eee7;color:#304938;font-weight:bold}.leyeDialogButtons button:last-child{background:#32774d;color:#fff}
+.leyeActionBtn{border:1px solid #c9dbc5;background:#f0f9eb;border-radius:8px;padding:7px 9px;font-size:12px;margin:3px;cursor:pointer;color:#32623c}
+.leyeActionBtn.warn{background:#fff6e7;border-color:#e9d09e;color:#825500}
+.leyeCurrentBadge{display:inline-flex;background:#eff4eb;color:#355c38;border-radius:8px;padding:5px 8px;font-size:12px;margin:3px 3px 3px 0}
+
+/* 右上角輪值入口及手機版對話框 */
+.leyeRotationHead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.leyeRotationOpen{flex:0 0 auto;width:max-content;max-width:100%;margin-left:auto;border:1px solid #b9d2be;background:#f1f7f0;color:#28583a;border-radius:999px;padding:8px 12px;font-size:13px;font-weight:750;cursor:pointer;white-space:nowrap}
+.leyeRotationOpen:focus-visible{outline:3px solid #438d57;outline-offset:2px}
+.leyeRotationDialog{border:0;border-radius:18px;padding:20px;width:min(92vw,480px);max-height:85dvh;overflow:auto;box-sizing:border-box;color:#263a2d}
+.leyeRotationDialog::backdrop{background:#0008}
+.leyeRotationDialog label{display:block;margin:12px 0 5px;font-weight:700;font-size:13px}
+.leyeRotationDialog select,.leyeRotationDialog input{width:100%;min-height:44px;border:1px solid #cdd9ca;border-radius:10px;padding:9px;box-sizing:border-box;font-size:16px}
+.leyeRotationDialog button{min-height:42px;border:0;border-radius:10px;padding:10px 14px;cursor:pointer}
+.leyeRotationDialog .saveRotation{background:#295a3c;color:white;font-weight:700}
+.leyeRotationDialog .rotationSection{padding:12px 0;border-top:1px solid #e5ece4}
+.leyeRotationDialog .rotationStatus{font-size:13px;color:#526957;line-height:1.6;white-space:pre-wrap}
+
+/* 教師輪值：固定關閉入口、第一層折疊選單、第二層設定內容 */
+.leyeRotationDialog{position:relative;padding:18px 20px 22px}
+.rotationDialogHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:-18px;background:#fff;z-index:2;padding:8px 0 12px;border-bottom:1px solid #e5ece4}
+.rotationDialogHeader h3{margin:0;font-size:19px}
+.leyeRotationDialog .rotationClose{flex:0 0 42px;width:42px;height:42px;min-height:42px;padding:0;border-radius:50%;background:#f1f4f0;color:#24382a;font-size:29px;line-height:1}
+.leyeRotationDialog .rotationClose:hover{background:#e2e9df}
+.leyeRotationDialog .rotationClose:focus-visible,.leyeRotationDialog summary:focus-visible{outline:3px solid #388456;outline-offset:3px}
+.leyeRotationDialog .rotationSection{padding:0;border:1px solid #dce7db;border-radius:12px;margin:12px 0;overflow:hidden;background:#fff}
+.leyeRotationDialog .rotationSection summary{display:flex;flex-direction:column;gap:5px;position:relative;cursor:pointer;list-style:none;padding:17px 42px 17px 15px;min-height:48px;justify-content:center}
+.leyeRotationDialog .rotationSection summary::-webkit-details-marker{display:none}
+.leyeRotationDialog .rotationSection summary::after{content:'⌄';position:absolute;right:17px;top:50%;transform:translateY(-50%);font-size:24px;color:#356044}
+.leyeRotationDialog .rotationSection[open] summary::after{content:'⌃'}
+.leyeRotationDialog .rotationSection[open] summary{background:#f1f7f1;border-bottom:1px solid #dce7db}
+.rotationSectionTitle{font-weight:750;font-size:15px;color:#234c33}
+.leyeRotationDialog .rotationSection summary small{font-size:12px;color:#647668;line-height:1.45}
+.rotationSectionBody{padding:4px 15px 17px}
+.rotationSectionBody button{width:100%;margin-top:10px}
+@media(max-width:420px){.leyeRotationDialog{padding:14px}.rotationDialogHeader{top:-14px}}
+</style>
+</meta></meta><style>#adminSupportToggle{width:100%;border:0;background:transparent;color:#395b40;text-align:left;cursor:pointer;padding:3px;font:inherit;display:flex;gap:6px;align-items:center}#adminMorningSupport:not(.adminSupportExpanded) .adminSupportExpandable{display:none!important}#adminSupportToggle:focus-visible{outline:2px solid #26743d}</style></head>
+<body>
+<main class="wrap">
+<div class="brand">
+<h1>樂業附幼教職員平台</h1>
+<p id="pageIntro">
+        正在確認您的 LINE 與教職員身分。
+      </p>
+</div>
+<section class="card">
+<div class="loading" id="loading">
+        正在登入教職員平台…
+      </div>
+<div class="hidden" id="content">
+<div class="profile">
+<img alt="LINE 頭像" class="avatar" id="avatar"/>
+<div>
+<div class="profileName" id="lineName">
+              —
+            </div>
+<div class="profileSub">
+              目前登入的 LINE 帳號
+            </div>
+</div>
+</div>
+<div class="hidden" id="boundSection">
+<div class="identityBox">
+<div class="identityTitle">
+              ✓ 教職員身分已確認
+            </div>
+<div>
+              老師：
+              <strong id="boundStaffName">—</strong>
+</div>
+<div>
+              LINE：
+              <strong id="boundLineName">—</strong>
+</div>
+</div>
+<div class="status show info" id="loginStatus">
+            正在建立老師系統登入狀態…
+          </div>
+<div class="workBox hidden" id="workEntry">
+<div class="leyeRotationHead"><div class="workTitle" id="teacherGreeting">🌿 今天也辛苦了，老師！</div><button class="leyeRotationOpen" id="leyeRotationOpen" onclick="openTeacherRotation()" type="button">📅 教師輪值</button></div>
+<div class="workSub">
+              孩子們今天需要留意的事，都幫您整理在這裡了。
+            </div>
+<div class="roleBadge" id="roleBadge">—</div>
+<section aria-label="每天給老師的一點溫柔" class="warmQuote">
+<div class="warmQuoteText" id="warmQuoteText">今天也辛苦了，記得好好照顧自己。</div>
+<div class="warmQuoteAuthor" id="warmQuoteAuthor">—— 樂業附幼・暖心小語</div>
+</section>
+<a class="adminPortalBtn hidden" href="admin.html?v=19" id="adminPortalBtn" onclick="prepareAdminPortal(event)">
+              ⚙️ 進入行政管理平台
+            </a>
+<div class="scopeGrid" id="teacherScopeGrid">
+<div class="scopeCard" id="morningScopeCard">
+<div class="scopeLabel">班級幼兒概況</div>
+<div class="scopeValue" id="morningScope">讀取中…</div> </div>
+<div class="scopeCard" id="aftercareScopeCard">
+<div class="scopeLabel">今天負責的課後班</div>
+<div class="scopeValue" id="aftercareScope">讀取中…</div>
+</div>
+<div class="scopeCard" id="specialScopeCard">
+<div class="scopeLabel">協助照顧的班級</div>
+<div class="scopeValue" id="specialScope">讀取中…</div>
+</div>
+</div>
+<div class="status show info" id="scopeStatus">
+              正在讀取老師可查看範圍…
+            </div>
+<section aria-label="今日補休代班" class="adminMorningSupport hidden" id="adminMorningSupport">
+<button aria-expanded="false" class="adminSupportHeader" id="adminSupportToggle" onclick="toggleAdminSupportPanel()" type="button"><span>🌿 今日補休代班：</span><strong id="adminSupportCurrent">無代班</strong>　＋</button>
+<div class="adminSupportControls adminSupportExpandable">
+<label for="adminSupportClass">選擇今天支援的原班</label>
+<select id="adminSupportClass"><option value="">請選擇班級</option></select>
+<div class="adminSupportTimes"><label>開始時間<select id="adminSupportStart"></select></label><label>結束時間<select id="adminSupportEnd"></select></label></div>
+<div id="adminSupportList"></div>
+<button id="adminSupportSave" onclick="saveAdminMorningSupport()" type="button">新增時段</button>
+</div>
+<p aria-live="polite" class="adminSupportStatus adminSupportExpandable" id="adminSupportStatus">每次安排半小時為單位，可新增多個不重疊時段。</p>
+</section>
+<div class="todayClassRosters" id="todayClassRosters"></div>
+<section aria-label="16點尚未接回待安排" class="todayBox" id="leyeProvisionalSection" style="display:none;margin-top:10px">
+<div class="todayTitle">⏰ 16:00 未接回｜暫列17:00／18:00</div>
+<div id="leyeProvisionalList" style="padding:10px"></div>
+<small>這是待確認的照顧名單，不代表臨托已核准；不處理收費。</small>
+</section>
+<dialog class="leyeTeacherDialog" id="leyeTeacherDialog">
+<form method="dialog" onsubmit="return false">
+<h3 id="leyeDialogTitle">今日接送操作</h3>
+<p id="leyeDialogHint" style="font-size:13px;color:#647367"></p>
+<div id="leyeDialogTypeWrap"><label for="leyeDialogType">操作類別</label>
+<select id="leyeDialogType" onchange="updateLeYeActionFields()">
+<option value="leave">一般請假</option><option value="aftercare_leave">課後照顧請假（僅課後時段）</option><option value="early">提早接送</option>
+<option value="extended">延長托育（17:00→18:00）</option>
+<option value="temporary">臨時托育</option>
+</select></div>
+<div id="leyeDialogTimeWrap"><label for="leyeDialogTime">時間或時段</label><select id="leyeDialogTime"></select></div>
+<div id="leyeDialogDateWrap"><label for="leyeDialogDate">開始日期（老師代辦可選未來 30 天）</label><input id="leyeDialogDate" type="date"/></div>
+<div id="leyeAftercareLeaveInfo" style="display:none;font-size:13px;color:#425c4b">正常上課不受影響；課後請假日改為16:00接回。僅適用原定17:00接送的孩子。</div><div id="leyeDialogLongLeaveWrap" style="display:none"><label for="leyeDialogLeaveMode">請假方式</label><select id="leyeDialogLeaveMode" onchange="updateLeYeLongLeaveMode()"><option value="single">單日請假</option><option value="multi">連續多日請假</option></select><div id="leyeDialogLeaveEndWrap" style="display:none"><label for="leyeDialogLeaveEnd">請假結束日期</label><input id="leyeDialogLeaveEnd" type="date"/><p style="font-size:12px;color:#647367">最多連續31天；逐日登記，遇到休園日請依園方規則確認。</p></div></div>
+<label for="leyeDialogReason">原因／備註（如家長口頭告知）</label>
+<textarea id="leyeDialogReason" maxlength="250" placeholder="請簡短填寫原因或家長確認情況" rows="2"></textarea>
+<div aria-live="polite" id="leyeDialogError" style="color:#a93529;font-size:13px"></div>
+<div class="leyeDialogButtons"><button onclick="document.getElementById('leyeTeacherDialog').close()" type="button">返回</button>
+<button id="leyeDialogSubmit" onclick="saveLeYeTeacherAction()" type="button">儲存登記</button></div>
+</form>
+</dialog>
+<details class="rosterDetails" id="rosterDetails">
+<summary>
+<span id="rosterTitle">👥 我的班級幼兒</span>
+<span class="rosterSummaryText" id="rosterSummary">讀取中…</span>
+</summary>
+<div class="rosterBody">
+<div class="status show info" id="rosterStatus">
+                  正在讀取班級名冊…
+                </div>
+<div id="rosterContent"></div>
+</div>
+</details>
+<div class="todayBox" id="todayItemsSection">
+<div class="todayHeader">
+<div>
+<div class="todayTitle">🌷 今日孩子們的大小事</div>
+<div class="todayDate" id="todayItemsDate">讀取中…</div>
+</div>
+<div class="totalBadge" id="todayTotalBadge">0</div>
+</div>
+<button class="weekUtilityBtn" onclick="openTeacherHistory()" type="button">
+                🔎 查詢其他日期的紀錄
+              </button>
+<div class="todayCounts" id="teacherWeekCounts">
+<button aria-label="跳到今日請假紀錄" class="countCard" onclick="jumpToTeacherItems('leaveItems')" type="button"><div class="countNum" id="leaveCount">0</div>
+<div class="countLabel">今日請假</div></button>
+<button aria-label="跳到今日臨托紀錄" class="countCard" onclick="jumpToTeacherItems('careItems')" type="button"><div class="countNum" id="temporaryCount">0</div>
+<div class="countLabel">今日臨托</div></button>
+<button aria-label="跳到今日延托紀錄" class="countCard" onclick="jumpToTeacherItems('careItems')" type="button"><div class="countNum" id="extendedCount">0</div>
+<div class="countLabel">今日延托</div></button>
+<button aria-label="跳到今日接送紀錄" class="countCard" onclick="jumpToTeacherItems('pickupItems')" type="button"><div class="countNum" id="pickupCount">0</div>
+<div class="countLabel">今日接送</div></button>
+</div>
+<details class="cancelledMiniFold" id="cancelledCareFold">
+<summary class="cancelledMiniSummary">
+<span>↩️ 已取消紀錄</span>
+<span class="cancelledMiniRight"><span class="cancelledMiniCount" id="cancelledCareGroupCount">0</span><span aria-hidden="true" class="cancelledMiniChevron">⌄</span></span>
+</summary>
+<div class="itemList cancelledMiniBody" id="cancelledCareItems"></div>
+</details>
+<div class="status show info" id="todayItemsStatus">
+                正在讀取今日學生事項…
+              </div>
+<div class="hidden teacherWeeklyGroups" id="todayItemsContent">
+<details class="itemGroup teacherFoldGroup" id="leaveFold">
+<summary class="teacherFoldHeading"><span>🌷 請假通知</span><span class="groupCount" id="leaveGroupCount">0</span><span aria-hidden="true" class="teacherFoldToggle"></span></summary>
+<div class="itemList teacherFoldContent" id="leaveItems"></div>
+</details>
+<details class="itemGroup teacherFoldGroup" id="cancelAckTeacherFold">
+<summary class="teacherFoldHeading"><span>↩️ 取消請假待確認</span><span class="groupCount" id="cancelAckTeacherCount">0</span><span aria-hidden="true" class="teacherFoldToggle"></span></summary>
+<div class="itemList teacherFoldContent" id="cancelAckTeacherList"></div>
+</details>
+<details class="itemGroup teacherFoldGroup" id="careFold">
+<summary class="teacherFoldHeading"><span>🧸 課後照顧安排</span><span class="groupCount" id="careGroupCount">0</span><span aria-hidden="true" class="teacherFoldToggle"></span></summary>
+<div class="itemList teacherFoldContent" id="careItems"></div>
+</details>
+<details class="itemGroup teacherFoldGroup" id="pickupFold">
+<summary class="teacherFoldHeading"><span>🚗 接送小提醒</span><span class="groupCount" id="pickupGroupCount">0</span><span aria-hidden="true" class="teacherFoldToggle"></span></summary>
+<div class="itemList teacherFoldContent" id="pickupItems"></div>
+</details>
+</div>
+</div>
+<div aria-hidden="true" class="historyOverlay hidden" id="historyPanel">
+<div class="historySheet">
+<div class="historyHeader">
+<div>
+<div class="historyTitle">🔎 查詢過去紀錄</div>
+<div class="todayDate">僅顯示您有權限查看的幼兒資料</div>
+</div>
+<button aria-label="關閉" class="historyCloseBtn" onclick="closeTeacherHistory()" type="button">×</button>
+</div>
+<div class="historyBody">
+<div class="historyForm">
+<div class="historyField full">
+<label for="historyKeyword">幼兒暱稱</label>
+<input id="historyKeyword" maxlength="50" placeholder="輸入暱稱搜尋；留白則顯示全部" type="search"/>
+</div>
+<div class="historyField">
+<label for="historyStart">開始日期</label>
+<input id="historyStart" type="date"/>
+</div>
+<div class="historyField">
+<label for="historyEnd">結束日期</label>
+<input id="historyEnd" type="date"/>
+</div>
+<div class="historyField full">
+<label for="historyType">類型</label>
+<select id="historyType">
+<option value="all">全部</option>
+<option value="leave">請假</option>
+<option value="extended">延托</option>
+<option value="temporary">臨托</option>
+</select>
+</div>
+<button class="historySearchBtn" onclick="searchTeacherHistory()" type="button">
+                      查詢紀錄
+                    </button>
+</div>
+<div class="status show info" id="historyStatus">
+                    可依暱稱、日期與類型查詢。
+                  </div>
+<div class="historyMeta" id="historyMeta"></div>
+<div class="historyResults" id="historyResults"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="hidden" id="pendingSection">
+<div class="status show warn">
+            LINE 綁定申請已送出，目前正在等待行政人員確認。
+          </div>
+<div class="identityBox">
+<div>
+              申請老師：
+              <strong id="pendingStaffName">—</strong>
+</div>
+<div>
+              LINE：
+              <strong id="pendingLineName">—</strong>
+</div>
+</div>
+<div class="note">
+            行政確認完成後，重新開啟本頁即可自動登入老師平台。
+          </div>
+</div>
+<div class="hidden" id="bindSection">
+<label for="staffBindingCode">
+            教職員綁定碼
+          </label>
+<input autocomplete="one-time-code" id="staffBindingCode" inputmode="text" maxlength="16" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,16)" placeholder="請輸入 16 碼綁定碼" type="text"/>
+<label style="display:flex;gap:8px;align-items:flex-start;margin:12px 0;cursor:pointer;font-size:.86rem;line-height:1.5">
+<input id="teacherPrivacyAck" style="width:auto;margin-top:4px" type="checkbox"/>
+<span>
+              我已閱讀
+              <a href="privacy.html" rel="noopener" target="_blank">個人資料蒐集告知暨隱私權說明</a>，
+              並了解本平台僅供教職員職務使用。
+            </span>
+</label>
+<button class="primary" disabled="" id="submitBtn" type="button">
+            送出 LINE 綁定申請
+          </button>
+<div class="status" id="status"></div>
+<div class="note">
+            為保護教職員個資，本平台不公開教職員名單。
+            請輸入行政人員提供的一次性綁定碼。
+            綁定碼驗證後仍需由行政人員確認，才會正式啟用。
+          </div>
+</div>
+<button class="secondary hidden" id="reloadBtn" type="button">
+          重新載入
+        </button>
+<button class="primary hidden" id="lineReloginBtn" type="button">
+          重新登入 LINE
+        </button>
+</div> </section>
+<div style="text-align:center;margin:18px 0 0;font-size:12px;color:#7d847c">
+<a href="privacy.html" rel="noopener" style="color:#52644e" target="_blank">個人資料蒐集告知暨隱私權說明</a>
+</div>
+<footer class="backToTopFooter">
+<button aria-label="回到網頁頂部" class="backToTopBtn" onclick="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})" type="button">↑ 回到頂部</button>
+</footer>
+</main>
+<dialog aria-labelledby="leyeRotationTitle" class="leyeRotationDialog" id="leyeRotationDialog">
+<div class="rotationDialogHeader"><h3 id="leyeRotationTitle">📅 每週導師輪值</h3><button aria-label="關閉教師輪值視窗" class="rotationClose" onclick="document.getElementById('leyeRotationDialog').close()" title="關閉" type="button">×</button></div>
+<p class="rotationStatus">每班兩位導師，每週一自動交替；臨時代班不影響下週順序。</p>
+<div id="leyeRotationClassPicker"><label for="leyeRotationClass">班級</label><select id="leyeRotationClass" onchange="loadTeacherRotation()"></select></div><p class="rotationStatus" hidden="" id="leyeRotationOwnClass"></p>
+<p class="rotationStatus" id="leyeRotationStatus" role="status">讀取中…</p>
+<details class="rotationSection"><summary><span class="rotationSectionTitle">首次設定／重設未來輪值</span><small>設定每週自動輪替的起點</small></summary><div class="rotationSectionBody">
+<label for="leyeRotationStart">起始週（一）</label><input id="leyeRotationStart" type="date">
+<label for="leyeRotationFirst">第一週主責</label><select id="leyeRotationFirst"></select>
+<button class="saveRotation" onclick="saveTeacherRotation()" type="button">儲存輪值設定</button>
+</input></div></details>
+<details class="rotationSection"><summary><span class="rotationSectionTitle">整週手動修正</span><small>僅調整指定的一週</small></summary><div class="rotationSectionBody">
+<label for="leyeRotationOverrideWeek">指定週（一）</label><input id="leyeRotationOverrideWeek" type="date">
+<label for="leyeRotationSubstitute">該週主責導師</label><select id="leyeRotationSubstitute"></select>
+<button class="saveRotation" onclick="saveTeacherRotationOverride()" type="button">指定該週代班</button>
+<button onclick="clearTeacherRotationOverride()" type="button">取消該週代班，恢復自動輪值</button>
+</input></div></details>
+<details class="rotationSection"><summary><span class="rotationSectionTitle">臨時請假代班（可指定單日或連續日期）</span><small>只調整選定日期</small></summary><div class="rotationSectionBody">
+<p class="rotationStatus">選擇請假起訖日期，系統由另一位導師接手指定期間；結束後恢復原定輪值。</p>
+<label for="leyeRotationLeaveStart">請假開始日期</label><input id="leyeRotationLeaveStart" type="date">
+<label for="leyeRotationLeaveEnd">請假結束日期</label><input id="leyeRotationLeaveEnd" type="date">
+<label for="leyeRotationLeaveTeacher">代班導師</label><select id="leyeRotationLeaveTeacher"></select>
+<button class="saveRotation" onclick="saveTeacherRotationLeave()" type="button">確認指定日期代班</button>
+<button onclick="clearTeacherRotationLeave()" type="button">取消指定日期代班</button>
+<p class="rotationStatus" id="leyeRotationLeaveStatus" role="status"></p>
+</input></input></div></details>
+<p class="rotationStatus">僅可調整自己任教班級；代班不影響下一週的輪值，也不會補發歷史 LINE 通知。</p>
+</dialog>
+<script>
+const LIFF_ID =
+  "2011987947-mIbgSMNU";
+
+const BIND_FUNCTION_URL =
+  "https://cqtvrpiapssjjctwqivn.supabase.co/functions/v1/line-teacher-bind";
+
+const AUTH_FUNCTION_URL =
+  "https://cqtvrpiapssjjctwqivn.supabase.co/functions/v1/line-teacher-auth";
+
+const SUPABASE_URL =
+  "https://cqtvrpiapssjjctwqivn.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_PTpcF08CriR4_kH9KamB1w_akgHzTYw";
+
+const teacherSupabase =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth:{
+        storageKey:
+          "leye-teacher-auth",
+
+        storage:
+          window.sessionStorage,
+
+        persistSession:
+          true,
+
+        autoRefreshToken:
+          true,
+
+        detectSessionInUrl:
+          false
+      }
+    }
+  );
+
+let idToken = "";
+let profile = null;
+
+const el =
+  (id) => document.getElementById(id);
+
+function showStatus(
+  message,
+  type = "info"
+){
+  const box = el("status");
+
+  box.className =
+    "status show " + type;
+
+  box.textContent =
+    message;
+}
+
+function hideAllStateSections(){
+  el("boundSection")
+    .classList.add("hidden");
+
+  el("pendingSection")
+    .classList.add("hidden");
+
+  el("bindSection")
+    .classList.add("hidden");
+}
+
+function setBusy(busy){
+  el("submitBtn").disabled =
+    busy ||
+    el("staffBindingCode").value.length !== 16 ||
+    !el("teacherPrivacyAck").checked;
+
+  el("submitBtn").textContent =
+    busy
+      ? "送出中…"
+      : "送出 LINE 綁定申請";
+}
+
+function roleLabel(role){
+  if(role === "admin_viewer") return "行政老師（僅查看）";
+  if(role === "admin"){
+    return "行政人員";
+  }
+
+  if(role === "class_teacher"){
+    return "原班老師";
+  }
+
+  if(role === "aftercare_teacher"){
+    return "課後／支援老師";
+  }
+
+  return "教職員";
+}
+
+function isLineTokenExpiredError(err){
+  const code =
+    err?.data?.error ||
+    err?.data?.code ||
+    "";
+
+  const message =
+    String(
+      err?.message ||
+      err?.data?.message ||
+      ""
+    );
+
+  return (
+    code === "invalid_line_token"
+    ||
+    message.includes("LINE 身分驗證失敗")
+  );
+}
+
+async function forceLineRelogin(){
+  try{
+    el("lineReloginBtn")
+      .disabled = true;
+
+    el("lineReloginBtn")
+      .textContent =
+        "正在開啟 LINE 登入…";
+
+    try{
+      await teacherSupabase
+        .auth
+        .signOut();
+    }
+    catch(_){ }
+
+    if(
+      liff.isLoggedIn()
+    ){
+      liff.logout();
+    }
+
+    liff.login({
+      redirectUri:
+        window.location.href
+    });
+  }
+  catch(err){
+    console.error(
+      "LINE relogin error:",
+      err
+    );
+    el("lineReloginBtn")
+      .disabled = false;
+
+    el("lineReloginBtn")
+      .textContent =
+        "重新登入 LINE";
+
+    showStatus(
+      "無法重新開啟 LINE 登入，請關閉此分頁後再從老師入口進入。",
+      "error"
+    );
+  }
+}
+
+async function callFunction(
+  url,
+  payload
+){
+  const res =
+    await fetch(
+      url,
+      {
+        method:"POST",
+
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
+
+        body:
+          JSON.stringify(payload)
+      }
+    );
+
+  let data = {};
+
+  try{
+    data =
+      await res.json();
+  }
+  catch(_){}
+
+  if(!res.ok){
+    const err =
+      new Error(
+        data?.message ||
+        "系統目前無法處理，請稍後再試。"
+      );
+
+    err.data = data;
+
+    throw err;
+  }
+
+  return data;
+}
+
+
+const teacherWarmQuotes=[{"id":1,"text":"教師有三種愛：對學習的愛、對學習者的愛，以及將前兩種愛結合在一起的愛。","author":"史考特・海登"},{"id":2,"text":"教學的藝術，就是協助發現的藝術。","author":"馬克・範・多倫"},{"id":4,"text":"老師是怎樣的人，比他教些什麼更重要。","author":"卡爾・梅寧格"},{"id":5,"text":"有時候，一個溫柔的回應，就是孩子今天最安心的時刻。","author":"樂業附幼・暖心小語"},{"id":6,"text":"不一定每一天都看得見進步，但陪伴本身就有意義。","author":"樂業附幼・暖心小語"},{"id":7,"text":"每個孩子都有自己的步調，而你正在學著欣賞不同的花期。","author":"樂業附幼・暖心小語"},{"id":8,"text":"今天陪孩子發現一件新鮮事，也是一份小小的幸福。","author":"樂業附幼・暖心小語"},{"id":9,"text":"教育不只是帶孩子往前走，也是在一起探索世界。","author":"樂業附幼・暖心小語"},{"id":10,"text":"不必成為完美的老師，真誠而穩定的陪伴就很珍貴。","author":"樂業附幼・暖心小語"},{"id":11,"text":"今天或許很忙，但你已經一步一步完成了好多事情。","author":"樂業附幼・暖心小語"},{"id":12,"text":"努力不一定要轟轟烈烈，日常裡的用心也很值得肯定。","author":"樂業附幼・暖心小語"},{"id":13,"text":"有些日子只求平穩度過，那也已經很好了。","author":"樂業附幼・暖心小語"},{"id":14,"text":"生活不是一場速度競賽，照自己的節奏走，也能走得很遠。","author":"樂業附幼・暖心小語"},{"id":15,"text":"你做過的那些細心小事，也值得被好好看見。","author":"樂業附幼・暖心小語"},{"id":16,"text":"不用每件事都做到一百分，留一點空間給自己。","author":"樂業附幼・暖心小語"},{"id":17,"text":"今天完成的每一件小事，都是認真生活的證明。","author":"樂業附幼・暖心小語"},{"id":18,"text":"即使事情沒有照預期發展，也不代表今天的努力白費。","author":"樂業附幼・暖心小語"},{"id":19,"text":"一步一步來就好，你不需要同時做好所有事情。","author":"樂業附幼・暖心小語"},{"id":20,"text":"願你在忙碌的一天裡，也有一件值得微笑的小事。","author":"樂業附幼・暖心小語"},{"id":21,"text":"好好休息不是偷懶，而是讓自己重新擁有喜歡生活的力氣。","author":"樂業附幼・暖心小語"},{"id":22,"text":"照顧別人很重要，記得也把自己放進需要照顧的名單裡。","author":"樂業附幼・暖心小語"},{"id":23,"text":"允許自己偶爾疲憊，不會減少你認真工作的價值。","author":"樂業附幼・暖心小語"},{"id":24,"text":"今天已經夠努力了，剩下的事情可以明天再慢慢完成。","author":"樂業附幼・暖心小語"},{"id":25,"text":"你不必一直很有力量，偶爾需要被支持也很好。","author":"樂業附幼・暖心小語"},{"id":26,"text":"忙碌之間，記得喝口水、伸伸懶腰，也對自己溫柔一點。","author":"樂業附幼・暖心小語"},{"id":28,"text":"不需要用忙碌證明價值，平靜的日子同樣值得珍惜。","author":"樂業附幼・暖心小語"},{"id":29,"text":"有時候最好的前進方式，就是先讓自己好好休息。","author":"樂業附幼・暖心小語"},{"id":31,"text":"不熟悉的事情慢慢學就好，沒有人需要一開始就什麼都會。","author":"樂業附幼・暖心小語"},{"id":32,"text":"每一次願意嘗試，都是在為自己打開新的可能。","author":"樂業附幼・暖心小語"},{"id":33,"text":"今天不順利的事，也許會成為明天更從容的經驗。","author":"樂業附幼・暖心小語"},{"id":34,"text":"成長不一定是變得更厲害，也可能是越來越懂得照顧自己。","author":"樂業附幼・暖心小語"},{"id":35,"text":"不必和別人的進度比較，你正在走自己的路。","author":"樂業附幼・暖心小語"},{"id":36,"text":"勇敢不是從不緊張，而是緊張的時候也允許自己慢慢嘗試。","author":"樂業附幼・暖心小語"},{"id":37,"text":"有些答案需要時間，現在還不知道也沒關係。","author":"樂業附幼・暖心小語"},{"id":38,"text":"遇到困難時，願意求助也是一種很好的能力。","author":"樂業附幼・暖心小語"},{"id":39,"text":"一點一點的改變，久了也會成為令人驚喜的成長。","author":"樂業附幼・暖心小語"},{"id":40,"text":"今天學會了什麼，比今天有沒有做到完美更值得記住。","author":"樂業附幼・暖心小語"},{"id":41,"text":"一個人的努力很珍貴，一群人的互相照應更讓人安心。","author":"樂業附幼・暖心小語"},{"id":42,"text":"願你每天上班，都能遇見一點善意和一點好心情。","author":"樂業附幼・暖心小語"},{"id":44,"text":"有些幸福很簡單：一杯喜歡的飲料、一頓好吃的午餐。","author":"樂業附幼・暖心小語"},{"id":45,"text":"希望今天的你，除了照顧孩子，也被生活好好照顧。","author":"樂業附幼・暖心小語"},{"id":46,"text":"不是每一天都要閃閃發亮，平凡而自在也很好。","author":"樂業附幼・暖心小語"},{"id":47,"text":"日子有忙有閒、有晴有雨，你依然值得擁有好心情。","author":"樂業附幼・暖心小語"},{"id":48,"text":"如果今天有點累，就把步伐放慢一些，沒有關係的。","author":"樂業附幼・暖心小語"},{"id":49,"text":"願我們不只一起把工作做好，也能一起分享生活的小快樂。","author":"樂業附幼・暖心小語"},{"id":50,"text":"謝謝今天的自己，也期待明天會有新的小美好。","author":"樂業附幼・暖心小語"},{"id":51,"text":"今天有完成的事，也有還沒完成的事，沒關係，明天再慢慢來。","author":"樂業附幼・暖心小語"},{"id":52,"text":"一天裡總會有幾個忙亂的時刻，但不代表整天都不美好。","author":"樂業附幼・暖心小語"},{"id":53,"text":"你不需要每天都進步，有時候維持自己的步調就很好。","author":"樂業附幼・暖心小語"},{"id":54,"text":"小小的休息，也能讓平凡的一天多一點舒服。","author":"樂業附幼・暖心小語"},{"id":55,"text":"有些事情慢一點完成，也是一種從容。","author":"樂業附幼・暖心小語"},{"id":56,"text":"願你今天遇到的善意，比需要煩惱的事情還多一點。","author":"樂業附幼・暖心小語"},{"id":57,"text":"每個人都有自己的生活節奏，不用急著追上任何人。","author":"樂業附幼・暖心小語"},{"id":58,"text":"你值得擁有一段不用趕時間、只屬於自己的時光。","author":"樂業附幼・暖心小語"},{"id":59,"text":"工作之外，你還有好多值得期待的小小幸福。","author":"樂業附幼・暖心小語"},{"id":60,"text":"不必為了成為更好的自己，而忘了喜歡現在的自己。","author":"樂業附幼・暖心小語"},{"id":61,"text":"有時候，今天最值得慶祝的事，就是好好吃了一頓飯。","author":"樂業附幼・暖心小語"},{"id":62,"text":"願每個認真生活的日子，都留得下一點輕鬆與自在。","author":"樂業附幼・暖心小語"}];
+let warmQuoteDeck=[],warmQuotePosition=0,warmQuoteTimer=null;
+function randomQuoteDeck(){
+ const arr=[...teacherWarmQuotes];
+ for(let i=arr.length-1;i>0;i--){
+   const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];
+ }
+ const previous=localStorage.getItem("leye-last-first-warm-quote");
+ if(arr.length>1&&String(arr[0].id)===previous)[arr[0],arr[1]]=[arr[1],arr[0]];
+ localStorage.setItem("leye-last-first-warm-quote",String(arr[0].id));
+ return arr;
+}
+function showWarmQuote(){
+ const quote=warmQuoteDeck[warmQuotePosition];if(!quote)return;
+ el("warmQuoteText").textContent="「"+quote.text+"」";
+ el("warmQuoteAuthor").textContent="—— "+quote.author;
+
+}
+function changeWarmQuote(direction){
+ if(!warmQuoteDeck.length)return;
+ warmQuotePosition=(warmQuotePosition+direction+warmQuoteDeck.length)%warmQuoteDeck.length;
+ showWarmQuote();startWarmQuoteTimer();
+}
+function startWarmQuoteTimer(){
+ if(warmQuoteTimer)clearInterval(warmQuoteTimer);
+ if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+ warmQuoteTimer=setInterval(()=>{
+   if(document.hidden)return;
+   warmQuotePosition=(warmQuotePosition+1)%warmQuoteDeck.length;
+   if(warmQuotePosition===0)warmQuoteDeck=randomQuoteDeck();
+   showWarmQuote();
+ },30000);
+}
+function initializeWarmQuotes(){
+ try{warmQuoteDeck=randomQuoteDeck();warmQuotePosition=0;showWarmQuote();startWarmQuoteTimer();}
+ catch(error){console.warn("暖心語錄暫時無法使用",error);}
+}
+
+function classNamesText(list){
+  if(!Array.isArray(list) || list.length === 0){
+    return "目前沒有";
+  }
+
+  return [...new Set(list.map(item => item?.name || item?.id || "").filter(Boolean))].join("、");
+}
+
+async function loadTeacherScope(){
+  const scopeBox = el("scopeStatus");
+
+  scopeBox.className = "status show info";
+  scopeBox.textContent = "正在讀取老師可查看範圍…";
+
+  const { data, error } =
+    await teacherSupabase.rpc(
+      "get_teacher_scope"
+    );
+
+  if(error){
+    console.error("get_teacher_scope error:", error);
+    throw new Error(
+      "老師權限範圍讀取失敗。"
+    );
+  }
+
+  const morning = data?.morning_classes || [];
+  const aftercare = data?.aftercare_classes || [];
+  const special = data?.special_classes || [];
+
+  el("morningScope").textContent = classNamesText(morning);
+  el("aftercareScope").textContent = classNamesText(aftercare);
+  el("specialScope").textContent = classNamesText(special);
+
+  scopeBox.className = "status show ok";
+  scopeBox.textContent = ""; 
+  ["morning","aftercare","special"].forEach(key=>{const card=el(key+"ScopeCard");const list=key==="morning"?morning:key==="aftercare"?aftercare:special;if(card)card.style.display=list.length?"":"none";});
+  el("morningScopeCard").querySelector(".scopeLabel").textContent="班級幼兒概況";
+  el("teacherScopeGrid").style.display="none";
+
+  return data;
+}
+
+function formatClock(value){
+  if(!value){
+    return "—";
+  }
+
+  const text = String(value);
+
+  if(
+    /^\d{2}:\d{2}/.test(text)
+  ){
+    return text.slice(0,5);
+  }
+
+  return text;
+}
+
+function formatDateText(value){
+  if(!value){
+    return "今日";
+  }
+
+  const parts = String(value).split("-");
+
+  if(parts.length === 3){
+    return `${Number(parts[1])}/${Number(parts[2])}`;
+  }
+
+  return String(value);
+}
+
+function setText(id, value){
+  const node = el(id);
+
+  if(node){
+    node.textContent =
+      value == null
+        ? ""
+        : String(value);
+  }
+}
+
+function formatDateTime(value){
+  if(!value){
+    return "—";
+  }
+
+  const date = new Date(value);
+
+  if(Number.isNaN(date.getTime())){
+    return String(value);
+  }
+
+  return new Intl.DateTimeFormat(
+    "zh-TW",
+    {
+      timeZone:"Asia/Taipei",
+      month:"numeric",
+      day:"numeric",
+      hour:"2-digit",
+      minute:"2-digit",
+      hour12:false
+    }
+  ).format(date);
+}
+
+async function actOnTeacherItem(
+  item,
+  actionType,
+  card
+){
+  const sourceType =
+    item?.source_type;
+
+  const sourceId =
+    item?.source_id;
+
+  if(!sourceType || !sourceId){
+    alert("這筆事項缺少來源資料，請重新整理後再試。");
+    return;
+  }
+
+  const actionText =
+    actionType === "handled"
+      ? "標記已處理"
+      : "確認收到";
+
+  const ok = confirm(
+    `${staffChildNickname(item?.child_name || "") || "這位幼兒"}：確定要${actionText}嗎？`
+  );
+
+  if(!ok){
+    return;
+  }
+
+  if(card){
+    card.classList.add("actionBusy");
+  }
+
+  try{
+    const {
+      data,
+      error
+    } = await teacherSupabase.rpc(
+      "teacher_act_on_item",
+      {
+        p_source_type:sourceType,
+        p_source_id:sourceId,
+        p_action_type:actionType,
+        p_note:null
+      }
+    );
+
+    if(error){
+      console.error(
+        "teacher_act_on_item error:",
+        error
+      );
+
+      if(
+        String(error.message || "").includes("MUST_CONFIRM_FIRST")
+      ){
+        throw new Error("請先按「確認收到」，再標記已處理。");
+      }
+
+      throw new Error("事項狀態更新失敗，請稍後再試。");
+    }
+
+    await loadTeacherWeekItems();
+
+    return data;
+  }
+  catch(err){
+    console.error(err);
+    alert(
+      err?.message ||
+      "事項狀態更新失敗，請稍後再試。"
+    );
+  }
+  finally{
+    if(card){
+      card.classList.remove("actionBusy");
+    }
+  }
+}
+
+
+// 樂業附幼 2026/10：實際接送時間採「區間紀錄」，不代入逾時計費公式。
+let leyeTodayStatus=new Map();
+let leyeDialogChild="";
+let leyeDialogAction="";
+function leyeTaipeiDay(){return new Date().toLocaleDateString("sv-SE",{timeZone:"Asia/Taipei"});}
+function leyeTaipeiClock(){return new Date().toLocaleTimeString("sv-SE",{timeZone:"Asia/Taipei",hour12:false}).slice(0,5);}
+function leyeTodayChildStatus(id){return leyeTodayStatus.get(String(id))||null;}
+function leyeTeacherActionButton(childId,kind,label,warning=false){
+  if(!/^[0-9a-f-]{36}$/i.test(String(childId||"")))return "";
+  return `<button type="button" class="leyeActionBtn ${warning?"warn":""}" onclick="openLeYeTeacherAction('${childId}','${kind}')">${escapeHtmlText(label)}</button>`;
+}
+async function loadLeYeTodayStatus(roster){
+  const list=[];
+  for(const g of [...(roster?.morning_groups||[]),...(roster?.aftercare_groups||[])]){
+    for(const x of [...(g?.children||[]),...(g?.regular_children||[]),...(g?.temporary_children||[])])if(x?.child_id)list.push(x.child_id);
+  }
+  const ids=[...new Set(list)];
+  if(!ids.length){leyeTodayStatus=new Map();return;}
+  const {data,error}=await teacherSupabase.rpc("teacher_today_child_status",{p_child_ids:ids,p_day:leyeTaipeiDay()});
+  if(error){console.warn("今日狀態讀取失敗",error);leyeTodayStatus=new Map();return;}
+  leyeTodayStatus=new Map((data||[]).map(x=>[String(x.child_id),x]));
+}
+function fillLeYeTimeOptions(opts){
+ const elSel=document.getElementById("leyeDialogTime");
+ elSel.innerHTML=opts.map(([value,label])=>`<option value="${value}">${label}</option>`).join("");
+}
+function updateLeYeLongLeaveMode(){
+ const multi=document.getElementById("leyeDialogLeaveMode").value==="multi";
+ document.getElementById("leyeDialogLeaveEndWrap").style.display=multi?"":"none";
+ if(multi && !document.getElementById("leyeDialogLeaveEnd").value)document.getElementById("leyeDialogLeaveEnd").value=document.getElementById("leyeDialogDate").value;
+}
+function leyeLongLeaveDates(start,end){
+ const parse=x=>{const [y,m,d]=x.split("-").map(Number);const v=new Date(Date.UTC(y,m-1,d));if(v.toISOString().slice(0,10)!==x)throw Error("日期格式不正確");return v;};
+ const a=parse(start),b=parse(end),days=Math.round((b-a)/86400000);
+ if(days<0)throw Error("結束日期不可早於開始日期");
+ if(days>30)throw Error("多日請假最多連續31天");
+ return Array.from({length:days+1},(_,i)=>new Date(a.getTime()+i*86400000).toISOString().slice(0,10));
+}
+function updateLeYeActionFields(){
+ const type=leyeDialogAction==="proxy"?document.getElementById("leyeDialogType").value:leyeDialogAction;
+ const timeWrap=document.getElementById("leyeDialogTimeWrap");
+ const dateWrap=document.getElementById("leyeDialogDateWrap");
+ dateWrap.style.display=leyeDialogAction==="proxy"?"":"none";
+ document.getElementById("leyeDialogLongLeaveWrap").style.display=leyeDialogAction==="proxy"&&(type==="leave"||type==="aftercare_leave")?"":"none";
+ document.getElementById("leyeAftercareLeaveInfo").style.display=type==="aftercare_leave"?"":"none";
+ timeWrap.style.display=(type==="leave"||type==="aftercare_leave")?"none":"";
+ const now=leyeTaipeiClock();
+ if(type==="slot"){
+   timeWrap.style.display="";
+ }else if(type==="early"){
+   const a=[];for(let h=7;h<=18;h++)for(let m of [0,15,30,45]){
+     const t=String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");if(t < String(leyeTodayChildStatus(leyeDialogChild)?.original_pickup_time||"16:00").slice(0,5))a.push([t,t]);}
+   fillLeYeTimeOptions(a);
+   const upcoming=a.find(x=>x[0]>=now);
+   if(upcoming)document.getElementById("leyeDialogTime").value=upcoming[0];
+ }else if(type==="temporary")fillLeYeTimeOptions([["17:00","16:00～17:00"],["18:00","16:00～18:00"]]);
+ else if(type==="late"||type==="late18")fillLeYeTimeOptions([["17:00","暫列 17:00"],["18:00","暫列 18:00"]]);
+ else if(type==="extended")fillLeYeTimeOptions([["18:00","17:00～18:00"]]);
+}
+async function openLeYeTeacherAction(childId,action){
+  leyeDialogChild=childId;leyeDialogAction=action;
+  const dlg=document.getElementById("leyeTeacherDialog");
+  document.getElementById("leyeDialogError").textContent="";
+  document.getElementById("leyeDialogReason").value="";
+  document.getElementById("leyeDialogDate").value=leyeTaipeiDay();
+  document.getElementById("leyeDialogLeaveEnd").value=leyeTaipeiDay();
+  document.getElementById("leyeDialogLeaveMode").value="single";
+  updateLeYeLongLeaveMode();
+  document.getElementById("leyeDialogTypeWrap").style.display=action==="proxy"?"":"none";
+  document.getElementById("leyeDialogTitle").textContent=action==="slot"?"選擇已接送時段":action==="proxy"?"老師代家長登記":"16:00 未接回安排";
+  document.getElementById("leyeDialogHint").textContent=action==="slot"?"請依現場實際接送時段登記。時段僅供接送核對，不自動產生或修改費用。":action==="proxy"?"紀錄操作老師，托育申請仍須依園方規定審核。":"先暫列17:00；確認後可改為18:00。未經確認不視為托育核准。";
+  updateLeYeActionFields();
+  if(action==="slot"){
+    const {data,error}=await teacherSupabase.rpc("leye_pickup_slot_options");
+    if(error){alert("時段讀取失敗："+error.message);return;}
+    const now=leyeTaipeiClock();
+    const list=(data||[]).map(x=>[String(x.slot_start).slice(0,5)+"|"+String(x.slot_end).slice(0,5),String(x.slot_start).slice(0,5)+"－"+String(x.slot_end).slice(0,5)])
+      .filter(x=>x[0].split("|")[1]<=now);
+    if(!list.length){alert("目前尚無可選擇的已完成時段。");return;}
+    fillLeYeTimeOptions(list);
+    document.getElementById("leyeDialogTime").value=list[list.length-1][0];
+  }
+  if(action==="late18")document.getElementById("leyeDialogTime").value="18:00";
+  dlg.showModal();
+}
+async function verifyTeacherRpcSession(){
+  const {data, error} = await teacherSupabase.auth.getUser();
+  if(error || !data?.user){
+    throw new Error("老師登入狀態已失效，請關閉平台並從 LINE 重新開啟。");
+  }
+  const {data:sessionData,error:sessionError} = await teacherSupabase.auth.getSession();
+  if(sessionError || !sessionData?.session?.access_token){
+    throw new Error("缺少 Supabase 登入憑證，請從 LINE 重新開啟教師平台。");
+  }
+  const token = sessionData.session.access_token;
+  try{
+    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g,"+").replace(/_/g,"/")));
+    if(payload.role !== "authenticated"){
+      throw new Error("目前登入角色為「"+(payload.role||"未知")+"」，不是 authenticated，請通知管理員檢查 line-teacher-auth。");
+    }
+  }catch(err){
+    if(err?.message?.includes("目前登入角色")) throw err;
+    throw new Error("無法驗證登入憑證角色，請從 LINE 重新開啟教師平台。");
+  }
+}
+
+async function saveLeYeTeacherAction(){
+ const btn=document.getElementById("leyeDialogSubmit");
+ const errorBox=document.getElementById("leyeDialogError");
+ const time=document.getElementById("leyeDialogTime").value;
+ const date=document.getElementById("leyeDialogDate").value;
+ const reason=document.getElementById("leyeDialogReason").value.trim();
+ btn.disabled=true;errorBox.textContent="";
+ try{
+  let rpc,args;
+  if(leyeDialogAction==="slot"){
+    const parts=time.split("|");
+    rpc="teacher_record_pickup_slot";
+    args={p_child_id:leyeDialogChild,p_pickup_date:leyeTaipeiDay(),p_slot_start:parts[0],p_slot_end:parts[1],p_note:reason||null};
+  }else if(leyeDialogAction==="proxy"){
+    rpc="teacher_proxy_child_request";
+    const type=document.getElementById("leyeDialogType").value;
+    if(type==="aftercare_leave"){
+      const multi=document.getElementById("leyeDialogLeaveMode").value==="multi";
+      const dates=leyeLongLeaveDates(date,multi?document.getElementById("leyeDialogLeaveEnd").value:date)
+        .filter(day=>new Date(day+"T12:00:00Z").getUTCDay()%6!==0);
+      if(!dates.length)throw Error("期間沒有平日服務日");
+      if(dates.some(day=>day<leyeTaipeiDay()))throw Error("不可登記過去日期");
+      if(!confirm(`確認課後照顧請假？\n${dates[0]} 至 ${dates[dates.length-1]}\n正常上課，課後改16:00接回。`))return;
+      await verifyTeacherRpcSession();
+      const {data,error}=await teacherSupabase.rpc("leye_teacher_submit_aftercare_leave",{
+        p_child_id:leyeDialogChild,p_dates:dates,p_note:reason||null
+      });
+      if(error)throw Error("課後請假尚未完成後端設定或登記失敗："+error.message);
+      if(!data?.ok)throw Error(data?.message||"登記未完成");
+      document.getElementById("leyeTeacherDialog").close();
+      alert("課後照顧請假已登記。");
+      await loadTeacherRoster();
+      if(typeof loadTeacherWeekItems==="function")await loadTeacherWeekItems();
+      return;
+    }
+    if(type==="leave" && document.getElementById("leyeDialogLeaveMode").value==="multi"){
+      const end=document.getElementById("leyeDialogLeaveEnd").value;
+      if(!date||!end)throw Error("請選擇開始與結束日期");
+      const dates=leyeLongLeaveDates(date,end);
+      if(!confirm(`確認代家長登記長假？\n日期：${date} 至 ${end}\n共 ${dates.length} 個日曆日（系統將逐日檢查登記）`))return;
+      await verifyTeacherRpcSession();
+      const {data:existing,error:existingError}=await teacherSupabase.from("requests")
+        .select("request_date").eq("child_id",leyeDialogChild).eq("request_type","leave")
+        .in("status",["submitted","pending","approved"]).gte("request_date",date).lte("request_date",end);
+      if(existingError)throw Error("無法確認既有請假，未開始新增："+existingError.message);
+      const occupied=new Set((existing||[]).map(x=>x.request_date));
+      let added=0,skipped=0,failed=[];
+      for(const day of dates){
+        if(occupied.has(day)){skipped++;continue;}
+        const result=await teacherSupabase.rpc("teacher_proxy_child_request",{p_child_id:leyeDialogChild,p_request_date:day,p_type:"leave",p_end_or_early_time:null,p_reason:reason||null});
+        if(result.error||!result.data?.ok){failed.push(day+"："+(result.error?.message||"登記未完成"));continue;}
+        added++;
+      }
+      if(added){document.getElementById("leyeTeacherDialog").close();await loadTeacherRoster();if(typeof loadTeacherWeekItems==="function")await loadTeacherWeekItems();}
+      alert(`長假登記結果：新增 ${added} 天、略過已請假 ${skipped} 天、失敗 ${failed.length} 天。`+(failed.length?"\n"+failed.join("\n"):""));
+      return;
+    }
+    args={p_child_id:leyeDialogChild,p_request_date:date,p_type:type,p_end_or_early_time:type==="leave"?null:type==="extended"?"18:00":time,p_reason:reason||null};
+  }else{
+    rpc="teacher_provisional_late_pickup";
+    args={p_child_id:leyeDialogChild,p_pickup_date:leyeTaipeiDay(),p_end_time:time,p_reason:reason||null};
+  }
+  await verifyTeacherRpcSession();
+  const {data,error}=await teacherSupabase.rpc(rpc,args);
+  if(error)throw error;
+  if(!data?.ok)throw Error("登記未完成");
+  document.getElementById("leyeTeacherDialog").close();
+  alert("✓ 已儲存。需要審核的托育申請請由行政確認。");
+  await loadTeacherRoster();
+  if(typeof loadTeacherWeekItems==="function")await loadTeacherWeekItems();
+ }catch(err){errorBox.textContent="無法儲存："+(err?.message||String(err));}
+ finally{btn.disabled=false;}
+}
+
+function rosterBadgeHtml(
+  text,
+  className=""
+){
+  return `<span class="rosterBadge ${className}">${escapeHtmlText(text)}</span>`;
+}
+
+function rosterChildHtml(
+  child,
+  mode,
+  canConfirmPickup=false
+){
+  const todayStatus=leyeTodayChildStatus(child?.child_id);
+  const isLeave=child?.is_leave===true || todayStatus?.status_code==="leave";
+
+  const badges=[];
+  if(todayStatus?.status_text){badges.push(rosterBadgeHtml(todayStatus.status_text,todayStatus.status_code==="leave"?"leave":""));}
+
+
+  if(isLeave && todayStatus?.status_code!=="leave"){
+    badges.push(
+      rosterBadgeHtml(
+        mode==="temporary"
+          ? "請假｜臨托不執行"
+          : "請假",
+        "leave"
+      )
+    );
+  }
+  else if(
+    mode==="temporary"
+  ){
+    const period=[
+      formatClock(child?.requested_start_time),
+      formatClock(child?.requested_end_time)
+    ]
+      .filter(v=>v && v!=="—")
+      .join("～");
+
+    badges.push(
+      rosterBadgeHtml(
+        period
+          ? `臨托 ${period}`
+          : "臨托",
+        "temporary"
+      )
+    );
+  }
+  else if(
+    child?.is_extended===true
+    || child?.extended_status
+  ){
+    badges.push(
+      rosterBadgeHtml(
+        "延托",
+        "extended"
+      )
+    );
+  }
+  else if(
+    mode==="morning"
+    && child?.temporary_status
+  ){
+    badges.push(
+      rosterBadgeHtml(
+        "臨托",
+        "temporary"
+      )
+    );
+  }
+  else if(
+    mode==="morning"
+    && child?.extended_status
+  ){
+    badges.push(
+      rosterBadgeHtml(
+        "延托",
+        "extended"
+      )
+    );
+  }
+  else if(
+    mode==="regular"
+  ){
+    badges.push(
+      rosterBadgeHtml(
+        child?.scheduled_pickup_time
+          ? `課後至 ${formatClock(child.scheduled_pickup_time)}`
+          : "課後"
+      )
+    );
+  }
+  else if(
+    mode==="morning"
+    && child?.aftercare_class_id
+  ){
+    badges.push(
+      rosterBadgeHtml(
+        child?.scheduled_pickup_time
+          ? `課後 ${formatClock(child.scheduled_pickup_time)}`
+          : "有課後"
+      )
+    );
+  }
+
+  if(
+    mode==="temporary"
+    && child?.fee_status==="collected"
+  ){
+    badges.push(
+      rosterBadgeHtml(
+        "收費完成",
+        "paid"
+      )
+    );
+  }
+
+  const seat=
+    child?.seat_no!=null
+      ? `${child.seat_no}號 `
+      : "";
+
+  const meta=[];
+
+  if(child?.morning_class_name){
+    meta.push(child.morning_class_name);
+  }
+
+  if(
+    mode==="temporary"
+    && child?.request_status
+  ){
+    meta.push(
+      requestStatusLabel(
+        child.request_status
+      )
+    );
+  }
+
+  const childKey=String(child?.child_id||"");
+  const pickedUp=todayStatus?.status_code==="picked_up" || completedPilotPickupIds.has(childKey);
+  const isEarly=todayStatus?.status_code==="early";
+  const isWaitingLater=todayStatus?.status_code==="provisional";
+  let pickupControl="";
+  if(!isLeave && /^[0-9a-f-]{36}$/i.test(childKey)){
+    if(pickedUp)pickupControl='<span class="leyeCurrentBadge">✓ 已接送</span>';
+    else if(mode==="regular"||mode==="temporary"||isEarly){
+      pickupControl+=leyeTeacherActionButton(childKey,"slot","選擇已接送時段");
+    }
+    if(mode==="morning" && todayStatus?.status_code==="normal" && leyeTaipeiClock()>="16:00"){
+      pickupControl+=leyeTeacherActionButton(childKey,"late","16:00 未接回",true);
+    }
+    if(mode==="morning" && isWaitingLater){
+      pickupControl+=leyeTeacherActionButton(childKey,"late18","調整17:00／18:00",true);
+      pickupControl+=leyeTeacherActionButton(childKey,"slot","選擇已接送時段");
+    }
+    if(!pickedUp)pickupControl+=leyeTeacherActionButton(childKey,"proxy","協助家長登記");
+  }
+
+  return `
+    <details class="rosterChildRow rosterChildDisclosure ${isLeave?"leavePriority":""}">
+      <summary class="rosterChildSummary">
+        <span class="rosterChildIdentity">
+          <span class="rosterChildName">${escapeHtmlText(seat+staffChildNickname(child?.name))}</span>
+          <span class="rosterChildMeta">${escapeHtmlText(meta.join("｜"))}</span>
+        </span>
+        <span class="rosterChildSummaryBadges">${badges.join("")}</span>
+        <span class="rosterChildChevron" aria-hidden="true"></span>
+      </summary>
+      <div class="rosterChildActions">${pickupControl || '<span class="rosterNoActions">目前無需操作</span>'}</div>
+    </details>
+  `;
+}
+
+function rosterListHtml(
+  children,
+  mode,
+  canConfirmPickup=false
+){
+  if(
+    !Array.isArray(children)
+    || children.length===0
+  ){
+    return '<div class="rosterEmpty">目前沒有幼兒</div>';
+  }
+
+  return `
+    <div class="rosterChildList">
+      ${children.map(child=>rosterChildHtml(child,mode,canConfirmPickup)).join("")}
+    </div>
+  `;
+}
+
+let currentRosterStaffRole="";
+// 僅用於前端顯示；真正的存取限制仍須由後端 RPC 實施。
+function canDisplayLeaveDetails(){return ["admin","admin_viewer","class_teacher"].includes(currentRosterStaffRole);}
+function leaveCategoryLabel(reason){
+  const value=String(reason||"").split(/[｜|]/)[0].trim();
+  return ["病假","事假","家庭因素","其他"].includes(value)?value:"未填寫";
+}
+let completedPilotPickupIds=new Set();
+
+
+let adminSupportSlots=[];
+function adminSupportTimeOptions(){
+ let out=[];
+ for(let h=7;h<=18;h++)for(let m of [0,30])if(h!==18||m===0){const t=String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");out.push('<option value="'+t+'">'+t+'</option>');}
+ return out.join("");
+}
+async function loadAdminMorningSupport(roster){
+ const role=roster?.staff?.role,pane=el("adminMorningSupport");
+ if(!pane)return;
+ if(role!=="admin"&&role!=="admin_viewer"){pane.classList.add("hidden");return;}
+ pane.classList.remove("hidden");
+ const {data,error}=await teacherSupabase.rpc("admin_my_morning_support_slots");
+ if(error){el("adminSupportStatus").textContent="代班時段讀取失敗，請稍後重試。";return;}
+ adminSupportSlots=Array.isArray(data)?data:[];
+ const groups=Array.isArray(roster?.morning_groups)?roster.morning_groups:[];
+ el("adminSupportClass").innerHTML='<option value="">請選擇班級</option>'+groups.map(g=>'<option value="'+escapeHtmlText(g.class_id)+'">'+escapeHtmlText(g.class_name||g.class_id)+'</option>').join("");
+ for(let id of ["adminSupportStart","adminSupportEnd"])el(id).innerHTML=adminSupportTimeOptions();
+ el("adminSupportStart").value="09:00";el("adminSupportEnd").value="11:00";
+ el("adminSupportCurrent").textContent=adminSupportSlots.length?adminSupportSlots.map(x=>(groups.find(g=>g.class_id===x.class_id)?.class_name||x.class_id)+" "+x.start+"－"+x.end).join("、"):"無代班";
+ el("adminSupportList").innerHTML=adminSupportSlots.map(x=>{
+  const name=groups.find(g=>g.class_id===x.class_id)?.class_name||x.class_id;
+  return '<div class="supportSlot"><span>'+escapeHtmlText(name)+'　'+x.start+'－'+x.end+'</span><button type="button" onclick="removeAdminMorningSupportSlot(\''+x.id+'\')">取消</button></div>';
+ }).join("");
+ el("adminSupportStatus").textContent="時段內可操作；時段結束後當天仍可查看，不能繼續確認接送。";
+}
+async function saveAdminMorningSupport(){
+ const klass=el("adminSupportClass").value,start=el("adminSupportStart").value,end=el("adminSupportEnd").value,btn=el("adminSupportSave");
+ if(!klass){el("adminSupportStatus").textContent="請先選擇支援班級。";return;}
+ if(start>=end){el("adminSupportStatus").textContent="結束時間必須晚於開始時間。";return;}
+ if(!window.confirm("確認今天 "+start+"－"+end+" 支援「"+el("adminSupportClass").selectedOptions[0].textContent+"」？"))return;
+ btn.disabled=true;
+ try{
+  const {error}=await teacherSupabase.rpc("admin_self_morning_support_slot",{p_class_id:klass,p_start_time:start,p_end_time:end});
+  if(error)throw error;
+  await loadTeacherRoster();
+ }catch(e){el("adminSupportStatus").textContent="安排失敗："+(e.message||"請重新操作");}
+ finally{btn.disabled=false;}
+}
+async function removeAdminMorningSupportSlot(id){
+ if(!window.confirm("確定取消這筆今日補休代班？相關代班操作權限會立即收回。"))return;
+ const {error}=await teacherSupabase.rpc("admin_self_morning_support_slot",{p_class_id:null,p_start_time:null,p_end_time:null,p_remove_id:id});
+ if(error){el("adminSupportStatus").textContent="取消失敗："+error.message;return;}
+ await loadTeacherRoster();
+}
+function renderTeacherRoster(data,todayScope={}){
+  currentRosterStaffRole=data?.staff?.role||"";
+  const content=el("rosterContent");
+  const summary=el("rosterSummary");
+
+  const role=data?.staff?.role || "";
+  const morning=
+    Array.isArray(data?.morning_groups)
+      ? data.morning_groups
+      : [];
+
+  const aftercare=
+    Array.isArray(data?.aftercare_groups)
+      ? data.aftercare_groups
+      : [];
+
+  if(role==="admin"||role==="admin_viewer"){
+    el("rosterTitle").textContent=
+      "👥 全園班級幼兒";
+
+    summary.textContent=
+      `原班 ${morning.length} 班｜課後 ${aftercare.length} 班`;
+  }
+  else if(role==="aftercare_teacher" && morning.length===0){
+    el("rosterTitle").textContent=
+      "👥 今日課後班幼兒";
+
+    summary.textContent=
+      `今日課後 ${aftercare.length} 班`;
+  }
+  else if(aftercare.length){
+    summary.textContent=
+      `原班 ${morning.length} 班｜今日課後 ${aftercare.length} 班`;
+  }
+  else{
+    el("rosterTitle").textContent=
+      "👥 我的班級幼兒";
+
+    summary.textContent=
+      `原班 ${morning.length} 班`;
+  }
+
+  // 首頁只呈現自己今天負責的班級；六位行政另外可開啟全園名冊。
+  const morningIds=new Set(todayScope.morning_ids||[]);
+  const aftercareIds=new Set(todayScope.aftercare_ids||[]);
+  const ownMorning=morning.filter(group=>morningIds.has(group.class_id));
+  const ownAftercare=aftercare.filter(group=>aftercareIds.has(group.aftercare_class_id));
+  // 首次進入預設收合；更新資料時保留老師已手動展開的班級。
+  const todayBox=el("todayClassRosters");
+  const expandedTodayClasses=new Set(
+    Array.from(todayBox.querySelectorAll('.rosterClassDetails[open][data-roster-key]'))
+      .map(details=>details.dataset.rosterKey)
+  );
+  const todayGroups=[];
+  for(const group of ownMorning){
+    todayGroups.push('<details class="rosterClassDetails" data-roster-key="morning:'+escapeHtmlText(String(group.class_id||''))+'"><summary><span>🏫 '+escapeHtmlText(group.class_name||group.class_id)+'・班級幼兒</span><span class="rosterClassCount">'+Number(group.child_count||0)+' 人</span></summary><div class="rosterClassBody">'+rosterListHtml(group.children,"morning")+'</div></details>');
+  }
+  for(const group of ownAftercare){
+    todayGroups.push('<details class="rosterClassDetails" data-roster-key="aftercare:'+escapeHtmlText(String(group.aftercare_class_id||''))+'"><summary><span>🌙 '+escapeHtmlText(group.aftercare_class_name||group.aftercare_class_id)+'・今日課後班</span><span class="rosterClassCount">課後 '+Number(group.regular_count||0)+'｜臨托 '+Number(group.temporary_count||0)+'</span></summary><div class="rosterClassBody"><div class="rosterSubTitle">固定課後幼兒</div>'+rosterListHtml(group.regular_children,"regular",true)+(group.aftercare_leave_children?.length?'<div class="rosterSubTitle">課後請假（16:00接回）</div>'+rosterListHtml(group.aftercare_leave_children,"regular",false):'')+'<div class="rosterSubTitle">今日臨托</div>'+rosterListHtml(group.temporary_children,"temporary")+'</div></details>');
+  }
+  todayBox.innerHTML='<div class="todayClassHeading">🌿 今天的班級幼兒</div>'+(todayGroups.length?todayGroups.join(""):'<div class="rosterEmpty">今天沒有安排需要帶班的課程。</div>');
+  todayBox.querySelectorAll('.rosterClassDetails[data-roster-key]').forEach(details=>{
+    details.open=expandedTodayClasses.has(details.dataset.rosterKey);
+  });
+  const isAdmin=role==="admin"||role==="admin_viewer";
+  el("rosterDetails").style.display=isAdmin?"":"none";
+  el("rosterDetails").open=false;
+  const parts=[];
+
+  if(morning.length){
+    parts.push(
+      '<div class="rosterSectionTitle">🏫 原班幼兒</div>'
+    );
+
+    parts.push(
+      morning.map((group,index)=>`
+        <details class="rosterClassDetails" ${morning.length===1?"open":""}>
+          <summary>
+            <span>${escapeHtmlText(group.class_name||group.class_id)}</span>
+            <span class="rosterClassCount">${Number(group.child_count||0)} 人</span>
+          </summary>
+          <div class="rosterClassBody">
+            ${rosterListHtml(group.children,"morning")}
+          </div>
+        </details>
+      `).join("")
+    );
+  }
+
+  if(aftercare.length){
+    parts.push(
+      '<div class="rosterSectionTitle">🌙 今日課後班幼兒</div>'
+    );
+
+    parts.push(
+      aftercare.map((group,index)=>`
+        <details class="rosterClassDetails" ${aftercare.length===1?"open":""}>
+          <summary>
+            <span>${escapeHtmlText(group.aftercare_class_name||group.aftercare_class_id)}</span>
+            <span class="rosterClassCount">
+              課後 ${Number(group.regular_count||0)}｜臨托 ${Number(group.temporary_count||0)}
+            </span>
+          </summary>
+
+          <div class="rosterClassBody">
+            <div class="rosterSubTitle">
+              <span>① 該班級課後幼兒</span>
+              <span>${Number(group.regular_count||0)} 人</span>
+            </div>
+
+            ${rosterListHtml(group.regular_children,"regular",aftercareIds.has(group.aftercare_class_id))}
+
+            <div class="rosterSubTitle">
+              <span>② 今日臨托</span>
+              <span>${Number(group.temporary_count||0)} 人</span>
+            </div>
+
+            ${rosterListHtml(group.temporary_children,"temporary")}
+          </div>
+        </details>
+      `).join("")
+    );
+  }
+
+  if(!parts.length){
+    parts.push(
+      '<div class="rosterEmpty">目前沒有可查看的班級名冊。</div>'
+    );
+  }
+
+  content.innerHTML=parts.join("");
+}
+
+async function refreshLeYeProvisional(){
+  const box=document.getElementById("leyeProvisionalSection"),target=document.getElementById("leyeProvisionalList");
+  if(!box||!target)return;
+  const {data,error}=await teacherSupabase.rpc("teacher_provisional_pickup_list");
+  if(error){console.warn("暫列名單讀取失敗",error);box.style.display="none";return;}
+  if(!Array.isArray(data)||!data.length){box.style.display="none";return;}
+  box.style.display="";
+  target.innerHTML=data.map(x=>`<div class="rosterChildRow"><span>${escapeHtmlText(x.morning_class_name||"")}・${escapeHtmlText(staffChildNickname(x.child_name))}</span><span>${escapeHtmlText(String(x.provisional_end_time||"").slice(0,5))} 待確認 ${leyeTeacherActionButton(x.child_id,"late18","調整時間",true)}</span></div>`).join("");
+}
+
+async function leyeApplyAftercareLeaveToRoster(roster){
+ const day=roster?.date||leyeTaipeiDay();
+ const {data,error}=await teacherSupabase.rpc('leye_aftercare_leave_list',{p_start:day,p_end:day});
+ if(error){console.warn('課後請假名單未同步',error);return roster;}
+ const active=new Map((Array.isArray(data)?data:[]).filter(x=>x.status==='active').map(x=>[String(x.child_id),x]));
+ if(!active.size)return roster;
+ for(const group of roster.morning_groups||[]){
+  for(const child of group.children||[]){if(active.has(String(child.child_id))){child.aftercare_leave=true;child.scheduled_pickup_time='16:00:00';child.status_label='課後請假（16:00接回）';}}
+ }
+ for(const group of roster.aftercare_groups||[]){
+  const removed=[];
+  group.regular_children=(group.regular_children||[]).filter(child=>{
+   if(active.has(String(child.child_id))){removed.push({...child,aftercare_leave:true,status_label:'課後請假（16:00接回）',scheduled_pickup_time:'16:00:00'});return false;}
+   return true;
+  });
+  group.regular_count=group.regular_children.length;
+  group.aftercare_leave_children=removed;
+ }
+ return roster;
+}
+async function loadTeacherRoster(){
+  const status=el("rosterStatus");
+
+  status.className="status show info";
+  status.textContent="正在讀取班級名冊…";
+
+  const {data,error}=
+    await teacherSupabase.rpc(
+      "get_teacher_roster_overview",
+      {p_date:null}
+    );
+
+  if(error){
+    console.error(
+      "get_teacher_roster_overview error:",
+      error
+    );
+
+    status.className="status show error";
+    status.textContent="班級名冊讀取失敗，請重新整理。";
+    return;
+  }
+
+  const pickupStatuses=await teacherSupabase.rpc("teacher_pilot_completed_pickup_ids");
+  completedPilotPickupIds=new Set(Array.isArray(pickupStatuses.data)?pickupStatuses.data.map(String):[]);
+  const {data:todayScope,error:todayError}=await teacherSupabase.rpc("get_teacher_today_assigned_classes");
+  if(todayError){console.error("today assigned classes error",todayError);status.className="status show error";status.textContent="當日班級資料讀取失敗。";return;}
+  const syncedRoster=await leyeApplyAftercareLeaveToRoster(data||{});
+  await loadLeYeTodayStatus(syncedRoster);
+  renderTeacherRoster(syncedRoster,todayScope||{});
+  await refreshLeYeProvisional();
+  await loadAdminMorningSupport(data||{});
+
+  status.className="status show ok";
+  status.textContent=
+    `✓ ${formatDateText(data?.date)} 班級名冊已更新`;
+}
+
+async function correctCareFeeCollection(
+  requestId,
+  button
+){
+  const reason=
+    window.prompt(
+      "請輸入撤銷原因（例如：老師誤觸）。",
+      "老師誤觸"
+    );
+
+  if(reason===null) return;
+
+  const cleanReason=
+    String(reason).trim();
+
+  if(cleanReason.length<2){
+    alert("請輸入撤銷原因。");
+    return;
+  }
+
+  const ok=
+    window.confirm(
+      "確定要撤銷這筆「已收費」紀錄嗎？\n\n"+
+      "僅限誤觸修正；若已實際收款後幼兒取消或請假，請交由行政處理退款。"
+    );
+
+  if(!ok) return;
+
+  if(button){
+    button.disabled=true;
+    button.textContent="撤銷中…";
+  }
+
+  try{
+    const {data,error}=
+      await teacherSupabase.rpc(
+        "teacher_correct_care_fee_collection",
+        {
+          p_request_id:requestId,
+          p_reason:cleanReason
+        }
+      );
+
+    if(error){
+      const msg=String(error.message||"");
+
+      if(msg.includes("CORRECTION_WINDOW_EXPIRED")){
+        throw new Error(
+          "已超過 5 分鐘誤觸修正時間，請由行政老師處理。"
+        );
+      }
+
+      if(msg.includes("ONLY_COLLECTOR_CAN_CORRECT")){
+        throw new Error(
+          "只有原本記錄收費的老師可以在 5 分鐘內撤銷。"
+        );
+      }
+
+      throw new Error(
+        "撤銷收費紀錄失敗，請聯絡行政老師。"
+      );
+    }
+
+    alert("已撤銷這筆收費紀錄。");
+
+    await Promise.all([
+      loadTeacherWeekItems(),
+      loadTeacherRoster()
+    ]);
+
+    const panel=el("historyPanel");
+    if(
+      panel
+      && !panel.classList.contains("hidden")
+    ){
+      await searchTeacherHistory();
+    }
+
+    return data;
+  }
+  catch(err){
+    console.error(err);
+    alert(
+      err?.message
+      || "撤銷收費紀錄失敗。"
+    );
+  }
+  finally{
+    if(button){
+      button.disabled=false;
+    }
+  }
+}
+
+async function markCareFeeCollected(
+  requestId,
+  button,
+  detail={}
+){
+  const childName=
+    staffChildNickname(detail?.childName);
+
+  const date=
+    detail?.date || "今日";
+
+  const amount=
+    Number(detail?.amount||0);
+
+  const type=
+    detail?.type || "課後照顧";
+
+  const aftercareClass=
+    detail?.aftercareClass || "";
+
+  const ok=
+    window.confirm(
+      "請確認「已實際收到費用」後再按確定。\n\n"+
+      `幼兒：${childName}\n`+
+      `日期：${date}\n`+
+      `項目：${type}\n`+
+      (aftercareClass
+        ? `課後班：${aftercareClass}\n`
+        : "")+
+      (amount
+        ? `金額：NT$${amount}\n\n`
+        : "\n")+
+      "如果尚未實際收款，請按取消。"
+    );
+
+  if(!ok) return;
+
+  if(button){
+    button.disabled=true;
+    button.textContent="記錄中…";
+  }
+
+  try{
+    const {data,error}=
+      await teacherSupabase.rpc(
+        "teacher_mark_care_fee_collected",
+        {
+          p_request_id:requestId
+        }
+      );
+
+    if(error){
+      console.error(
+        "teacher_mark_care_fee_collected error:",
+        error
+      );
+
+      const msg=String(error.message||"");
+
+      if(msg.includes("CHILD_ABSENT")){
+        throw new Error(
+          "這位幼兒今日已請假，系統已鎖定收費，不能標記已收費。"
+        );
+      }
+
+      if(msg.includes("TEACHER_COLLECTION_TODAY_ONLY")){
+        throw new Error(
+          "課後老師只能在服務當日記錄收費；過去資料請交由行政處理。"
+        );
+      }
+
+      if(msg.includes("REFUND_REQUIRED")){
+        throw new Error(
+          "這筆資料已有取消／請假後的退款待處理狀態，請交由行政老師處理。"
+        );
+      }
+
+      if(msg.includes("REQUEST_NOT_APPROVED")){
+        throw new Error(
+          "這筆臨托／延托尚未核准或已取消，不能收費。"
+        );
+      }
+
+      if(msg.includes("ACCESS_DENIED")){
+        throw new Error(
+          "這筆費用只能由該課後班當日負責老師記錄。"
+        );
+      }
+
+      throw new Error(
+        "收費狀態沒有成功寫入，請重新整理後再試；若仍失敗請通知行政。"
+      );
+    }
+
+    const savedAmount=
+      Number(data?.amount||amount||0);
+
+    alert(
+      data?.result==="already_collected"
+        ? `這筆費用已經記錄為已收費 NT$${savedAmount}。`
+        : `已成功記錄收費 NT$${savedAmount}。\n5 分鐘內若為誤觸，可由原收費老師撤銷。`
+    );
+
+    await Promise.all([
+      loadTeacherWeekItems(),
+      loadTeacherRoster()
+    ]);
+
+    const panel=el("historyPanel");
+    if(
+      panel
+      && !panel.classList.contains("hidden")
+    ){
+      await searchTeacherHistory();
+    }
+  }
+  catch(err){
+    console.error(err);
+    alert(
+      err?.message
+      || "收費狀態更新失敗。"
+    );
+  }
+  finally{
+    if(button){
+      button.disabled=false;
+    }
+  }
+}
+
+function updateFeeCorrectionCountdown(){
+  document.querySelectorAll(".feeCorrectionBtn[data-collected-at]").forEach(button=>{
+    const ts=Date.parse(button.dataset.collectedAt||"");
+    if(!Number.isFinite(ts) || Date.now()<ts+300000)return;
+    const box=button.closest(".feeCollectBox");
+    button.remove();
+    if(!box)return;
+    const label=box.querySelector("div");
+    if(label?.textContent?.includes("✅ 已收費"))label.textContent=label.textContent.replace("✅ 已收費","✅ 收費完成");
+    for(const node of box.childNodes){
+      if(node.nodeType===3 && node.textContent.includes("✅ 已收費"))
+        node.textContent=node.textContent.replace("✅ 已收費","✅ 收費完成");
+    }
+  });
+}
+setInterval(updateFeeCorrectionCountdown,15000);
+
+function appendCareFeeControls(
+  card,
+  item
+){
+  const amount=
+    Number(item?.fee_amount||0);
+
+  if(!amount){
+    return;
+  }
+
+  const box=
+    document.createElement("div");
+
+  box.className="feeCollectBox";
+
+  if(item?.is_leave===true){
+    box.classList.add("warning");
+    box.textContent=
+      "⛔ 今日已請假｜系統已鎖定收費，不可標記已收費";
+    card.appendChild(box);
+    return;
+  }
+
+  if(item?.fee_status==="refund_required"){
+    box.classList.add("warning");
+    box.textContent=
+      "⚠️ 已收費後又取消／請假｜請交行政老師處理退款，不可重複收費";
+    card.appendChild(box);
+    return;
+  }
+
+  if(
+    item?.fee_status==="collected"
+  ){
+    box.classList.add("collected");
+
+    const collectedText=
+      document.createElement("div");
+
+    collectedText.textContent=
+      `${item?.can_correct_fee===true?"✅ 已收費":"✅ 收費完成"} NT${Number(item?.fee_collected_amount||amount)}`
+      +
+      (
+        item?.fee_collected_at
+          ? `｜${formatDateTime(item.fee_collected_at)}`
+          : ""
+      );
+
+    box.appendChild(collectedText);
+
+    if(item?.can_correct_fee===true){
+      const btn=
+        document.createElement("button");
+
+      btn.type="button";
+      btn.className="feeCorrectionBtn";
+      btn.dataset.collectedAt=String(item?.fee_collected_at||"");
+      btn.textContent="↩ 誤觸？5 分鐘內撤銷收費紀錄";
+
+      btn.addEventListener(
+        "click",
+        ()=>correctCareFeeCollection(
+          item?.request_id
+          || item?.source_id,
+          btn
+        )
+      );
+
+      box.appendChild(btn);
+    }
+
+    card.appendChild(box);
+    return;
+  }
+
+  if(item?.fee_status==="voided"){
+    const corrected=
+      document.createElement("div");
+
+    corrected.textContent=
+      "↩ 上一次收費紀錄已撤銷"
+      +
+      (
+        item?.fee_void_reason
+          ? `：${item.fee_void_reason}`
+          : ""
+      );
+
+    box.appendChild(corrected);
+  }
+
+  if(item?.can_collect_fee===true){
+    const info=
+      document.createElement("div");
+
+    info.textContent=
+      `應收 NT$${amount}｜由本課後班老師收費`;
+
+    const btn=
+      document.createElement("button");
+
+    btn.type="button";
+    btn.className="feeCollectBtn";
+    btn.textContent=
+      `💰 已實際收款，確認 NT$${amount}`;
+
+    btn.addEventListener(
+      "click",
+      ()=>markCareFeeCollected(
+        item?.request_id
+        || item?.source_id,
+        btn,
+        {
+          childName:
+            item?.child_raw_name
+            || item?.child_name
+            || "幼兒",
+          date:item?.request_date || "",
+          amount,
+          type:requestTypeLabel(item?.item_type),
+          aftercareClass:
+            item?.assigned_aftercare_class_name
+            || item?.assigned_aftercare_class_code
+            || ""
+        }
+      )
+    );
+
+    box.appendChild(info);
+    box.appendChild(btn);
+  }
+  else{
+    const info=
+      document.createElement("div");
+
+    info.textContent=
+      `應收 NT$${amount}｜目前不可由此帳號記錄收費`;
+
+    box.appendChild(info);
+  }
+
+  card.appendChild(box);
+}
+
+async function completeTeacherPickup(item, btn){
+  const childId=item?.child_id;
+  if(!childId){alert("此筆通知沒有幼兒識別，請回到今日班級名冊操作。");return;}
+  await openLeYeTeacherAction(String(childId),"slot");
+}
+
+function appendTeacherActionControls(
+  card,
+  item
+){
+  const status =
+    item?.teacher_action_status || "";
+
+  if(item?.can_act === false){
+    const info =
+      document.createElement("div");
+
+    info.className =
+      "itemActionState";
+
+    if(
+      item?.item_type === "temporary"
+      ||
+      item?.item_type === "extended"
+    ){
+      info.textContent =
+        "資訊同步：此筆由行政老師審核安排，請留意幼兒托育動向。";
+    }
+    else if(
+      item?.item_type === "leave"
+    ){
+      info.textContent =
+        "資訊同步：請假由原班導師確認；課後班老師可同步掌握未到園資訊。";
+    }
+    else{
+      info.textContent =
+        "此筆已完成或目前僅供查看。";
+    }
+
+    card.appendChild(info);
+    return;
+  }
+
+  const state =
+    document.createElement("div");
+
+  state.className =
+    "itemActionState";
+
+  if(status === "handled"){
+    state.classList.add("handled");
+
+    const confirmedLine =
+      item?.confirmed_by_staff_name
+        ? `✓ ${item.confirmed_by_staff_name} ${formatDateTime(item.confirmed_at)} 已確認`
+        : "✓ 已確認";
+
+    const handledLine =
+      item?.handled_by_staff_name
+        ? `✓ ${item.handled_by_staff_name} ${formatDateTime(item.handled_at)} 已處理`
+        : "✓ 已處理";
+
+    state.textContent =
+      `${confirmedLine}\n${handledLine}`;
+
+    card.appendChild(state);
+    return;
+  }
+
+  if(status === "confirmed"){
+    state.classList.add("confirmed");
+
+    state.textContent =
+      item?.confirmed_by_staff_name
+        ? `✓ ${item.confirmed_by_staff_name} ${formatDateTime(item.confirmed_at)} 已確認`
+        : "✓ 已確認";
+
+    card.appendChild(state);
+
+    const actions =
+      document.createElement("div");
+
+    actions.className =
+      "itemActionButtons";
+
+    const handledBtn =
+      document.createElement("button");
+
+    handledBtn.type = "button";
+    handledBtn.className = "handledBtn";
+    handledBtn.textContent = "標記已處理";
+
+    handledBtn.addEventListener(
+      "click",
+      () => actOnTeacherItem(
+        item,
+        "handled",
+        card
+      )
+    );
+
+    actions.appendChild(handledBtn);
+    card.appendChild(actions);
+    return;
+  }
+
+  state.textContent =
+    "尚未確認";
+
+  card.appendChild(state);
+
+  const actions =
+    document.createElement("div");
+
+  actions.className =
+    "itemActionButtons";
+
+  const confirmBtn =
+    document.createElement("button");
+
+  confirmBtn.type = "button";
+  confirmBtn.className = "confirmBtn";
+  confirmBtn.textContent = "確認收到";
+
+  confirmBtn.addEventListener(
+    "click",
+    () => actOnTeacherItem(
+      item,
+      "confirmed",
+      card
+    )
+  );
+
+  actions.appendChild(confirmBtn);
+  card.appendChild(actions);
+}
+
+function requestTypeLabel(type){
+  if(type === "leave") return "請假";
+  if(type === "temporary") return "臨托";
+  if(type === "extended") return "延托";
+  if(type === "early_pickup") return "提早接送";
+  if(type === "late_notice") return "延遲接送";
+  return "接送";
+}
+
+function requestStatusLabel(status){
+  if(status === "approved") return "已核准";
+  if(status === "pending") return "待處理";
+  if(status === "submitted") return "已送出";
+  if(status === "waitlist") return "候補";
+  if(status === "rejected") return "無法安排";
+  if(status === "cancelled") return "已取消";
+  if(status === "completed") return "已完成";
+  return status || "—";
+}
+
+function makeStudentItem(
+  item,
+  type
+){
+  const card =
+    document.createElement("div");
+
+  card.className =
+    "studentItem";
+
+  const top =
+    document.createElement("div");
+
+  top.className =
+    "studentTop";
+
+  const left =
+    document.createElement("div");
+
+  left.style.flex = "1";
+
+  const name =
+    document.createElement("div");
+
+  name.className =
+    "studentName";
+
+  name.textContent =
+    staffChildNickname(item?.child_name);
+
+  const className =
+    document.createElement("div");
+
+  className.className =
+    "studentClass";
+
+  const dateText =
+    formatDateText(
+      item?.request_date
+      || item?.pickup_date
+    );
+
+  className.textContent =
+    [
+      item?.morning_class_name
+      || item?.morning_class_id
+      || "原班未設定",
+      dateText
+    ]
+      .filter(Boolean)
+      .join("｜");
+
+  left.appendChild(name);
+  left.appendChild(className);
+
+  const badge =
+    document.createElement("div");
+
+  badge.className =
+    "itemBadge";
+
+  if(type === "leave"){
+    badge.classList.add("leave");
+    badge.textContent =
+      requestStatusLabel(item?.status);
+  }
+  else if(type === "care"){
+    const careType =
+      item?.item_type === "temporary"
+        ? "temporary"
+        : "extended";
+
+    badge.classList.add(careType);
+    badge.textContent =
+      requestTypeLabel(item?.item_type)
+      + "｜"
+      + requestStatusLabel(item?.status);
+  }
+  else{
+    const pickupType =
+      item?.item_type || "pickup";
+
+    if(pickupType === "early_pickup"){
+      badge.classList.add("early");
+    }
+    else if(pickupType === "late_notice"){
+      badge.classList.add("late");
+    }
+    else{
+      badge.classList.add(
+        item?.actual_pickup_at
+          ? "done"
+          : "waiting"
+      );
+    }
+
+    const slotState=leyeTodayChildStatus(item?.child_id);
+    badge.textContent = slotState?.status_code==="picked_up"
+      ? "已接送"
+      : requestTypeLabel(pickupType);
+  }
+
+  top.appendChild(left);
+  top.appendChild(badge);
+
+  const detail =
+    document.createElement("div");
+
+  detail.className =
+    "itemDetail";
+
+  const rows = [];
+
+  if(type === "leave"){
+    rows.push(`請假類別：${leaveCategoryLabel(item?.reason)}`);
+
+    if(canDisplayLeaveDetails() && item?.note){
+      rows.push(
+        `備註：${item.note}`
+      );
+    }
+  }
+  else if(type === "care"){
+    const start =
+      formatClock(
+        item?.requested_start_time
+      );
+
+    const end =
+      formatClock(
+        item?.requested_end_time
+      );
+
+    if(start !== "—" || end !== "—"){
+      rows.push(
+        `時段：${start} ～ ${end}`
+      );
+    }
+
+    if(
+      item?.assigned_aftercare_class_name
+      || item?.assigned_aftercare_class_code
+    ){
+      rows.push(
+        "安排課後班："
+        + (
+          item?.assigned_aftercare_class_name
+          || item?.assigned_aftercare_class_code
+        )
+      );
+    }
+
+    if(item?.reason){
+      rows.push(`申請原因：${item.reason}`);
+    }
+    if(item?.status==="cancelled"){
+      const labels={pickup_change:"接送時間調整",family:"家庭因素",leave:"幼兒當日請假",other:"其他原因"};
+      if(item?.cancelled_at) rows.push(`取消時間：${formatDateTime(item.cancelled_at)}`);
+      if(item?.cancel_reason) rows.push(`取消原因：${labels[item.cancel_reason]||item.cancel_reason}`);
+      if(item?.cancel_note) rows.push(`取消補充：${item.cancel_note}`);
+    }
+
+    if(item?.admin_note){
+      rows.push(
+        `行政備註：${item.admin_note}`
+      );
+    }
+  }
+  else{
+    if(item?.scheduled_pickup_time){
+      rows.push(
+        `原訂接送：${formatClock(item.scheduled_pickup_time)}`
+      );
+    }
+
+    if(item?.expected_arrival_time){
+      const expectedLabel=item?.pickup_mode==='early' ? '預計提早接回' :
+        item?.pickup_mode==='late_notice' ? '預計晚到抵達' : '預計接送';
+      rows.push(`${expectedLabel}：${formatClock(item.expected_arrival_time)}`);
+    }
+
+    if(item?.pickup_person){
+      rows.push(
+        `接送者：已登記（請依現場接送規定核對）`
+      );
+    }
+
+    if(item?.notice_reason){
+      rows.push(
+        `原因：${item.notice_reason}`
+      );
+    }
+
+    if(item?.actual_pickup_at){
+      rows.push(
+        `完成：${formatDateTime(item.actual_pickup_at)}`
+      );
+    }
+  }
+
+  detail.textContent =
+    rows.length
+      ? rows.join("\n")
+      : "本週事項";
+
+  detail.style.whiteSpace =
+    "pre-line";
+
+  card.appendChild(top);
+  card.appendChild(detail);
+
+  if(type === "care" && item?.status !== "cancelled"){
+    appendCareFeeControls(
+      card,
+      item
+    );
+  }
+
+  // 收到通知／標記處理與實際接送是不同作業；下方另外顯示已接送時段。
+  if(item?.status !== "cancelled") appendTeacherActionControls(
+    card,
+    item
+  );
+
+  // 「已處理」不是實際接送；完成接送需後端驗證課後教師權限。
+  if(type === "pickup" && item?.source_type === "pickup" && (item?.source_id || item?.id)){
+    const pickupArea = document.createElement("div");
+    pickupArea.className = "itemActionButtons";
+    if(leyeTodayChildStatus(item?.child_id)?.status_code==="picked_up"){
+      pickupArea.textContent = "✓ 已接送 "+(leyeTodayChildStatus(item?.child_id)?.pickup_slot_text||"");
+    }else if(item.actual_pickup_at){
+      pickupArea.textContent = "✓ 已接送 "+formatDateTime(item.actual_pickup_at);
+    }else if(item?.can_act === false){
+      pickupArea.textContent = "👀 僅供查看：16:10（含）前提早接送由原班導師確認，課後老師不需點選。";
+    }else{
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "🚗 選擇已接送時段";
+      button.addEventListener("click",()=>completeTeacherPickup(item,button));
+      pickupArea.appendChild(button);
+    }
+    card.appendChild(pickupArea);
+  }
+
+  return card;
+}
+
+
+function groupConsecutiveLeaves(items){
+  // 多日請假使用每筆共同的 notice_time；created_at 可能因逐筆 INSERT 而不同。
+  // 不可因日期連續、原因相同就合併不同次的申請。
+  const ordered=[...items].sort((a,b)=>String(a.request_date||"").localeCompare(String(b.request_date||"")));
+  const groups=new Map();
+  for(const item of ordered){
+    const stamp=String(item.notice_time||"") || (item.created_at ? String(item.created_at).slice(0,16) : "");
+    const identity=String(item.child_id||"");
+    const key=stamp && identity
+      ? identity+"|"+stamp+"|"+String(item.reason||"")+"|"+String(item.note||"")
+      : "single|"+String(item.source_id||item.request_id||item.request_date);
+    if(!groups.has(key))groups.set(key,[]);
+    groups.get(key).push(item);
+  }
+  return [...groups.values()].sort((a,b)=>String(a[0]?.request_date||"").localeCompare(String(b[0]?.request_date||"")));
+}
+
+async function actOnLeaveGroup(items,actionType,card){
+ const pending=items.filter(x=>x.can_act!==false&&(actionType==="confirmed"? !["confirmed","handled"].includes(x.teacher_action_status):x.teacher_action_status==="confirmed"));
+ if(!pending.length)return;
+ if(!confirm("確認將這 "+pending.length+" 天請假一次"+(actionType==="confirmed"?"確認收到":"標記已處理")+"？"))return;
+ card.classList.add("actionBusy");
+ try{
+  const ids=pending.map(x=>x.source_id||x.request_id).filter(Boolean);
+  if(ids.length!==pending.length)throw new Error("申請資料缺少 ID");
+  const {data,error}=await teacherSupabase.rpc("teacher_act_on_leave_group",{
+   p_request_ids:ids,p_action_type:actionType
+  });
+  if(error)throw error;
+  if(!data?.ok||Number(data.updated)!==ids.length)throw new Error("整組確認回傳異常");
+  await loadTeacherWeekItems();
+ }catch(e){
+  alert("整組確認未完成："+(e.message||"請稍後重試"));
+  await loadTeacherWeekItems();
+ }finally{card.classList.remove("actionBusy");}
+}
+function makeGroupedLeaveItem(items){
+ const first=items[0],last=items[items.length-1];
+ const card=document.createElement("div");card.className="studentItem";
+ const top=document.createElement("div");top.className="studentTop";
+ const name=document.createElement("div");name.className="studentName";name.textContent=staffChildNickname(first.child_name);
+ const meta=document.createElement("div");meta.className="studentClass";
+ meta.textContent=(first.morning_class_name||first.morning_class_id||"原班")+"｜"+formatDateText(first.request_date)+" ～ "+formatDateText(last.request_date);
+ const left=document.createElement("div");left.style.flex="1";left.append(name,meta);
+ const badge=document.createElement("div");badge.className="itemBadge leave";badge.textContent=items.length+" 天請假";
+ top.append(left,badge);card.appendChild(top);
+ const d=document.createElement("div");d.className="itemDetail";d.style.whiteSpace="pre-line";
+ d.textContent="請假類別："+leaveCategoryLabel(first.reason)+"\n請假時段："+(first.requested_start_time&&first.requested_end_time?String(first.requested_start_time).slice(0,5)+"－"+String(first.requested_end_time).slice(0,5):"整日")+"\n每日進度："+items.map(x=>formatDateText(x.request_date)+" "+(["confirmed","handled"].includes(x.teacher_action_status)?"✓ 已確認":"待確認")).join("、");
+ card.appendChild(d);
+ const actionable=items.filter(x=>x.can_act!==false);
+ const toConfirm=actionable.filter(x=>!["confirmed","handled"].includes(x.teacher_action_status));
+ const toHandle=actionable.filter(x=>x.teacher_action_status==="confirmed");
+ if(toConfirm.length||toHandle.length){
+  const buttons=document.createElement("div");buttons.className="itemActionButtons";
+  if(toConfirm.length){const b=document.createElement("button");b.type="button";b.className="confirmBtn";b.textContent="一次確認 "+toConfirm.length+" 天";b.onclick=()=>actOnLeaveGroup(items,"confirmed",card);buttons.append(b);}
+  if(toHandle.length){const b=document.createElement("button");b.type="button";b.className="handledBtn";b.textContent="一次標記已處理 "+toHandle.length+" 天";b.onclick=()=>actOnLeaveGroup(items,"handled",card);buttons.append(b);}
+  card.appendChild(buttons);
+ } else {const d=document.createElement("div");d.className="itemActionState";d.textContent=actionable.length?"✓ 已全部確認":"僅供查看";card.appendChild(d);}
+ return card;
+}
+
+function renderItemList(
+  containerId,
+  items,
+  type
+){
+  const container =
+    el(containerId);
+
+  container.innerHTML = "";
+
+  if(
+    !Array.isArray(items)
+    ||
+    items.length === 0
+  ){
+    const empty =
+      document.createElement("div");
+
+    empty.className =
+      "todayEmpty";
+
+    empty.textContent =
+      "目前沒有";
+
+    container.appendChild(
+      empty
+    );
+
+    return;
+  }
+
+  if(type==="leave"){
+    for(const group of groupConsecutiveLeaves(items)){
+      container.appendChild(group.length>1?makeGroupedLeaveItem(group):makeStudentItem(group[0],type));
+    }
+    return;
+  }
+  for(
+    const item of items
+  ){
+    container.appendChild(
+      makeStudentItem(
+        item,
+        type
+      )
+    );
+  }
+}
+
+function jumpToTeacherItems(targetId){
+  const area=document.getElementById("todayItemsContent");
+  if(!area || area.classList.contains("hidden"))return;
+  const target=document.getElementById(targetId);
+  if(!target)return;
+  const folder=target.closest("details.teacherFoldGroup");if(folder)folder.open=true;
+  (target.closest(".itemGroup")||target).scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+let teacherWeekOffset=0;
+async function changeTeacherWeek(direction){
+  teacherWeekOffset=direction===0?0:Math.max(-4,Math.min(8,teacherWeekOffset+direction));
+  try{await loadTeacherWeekItems();}catch(error){console.error(error);el("todayItemsStatus").textContent="讀取週資料失敗，請稍後重試。";}
+}
+
+async function loadTeacherWeekItems(){
+  const statusBox =
+    el("todayItemsStatus");
+
+  statusBox.className =
+    "status show info";
+
+  statusBox.textContent =
+    "正在讀取今日學生事項…";
+
+  const referenceDate=(()=>{const now=new Date();const t=new Date(now.toLocaleString("en-US",{timeZone:"Asia/Taipei"}));t.setDate(t.getDate()+teacherWeekOffset*7);return [t.getFullYear(),String(t.getMonth()+1).padStart(2,"0"),String(t.getDate()).padStart(2,"0")].join("-");})();
+  const fetchWeek=async(date)=>{
+    const {data,error}=await teacherSupabase.rpc("get_teacher_week_items_for_date",{p_reference_date:date});
+    if(error)throw error;
+    return data||{};
+  };
+  const data=await fetchWeek(referenceDate);
+  // Read adjacent weeks so a single submission spanning weekends or month-end remains one card.
+  // Only leave records are combined; care and pickup still display selected-week data.
+  const neighborDates=[-2,-1,1,2].map(offset=>{
+    const d=new Date(referenceDate+"T12:00:00Z");
+    d.setUTCDate(d.getUTCDate()+offset*7);
+    return d.toISOString().slice(0,10);
+  });
+  const neighborResults=await Promise.allSettled(neighborDates.map(fetchWeek));
+  const allLeave=new Map();
+  for(const item of (data.leave||[]))allLeave.set(String(item.source_id||item.request_id),item);
+  for(const result of neighborResults){
+    if(result.status!=="fulfilled")continue;
+    for(const item of (result.value.leave||[]))allLeave.set(String(item.source_id||item.request_id),item);
+  }
+  const startDate=String(data.week_start||referenceDate);
+  const endDate=String(data.week_end||referenceDate);
+  const combinedGroups=groupConsecutiveLeaves([...allLeave.values()]);
+  const weekGroups=combinedGroups.filter(group=>group.some(x=>String(x.request_date)>=startDate&&String(x.request_date)<=endDate));
+  const leave=weekGroups.flat();
+
+  const today = leyeTaipeiDay();
+  const isToday = item => String(item?.request_date || item?.pickup_date || item?.date || "").slice(0,10) === today;
+  const todayLeave = leave.filter(isToday);
+  const allTodayCare = (Array.isArray(data?.care) ? data.care : []).filter(isToday);
+  const cancelledCare = allTodayCare.filter(x => String(x?.status || "").toLowerCase() === "cancelled");
+  const todayCare = allTodayCare.filter(x => String(x?.status || "").toLowerCase() !== "cancelled");
+  const todayPickup = (Array.isArray(data?.pickup) ? data.pickup : []).filter(isToday);
+  const todayLeaveCount = groupConsecutiveLeaves(todayLeave).length;
+  const todayTemporaryCount = todayCare.filter(x => String(x.type || x.request_type || x.care_type || "").toLowerCase().includes("temporary")).length;
+  const todayExtendedCount = todayCare.length - todayTemporaryCount;
+  const todayTotal = todayLeaveCount + todayCare.length + todayPickup.length;
+  setText("todayItemsDate", formatDateText(today));
+  setText("todayTotalBadge", todayTotal);
+  setText("leaveCount", todayLeaveCount);
+  setText("temporaryCount", todayTemporaryCount);
+  setText("extendedCount", todayExtendedCount);
+  setText("pickupCount", todayPickup.length);
+  setText("leaveGroupCount", todayLeaveCount);
+  setText("careGroupCount", todayCare.length);
+  setText("cancelledCareGroupCount", cancelledCare.length);
+  setText("pickupGroupCount", todayPickup.length);
+  renderItemList("leaveItems", todayLeave, "leave");
+  renderItemList("careItems", todayCare, "care");
+  renderItemList("cancelledCareItems", cancelledCare, "care");
+  renderItemList("pickupItems", todayPickup, "pickup");
+  el("todayItemsContent")
+    .classList.remove(
+      "hidden"
+    );
+
+  statusBox.className =
+    "status show ok";
+
+  statusBox.textContent = todayTotal > 0 ? `今日有 ${todayTotal} 件孩子們的事項，辛苦您留意了 🌱` : "今日目前沒有新事項 🌿";
+  [["leave",todayLeave.length],["care",todayCare.length],["pickup",todayPickup.length],["cancelledCare",cancelledCare.length]].forEach(([kind,n])=>{const elem=el(kind+"Items")?.closest(".itemGroup, .cancelledMiniFold");if(elem)elem.style.display=n?"":"none";});
+
+  try{await loadTeacherCancelAcks();}catch(e){console.warn("取消請假確認清單讀取失敗",e);}
+  return data;
+}
+
+function toDateInputValue(date){
+  const y=date.getFullYear();
+  const m=String(date.getMonth()+1).padStart(2,"0");
+  const d=String(date.getDate()).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
+
+function openTeacherHistory(){
+  const panel=el("historyPanel");
+
+  const now=
+    new Date(
+      new Date().toLocaleString(
+        "en-US",
+        {timeZone:"Asia/Taipei"}
+      )
+    );
+
+  const end=
+    toDateInputValue(now);
+
+  const startDate=
+    new Date(now);
+
+  startDate.setDate(
+    startDate.getDate()-6
+  );
+
+  if(!el("historyStart").value){
+    el("historyStart").value=
+      toDateInputValue(startDate);
+  }
+
+  if(!el("historyEnd").value){
+    el("historyEnd").value=end;
+  }
+
+  panel.classList.remove("hidden");
+  panel.setAttribute("aria-hidden","false");
+
+  document.body.style.overflow="hidden";
+
+  setTimeout(
+    ()=>el("historyKeyword")?.focus(),
+    80
+  );
+}
+
+function closeTeacherHistory(){
+  const panel=el("historyPanel");
+
+  panel.classList.add("hidden");
+  panel.setAttribute("aria-hidden","true");
+  document.body.style.overflow="";
+}
+
+function historyCardHtml(item){
+  const type=
+    requestTypeLabel(
+      item?.request_type
+    );
+
+  const status=
+    requestStatusLabel(
+      item?.status
+    );
+
+  const period=
+    item?.request_type === "leave"
+      ? ""
+      : [
+          formatClock(
+            item?.requested_start_time
+          ),
+          formatClock(
+            item?.requested_end_time
+          )
+        ]
+          .filter(v=>v && v!=="—")
+          .join(" ～ ");
+
+  const assigned=
+    item?.assigned_aftercare_class_name
+    || item?.assigned_aftercare_class_code
+    || "";
+
+  const details=[];
+
+  if(period){
+    details.push(
+      `時段：${period}`
+    );
+  }
+
+  if(assigned){
+    details.push(
+      `安排課後班：${assigned}`
+    );
+  }
+
+  if(item?.reason){
+    details.push(
+      `原因：${item.reason}`
+    );
+  }
+
+  if(item?.admin_note){
+    details.push(
+      `行政備註：${item.admin_note}`
+    );
+  }
+
+  const feeAmount=
+    Number(item?.fee_amount||0);
+
+  let feeHtml="";
+
+  if(
+    item?.request_type==="temporary"
+    ||
+    item?.request_type==="extended"
+  ){
+    if(item?.is_leave===true){
+      feeHtml=`
+        <div class="feeCollectBox warning">
+          ⛔ 當日請假｜系統鎖定收費
+        </div>
+      `;
+    }
+    else if(item?.fee_status==="refund_required"){
+      feeHtml=`
+        <div class="feeCollectBox warning">
+          ⚠️ 已收費後又取消／請假｜請交行政老師處理退款
+        </div>
+      `;
+    }
+    else if(
+      item?.fee_status==="collected"
+    ){
+      feeHtml=`
+        <div class="feeCollectBox collected">
+          ${item?.can_correct_fee===true?"✅ 已收費":"✅ 收費完成"} NT${Number(item?.fee_collected_amount||feeAmount)}
+          ${item?.fee_collected_at
+            ? "｜"+escapeHtmlText(formatDateTime(item.fee_collected_at))
+            : ""}
+          ${item?.can_correct_fee===true
+            ? `
+              <button
+                class="feeCorrectionBtn"
+                type="button"
+                data-collected-at="${escapeHtmlText(item?.fee_collected_at||"")}"
+                onclick="correctCareFeeCollection('${escapeHtmlText(item.request_id)}',this)"
+              >
+                ↩ 誤觸？5 分鐘內撤銷
+              </button>
+            `
+            : ""}
+        </div>
+      `;
+    }
+    else{
+      const corrected=
+        item?.fee_status==="voided"
+          ? `↩ 上次收費已撤銷${item?.fee_void_reason?"："+escapeHtmlText(item.fee_void_reason):""}<br>`
+          : "";
+
+      if(
+        item?.can_collect_fee===true
+        &&
+        feeAmount>0
+      ){
+        feeHtml=`
+          <div class="feeCollectBox">
+            ${corrected}
+            應收 NT$${feeAmount}｜由本課後班老師收費
+            <button
+              class="feeCollectBtn"
+              type="button"
+              onclick="markCareFeeCollected(
+                '${escapeHtmlText(item.request_id)}',
+                this,
+                {
+                  amount:${feeAmount},
+                  date:'${escapeHtmlText(item.request_date||"")}',
+                  type:'${escapeHtmlText(type)}'
+                }
+              )"
+            >
+              💰 已實際收款，確認 NT$${feeAmount}
+            </button>
+          </div>
+        `;
+      }
+      else if(feeAmount>0){
+        feeHtml=`
+          <div class="feeCollectBox">
+            ${corrected}
+            應收 NT$${feeAmount}｜目前不可由此帳號記錄收費
+          </div>
+        `;
+      }
+    }
+  }
+
+  return `
+    <div class="historyCard">
+      <div class="historyCardTop">
+        <div>
+          <div class="historyCardName">
+            ${escapeHtmlText(staffChildNickname(item?.child_name))}
+          </div>
+          <div class="historyCardSub">
+            ${escapeHtmlText(item?.morning_class_name || item?.morning_class_id || "")}
+            ｜${escapeHtmlText(item?.request_date || "")}
+          </div>
+        </div>
+        <span class="itemBadge ${item?.request_type || "done"}">
+          ${escapeHtmlText(type+"｜"+status)}
+        </span>
+      </div>
+      <div class="historyCardDetail">
+        ${details.length
+          ? details.map(v=>`<div>${escapeHtmlText(v)}</div>`).join("")
+          : "<div>無其他備註</div>"}
+      </div>
+      ${feeHtml}
+    </div>
+  `;
+}
+
+// 幼兒個資顯示原則：頁面以暱稱呈現，正式姓名留在原有資料庫。
+// 不修改原始資料，也不修改後端判斷所需的幼兒 UUID。
+function staffChildNickname(fullName){
+  const chars=Array.from(String(fullName??"").trim().normalize("NFC"));
+  if(!chars.length)return "幼兒";
+  if(chars.length<=2)return chars[chars.length-1].repeat(2);
+  return chars.slice(-2).join("");
+}
+
+function escapeHtmlText(value){
+  return String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+async function searchTeacherHistory(){
+  const status=el("historyStatus");
+  const results=el("historyResults");
+  const meta=el("historyMeta");
+
+  const typedNickname=el("historyKeyword").value.trim();
+  // 雙字暱稱（例如「炎炎」）可能來自單名「張炎」，資料庫以「炎」搜尋。
+  const keyword=Array.from(typedNickname).length===2 && Array.from(typedNickname)[0]===Array.from(typedNickname)[1]
+    ? Array.from(typedNickname)[0] : typedNickname;
+
+  const start=
+    el("historyStart").value;
+
+  const end=
+    el("historyEnd").value;
+
+  const type=
+    el("historyType").value;
+
+  if(!start||!end){
+    alert("請選擇開始與結束日期。");
+    return;
+  }
+
+  if(start>end){
+    alert("開始日期不能晚於結束日期。");
+    return;
+  }
+
+  status.className=
+    "status show info";
+
+  status.textContent=
+    "正在查詢過去紀錄…";
+
+  results.innerHTML="";
+  meta.textContent="";
+
+  const {
+    data,
+    error
+  } =
+    await teacherSupabase.rpc(
+      "search_teacher_request_history",
+      {
+        p_keyword:keyword || null,
+        p_start_date:start,
+        p_end_date:end,
+        p_type:type
+      }
+    );
+
+  if(error){
+    console.error(
+      "search_teacher_request_history error:",
+      error
+    );
+
+    status.className=
+      "status show error";
+
+    status.textContent=
+      String(error.message || "").includes(
+        "DATE_RANGE_TOO_LARGE"
+      )
+        ? "一次最多查詢 1 年，請縮小日期範圍。"
+        : "過去紀錄查詢失敗，請稍後再試。";
+
+    return;
+  }
+
+  const items=
+    Array.isArray(data?.items)
+      ? data.items
+      : [];
+
+  meta.textContent=
+    `${formatDateText(data?.start_date)} ～ ${formatDateText(data?.end_date)}｜共 ${items.length} 筆`;
+
+  if(!items.length){
+    results.innerHTML=
+      '<div class="todayEmpty">找不到符合條件的紀錄。</div>';
+
+    status.className=
+      "status show ok";
+
+    status.textContent=
+      "✓ 查詢完成";
+
+    return;
+  }
+
+  results.innerHTML=
+    items
+      .map(historyCardHtml)
+      .join("");
+
+  status.className=
+    "status show ok";
+
+  status.textContent=
+    "✓ 查詢完成";
+}
+
+
+function prepareAdminPortal(event){
+  event.preventDefault();
+
+  // 若行政人員曾在行政頁按過「登出」，
+  // 從老師平台再次進入時允許重新啟用老師 Session 單一登入。
+  sessionStorage.removeItem(
+    "leye-admin-manual-logout"
+  );
+
+  window.location.href =
+    "admin.html?v=18";
+}
+
+async function establishTeacherSession(
+  statusData
+){
+  const box =
+    el("loginStatus");
+
+  box.className =
+    "status show info";
+
+  box.textContent =
+    "正在建立老師系統登入狀態…";
+
+  try{
+    const authData =
+      await callFunction(
+        AUTH_FUNCTION_URL,
+        {
+          idToken
+        }
+      );
+    if(
+      !authData?.session?.access_token
+      ||
+      !authData?.session?.refresh_token
+    ){
+      throw new Error(
+        "老師登入憑證不完整。"
+      );
+    }
+
+    const {
+      data:setSessionData,
+      error:setSessionError
+    } =
+      await teacherSupabase
+        .auth
+        .setSession({
+          access_token:
+            authData.session.access_token,
+
+          refresh_token:
+            authData.session.refresh_token
+        });
+
+    if(
+      setSessionError
+      ||
+      !setSessionData?.session
+    ){
+      console.error(
+        "teacher setSession error:",
+        setSessionError
+      );
+
+      throw new Error(
+        "老師系統登入狀態建立失敗。"
+      );
+    }
+
+    const {
+      data:userData,
+      error:userError
+    } =
+      await teacherSupabase
+        .auth
+        .getUser();
+
+    if(
+      userError
+      ||
+      !userData?.user
+    ){
+      console.error(
+        "teacher getUser error:",
+        userError
+      );
+
+      throw new Error(
+        "老師登入身分確認失敗。"
+      );
+    }
+
+    box.className =
+      "status show ok";
+
+    box.textContent = "";
+
+    const staff =
+      authData.staff ||
+      statusData.staff ||
+      {};
+
+    el("roleBadge").textContent = roleLabel(staff.role);
+    el("adminPortalBtn").textContent=staff.role==="admin_viewer"?"👀 進入行政查看平台":"⚙️ 進入行政管理平台";
+    const hour=Number(new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Taipei",hour:"2-digit",hourCycle:"h23"}).format(new Date()));
+    const greeting=hour<11?"早安":hour<17?"午安":"晚安";
+    el("teacherGreeting").textContent=`🌿 ${greeting}，${staff.display_name||authData?.staff?.name||statusData?.staff?.name||"老師"}老師！`;
+
+    if(
+      staff.role === "admin" || staff.role === "admin_viewer"
+    ){
+      el("adminPortalBtn")
+        .classList.remove(
+          "hidden"
+        );
+    }
+    else{
+      el("adminPortalBtn")
+        .classList.add(
+          "hidden"
+        );
+    }
+
+    el("workEntry")
+      .classList.remove(
+        "hidden"
+      );
+    initializeWarmQuotes();
+
+    await loadTeacherScope();
+    await Promise.all([
+      loadTeacherRoster(),
+      loadTeacherWeekItems()
+    ]);
+
+    el("pageIntro").textContent="每一份細心照顧，都是孩子安心成長的力量。";
+
+  }
+  catch(err){
+    console.error(err);
+
+    box.className =
+      "status show error";
+
+    box.textContent =
+      err?.message ||
+      "老師系統登入失敗，請重新開啟。";
+
+    el("reloadBtn")
+      .classList.remove(
+        "hidden"
+      );
+  }
+}
+
+async function showBoundState(
+  data
+){
+  hideAllStateSections();
+
+  el("boundStaffName")
+    .textContent =
+      data?.staff?.name ||
+      "已綁定教職員";
+
+  el("boundLineName")
+    .textContent =
+      data?.lineDisplayName ||
+      profile?.displayName ||
+      "LINE 使用者";
+
+  el("boundSection")
+    .classList.remove(
+      "hidden"
+    );
+
+  await establishTeacherSession(
+    data
+  );
+}
+function showPendingState(
+  data
+){
+  hideAllStateSections();
+
+  el("pendingStaffName")
+    .textContent =
+      data?.staff?.name ||
+      "待行政確認";
+
+  el("pendingLineName")
+    .textContent =
+      data?.lineDisplayName ||
+      profile?.displayName ||
+      "LINE 使用者";
+
+  el("pageIntro")
+    .innerHTML =
+      "LINE 綁定申請已送出。<br>請等待行政人員確認。";
+
+  el("pendingSection")
+    .classList.remove(
+      "hidden"
+    );
+}
+
+async function showUnboundState(){
+  hideAllStateSections();
+
+  el("pageIntro")
+    .innerHTML =
+      "首次使用請輸入教職員綁定碼。<br>送出後仍需由行政人員確認才會正式啟用。";
+
+  el("bindSection")
+    .classList.remove(
+      "hidden"
+    );
+  consumeTeacherLinkCode();
+
+  setTimeout(
+    () => el("staffBindingCode")?.focus(),
+    100
+  );
+}
+
+async function init(){
+  try{
+    await liff.init({
+      liffId:
+        LIFF_ID
+    });
+
+    if(
+      !liff.isLoggedIn()
+    ){
+      liff.login({
+        redirectUri:
+          window.location.href
+      });
+
+      return;
+    }
+
+    profile =
+      await liff.getProfile();
+
+    idToken =
+      liff.getIDToken();
+
+    if(!idToken){
+      throw new Error(
+        "無法取得 LINE 登入驗證資料，請重新開啟老師平台。"
+      );
+    }
+
+    el("lineName")
+      .textContent =
+        profile?.displayName ||
+        "LINE 使用者";
+
+    if(
+      profile?.pictureUrl
+    ){
+      el("avatar").src =
+        profile.pictureUrl;
+    }
+    else{
+      el("avatar")
+        .style.display =
+          "none";
+    }
+
+    el("loading")
+      .style.display =
+        "none";
+
+    el("content")
+      .classList.remove(
+        "hidden"
+      );
+
+    const statusData =
+      await callFunction(
+        BIND_FUNCTION_URL,
+        {
+          action:
+            "status",
+
+          idToken
+        }
+      );
+
+    if(
+      statusData.status ===
+      "bound"
+    ){
+      await showBoundState(
+        statusData
+      );
+
+      return;
+    }
+
+    if(
+      statusData.status ===
+      "pending"
+    ){
+      showPendingState(
+        statusData
+      );
+
+      return;
+    }
+
+    await showUnboundState();
+
+  }
+  catch(err){
+    console.error(err);
+
+    el("loading")
+      .style.display =
+        "none";
+
+    el("content")
+      .classList.remove(
+        "hidden"
+      );
+
+    hideAllStateSections();
+
+    el("bindSection")
+      .classList.remove(
+        "hidden"      );
+
+    if(
+      isLineTokenExpiredError(err)
+    ){
+      el("pageIntro")
+        .innerHTML =
+          "LINE 登入已逾期。<br>請重新登入 LINE 後繼續。";
+
+      el("lineReloginBtn")
+        .classList.remove(
+          "hidden"
+        );
+
+      el("reloadBtn")
+        .classList.add(
+          "hidden"
+        );
+
+      showStatus(
+        "LINE 登入憑證已逾期。請按下方「重新登入 LINE」，不需要重新綁定老師姓名。",
+        "warn"
+      );
+
+      return;
+    }
+
+    el("reloadBtn")
+      .classList.remove(
+        "hidden"
+      );
+
+    showStatus(
+      err?.message ||
+      "老師平台載入失敗，請重新開啟。",
+      "error"
+    );
+  }
+}
+
+function consumeTeacherLinkCode(){
+  const match=location.hash.match(/(?:^#|[&])bind=([A-Z0-9]{16})(?:&|$)/i);
+  if(!match)return;
+  el("staffBindingCode").value=match[1].toUpperCase();
+  const label=document.querySelector('label[for="staffBindingCode"]');
+  if(label)label.textContent="已透過專屬連結帶入綁定資料";
+  el("staffBindingCode").style.display="none";
+  try{history.replaceState(null,"",location.pathname+location.search);}catch(_){}
+  refreshTeacherBindButton();
+}
+
+function refreshTeacherBindButton(){
+  el("submitBtn").disabled =
+    el("staffBindingCode").value.length !== 16 ||
+    !el("teacherPrivacyAck").checked;
+}
+
+el("staffBindingCode")
+  .addEventListener(
+    "input",
+    refreshTeacherBindButton
+  );
+
+el("teacherPrivacyAck")
+  .addEventListener(
+    "change",
+    refreshTeacherBindButton
+  );
+
+el("submitBtn")
+  .addEventListener(
+    "click",
+    async () => {
+
+      const bindingCode =
+        el("staffBindingCode")
+          .value
+          .trim()
+          .toUpperCase();
+
+      if(bindingCode.length !== 16){
+        showStatus(
+          "請輸入完整的 16 碼教職員綁定碼。",
+          "warn"
+        );
+        return;
+      }
+
+      if(!el("teacherPrivacyAck").checked){
+        showStatus(
+          "請先閱讀並勾選個人資料蒐集告知暨隱私權說明。",
+          "warn"
+        );
+        return;
+      }
+
+      const ok =
+        confirm(
+          `請確認使用目前 LINE「${profile?.displayName || "LINE 使用者"}」送出教職員綁定申請？`
+        );
+
+      if(!ok){
+        return;
+      }
+
+      try{
+        setBusy(true);
+
+        showStatus(
+          "正在驗證綁定碼並送出申請…",
+          "info"
+        );
+
+        const data =
+          await callFunction(
+            BIND_FUNCTION_URL,
+            {
+              action:"bind",
+              idToken,
+              bindingCode
+            }
+          );
+
+        if(
+          data.status ===
+          "already_bound"
+        ){
+          await showBoundState({
+            status:"bound",
+            lineDisplayName:
+              data.lineDisplayName,
+            staff:{
+              name:
+                data.staffName
+            }
+          });
+
+          return;
+        }
+
+        showPendingState({
+          status:"pending",
+          lineDisplayName:
+            data.lineDisplayName,
+          staff:{
+            name:
+              data.staffName
+          }
+        });
+
+      }
+      catch(err){
+        console.error(err);
+
+        showStatus(
+          err?.message ||
+          "送出失敗，請稍後再試。",
+          "error"
+        );
+      }
+      finally{
+        setBusy(false);
+      }
+    }
+  );
+
+el("reloadBtn")  .addEventListener(
+    "click",
+    () =>
+      location.reload()
+  );
+
+el("lineReloginBtn")
+  .addEventListener(
+    "click",
+    forceLineRelogin
+  );
+
+
+function makeCancelAckCard(row,refresh){
+ const el=document.createElement('div');el.className='cancelAckCard';
+ const title=document.createElement('strong');
+ title.textContent=(row.class_name||'')+' '+(row.child_name||'')+'｜'+row.request_date;
+ el.append(title);
+ const meta=document.createElement('div');meta.className='cancelAckDetail';
+ const duty=row.duty==='morning'?'班導確認（一般上課）':'蔡青蓓確認（課後）';
+ const confirmed=row.confirmed_at?'✓ 已由 '+(row.confirmed_by||'授權人員')+' 確認':'● 尚待確認';
+ meta.textContent=duty+'｜'+confirmed;
+ el.append(meta);
+ if(!row.confirmed_at && row.can_confirm){
+   const b=document.createElement('button');b.type='button';b.textContent='✓ 確認收到取消請假';
+   b.onclick=async()=>{
+     if(!confirm('確認已知悉 '+(row.child_name||'該幼兒')+' '+row.request_date+' 取消請假？'))return;
+     b.disabled=true;b.textContent='確認中…';
+     try{
+       const {data,error}=await cancelAckClient().rpc('acknowledge_leave_cancellation',{
+         p_request_id:row.request_id,p_duty:row.duty
+       });
+       if(error)throw error;
+       if(!data?.ok)throw new Error('未成功寫入');
+       await refresh();
+     }catch(e){b.disabled=false;b.textContent='✓ 確認收到取消請假';alert('確認失敗：'+(e.message||String(e)));}
+   };
+   el.append(b);
+ }
+ return el;
+}
+
+function cancelAckClient(){return teacherSupabase;}
+async function loadTeacherCancelAcks(){
+ const list=document.getElementById('cancelAckTeacherList');
+ if(!list)return;
+ const {data,error}=await teacherSupabase.rpc('get_leave_cancellation_ack_items');
+ if(error){list.textContent='無法讀取取消確認事項：'+error.message;return;}
+ const rows=Array.isArray(data)?data:[];
+ const pending=rows.filter(x=>!x.confirmed_at);
+ const count=document.getElementById('cancelAckTeacherCount');
+ if(count)count.textContent=String(pending.length);
+ list.replaceChildren();
+ if(!rows.length){list.textContent='目前沒有取消請假確認事項。';return;}
+ for(const x of rows)list.append(makeCancelAckCard(x,loadTeacherCancelAcks));
+}
+
+
+// 教師輪值設定：透過授權 RPC 讀寫，絕不讓瀏覽器直接操作輪值資料表。
+let teacherRotationClasses=[];
+function rotationMondayISO(date=new Date()){
+ const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
+ const part=k=>parts.find(x=>x.type===k)?.value;
+ const d=new Date(`${part('year')}-${part('month')}-${part('day')}T12:00:00Z`);
+ const day=d.getUTCDay();d.setUTCDate(d.getUTCDate()-((day+6)%7));return d.toISOString().slice(0,10);
+}
+function rotationTodayISO(){const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const get=k=>parts.find(x=>x.type===k)?.value;return `${get('year')}-${get('month')}-${get('day')}`;}
+function rotationMessage(message){el('leyeRotationStatus').textContent=message;}
+function rotationClassId(){return el('leyeRotationClass').value;}
+function validMonday(value){return /^\d{4}-\d{2}-\d{2}$/.test(value)&&new Date(value+'T12:00:00Z').getUTCDay()===1;}
+async function openTeacherRotation(){
+ const dialog=el('leyeRotationDialog');dialog.querySelectorAll('details.rotationSection').forEach(section=>section.open=false);dialog.showModal();rotationMessage('正在讀取可管理班級…');
+ el('leyeRotationStart').value=rotationMondayISO();el('leyeRotationOverrideWeek').value=rotationMondayISO();const today=rotationTodayISO();el('leyeRotationLeaveStart').value=today;el('leyeRotationLeaveEnd').value=today;
+ try{
+  const {data,error}=await teacherSupabase.rpc('teacher_rotation_my_classes');if(error)throw error;
+  teacherRotationClasses=Array.isArray(data)?data:[];
+  el('leyeRotationClass').replaceChildren();
+  for(const c of teacherRotationClasses){const opt=document.createElement('option');opt.value=c.class_id;opt.textContent=c.class_name||c.class_id;el('leyeRotationClass').appendChild(opt);}
+  const single=teacherRotationClasses.length===1;
+  el('leyeRotationClassPicker').hidden=single;
+  el('leyeRotationOwnClass').hidden=!single;
+  if(single)el('leyeRotationOwnClass').textContent='所屬班級：'+(teacherRotationClasses[0].class_name||teacherRotationClasses[0].class_id);
+  if(!teacherRotationClasses.length){rotationMessage('目前沒有可設定輪值的原班，請聯絡行政確認兩位導師的班級權限。');return;}
+  await loadTeacherRotation();
+ }catch(err){rotationMessage('尚無法讀取輪值設定：'+(err.message||'請稍後重試')+'。請確認教師登入狀態及班級權限。');}
+}
+async function loadTeacherRotation(){
+ const classId=rotationClassId();if(!classId)return;
+ rotationMessage('正在讀取輪值…');
+ try{
+  const {data,error}=await teacherSupabase.rpc('teacher_rotation_get',{p_class_id:classId});if(error)throw error;
+  const row=typeof data==='string'?JSON.parse(data):data;
+  for(const id of ['leyeRotationFirst','leyeRotationSubstitute','leyeRotationLeaveTeacher']){
+   const select=el(id);select.replaceChildren();
+   for(const m of (row.teachers||[])){const option=document.createElement('option');option.value=m.id;option.textContent=m.name;select.appendChild(option);}
+  }
+  if(row.anchor_week)el('leyeRotationStart').value=row.anchor_week;
+  if(row.first_staff_id)el('leyeRotationFirst').value=row.first_staff_id;
+  if(row.this_week_staff_id)el('leyeRotationSubstitute').value=row.this_week_staff_id;const other=(row.teachers||[]).find(t=>t.id!==row.this_week_staff_id);if(other)el('leyeRotationLeaveTeacher').value=other.id;
+  rotationMessage(`本週：${row.this_week_name||'尚未設定'}\n下週：${row.next_week_name||'尚未設定'}\n${row.teachers?.length===2?'兩位導師已確認':'需要兩位有效導師才能設定'}`);
+ }catch(err){rotationMessage('讀取失敗：'+(err.message||'未知錯誤'));}
+}
+function rotationLeaveValues(){
+ const start=el('leyeRotationLeaveStart').value,end=el('leyeRotationLeaveEnd').value,staff=el('leyeRotationLeaveTeacher').value;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end)||start>end)throw new Error('請選擇正確的請假起訖日期。');
+ const days=Math.round((Date.parse(end+'T00:00:00Z')-Date.parse(start+'T00:00:00Z'))/86400000)+1;
+ if(days>31)throw new Error('單次代班最多 31 天，請分次設定。');
+ if(!staff)throw new Error('請先選擇代班導師。');
+ return {p_class_id:rotationClassId(),p_start_date:start,p_end_date:end,p_staff_id:staff};
+}
+async function saveTeacherRotationLeave(){
+ const status=el('leyeRotationLeaveStatus');let args;
+ try{args=rotationLeaveValues();}catch(e){status.textContent=e.message;return;}
+ if(!window.confirm(`確定由指定導師在 ${args.p_start_date} 至 ${args.p_end_date} 代班？其他日期仍依原本輪值。`))return;
+ status.textContent='正在儲存代班設定…';
+ const {error}=await teacherSupabase.rpc('teacher_rotation_set_date_substitute',args);
+ if(error){status.textContent='未儲存成功：'+error.message;return;}
+ status.textContent='代班已儲存。';await loadTeacherRotation();
+}
+async function clearTeacherRotationLeave(){
+ const status=el('leyeRotationLeaveStatus');let args;
+ try{args=rotationLeaveValues();}catch(e){status.textContent=e.message;return;}
+ if(!window.confirm(`確定取消 ${args.p_start_date} 至 ${args.p_end_date} 的代班？`))return;
+ status.textContent='正在取消代班…';
+ const {error}=await teacherSupabase.rpc('teacher_rotation_clear_date_substitute',{p_class_id:args.p_class_id,p_start_date:args.p_start_date,p_end_date:args.p_end_date});
+ if(error){status.textContent='取消失敗：'+error.message;return;}
+ status.textContent='指定日期已恢復自動輪值。';await loadTeacherRotation();
+}
+async function saveTeacherRotation(){
+ const cls=rotationClassId(),week=el('leyeRotationStart').value,first=el('leyeRotationFirst').value;
+ if(!validMonday(week)){rotationMessage('起始週必須是星期一。');return;}
+ if(!first||!window.confirm('確認重新設定此班輪值？這會改變後續每週的自動輪替。'))return;
+ const {error}=await teacherSupabase.rpc('teacher_rotation_set_anchor',{p_class_id:cls,p_week_start:week,p_first_staff_id:first});
+ if(error){rotationMessage('儲存失敗：'+error.message);return;}await loadTeacherRotation();
+}
+async function saveTeacherRotationOverride(){
+ const cls=rotationClassId(),week=el('leyeRotationOverrideWeek').value,staff=el('leyeRotationSubstitute').value;
+ if(!validMonday(week)){rotationMessage('指定週必須是星期一。');return;}
+ if(!staff||!window.confirm('確定由所選導師代班整週？下一週仍依原本順序輪替。'))return;
+ const {error}=await teacherSupabase.rpc('teacher_rotation_set_override',{p_class_id:cls,p_week_start:week,p_staff_id:staff});
+ if(error){rotationMessage('設定失敗：'+error.message);return;}await loadTeacherRotation();
+}
+async function clearTeacherRotationOverride(){
+ const week=el('leyeRotationOverrideWeek').value;if(!validMonday(week))return;
+ if(!window.confirm('取消該週手動指定，恢復自動輪值？'))return;
+ const {error}=await teacherSupabase.rpc('teacher_rotation_clear_override',{p_class_id:rotationClassId(),p_week_start:week});
+ if(error){rotationMessage('取消失敗：'+error.message);return;}await loadTeacherRotation();
+}
+
+init();
+</script>
+<script>function toggleAdminSupportPanel(){const p=document.getElementById('adminMorningSupport');if(!p)return;const open=p.classList.toggle('adminSupportExpanded');const b=document.getElementById('adminSupportToggle');if(b){b.setAttribute('aria-expanded',String(open));const tail=b.lastChild;if(tail&&tail.nodeType===3)tail.textContent=open?'　－':'　＋';}}</script></body>
+</html>
