@@ -3837,7 +3837,7 @@ async function cancelCareRequest(requestId){
   overlay.className="careCancelOverlay";
   overlay.innerHTML=`<section class="careCancelDialog" role="dialog" aria-modal="true" aria-labelledby="careCancelTitle">
     <h3 id="careCancelTitle">🌷 取消托育申請</h3>
-    <p>計畫有變動也沒關係，請選擇這次取消的原因，讓老師能及時調整照顧安排。</p>
+    <p>計畫有變動也沒關係，請選擇這次取消的原因，讓老師能及時調整照顧安排。若已繳費，取消後請由園方確認退款。</p>
     <div style="font-size:14px;font-weight:700">想取消的原因 <span style="color:#b25a4b">＊</span></div>
     <div class="careCancelOptions" role="radiogroup" aria-label="取消原因">
       <label class="careCancelOption"><input type="radio" name="careCancelReason" value="pickup_change"> 🚗 接送時間已調整</label>
@@ -3874,7 +3874,7 @@ async function cancelCareRequest(requestId){
 function canCancelLeYeCare(row){
  if(!["extended","temporary"].includes(row.request_type))return false;
  if(!["submitted","pending","approved","waitlist"].includes(row.status))return false;
- if(row.fee_collected_at || (row.fee_status && row.fee_status!=="none"))return false;
+ if(!["none","collected","voided","refund_required","refunded"].includes(row.fee_status||"none"))return false;
  const ymd=today();if(row.request_date<ymd)return false;
  if(row.request_date>ymd)return true;
  const current=new Date().toLocaleTimeString("sv-SE",{timeZone:"Asia/Taipei",hour12:false}).slice(0,5);
