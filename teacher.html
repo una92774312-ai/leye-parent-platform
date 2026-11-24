@@ -8,7 +8,7 @@
 <meta content="0" http-equiv="Expires"/>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
-<title>樂業附幼｜教職員平台 V16</title>
+<title>樂業附幼｜教職員平台 V17</title>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
 <style>
@@ -1259,7 +1259,21 @@
 .rotationSectionBody button{width:100%;margin-top:10px}
 @media(max-width:420px){.leyeRotationDialog{padding:14px}.rotationDialogHeader{top:-14px}}
 </style>
-<style>#adminSupportToggle{width:100%;border:0;background:transparent;color:#395b40;text-align:left;cursor:pointer;padding:3px;font:inherit;display:flex;gap:6px;align-items:center}#adminMorningSupport:not(.adminSupportExpanded) .adminSupportExpandable{display:none!important}#adminSupportToggle:focus-visible{outline:2px solid #26743d}</style><style> .workTitle{font-weight:900;font-size:20px}.todayClassHeading,.todayTitle{font-weight:900;font-size:18px}.todayClassRosters .rosterClassDetails>summary{font-size:15px;font-weight:900;min-height:56px;padding:12px}.rosterClassCount,.rosterSummaryText{font-size:12px;font-weight:700}.rosterDetails>summary{font-size:16px;font-weight:900;min-height:56px}.adminSupportHeader strong{font-weight:900} </style></head>
+<style>#adminSupportToggle{width:100%;border:0;background:transparent;color:#395b40;text-align:left;cursor:pointer;padding:3px;font:inherit;display:flex;gap:6px;align-items:center}#adminMorningSupport:not(.adminSupportExpanded) .adminSupportExpandable{display:none!important}#adminSupportToggle:focus-visible{outline:2px solid #26743d}</style><style> .workTitle{font-weight:900;font-size:20px}.todayClassHeading,.todayTitle{font-weight:900;font-size:18px}.todayClassRosters .rosterClassDetails>summary{font-size:15px;font-weight:900;min-height:56px;padding:12px}.rosterClassCount,.rosterSummaryText{font-size:12px;font-weight:700}.rosterDetails>summary{font-size:16px;font-weight:900;min-height:56px}.adminSupportHeader strong{font-weight:900} </style><style id="leye-v17-layout">
+#adminMorningSupport{padding:0;overflow:hidden}
+#adminSupportToggle{margin:0;padding:14px 12px;min-height:58px;display:flex;flex-wrap:nowrap;align-items:center;gap:8px;font-size:16px;font-weight:800;line-height:1.5}
+#adminSupportToggle>span:first-child{flex:0 1 auto}#adminSupportCurrent{flex:1;text-align:right;overflow-wrap:anywhere;font-size:14px}
+.supportToggleIcon{flex:0 0 32px;width:32px;height:32px;border-radius:50%;background:#eaf3e8;color:#31533a;display:grid;place-items:center;font-size:20px;font-weight:900}.supportToggleIcon:after{content:"＋"}#adminSupportToggle[aria-expanded="true"] .supportToggleIcon:after{content:"－"}
+#adminMorningSupport .adminSupportExpandable{margin:0 12px 12px}
+.todayClassRosters .rosterClassDetails>summary,.rosterDetails>summary{display:flex;justify-content:flex-start;align-items:center;gap:8px;padding:12px;min-height:58px;font-size:16px;line-height:1.5}
+.todayClassRosters .rosterClassDetails>summary>span:first-child,#rosterTitle{flex:1;min-width:0;overflow-wrap:anywhere}
+.todayClassRosters .rosterClassCount,.rosterSummaryText{margin-left:auto;text-align:right;flex:0 0 auto;font-size:12px;white-space:nowrap}
+.todayClassRosters .rosterClassDetails>summary:after,.rosterDetails>summary:after{flex:0 0 32px;width:32px;height:32px}
+#todayItemsSection{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;margin-top:14px}
+.todayClassHeading,.todayTitle{font-size:18px;font-weight:900;line-height:1.5}
+@media(max-width:480px){.todayClassRosters .rosterClassDetails>summary,.rosterDetails>summary{font-size:14px;padding:10px;gap:6px}.todayClassRosters .rosterClassCount{font-size:11px}.rosterSummaryText{display:block;font-size:10px}#adminSupportToggle{font-size:14px}#adminSupportCurrent{font-size:13px}#todayItemsSection{padding:12px}}
+@media(max-width:350px){.rosterSummaryText{display:none}.todayClassRosters .rosterClassCount{white-space:normal;max-width:75px}}
+</style></head>
 <body>
 <main class="wrap">
 <div class="brand">
@@ -1331,7 +1345,7 @@
               正在讀取老師可查看範圍…
             </div>
 <section aria-label="今日補休代班" class="adminMorningSupport hidden" id="adminMorningSupport">
-<button aria-expanded="false" class="adminSupportHeader" id="adminSupportToggle" onclick="toggleAdminSupportPanel()" type="button"><span>🌿 今日補休代班：</span><strong id="adminSupportCurrent">無代班</strong>　＋</button>
+<button aria-expanded="false" class="adminSupportHeader" id="adminSupportToggle" onclick="toggleAdminSupportPanel()" type="button"><span>🌿 今日補休代班：</span><strong id="adminSupportCurrent">無代班</strong><span class="supportToggleIcon" aria-hidden="true"></span></button>
 <div class="adminSupportControls adminSupportExpandable">
 <label for="adminSupportClass">選擇今天支援的原班</label>
 <select id="adminSupportClass"><option value="">請選擇班級</option></select>
@@ -4633,5 +4647,5 @@ async function clearTeacherRotationOverride(){
 
 init();
 </script>
-<script>function toggleAdminSupportPanel(){const p=document.getElementById('adminMorningSupport');if(!p)return;const open=p.classList.toggle('adminSupportExpanded');const b=document.getElementById('adminSupportToggle');if(b){b.setAttribute('aria-expanded',String(open));const tail=b.lastChild;if(tail&&tail.nodeType===3)tail.textContent=open?'　－':'　＋';}}</script></body>
+<script>function toggleAdminSupportPanel(){const p=document.getElementById('adminMorningSupport');if(!p)return;const open=p.classList.toggle('adminSupportExpanded');const b=document.getElementById('adminSupportToggle');if(b){b.setAttribute('aria-expanded',String(open));}}</script></body>
 </html>
